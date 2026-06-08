@@ -1,22 +1,17 @@
 metadata:
   name: test_mc_distributions
   description:
-    brief: "[TEST] Monte Carlo: normal(), uniform(), lognormal() parameter distributions; MC enabled in optimizer."
-    method: |
-      Three parameters each with a different distribution form.
-      In deterministic mode the engine uses the distribution mean.
-      In MC mode (simulation.mc.runs=5) each run re-samples all three parameters.
-
-        clearance_rate  ~ normal(0.30, 0.05)   → mean 0.30, sd 0.05
-        bioavailability ~ uniform(0.60, 0.90)  → mean 0.75, range 0.60–0.90
-        volume_dist     ~ lognormal(3.9, 0.2)  → median e^3.9 ≈ 49 L, log-sd 0.2
-
-      NSGA-II with simulation.mc.runs=5: each candidate solution is
-      evaluated 5 times and results are averaged, testing the MC evaluation loop.
-    optimization: |
-      Single input: dose [50,400] mg.
-      Two objectives: maximize mean_plasma (therapeutic coverage) + minimize peak_plasma.
-      MC: simulation.mc.runs=5, seed=7 (fixed for reproducibility).
+    problem: >
+      Validates the three parameter distribution forms — normal(), uniform(), and lognormal() —
+      in both simulation and optimiser MC modes. Deterministic mode uses the distribution mean;
+      MC mode (runs=5) re-samples all three parameters independently per run. The optimiser
+      also uses MC: each candidate solution is evaluated 5 times and results averaged.
+    result: >
+      Deterministic: clearance_rate=0.30, bioavailability=0.75, volume_dist≈49 L.
+      MC simulation: curves should visibly diverge across the distribution ranges.
+      Optimiser Pareto front balances mean_plasma coverage against peak_plasma, with
+      wider spread than a non-MC run due to bioavailability uncertainty.
+    limitations: Drug PK parameters are synthetic; not physiologically calibrated.
   tags: [test, mc, distributions, normal, uniform, lognormal, nsga2]
   references: ["TEST: Monte Carlo parameter distributions — normal/uniform/lognormal"]
   step_size:

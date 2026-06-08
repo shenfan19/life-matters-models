@@ -3,15 +3,15 @@ metadata:
   updated: 2026-04-30
   author: LM Test
   description:
-    brief: |
-      血糖 MC + Opt 测试场景。三日三餐脉冲式摄入→胃缓冲→血糖波动。
-      两个正态分布参数（insulin_sensitivity + absorption_efficiency）在 MC 多条曲线间产生可见分叉。
-      Opt 目标：调整每餐碳水量，在满足每日总量≥150g 的前提下最小化餐后血糖峰值。
-    need: 作为开发期测试模型，用于验证仿真、调度、MC 或优化链路是否稳定。
-    method: 包含 5 个变量和 3 个方程，围绕 blood_glucose、stomach_carbs、carb_intake、insulin_sensitivity 构造最小可运行动力学。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-04，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，包含优化目标，用于搜索可行的干预或参数组合。
-    result: 预期用于发现回归错误，并确认 GUI 与后端输出保持一致。
+    problem: >
+      血糖脉冲-缓冲验证场景：三日三餐（早/午/晚）通过胃缓冲区驱动血糖波动，分钟步长。
+      胰岛素敏感性和吸收效率以正态分布参数引入个体差异，MC 多条曲线在三餐峰值处应出现可见分叉。
+      同时验证脉冲调度、MC 参数采样和单目标优化（最小化餐后峰值，约束日总碳水 ≥ 150g）三条链路。
+    result: >
+      MC 运行后三餐峰值曲线之间出现可见分叉，反映个体差异。
+      优化收敛后应在日总碳水约束内找到峰值最低的每餐分配方案。
+      任何链路异常（脉冲触发时机错误、MC 采样混乱、约束处理错误）均应在此模型中暴露。
+    limitations: 参数和动力学为最小测试集，不反映临床现实，仅用于链路回归测试。
   tags: [test, glucose, mc, schedule, pulse, opt]
   step_size:
     value: 1

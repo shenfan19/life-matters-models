@@ -7,28 +7,16 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 工作压力-认知表现动力学模型，基于Yerkes-Dodson定律和认知负荷理论，量化压力、疲劳与工作效率的时序关系。
-    need: |
-      为工作场景、军事场景、学习场景提供认知-压力基础模块，
-      量化慢性压力、睡眠剥夺和认知负荷对工作表现的影响。
-    problem: |
-      Yerkes-Dodson倒U形定律表明：适度压力提升表现，过度压力导致表现崩溃。
-      但最优压力水平因个体和任务类型而异（认知任务 vs 体力任务）。
-      如何在保持高工作产出的同时避免慢性压力导致的Burnout，是组织管理的真实未解问题。
-    method: |
-      三核心状态：认知表现（performance）、压力水平（stress_level）、认知疲劳（cognitive_fatigue）。
-      外部压力（workload）为主要驱动输入，睡眠质量（sleep_quality）为恢复输入。
-      Yerkes-Dodson曲线通过二次函数近似（最优压力点约0.5归一化）。
-      日步长，适合数周到数月时间尺度的组织管理分析。
-    simulation: |
-      默认仿真6个月，高强度工作场景（workload=0.8）下观察慢性压力积累和Burnout风险。
-    optimization: |
-      双目标优化：最大化6个月累积工作产出，同时最小化Burnout风险（stress>0.8持续天数）。
-      决策变量：工作量周期性调整策略（高强度冲刺期 + 休息期）。
-    result: 预期显示连续高强度工作的Burnout临界点和间歇休息策略的帕累托边界。
-    limitations: |
-      参数来自实验室研究，与真实工作环境存在差异；
-      个体差异（神经质、内外向）通过参数分布建模；
+    problem: >
+      Yerkes-Dodson 倒 U 形定律（1908）表明适度压力（workload ≈ 0.5 归一化）提升认知表现，
+      但过度压力触发表现崩溃和慢性 Burnout（Maslach 2001）。
+      最优压力水平因个体神经质特征和任务类型（认知 vs 体力）而异，
+      睡眠质量对认知疲劳恢复速率的贡献与工作量本身等级相当——最优的冲刺-休息时序难以凭直觉确定。
+    result: >
+      仿真预期显示高强度工作（workload=0.8）持续 6 个月的慢性压力积累轨迹和 Burnout 临界点，
+      以及间歇休息策略与持续高负荷之间的产出-风险 Pareto 边界——仿真尚未运行。
+    limitations: >
+      参数来自实验室研究，与真实工作环境存在差异；个体差异（神经质、内外向）通过参数调整；
       未包含社会支持、组织文化等外部调节因子。
   ratings:
     topic_importance: 5 - Yerkes-Dodson压力-表现模型是心理学/职场健康最普适基础之一

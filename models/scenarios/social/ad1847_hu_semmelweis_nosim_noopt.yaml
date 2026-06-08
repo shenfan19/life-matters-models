@@ -5,25 +5,17 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: |
-      塞麦尔维斯洗手倡导仿真场景（1847–1865，维也纳产科医院）。
-      sim模式：模拟医学证据积累与机构接受度之间的动力学，
-      以及持续受挫对研究者心理健康的侵蚀。
-      opt模式：在维多利亚时代医学体制约束下，
-      找到最优倡导策略——何时发表、何时休养、何时放弃？
-    problem: 在该情境中，需要平衡 research_effort、advocacy_intensity、self_care、evidence 对生存、目标进展或长期代价的影响。
-    method: 包含 8 个可调输入、8 个状态变量和 7 个方程，将叙事冲突转化为可运行的动态系统。
-    simulation: 默认仿真从 1847-01-01 到 1865-01-01，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，目标 3 个，用于搜索可行的干预或参数组合。
-    result: 预期用于比较不同策略在主要目标和约束之间的取舍。
-    evidence: 基于科学创新扩散理论（Rogers 1962）与历史传记（Carter 1983）。
-    mechanism: |
-      机构接受度由倡导强度和证据质量共同驱动，同时受到抵触惯性抑制：
-      acceptance_gain = advocacy_intensity × evidence_factor × (1 - rejection_resistance)。
-      evidence_factor = min(1, evidence / 60)；
-      rejection_resistance = 0.4 + 0.4 × (1 - acceptance / 100)。
-      即越不被接受，越难推动接受。
-    time_scale: 步长为 1 月，总时长 216 月（18 年）。
+    problem: >
+      塞麦尔维斯（1847–1865）推动洗手预防产褥热的案例展示了创新扩散的正反馈障碍：
+      接受度增益 = 倡导强度 × (evidence/60) × (1−抵触惯性)，
+      而抵触惯性 = 0.4 + 0.4 × (1−acceptance/100)——接受度越低，推动越难，形成自我强化的锁定效应。
+      倡导强度越高，研究者心理健康（mental_health）消耗越快，
+      使"坚持倡导"与"保护研究者"之间的权衡成为不可回避的优化问题。
+    result: >
+      仿真预期显示 18 年（216 月）内证据质量、机构接受度和心理健康的月动态，
+      以及不同倡导时机策略（积极发表/间歇休养/阶段性放弃）的轨迹差异；
+      三目标优化预期给出最优倡导时序路径——仿真尚未运行。
+    limitations: Rogers 扩散参数来自 20 世纪研究，应用于 19 世纪医学机构存在泛化风险；倡导强度与心理损耗的定量关系为模型假设。
 
   ratings:
     topic_importance: 4 - 医学史最著名的知识阻力案例，医学史和科学政策圈高度关注

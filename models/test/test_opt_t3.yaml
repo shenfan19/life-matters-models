@@ -1,15 +1,16 @@
 metadata:
   name: test_opt_t3
   description:
-    brief: "[TEST] Optimizer T3: value + days-pattern selection from candidate sets."
-    method: |
-      Exercise training model where both dose (load) and weekly schedule pattern are optimized.
-      Two T3 inputs: aerobic_load (3 weekday candidates) + strength_load (2 weekend candidates).
-      x-vector: [aerobic_value, aerobic_pattern_idx, strength_value, strength_pattern_idx] → 4 dims.
-      NSGA-II: maximize fitness score + minimize fatigue score.
-    optimization: |
-      aerobic_load days_options: [MWF], [TThSa], [MoWeFr+Sa].
-      strength_load days_options: [SaSu], [Tu+Th].
+    problem: >
+      Validates weekly-pattern optimisation: both the training load value and which days of the
+      week to train are decision variables, chosen from predefined candidate day sets. Two inputs:
+      aerobic training (3 weekday patterns) and strength training (2 weekend patterns). Tests
+      that pattern index decoding maps correctly to specific day combinations.
+    result: >
+      Decision vector has 4 dimensions (aerobic_value, aerobic_pattern_idx, strength_value,
+      strength_pattern_idx). Pareto front should show the fitness-fatigue tradeoff where pattern
+      indices decode correctly to the candidate day combinations.
+    limitations: Simplified linear fitness-fatigue dynamics; not validated against training science.
   tags: [test, optimizer, t3, days-pattern, weekly-schedule, mixed-integer]
   references: ["TEST: T3 days-pattern selection with multiple candidate sets"]
   step_size:

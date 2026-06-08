@@ -1,41 +1,17 @@
 metadata:
   name: test_step_cross_import_top
   description:
-    brief: "[TEST] Cross-step-size import top — step=hour imports step=day base. Core multi-scale correctness check."
-    method: |
-      This model runs at 1-hour steps and imports test_step_cross_import_base (step=1 day).
-      It adds its own hourly PK variable that decays at 0.1% per hour.
-
-      HOW TO INTERPRET THE OUTPUT:
-      ──────────────────────────────────────────────────────────────────────────
-      Check body_mass (from the imported daily model) at 24-hour boundaries:
-
-        Hour  0  (Day 0 start): body_mass = 100.000
-        Hour 24  (Day 1 end):   body_mass should be  99.000  (100 × 0.99^1)
-        Hour 48  (Day 2 end):   body_mass should be  98.010  (100 × 0.99^2)
-        Hour 72  (Day 3 end):   body_mass should be  97.030  (100 × 0.99^3)
-
-      If body_mass reaches ~97.03 after 72 hours → engine handles step-size
-      differences correctly.
-
-      If body_mass drops to ~5.2 after 72 hours → engine is passing step=1
-      (hour) into the daily formula (running it 72 times with per-day rate),
-      which overcounts by 72×. WRONG.
-
-      If body_mass stays at exactly 100.0 → engine never runs the daily formula
-      in a hourly context. Also WRONG.
-
-      ──────────────────────────────────────────────────────────────────────────
-      Check plasma_drug (own hourly variable) at key steps:
-
-        Hour  0: plasma_drug = 100.000
-        Hour  1: plasma_drug =  99.900  (100 × 0.999^1)
-        Hour 24: plasma_drug =  97.625  (100 × 0.999^24)
-        Hour 72: plasma_drug =  93.054  (100 × 0.999^72)
-
-      This variable is purely in this model (step=hour) and should be correct
-      regardless of import handling. If it's wrong, the hourly step itself is broken.
-    limitations: Purely structural; values chosen for numeric clarity.
+    problem: >
+      Core multi-scale correctness check: this model runs at 1-hour steps and imports
+      test_step_cross_import_base (step=1 day). The daily decay formula must fire once every
+      24 hours — not once per hour. A separate hourly PK variable decays at 0.1% per hour,
+      independently confirming the hourly engine is working correctly.
+    result: >
+      body_mass at 24-hour marks must match the daily ground truth (day 1→99.0, day 2→98.01,
+      day 3→97.03). If it drops to ~5.2 after 72 h, the engine ran the daily formula at hourly
+      rate (72× overcounting). If it stays at 100.0, the daily formula never fired — both are
+      engine bugs. plasma_drug should decay smoothly at 0.1%/h regardless.
+    limitations: Purely a numeric engine-correctness fixture; no physiological meaning.
   tags: [test, step_size, cross_import, hour, multi_scale]
   references: ["TEST: cross-step-size import — top model (1-hour step)"]
   step_size:

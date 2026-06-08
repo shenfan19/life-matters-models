@@ -1,25 +1,17 @@
 metadata:
   name: test_opt_results
   description:
-    brief: "[TEST] Optimizer eval-window + results block with pre-filled Pareto front."
-    method: |
-      Nutrient timing model demonstrating:
-        1. optimizer.start_date/end_date different from simulation (shorter eval window).
-        2. optimizer.step_size coarser than metadata.step_size (1h vs 1 day).
-        3. Pre-populated optimizer.results block — tests warm-start display in GUI.
-        4. Hard + soft constraint combination.
-
-      Simulation: 2 years (2026-01-01 to 2027-12-31) for visualization.
-      Optimizer eval window: 6 months only (2026-01-01 to 2026-06-30), step=1 day.
-      This speeds up the optimizer while keeping the GUI view at full resolution.
-
-      Pre-filled results: 5 Pareto solutions for warm-start testing.
-      The GUI should show "5 historical solutions from 2026-05-20" at load time.
-    optimization: |
-      2 inputs: protein_intake [0.5,2.0] g/kg/day + carb_load [100,350] g/day.
-      2 objectives: maximize muscle_mass (final) + minimize fat_mass (final).
-      Hard constraint: cholesterol <= 6.0 mmol/L.
-      Soft constraint: energy_balance >= -500 kcal/day.
+    problem: >
+      Tests three features together: (1) optimizer evaluation window shorter than simulation
+      (6-month eval vs 2-year visualisation); (2) pre-populated optimizer.results block with
+      5 Pareto solutions from a prior run — the GUI must show historical results and offer
+      warm-start at load time; (3) combined hard and soft constraint handling.
+    result: >
+      At load, the GUI should display "5 historical solutions from 2026-05-20" and enable the
+      warm-start checkbox. A fresh run should start from those seeds and refine the front
+      within the 6-month eval window. Both constraints (cholesterol hard, energy-balance soft)
+      must appear correctly in the GUI constraint panel.
+    limitations: Nutrient dynamics are simplified; parameters chosen for numeric clarity only.
   tags: [test, opt_results, eval-window, warm-start, pareto, hard-soft-constraint]
   references: ["TEST: optimizer evaluation window + pre-filled results block"]
   step_size:

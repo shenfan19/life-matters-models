@@ -1,17 +1,16 @@
 metadata:
   name: test_opt_t1_pareto
   description:
-    brief: "[TEST] T1 multi-variable Pareto optimizer: 3 inputs, 2 objectives, hard constraint."
-    method: |
-      Drug dosing model with three time-of-day doses (morning / noon / evening).
-      Each has different bioavailability; both maximize efficacy and minimize toxicity.
-      NSGA-II, 2 objectives. Hard constraint: total_daily_dose <= 45 mg.
-      x-vector length = 3 (one continuous value per input, T1 only).
-    optimization: |
-      Inputs: morning_dose [0,20], noon_dose [0,20], evening_dose [0,20] (T1).
-      Obj 1: maximize plasma_conc (mean).
-      Obj 2: minimize liver_load (final).
-      Constraint: total_daily_dose <= 45 mg (hard).
+    problem: >
+      Validates multi-variable value-only optimisation with Pareto objectives and a hard
+      constraint. Three daily dose inputs (morning / noon / evening) each have different
+      bioavailability; the hard constraint caps total daily dose at 45 mg. Two objectives:
+      maximise mean plasma concentration (efficacy) and minimise final liver load (toxicity).
+    result: >
+      The Pareto front should show a monotone efficacy-toxicity tradeoff within the feasible
+      region (total daily dose ≤ 45 mg). Morning bioavailability is highest, so high-efficacy
+      solutions should weight morning doses more heavily.
+    limitations: Value-only search; does not cover time-of-day, weekly pattern, or date-range tiers.
   tags: [test, optimizer, t1, pareto, nsga2, multi-objective, constraint]
   references: ["TEST: T1 multi-variable Pareto with hard constraint"]
   step_size:

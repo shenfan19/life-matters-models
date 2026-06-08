@@ -1,22 +1,15 @@
 metadata:
   name: test_evidence_types
   description:
-    brief: "[TEST] All 8 evidence subtypes: rr, or, hr, ard, cohens_d, ir, beta, pk."
-    method: |
-      Minimal model exercising every evidence subtype in one file.
-      Each evidence variable is auto-converted by the Loader and referenced as
-      <name>_effective in formulas. No optimizer needed — this is a loader/formula test.
-
-      Effective value derivations:
-        rr  → effective = value (2.5)
-        ir  → effective = value (0.012 /yr)
-        hr  → effective = baseline_cvd_ir_effective × 0.75 = 0.009 /yr
-        or  → effective = 1.65 / ((1−0.12) + 0.12×1.65) ≈ 1.53
-        ard → effective = value (0.008 /yr)
-        cohens_d → effective = 0.68 × 6.0 = 4.08 mL/kg/min
-        beta → effective = value (0.45 mmHg/yr)
-        pk   → effective = value (0.0347 1/h)
-    limitations: Formula values are illustrative; no clinical interpretation intended.
+    problem: >
+      Validates Loader handling of all 8 evidence subtypes (rr, or, hr, ard, cohens_d, ir, beta, pk)
+      in a single file. Each evidence variable is auto-converted to an _effective value and
+      referenced in formulas. No simulation run needed — this is a loader and formula correctness test.
+    result: >
+      Each _effective value must match the known derivation:
+      rr→2.5, ir→0.012/yr, hr→0.009/yr, or→≈1.53, ard→0.008/yr,
+      cohens_d→4.08 mL/kg/min, beta→0.45 mmHg/yr, pk→0.0347/h.
+    limitations: Values are illustrative; no clinical interpretation intended.
   tags: [test, evidence, rr, or, hr, ard, cohens_d, ir, beta, pk]
   references: ["TEST: evidence subtype coverage test"]
   step_size:

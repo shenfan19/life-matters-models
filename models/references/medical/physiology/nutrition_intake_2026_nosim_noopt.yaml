@@ -7,11 +7,13 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "营养摄入基础模型，处理食物向胃部的初步转移。"
-    need: 作为医学参考模块，为更高层场景、published 案例或组合模型提供可复用机制。
-    method: 包含 6 个变量和 4 个方程，描述 exercise_intensity、food_carbohydrate、food_fat、food_protein 的基础动态。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-02，用于观察核心状态随时间变化。
-    limitations: 该模块偏基础组件，参数应在被场景调用时结合具体上下文校准。
+    problem: >
+      营养摄入层通过 6 个变量（food_carbohydrate、food_protein、food_fat 及运动强度等）和 4 个方程
+      将外部饮食 schedule 转化为胃部底物浓度，作为 digestive_system 和 energy_balance 的最上游输入层。
+      运动强度同时影响底物利用率，使同一饮食在不同运动状态下的代谢效果不同。
+    result: >
+      仿真预期呈现三餐触发后各营养素在胃部缓冲区的累积与消耗波形——仿真尚未运行，为纯组件模型。
+    limitations: 极简转移层，未建模食物消化速率差异（液体 vs 固体）、胃排空个体变异或饥饿信号；参数应在上层场景中校准。
   ratings:
     topic_importance: 4 - 营养摄入转移是代谢建模基础组件，供消化系统等多模型调用
     framework_demand: 4 - 被3个上层模型import，代谢链路的基础组件

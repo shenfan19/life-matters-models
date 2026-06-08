@@ -7,26 +7,22 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 室内功率自行车生理模型（Spin/Zwift训练），基于功率区间的精确训练负荷管理，包含TSS/CTL/ATL/Form指标。
-    need: 为室内功率车训练、周期化训练负荷管理和运动表现峰值预测场景提供运动生理基础模块。
-    problem: |
-      功率计驱动的训练要求精确追踪训练压力评分（TSS）及其长期（CTL，42天）
-      和短期（ATL，7天）指数平均，二者之差（Form=CTL-ATL）预测运动员
-      处于疲劳期（Form<−20）还是新鲜状态（Form>+10）。
-      传统心率模型无法精确量化功率区间对CTL/ATL的贡献。
-    method: |
-      7个状态变量（心率、VO2、血乳酸、TSS累积、CTL慢性负荷、ATL急性负荷、Form指数）。
-      2个输入变量（功率区间1-7、踏频rpm）。
-      TSS公式来自Coggan & Allen (2010)：TSS = (IF² × duration_h × 100)；
-      CTL基于42天指数衰减（τ=42），ATL基于7天指数衰减（τ=7）；
-      Form = CTL - ATL（Rønnestad & Mujika 2014）。
-    simulation: 默认仿真1小时Zone 2有氧基础训练（power_zone=2，cadence=90 rpm）。
-    optimization: 双目标：最大化Form指数（新鲜度），最小化ATL（减少短期疲劳积累）。
-    result: 预期Pareto前沿显示训练强度与Form维持之间的权衡。
-    limitations: |
-      CTL/ATL模型在单次训练内近似为线性增长（真实为比赛后更新）；
-      功能性阈值功率（FTP）固定为参考值，未建模训练适应后的FTP提升；
-      未包含营养、睡眠等恢复因素对CTL/ATL的影响。
+    problem: >
+      室内功率自行车训练（Spin/Zwift）的核心科学问题是如何用训练压力评分（TSS）量化
+      每次训练对长期有氧基础（CTL，42 天指数加权均值）和短期疲劳（ATL，7 天指数加权均值）的贡献。
+      两者之差 Form = CTL - ATL 是预测运动员是否处于最佳竞技状态的关键指标：
+      Form 低于 -20 提示疲劳积累过度，高于 +10 则适合比赛。
+      功率区间（Zone 1-7）决定 TSS 积累速率，但高功率区间在提升 CTL 的同时会大幅推高 ATL，
+      形成训练负荷与新鲜度之间不可消除的生理张力。
+    result: >
+      仿真尚未运行。理论预期：Zone 2 有氧基础训练（约 60% FTP）可在 ATL 增量较小的条件下
+      稳定提升 CTL，Form 维持在可控范围（-10 至 0）；
+      Zone 4-5 高强度训练显著加速 ATL 上升，Form 在训练后 1-3 天内跌至 -20 以下，
+      需配合减量周恢复新鲜度。
+    limitations: >
+      CTL/ATL 在单次训练内采用线性近似更新，与真实每日更新机制存在偏差。
+      FTP 设为固定参考值，未建模数周训练后的适应性 FTP 提升；
+      营养、睡眠质量等影响恢复速率的非训练因素未纳入模型。
   ratings:
     topic_importance: 3 - 室内功率车是精确运动负荷管理的重要工具，CTL/ATL体系广泛应用
     framework_demand: 2 - 专项训练模型，通用度低于基础生理模型

@@ -1,16 +1,16 @@
 metadata:
   name: test_import_layer
   description:
-    brief: "[TEST] Intermediate import layer — imports base, adds aerobic fitness variables."
-    method: |
-      Imports test_import_base (cardiovascular component), then extends it with
-      aerobic fitness variables and dynamics that depend on the base's heart_rate.
-      Overrides hr_set_point from 65 → 58 bpm (trained athlete baseline).
-
-      This model is itself imported by test_import_top, creating a 2-level import chain.
-      Diamond test: test_import_top imports BOTH test_import_base and test_import_layer;
-      test_import_base should be loaded only once (deduplicated).
-    limitations: Aerobic fitness model is simplified.
+    problem: >
+      Intermediate import layer in a 2-level chain: imports test_import_base (cardiovascular
+      component), adds aerobic fitness variables, and overrides hr_set_point from 65 → 58 bpm
+      (trained athlete baseline). Is itself imported by test_import_top, creating the
+      diamond-dependency scenario where test_import_base is reachable via two paths.
+    result: >
+      When imported by test_import_top, this layer's override (58 bpm) should take precedence
+      over the base value (65 bpm), and aerobic fitness variables should appear in the resolved
+      model. test_import_base must remain deduplicated.
+    limitations: Aerobic fitness model is simplified; not clinically calibrated.
   tags: [test, import, layer, aerobic-fitness, override]
   references: ["TEST: layer model in import chain — extends base component"]
   step_size:

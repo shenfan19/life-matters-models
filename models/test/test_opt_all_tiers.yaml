@@ -1,26 +1,18 @@
 metadata:
   name: test_opt_all_tiers
   description:
-    brief: "[TEST] All four optimizer tiers combined: T1 + T2 + T3 + T4 in one model."
-    method: |
-      Diabetes management model combining all four optimizer tiers across four inputs.
-      Demonstrates full x-vector construction with mixed continuous + integer dimensions.
-
-      Inputs and tiers:
-        insulin_dose       — T1 only (value)          → x[0]        (1 dim)
-        meal_carbs         — T1 + T2 (value + time)   → x[1], x[2]  (2 dims)
-        exercise_minutes   — T1 + T3 (value + days)   → x[3], x[4]  (2 dims)
-        metformin_dose     — T1 + T4 (value + date)   → x[5], x[6]  (2 dims)
-        background_drug    — fixed input (no optimize) → 0 dims
-
-      x-vector total: 7 dimensions.
-      NSGA-II, 2 objectives: maximize lm_score + minimize glucose_peak.
-    optimization: |
-      T1: insulin_dose [2,20] units.
-      T2: meal_carbs [20,80] g, window 07:00~09:00 (1h step = 3 slots).
-      T3: exercise_minutes [20,60] min, 3 pattern candidates.
-      T4: metformin_dose [250,1000] mg, start window 2026-02-01~2026-03-31.
-      Fixed: background_drug 10 mg/day (no optimize block).
+    problem: >
+      Validates all four optimizer tiers simultaneously in one model: value-only search (insulin
+      dose), value + time-window search (meal timing), value + weekly-pattern search (exercise
+      days), and value + date-start search (metformin start date). A fifth input is fixed
+      background (no optimize block). Total decision vector is 7 dimensions (mixed types),
+      targeting two objectives: maximise lm_score and minimise glucose peak.
+    result: >
+      The optimiser should produce a Pareto front with 7-dimensional solutions decoded into
+      human-readable regimens (dose, meal time, exercise days, metformin start date). The
+      background drug must not appear in the decision vector. Dimension-indexing errors or
+      tier-decoding mismatches should surface here.
+    limitations: Diabetes dynamics are intentionally simplified; not clinically validated.
   tags: [test, optimizer, t1, t2, t3, t4, all-tiers, mixed-integer, nsga2]
   references: ["TEST: all four optimizer tiers combined in one model"]
   step_size:

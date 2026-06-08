@@ -5,11 +5,12 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "工作与劳动动力学：模拟每日工作时间对储蓄和疲劳度的影响。展示了计划表如何驱动复杂的经济与生理平衡。"
-    need: 作为社会动力学参考模块，为历史、文学或经济场景提供可复用机制。
-    method: 包含 4 个变量和 2 个方程，描述 savings、fatigue、work_intensity、hourly_wage 的状态演化。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-02，用于观察核心状态随时间变化。
-    limitations: 文件名标记 noref，表示参数和机制仍需补充正式文献来源。
+    problem: >
+      劳动-储蓄-疲劳的日尺度权衡：工作时间增加收入但积累疲劳，休息恢复疲劳但停止收入，
+      最优的工作/休息时序无法凭直觉给出。该组件为历史、文学或经济场景提供最简化的日经济基础层。
+    result: >
+      仿真预期呈现一日内储蓄随工作时段增长、疲劳在工作和休息交替下的锯齿形波动——仿真尚未运行，为演示组件（见文件名标记 noref）。
+    limitations: 极简演示模型，参数无文献来源；未建模通货膨胀、技能积累或社会保障，不适合长时间尺度分析。
   ratings:
     topic_importance: 3 - 劳动-储蓄-疲劳日模型是场景驱动的基础组件，演示价值为主
     framework_demand: 1 - noref，演示价值为主，框架复用预期极低

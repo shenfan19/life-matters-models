@@ -1,22 +1,15 @@
 metadata:
   name: test_import_top
   description:
-    brief: "[TEST] Diamond import: imports both test_import_base and test_import_layer; base loaded once."
-    method: |
-      Top-level composite model that exercises the diamond-dependency resolution.
-
-      Import graph:
-        test_import_top
-          ├── test/test_import_base   (direct)
-          └── test/test_import_layer  (which also imports test/test_import_base)
-                └── test/test_import_base   ← SAME FILE, loaded only once
-
-      The Loader deduplicates: test_import_base is merged exactly once.
-      Layer's override (hr_set_point=58) takes precedence over base (65).
-      This model further overrides stroke_volume (0.070→0.075 for elite athlete).
-
-      Adds: aerobic training input + exercise-driven VO2max adaptation.
-      Optimizer: maximize vo2max with a heart_rate ceiling constraint.
+    problem: >
+      Top-level composite model for diamond-dependency deduplication: directly imports
+      test_import_base AND test_import_layer (which itself also imports test_import_base).
+      The Loader must include test_import_base exactly once. Also tests the override chain:
+      layer overrides base (58 bpm), and this model further overrides stroke_volume (0.075 L).
+    result: >
+      Resolved model should contain cardiovascular + aerobic fitness variables merged exactly
+      once, with override precedence: top > layer > base. Optimizer should maximise VO2max
+      subject to a heart rate ceiling constraint, confirming the composite model runs end-to-end.
     limitations: Simplified adaptation kinetics; not validated against training science.
   tags: [test, import, diamond, composite, override-chain]
   references: ["TEST: diamond import deduplication and override chain"]

@@ -1,15 +1,15 @@
 metadata:
   name: test_import_base
   description:
-    brief: "[TEST] Pure component model — no inputs; designed to be imported by other test models."
-    method: |
-      Minimal physiological component: cardiovascular state variables and dynamics.
-      No input variables and no optimizer (pure _mw-style component).
-      Imported by test_import_layer and test_import_top to test the import system.
-
-      Provides: heart_rate, cardiac_output, systemic_resistance.
-      Diamond-dependency test: both test_import_layer and test_import_top import
-      this file; the Loader should include it only once.
+    problem: >
+      Pure component model (no input variables): provides cardiovascular state variables
+      (heart_rate, cardiac_output, systemic_resistance) and dynamics intended only for
+      import by other test models. Tests the base layer of the import chain and diamond
+      deduplication — both test_import_layer and test_import_top import this file.
+    result: >
+      The Loader should include this file's variables and formulas exactly once in any
+      composite model, regardless of how many importers reference it. No standalone
+      simulation or optimisation is expected.
     limitations: Purely structural; parameters are not clinically calibrated.
   tags: [test, import, base, component, no-input]
   references: ["TEST: base component for import chain test"]

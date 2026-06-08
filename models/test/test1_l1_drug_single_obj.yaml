@@ -3,26 +3,14 @@ metadata:
   name: l1_drug_single_obj
   title: "[TEST L1] 单目标快速优化"
   description:
-    brief: |
-      【调试用 TEST L1】单目标优化 · 30天日步长 · 预估完成 < 1分钟
-
-      ── 用途 ──────────────────────────────────────────────
-      调试优化链路：endpoint → job 系统 → 结果回传。
-      最快验证路径，出现问题首先用此模型排查。
-
-      ── 场景 ──────────────────────────────────────────────
-      单一口服药物，每日早晨给药（08:00）。
-      目标：最大化第30天血浆浓度，约束肝脏累积负荷 ≤ 250 mg/L·day。
-
-      ── 参数规模 ──────────────────────────────────────────
-      pop=10, gen=15 → 150次评估 × 30步 ≈ 1–3秒
-      决策变量: 1（dose_mg: 0–50 mg）
-      MC: 未启用（clearance_rate 固定为均值）
-    need: 作为开发期测试模型，用于验证仿真、调度、MC 或优化链路是否稳定。
-    method: 包含 4 个变量和 2 个方程，围绕 plasma_level、liver_load、clearance_rate、dose_mg 构造最小可运行动力学。
-    simulation: 默认仿真从 2025-01-01 到 2025-01-31，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，目标 1 个，决策输入 1 个，用于搜索可行的干预或参数组合。
-    result: 预期用于发现回归错误，并确认 GUI 与后端输出保持一致。
+    problem: >
+      最轻量调试路径（L1）：单一口服药物每日早晨给药，单一决策变量（剂量 0–50 mg），无 MC。
+      目标为最大化第 30 天血浆浓度，约束肝脏累积负荷 ≤ 250 mg/L·day。
+      设计为最快完成（约 1–3 秒），出现优化链路故障时最先用此模型定位问题。
+    result: >
+      优化应在数秒内完成，返回最优剂量及对应的血浆浓度与肝脏负荷数值。
+      若端点、任务队列或结果回传任何环节异常，此模型是最快暴露问题的入口。
+    limitations: 单目标、一维搜索空间，不覆盖 MC 或多目标功能，仅验证最基础优化链路。
   tags: [test, L1, single-objective, pharmacokinetics, debug]
   references:
     - "TEST L1: Simplified first-order PK model for optimizer unit test"

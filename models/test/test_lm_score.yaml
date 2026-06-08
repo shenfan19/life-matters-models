@@ -1,23 +1,16 @@
 metadata:
   name: test_lm_score
   description:
-    brief: "[TEST] lm_score: both cumulative (recoverable) and latch (irreversible) modes."
-    method: |
-      Hypertension management model demonstrating both lm_score semantics.
-
-      lm_score (cumulative): accumulates healthy days when SBP is controlled (<=160 mmHg).
-        Pauses during hypertensive episodes; resumes when BP normalizes.
-
-      lm_score_irreversible + lm_alive (latch): once SBP exceeds the stroke threshold
-        (>220 mmHg), lm_alive permanently flips to 0 and no further days accumulate.
-
-      Uses lm_score (cumulative) as the optimizer objective (maximize).
-      BP is controlled via an antihypertensive dose input.
-
-      Thresholds deliberately chosen to be reachable in simulation:
-        - SBP starts at 150 mmHg (Stage 2 hypertension)
-        - Treatment lowers SBP; stopping treatment lets it drift back up
-        - Stroke threshold at 220 mmHg (rare, only if completely untreated)
+    problem: >
+      Validates both lm_score semantics on a hypertension management model. Cumulative mode:
+      healthy days accumulate while SBP ≤ 160 mmHg, pause during hypertensive episodes, and
+      resume on recovery. Latch mode: once SBP exceeds the stroke threshold (220 mmHg),
+      lm_alive permanently flips to 0 — no further accumulation even if BP normalises. BP
+      is controlled via an antihypertensive dose input; thresholds are set to be reachable.
+    result: >
+      With consistent dosing lm_score (cumulative) rises steadily; lm_score_irreversible
+      stops permanently if dosing is withheld long enough for SBP to breach 220 mmHg.
+      The optimizer should find a dosing schedule that maximises cumulative lm_score.
     limitations: Simplified first-order BP dynamics; not validated clinically.
   tags: [test, lm_score, latch, cumulative, hypertension, irreversible]
   references: ["TEST: lm_score cumulative and latch modes"]
