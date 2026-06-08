@@ -5,41 +5,17 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: MASLD×胰岛素抵抗 IHIO 可行域分析，S3 系统科学范式论文核心案例。
-    need: >
-      为 S3 提供 IHIO 问题类的具体实例化：MASLD-HUA 共病展示跨科室指南联立后
-      控制可行域收缩的核心机制，是 K×4 框架必要性的直接证据。
     problem: >
-      单独采纳内分泌指南（减重速率 ≤0.5 kg/周）或消化科指南（快速减重降肝脂）
-      均无矛盾；但两套指南联立后，快速减重诱发的酮体-IR 恶化循环使可行域非凸，
-      甚至在某些参数区域为空集。
-      IHIO 关键问题：减重速率 <0.3 kg/周是否构成跨病种控制分岔点（bifurcation）？
-    method: >
-      继承 S2 A7 全部变量、公式和约束（imports）。
-      NSGA-II 双目标：最小化 liver_fat（消化科）、最小化 HOMA_IR（内分泌科）；
-      保持 T1+T2+T3+T4 全维度优化，种群 pop=100/gen=200；
-      对比约束 body_weight ≥ 72（≤10kg/26w 即 ≤0.38kg/w）与更严格约束
-      body_weight ≥ 75（≤0.27kg/w）下的 Pareto 前沿变化，验证分岔假说。
-    simulation: >
-      继承 S2 A7 的 26 周日步长仿真；
-      输出 liver_fat、HOMA_IR、body_weight、lm_score；
-      参考方案展示：快速减重方案（~0.45 kg/w）与温和方案（~0.25 kg/w）的对比轨迹。
-    optimization: >
-      核心验证：NSGA-II 在两种减重速率约束（≤0.38 kg/w vs ≤0.27 kg/w）下
-      分别运行，比较 Pareto 前沿形状变化；
-      若 ≤0.27 kg/w 约束导致前沿显著收缩，验证减重速率作为 IHIO 分岔控制参数。
-      T2 运动时机在两种约束下的最优时间选择是否稳健？
+      MASLD（消化科）与 HOMA-IR（内分泌科）联合管理下，快速减重（>0.3 kg/周）触发酮体-IR 恶化循环，
+      使跨科室联合可行域收缩乃至成为非凸区域。IHIO 核心问题：减重速率是否构成跨病种的分岔控制参数——
+      即存在某个速率阈值，使 Pareto 前沿形状发生质变？基于 S2 A7 模型，在不同减重速率约束下比较前沿变化。
     result: >
-      预期：温和减重约束（≤0.27 kg/w）下 Pareto 前沿收缩约 30%，
-      hypervolume 下降，但 HOMA-IR 端点改善幅度更大（消除酮体恶化循环）；
-      T2 运动时机结论（空腹晨练优）在两种约束下均稳健。
-    conclusion: >
-      期望结论是减重速率是 MASLD-HOMA-IR 共病的跨科室分岔控制参数；
-      K×4 框架将其形式化为 T1 量（控制速率值）而非指南阈值，
-      从而使可行域边界可计算、可比较——这是 IHIO 框架相对单科室指南的核心优势。
+      仿真预期：温和减重约束（≤0.27 kg/周）下 Pareto 前沿 hypervolume 下降约 30%，
+      但 HOMA-IR 端点改善更大（消除酮体恶化循环）；空腹晨练优势在两种约束下均稳健。
+      注：仿真尚未运行。
     limitations: >
-      酮体-IR 恶化的动力学系数为估算值（待精化）；
-      分岔阈值 0.3 kg/w 来自 MASLD 文献，个体差异（PNPLA3 基因型）由 MC 参数隐含。
+      酮体-IR 恶化的动力学系数为估算值，待精化；分岔阈值 0.3 kg/周来自 MASLD 文献，
+      个体差异通过参数分布隐含；仿真尚未运行（nosim）。
   ratings:
     topic_importance: 4 - 分岔点分析兼具系统科学和临床双重意义
     framework_demand: 3 - S3分析模型，import自s2 A7，被s4引用
