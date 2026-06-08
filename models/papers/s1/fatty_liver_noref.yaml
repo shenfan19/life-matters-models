@@ -39,6 +39,9 @@ metadata:
     limitations: >
       参数待从 Keating 2015 / Promrat 2010 等文献精化；
       beta_hiit 当前为演示值，应从 HIIT vs MICT 对比 RCT 中提取效应量。
+  clinical_brief: >
+    脂肪肝（NAFLD）运动处方：每周几次高强度间歇训练（HIIT）、何时从低强度升级，
+    才能在ALT不超标的前提下最大化12周减脂效果？
   ratings:
     topic_importance: 4 - NAFLD 全球高发，HIIT 处方优化有临床价值
     framework_demand: 2 - S1方法论展示模型，未被其他论文引用

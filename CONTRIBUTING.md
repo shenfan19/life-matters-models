@@ -26,6 +26,10 @@
 3. **sim 可运行**：文件名无 `_nosim` 后缀（本地用 `bash script/test_batch.sh` 验证，需配套仿真引擎）
 4. **文件名规范**：`{topic}_{year}_{author}.yaml`，使用 snake_case
 
+## 贡献者协议（CLA）
+
+提交 Pull Request 即表示你同意 [CLA.md](CLA.md) 中的条款，主要内容：你有权提交该内容、同意以 CC BY 4.0 发布、并对参数准确性和文献引用负责。无需签名。
+
 ## 提交流程
 
 1. Fork 本仓库
