@@ -5,13 +5,13 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 肝、胰腺、胃、小肠等器官功能系数及恢复机制
-    need: 作为医学参考模块，为更高层场景、published 案例或组合模型提供可复用机制。
-    method: 包含 15 个变量和 1 个方程，描述 liver_function、pancreatic_function、water、gastric_function 的基础动态。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-02，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，包含优化目标，用于搜索可行的干预或参数组合。
-    result: 预期用于观察候选干预或参数组合的风险收益边界。
-    limitations: 该模块偏基础组件，参数应在被场景调用时结合具体上下文校准。
+    problem: >
+      多器官功能聚合层：通过 15 个变量将肝脏功能（liver_function）、胰腺功能（pancreatic_function）、
+      胃功能（gastric_function）和小肠状态统一到同一坐标空间，并以单一方程描述器官功能系数的慢性衰竭与自然恢复动力学。
+      依赖 insulin_system 和 glucose_regulation 的输出，作为多系统仿真的顶层生理状态汇聚节点。
+    result: >
+      仿真预期呈现各器官功能系数在慢性病进程（如糖尿病并发症）下的缓慢下降趋势——仿真尚未运行，为纯组件模型。
+    limitations: 15 个变量参数为定性近似，无文献标注；器官功能系数的实际临床测量方法不统一，建议在上层场景中替换为可测指标（如 GFR、ALT 等）。
   conflicts: []
   ratings:
     topic_importance: 4 - 多器官功能系数聚合组件，为复杂场景提供生理基础

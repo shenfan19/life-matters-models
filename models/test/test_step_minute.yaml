@@ -1,13 +1,16 @@
 metadata:
   name: test_step_minute
   description:
-    brief: "[TEST] step_size=minute; intra-day meal scheduling; output_types filter."
-    method: |
-      Simplified glucose model, 1-minute steps, 3-day simulation (4 320 steps/day).
-      Three meals per day at 07:30 / 12:30 / 19:00. Tests that schedules fire at
-      sub-hour precision and that output_types: [state, input] filters correctly.
-      Basal clearance is a first-order rate (× step), meal rise is a pulse (no step).
-    limitations: Not physiologically calibrated; for feature-coverage only.
+    problem: >
+      Validates 1-minute step size with intra-day meal scheduling: three meals per day at
+      07:30, 12:30, and 19:00, running for 3 days (4,320 steps/day). Tests that schedule
+      entries fire at sub-hour precision, that basal clearance uses step multiplication while
+      meal pulses do not, and that output_types: [state, input] filters correctly.
+    result: >
+      Each meal should produce a distinct glucose spike; basal clearance pulls glucose down
+      between meals. Output should contain exactly the state and input variables, not
+      parameters. Meal pulses must not be multiplied by step.
+    limitations: Not physiologically calibrated; for feature-coverage testing only.
   tags: [test, step_size, minute, glucose, meal, output_types]
   references: ["TEST: minute-level step size with three-meal intra-day schedule"]
   step_size:

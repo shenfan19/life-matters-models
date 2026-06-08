@@ -1,16 +1,16 @@
 metadata:
   name: test_opt_t1_single
   description:
-    brief: "[TEST] Optimizer T1 (value only), single objective, L-BFGS-B method."
-    method: |
-      Minimal nutrition model with one decision variable (daily protein intake).
-      T1 optimization: only value is optimized (no time/days/date_start).
-      Single objective: maximize muscle_mass at end of 90-day simulation.
-      L-BFGS-B method (gradient-based, continuous variables only).
-    optimization: |
-      One input: protein_intake in [0.5, 2.0] g/kg/day.
-      One objective: maximize muscle_mass (final).
-      One hard constraint: nitrogen_waste <= 50 mg/dL.
+    problem: >
+      Minimal single-variable, single-objective optimisation using the gradient-based L-BFGS-B
+      solver. One decision variable (protein intake) targets maximum muscle mass at day 90,
+      with a hard constraint on nitrogen waste. Tests that L-BFGS-B runs end-to-end correctly
+      as an alternative solver path to NSGA-II.
+    result: >
+      Solver should converge in seconds to an optimal protein intake where anabolic benefit is
+      balanced against nitrogen waste accumulation. The constraint should be binding at the
+      optimum.
+    limitations: L-BFGS-B supports continuous variables only; discrete tiers cannot be tested here.
   tags: [test, optimizer, t1, single-objective, l-bfgs-b]
   references: ["TEST: T1 optimizer, single objective, L-BFGS-B"]
   step_size:

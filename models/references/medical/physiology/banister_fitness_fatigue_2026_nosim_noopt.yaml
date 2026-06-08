@@ -5,18 +5,15 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: |
-      Banister双分量适应-疲劳模型（场景B3）：量化运动训练对运动表现的动态影响。
-      适应分量（Fitness）与疲劳分量（Fatigue）均由训练负荷驱动，但以不同时间常数衰减。
-      表现 = 基线 + k₁·适应 - k₂·疲劳。
-      核心冲突：高训练负荷快速积累适应，但同时积累的疲劳会掩盖表现提升甚至造成过度训练。
-      最优训练分配（强度×频率×恢复）不是直觉可得的。
-    need: 作为医学参考模块，为更高层场景、published 案例或组合模型提供可复用机制。
-    method: 包含 9 个变量和 3 个方程，描述 fitness_component、fatigue_component、performance、tau_fitness 的基础动态。
-    simulation: 默认仿真从 2026-01-01 到 2026-07-01，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，包含优化目标，用于搜索可行的干预或参数组合。
-    result: 预期用于观察候选干预或参数组合的风险收益边界。
-    limitations: 文件名标记 noref，表示参数和机制仍需补充正式文献来源。
+    problem: >
+      Banister 双分量模型描述运动训练对运动表现的动态影响：适应分量（Fitness）与疲劳分量（Fatigue）均由训练负荷驱动，
+      但以不同时间常数衰减（适应慢衰减、疲劳快衰减），运动表现 = 基线 + k₁·适应 − k₂·疲劳。
+      核心张力在于高训练负荷能快速积累适应，但同步积累的疲劳会暂时掩盖表现提升，甚至引发过度训练，
+      最优的强度-频率-恢复分配无法凭直觉给出。
+    result: >
+      仿真预期呈现 6 个月训练计划中适应、疲劳和运动表现的动态轨迹，在减量期（减少训练负荷）可见表现反弹峰值。
+      优化预期给出最大化末期表现与最小化峰值疲劳之间的权衡——仿真尚未运行。
+    limitations: 参数仍需补充正式文献来源（见文件名标记 noref）；未区分有氧与力量训练的分量差异。
   ratings:
     topic_importance: 5 - Banister模型是运动科学最核心的训练负荷-表现模型，极高复用价值
     framework_demand: 4 - 已知被多个fitness论文模型import，运动科学核心基础组件

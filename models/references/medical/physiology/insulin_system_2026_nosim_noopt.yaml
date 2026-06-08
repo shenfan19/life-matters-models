@@ -5,13 +5,14 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 胰岛素分泌、敏感性和β细胞功能
-    need: 作为医学参考模块，为更高层场景、published 案例或组合模型提供可复用机制。
-    method: 包含 5 个变量和 3 个方程，描述 plasma_insulin、insulin_secretion_rate、beta_cell_function、beta_cell_mass 的基础动态。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-02，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，包含优化目标，用于搜索可行的干预或参数组合。
-    result: 预期用于观察候选干预或参数组合的风险收益边界。
-    limitations: 该模块偏基础组件，参数应在被场景调用时结合具体上下文校准。
+    problem: >
+      胰岛素系统通过 5 个变量（plasma_insulin、insulin_secretion_rate、beta_cell_function、beta_cell_mass 等）
+      和 3 个方程刻画 β 细胞对血糖刺激的分泌响应及胰岛素的周质清除动力学。
+      β 细胞质量的慢性衰竭（2 型糖尿病进程）与胰岛素分泌率的急性餐后峰值共存于同一组件，
+      是 glucose_regulation 和 endocrine_system 之间的关键中间层（被 4 个上层模型 import）。
+    result: >
+      仿真预期呈现 plasma_insulin 在餐后的双相分泌峰和胰岛素抵抗场景下的慢性高浓度平台——仿真尚未运行，为纯组件模型。
+    limitations: β 细胞质量衰竭速率参数无文献标注；未区分 1 型自身免疫与 2 型脂毒性损伤机制，需上层场景明确病理背景。
   conflicts: []
   ratings:
     topic_importance: 5 - 胰岛素系统是糖尿病建模最核心组件，与血糖调节不可分割

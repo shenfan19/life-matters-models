@@ -5,10 +5,13 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "德古拉生存模型：吸血鬼的血液管理与日夜循环。展示了时间依赖的日照暴露与资源消耗。"
-    problem: 在该情境中，需要平衡 blood_reserve、thirst_level、sun_exposure、hunt_intensity 对生存、目标进展或长期代价的影响。
-    method: 包含 4 个可调输入、4 个状态变量和 3 个方程，将叙事冲突转化为可运行的动态系统。
-    simulation: 默认仿真从 1462-06-01 到 1562-05-31，用于观察核心状态随时间变化。
+    problem: >
+      德古拉的生存动力学由血液储备与饥渴度之间的周期性平衡决定：基础代谢持续消耗血储（−0.1/step）并积累饥渴（+0.5/step），
+      日照暴露（> 0.5 强度）加速血液损耗（−5×exposure/step），仅有夜间狩猎可补充；
+      核心张力在于日间活动风险与夜间狩猎频率之间的权衡——血液耗尽或日照过强均为致命。
+    result: >
+      仿真预期显示百年生存期（1462–1562）内血液储备与饥渴度随日/季节循环的波动，以及日照阈值下的临界状态——展示性虚构场景，仿真参数为叙事设计值。
+    limitations: 完全虚构设定，所有参数为叙事设计，无学术依据；仅作为 LM 框架极端泛化能力的演示。
   ratings:
     topic_importance: 2 - 虚构生物设定，话题吸引力和科学价值均有限
     framework_demand: 1 - 虚构展示场景，不被其他模型引用

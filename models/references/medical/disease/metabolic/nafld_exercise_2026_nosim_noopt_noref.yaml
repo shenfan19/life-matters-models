@@ -7,20 +7,18 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "NAFLD（非酒精性脂肪肝）运动干预基础机制：肝脂肪消耗、ALT 动力学与运动疲劳三态模型。"
-    need: "为更高层场景、published 案例提供可复用的 NAFLD-运动核心机制组件。"
-    problem: "HIIT（高强度间歇训练）比中等强度有氧更有效地减少肝脂，但急性升高 ALT；如何在 ALT 安全范围内最大化减脂效率？"
-    method: |
-      日步长三状态模型。
-      liver_fat_pct 由运动强度驱动消耗，HIIT（>hiit_threshold MET）有额外减脂系数 beta_hiit；
-      alt_level 在高强度运动后急性升高，以半衰期约4.6天自然回落至基线（Prati 2002）；
-      fatigue_score 随运动累积，按15%/day自然恢复（一阶衰减）。
-    simulation: "默认仿真 90 天，低强度步行（MET 3.5），每天一次。观察肝脂和 ALT 长期动态。"
-    optimization: "双目标：最小化最终肝脂，同时约束 ALT <= 40；决策变量为运动强度。"
-    limitations: |
-      beta_hiit 系数为估计值，需从 HIIT vs MICT 对比 RCT 中精化（Keating 2015 或 Promrat 2010 subgroup）；
-      未建模饮食、体重、胰岛素抵抗对肝脂的影响（更完整模型见 paper2/masld_insulin_a7_p2）；
-      参数基于人群均值，未含 MC 分布。
+    problem: >
+      非酒精性脂肪肝（NAFLD）是全球患病率最高的慢性肝病，肝脏脂肪堆积超过5%即达到诊断阈值。
+      运动是目前证据最充分的非药物干预手段，其中高强度间歇训练（HIIT，超过约6 MET）比同等运动量的中等强度有氧训练更有效地动员肝脏脂肪，
+      但高强度运动同时会急性升高血清ALT（肝细胞损伤标志），两者之间存在减脂效率与肝安全性的直接权衡。
+      运动疲劳的累积还会限制后续训练耐受性，使最优强度的可持续性成为额外约束。
+    result: >
+      默认90天仿真（低强度步行3.5 MET，每天一次）显示：肝脂从15%缓慢下降，ALT维持在基线附近（28 IU/L），疲劳评分处于低水平。
+      仿真尚未运行高强度训练对比场景；理论预期为增加运动强度至HIIT阈值以上可加速肝脂下降，
+      但同时ALT会出现急性升高并以约4.6天半衰期回落，每次高强度训练后的ALT峰值不应超过正常上限（40 IU/L）。
+    limitations: >
+      HIIT额外减脂系数（beta_hiit）为估算值，尚未从HIIT与中等强度有氧对比的随机对照试验中精化。
+      模型未涵盖饮食、体重和胰岛素抵抗对肝脂的影响，仅描述运动的单一干预通路。
   ratings:
     topic_importance: 4 - NAFLD 全球患病率高，运动机制组件有广泛应用价值
     framework_demand: 3 - 已有明确papers依赖（A1/MASLD系列），特定子领域中等使用

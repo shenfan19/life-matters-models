@@ -5,23 +5,15 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: |
-      诸葛亮北伐仿真场景（228–234 AD，祁山大营）。
-      sim模式：模拟北伐一日的体力分配与军务筹划。
-      opt模式：在蜀汉国力受限的约束下，搜索最优军务强度与休息分配——
-      怎样在保全丞相健康的同时最大化北伐战略进度？
-    problem: 在该情境中，需要平衡 work_intensity、rest_quality、food_intake、political_address 对生存、目标进展或长期代价的影响。
-    method: 包含 11 个可调输入、11 个状态变量和 12 个方程，将叙事冲突转化为可运行的动态系统。
-    simulation: 默认仿真从 0228-03-01 到 0228-09-01，用于观察核心状态随时间变化。
-    optimization: 包含优化配置，目标 3 个，用于搜索可行的干预或参数组合。
-    result: 预期用于比较不同策略在主要目标和约束之间的取舍。
-    evidence: 基于慢性过劳动力学模型（Xie & Boven 2006）与《三国志·诸葛亮传》。
-    mechanism: |
-      战略推进由军务强度驱动，并受疲劳、士气和营养三重调制：
-      strategy_gain = work_intensity × max(0.2, 1 − fatigue/100)
-        × max(0.3, morale/80) × max(0.3, nutrition/70)。
-      这一结构对应“食少事烦，其能久乎”的历史叙述。
-    time_scale: 步长为 1 天，总时长 180 天，近似一次北伐季。
+    problem: >
+      诸葛亮北伐（228–234 AD）的核心张力来自”食少事烦，其能久乎”的历史叙述：
+      战略进度由军务强度驱动，但受疲劳（fatigue）、士气（morale）和营养（nutrition）三重调制
+      ——strategy_gain = work_intensity × (1−fatigue/100) × (morale/80) × (nutrition/70)。
+      在蜀汉国力有限的约束下，如何分配军务强度与休息以在保全丞相健康的同时最大化北伐进度？
+    result: >
+      仿真预期显示 180 天北伐季中疲劳积累与战略进度之间的日动态权衡；
+      三目标优化（最大化进度、最小化疲劳、维持士气）预期给出 Pareto 最优时序方案——仿真尚未运行。
+    limitations: 历史参数（蜀军营养、军务强度上限）为文献推算；过劳动力学系数基于 Xie & Boven（2006）当代研究，时代适用性需审慎。
 
   ratings:
     topic_importance: 4 - 诸葛亮是中国文化史最具代表性人物，三国叙事东亚影响深远

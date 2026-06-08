@@ -7,44 +7,20 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 心脏康复II期（门诊，12周）运动强度进阶和心功能改善动力学模型。
-    need: |
-      心脏康复（CR）是心血管事件（AMI、CABG、PCI、心衰）后改善预后的A级推荐干预。
-      Anderson 2016 Cochrane荟萃分析（63项RCT, n=14,486）证明CR降低全因死亡率约26%，
-      降低心血管死亡率约38%。然而，CR的处方（运动强度、频率、持续时间）高度个体化，
-      模型可量化不同方案下的心功能改善轨迹和长期效益，支持处方优化。
-    problem: |
-      核心挑战：运动强度越高（MET越大），心肺适应越快（VO2peak和EF改善更显著），
-      但过高强度增加运动诱发心血管事件风险（特别是低EF患者）。
-      靶心率通常设为心率储备（HRR）的50-80%（Piepoli 2010），但HRR因β受体阻滞剂
-      使用而显著降低，使基于固定HRR的处方不准确。
-      最优的个体化运动处方（强度×频率×持续时间的时序组合）是真实的未解问题。
-    method: |
-      Euler离散日步长模型，时间跨度84天（12周）。
-      5个状态变量：exercise_capacity_mets（运动耐量）、ejection_fraction_pct（EF）、
-      resting_heart_rate（静息心率）、quality_of_life_score（QOL, SF-36衍生）、
-      six_min_walk_distance（6分钟步行距离）。
-      2个输入变量：supervised_exercise_intensity（MET，每次监督训练的运动强度）、
-      session_frequency（每周训练次数）。
-      Anderson 2016训练效应参数化：12周CR使VO2peak平均提升18%（中等强度）至25%（高强度）。
-    simulation: |
-      默认仿真84天，模拟AMI后患者（EF=40%，基线MET=5，6MWT=350m）接受12周II期门诊CR。
-      第1-4周中等强度（3 MET，3次/周），第5-8周中高强度（5 MET，4次/周），
-      第9-12周高强度（6 MET，5次/周）渐进方案。
-    optimization: |
-      双目标NSGA-II优化：最大化12周末MET（运动耐量），最小化心率×收缩压乘积（RPP，
-      心肌氧耗代理，反映心血管安全风险）。
-      约束：EF全程不低于基线-5%（防止过度训练导致心功能恶化）；
-      静息心率不低于50 bpm（避免过度减慢）。
-    result: |
-      预期12周结果：MET从5提升至8（+60%）；EF从40%改善至47%（+7%）；
-      6MWT从350m提升至420m（+70m，Anderson 2016: 平均+60-80m）；
-      静息心率从78降至68 bpm；QOL评分从55提升至72分。
-    limitations: |
-      未区分CPET指导的个体化处方vs固定处方；
-      未建模β受体阻滞剂对心率储备的抑制效应（HR_max降低约20-30bpm）；
-      未包含心律失常（室性早搏）对训练安全性的影响；
-      VO2peak与MET的转换采用标准系数（1 MET = 3.5 mL/kg/min），未考虑体重差异。
+    problem: >
+      心脏康复（CR）II期是心血管事件（AMI、CABG、PCI）后改善预后的 A 级推荐干预
+      （Anderson 2016 Cochrane，63 项 RCT，n=14,486：全因死亡率降低 26%，心血管死亡率降低 38%）。
+      核心挑战在于运动强度的个体化权衡：MET 越高，VO₂peak 和 EF 改善越快，
+      但过高强度在低 EF 患者中增加运动诱发心血管事件风险；
+      此外 β 受体阻滞剂使心率储备（HRR）降低 20–30 bpm，使固定 HRR% 处方不准确。
+      最优的强度×频率×持续时间时序组合仍是未解的个体化优化问题。
+    result: >
+      Anderson 2016 元分析：12 周 CR 后 VO₂peak 提升 18–25%，6 分钟步行距离平均改善 60–80 m。
+      仿真预期：AMI 后患者（EF=40%，MET=5）经渐进 12 周方案后 MET 达 8（+60%），EF 升至约 47%，
+      6MWT 从 350 m 提升至 420 m，静息心率从 78 降至 68 bpm——仿真尚未运行。
+    limitations: >
+      未区分 CPET 指导的个体化处方与固定处方；未建模 β 受体阻滞剂对 HRR 的抑制效应；
+      未包含室性心律失常对训练安全性的影响；VO₂peak–MET 转换采用标准系数，未考虑体重差异。
   ratings:
     topic_importance: 5 - 心脏康复是心血管事件后A级推荐干预，个体化处方是临床核心问题
     framework_demand: 2 - 术后专项模型，与其他场景交叉引用少

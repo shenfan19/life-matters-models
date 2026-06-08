@@ -6,7 +6,7 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      S2 A4 的 CKD 蛋白-肌肉 Pareto 前沿使用中等搜索规模（pop=100/gen=200），可能遗漏前沿尾端。
+      CKD 蛋白-肌肉 Pareto 前沿使用中等搜索规模（pop=100/gen=200），可能遗漏前沿尾端。
       扩大规模（pop=150/gen=300）验证：晚餐时机（时间营养学）结论在更大搜索空间下是否稳健？
       联合可行窗口的精确边界是否改变？
     result: >

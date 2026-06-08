@@ -1,20 +1,16 @@
 metadata:
   name: test_schedules_phased
   description:
-    brief: "[TEST] Phased schedules: date_range + days filter + multi-phase progression."
-    method: |
-      Athlete training load model with a 4-phase periodization structure.
-      Tests multiple schedule features simultaneously:
-
-        Phase 1 (Jan)  — Base: 50 min aerobic, Mon–Fri
-        Phase 2 (Feb)  — Build: 70 min aerobic, Mon–Fri + 30 min weekend
-        Phase 3 (Mar)  — Peak: 90 min aerobic every day
-        Phase 4 (Apr)  — Taper: 40 min aerobic, Mon/Wed/Fri only
-
-      strength_training runs a separate 2-phase pattern.
-      Days filter tests: Mon–Fri, Sat–Sun, Mon/Wed/Fri.
-      Multiple schedule entries for the same variable → pulse accumulates.
-    limitations: Training adaptation parameters are simplified estimates.
+    problem: >
+      Validates phased schedules using date_range and days filters simultaneously across a
+      4-month periodisation plan (base / build / peak / taper). Aerobic volume and day patterns
+      change each phase; a separate strength phase pattern runs in parallel. Tests that multiple
+      same-variable entries within a single step accumulate correctly (pulse sum).
+    result: >
+      Aerobic fitness should increase fastest in the peak phase (90 min daily) and plateau
+      during taper (40 min, Mon/Wed/Fri). Days filters for all three patterns (Mon–Fri,
+      Sat–Sun, Mon/Wed/Fri) must each fire on the correct days only.
+    limitations: Training adaptation parameters are simplified estimates; not validated.
   tags: [test, schedules, date_range, days, phased, periodization]
   references: ["TEST: phased schedules with date_range and days filters"]
   step_size:

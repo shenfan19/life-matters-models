@@ -1,17 +1,16 @@
 metadata:
   name: test_opt_t4
   description:
-    brief: "[TEST] Optimizer T4: value + date-start window optimization."
-    method: |
-      Intervention timing model: when to start a caloric restriction program
-      within a 60-day spring window matters due to seasonal compliance variation.
-      T4 input: caloric_restriction [300,800] kcal/day, start date anywhere in
-      2026-04-01 ~ 2026-05-31.
-      x-vector: [cr_value, day_offset] → 2 dims.
-      Single objective: minimize body_weight (final).
-    optimization: |
-      date_start_window "2026-04-01~2026-05-31": 61 possible start days.
-      Earlier start = more total deficit. Optimizer balances start date vs dose.
+    problem: >
+      Validates date-start window optimisation: the caloric restriction intervention can begin
+      on any day within a 60-day spring window (2026-04-01 to 2026-05-31). Later starts reduce
+      total accumulated deficit; the optimiser must balance start date against dose magnitude.
+      Decision vector is 2-dimensional: deficit amount and start-day offset.
+    result: >
+      Optimizer should find that earlier starts with moderate deficits dominate late starts
+      with high deficits in terms of final body weight. Day offset must decode correctly from
+      index back to a calendar date in the result regimen.
+    limitations: Linear weight dynamics only; no metabolic adaptation or seasonal compliance modelled.
   tags: [test, optimizer, t4, date-start, intervention-timing, mixed-integer]
   references: ["TEST: T4 date-start window optimization"]
   step_size:

@@ -1,17 +1,16 @@
 metadata:
   name: test_opt_t2
   description:
-    brief: "[TEST] Optimizer T2: value + time-window; 1h and 15min opt_step variants."
-    method: |
-      Glucose model where meal timing matters (chronobiology).
-      Two T2 inputs: breakfast (opt_step=1h, window 06:00~09:00) and
-      lunch (opt_step=15min, window 11:30~13:00).
-      x-vector: [breakfast_value, breakfast_time_slot, lunch_value, lunch_time_slot] → 4 dims.
-      NSGA-II: maximize mean blood_glucose (therapeutic range) + minimize glucose_peak.
-    optimization: |
-      T2 inputs: carb_amount [20,100] g, time searchable within windows.
-      Breakfast window 06:00~09:00 at 1h → 4 slots: 06:00, 07:00, 08:00, 09:00.
-      Lunch window 11:30~13:00 at 15min → 7 slots.
+    problem: >
+      Validates time-window optimisation: both dose value and time-of-day are searchable for
+      each meal. Breakfast window is 06:00–09:00 at 1-hour granularity (4 slots); lunch window
+      is 11:30–13:00 at 15-minute granularity (7 slots). Tests that both step sizes are decoded
+      correctly and that the hourly model step resolves sub-hour time slots.
+    result: >
+      Decision vector has 4 dimensions (breakfast_value, breakfast_slot, lunch_value, lunch_slot).
+      Slot indices must decode to correct wall-clock times. Meal timing should appear as a
+      meaningful axis in the Pareto front, not just dose magnitude.
+    limitations: Glucose dynamics are simplified; not physiologically calibrated.
   tags: [test, optimizer, t2, time-window, opt_step, chronobiology]
   references: ["TEST: T2 time-window optimization with 1h and 15min opt_step"]
   step_size:

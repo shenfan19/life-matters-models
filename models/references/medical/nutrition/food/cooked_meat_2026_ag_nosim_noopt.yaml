@@ -7,11 +7,12 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "标准烤肉营养模型。每100g含：蛋白质 26g, 脂肪 15g, 碳水化合物 0g, 水分 58g。"
-    need: 作为医学参考模块，为更高层场景、published 案例或组合模型提供可复用机制。
-    method: 包含 5 个变量和 1 个方程，描述 meat_intake、food_carbohydrate、food_protein、food_fat 的基础动态。
-    simulation: 默认仿真从 2026-01-01 到 2026-01-02，用于观察核心状态随时间变化。
-    limitations: 该模块偏基础组件，参数应在被场景调用时结合具体上下文校准。
+    problem: >
+      游戏专用烤肉食物组件：将烤肉摄入量（克）转换为蛋白质和脂肪营养素。
+      每 100g 含蛋白质 26g、脂肪 15g、碳水化合物 0g、水分 58g，数值来自食品成分表。
+    result: >
+      摄入触发时，对应营养素按比例注入上层场景的胃缓冲区。仿真尚未运行，为组件模型。
+    limitations: 极简食物转换组件，不包含消化动力学；参数应在上层场景中结合具体上下文校准。
   ratings:
     topic_importance: 1 - 游戏专用食物组件，仅提供基本营养成分转换，无研究复用价值
     framework_demand: 1 - _ag游戏专用模型，框架内复用价值极低
