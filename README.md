@@ -85,6 +85,10 @@ bash script/test_batch.sh
 
 ---
 
+## Acknowledgments
+
+This project was developed with AI coding assistance, primarily [Claude Code](https://claude.ai/code) (Anthropic), for code generation, automated testing, and documentation.
+
 ## License
 
 CC BY 4.0 · Copyright (c) 2026 Fan Shen
