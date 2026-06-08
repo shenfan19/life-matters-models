@@ -1,5 +1,5 @@
 metadata:
-  name: a9_ibs_dietary_management
+  name: ibs_dietary_management
   updated: 2026-05-22
   authors:
   - name: Fan Shen
@@ -7,9 +7,9 @@ metadata:
   - name: Minghui Wu
     email: wuminghui@gzucm.edu.cn
   description:
-    brief: 肠易激综合征（IBS）饮食管理优化（A9），Paper 2 消化科核心案例——低FODMAP方案分阶段实施与时机优化。
+    brief: 肠易激综合征（IBS）饮食管理优化消化科核心案例——低FODMAP方案分阶段实施与时机优化。
     need: >
-      为 Paper 2 提供消化科（妻子专科）的标志性案例：IBS 是消化科最常见的功能性胃肠病，
+      为提供消化科（妻子专科）的标志性案例：IBS 是消化科最常见的功能性胃肠病，
       全球患病率 10-15%，中国约 7-12%。低FODMAP饮食是目前证据等级最高的 IBS 饮食干预
       （NICE 2017, Gibson 2020），但其三阶段实施方案（限制→重新引入→个体化维持）
       的时机和节奏在临床中缺乏量化指导。

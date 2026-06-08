@@ -1,5 +1,5 @@
 metadata:
-  name: a7_masld_insulin_resistance
+  name: masld_insulin_resistance
   updated: 2026-05-22
   authors:
   - name: Fan Shen
@@ -7,9 +7,9 @@ metadata:
   - name: Minghui Wu
     email: wuminghui@gzucm.edu.cn
   description:
-    brief: MASLD×胰岛素抵抗联合仿真（A7），Paper 2 主力案例，内分泌科×消化科临床交叉。
+    brief: MASLD×胰岛素抵抗联合仿真主力案例，内分泌科×消化科临床交叉。
     need: >
-      为 Paper 2 提供**内分泌科+消化科**的核心临床交叉案例：
+      为提供**内分泌科+消化科**的核心临床交叉案例：
       代谢相关脂肪性肝病（MASLD，消化科）与胰岛素抵抗（IR，内分泌科）
       是最常见的共病组合，双向互为因果——IR 通过促进肝脏从头脂肪合成加重 MASLD，
       MASLD 的炎症通路反过来加重 IR（Bril & Cusi 2019）。

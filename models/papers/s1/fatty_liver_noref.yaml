@@ -1,11 +1,11 @@
 metadata:
-  name: a1_fatty_liver
+  name: fatty_liver
   updated: 2026-05-22
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: 脂肪肝运动 Regimen 优化（A1），展示 K×4 T1+T3+T4 在 NAFLD 管理中的完整优化能力。
+    brief: 脂肪肝运动 Regimen 优化，展示 K×4 T1+T3+T4 在 NAFLD 管理中的完整优化能力。
     need: >
       比较 HIIT 与每日低强度步行在 NAFLD 管理中的动态差异，并进一步优化：
       何时升级到高强度（T4）、每周哪几天执行 HIIT（T3）、各阶段强度多大（T1）。

@@ -1,11 +1,11 @@
 metadata:
-  name: a7_masld_hua_ihio
+  name: masld_hua_ihio
   updated: 2026-05-26
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: MASLD×胰岛素抵抗 IHIO 可行域分析（A7-S3），S3 系统科学范式论文核心案例。
+    brief: MASLD×胰岛素抵抗 IHIO 可行域分析，S3 系统科学范式论文核心案例。
     need: >
       为 S3 提供 IHIO 问题类的具体实例化：MASLD-HUA 共病展示跨科室指南联立后
       控制可行域收缩的核心机制，是 K×4 框架必要性的直接证据。
@@ -48,7 +48,7 @@ metadata:
     innovation: 5 - 减重速率作为控制分岔点，超参数扫描展示连续变化，无先例
   tags: [MASLD, insulin_resistance, HOMA-IR, IHIO, bifurcation, feasibility]
   references:
-    - "参见 s2/masld_insulin_a7_s2.yaml 完整引用"
+    - "参见 s2/masld_insulin.yaml 完整引用"
     - "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
     - "Gonzalez-Franquesa A et al. (2023) Fasted exercise and liver fat. Cell Metab 36(1):108-125"
     - "Erickson ML et al. (2019) Effect of exercise timing on insulin sensitivity. Diabetologia 62(8):1387-1395"
@@ -57,9 +57,9 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/masld_insulin_a7_s2
+  - papers/s2/masld_insulin
 
-# 继承 s2/masld_insulin_a7_s2 全部变量、公式和约束
+# 继承 s2/masld_insulin 全部变量、公式和约束
 # 覆盖 optimizer：双约束对比验证分岔假说（减重速率 ≤0.38 vs ≤0.27 kg/w）
   mc:
     runs: 20
