@@ -1,28 +1,28 @@
 metadata:
-  name: a4_ckd_protein_pareto
+  name: ckd_protein_pareto
   updated: 2026-05-22
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: CKD 蛋白质-肌肉权衡深化版（A4-P3），扩展 Pareto 前沿搜索并加入 T2 晚餐时机优化。
+    brief: CKD 蛋白质-肌肉权衡深化版，扩展 Pareto 前沿搜索并加入 T2 晚餐时机优化。
     need: 为 S4 展示在 S2 A4 基础上扩大种群（pop=150/gen=300）获得更完整 Pareto 前沿，并验证 T2 晚餐时机优化的稳健性。
     problem: >
-      Paper 2 A4 使用 pop=100/gen=200，可能遗漏 Pareto 前沿尾端。
+      A4 使用 pop=100/gen=200，可能遗漏 Pareto 前沿尾端。
       扩大搜索同时验证：时间营养学（T2 晚餐时机）结论在更大搜索空间下是否稳健？
       K×4 前沿覆盖度与 hypervolume 是否优于静态指南点？
     method: >
-      继承 Paper 2 A4 全部变量、公式和约束（imports）。
+      继承A4 全部变量、公式和约束（imports）。
       扩展 NSGA-II：pop=150, gen=300, MC=30次；
-      保持 T1+T2+T4 优化维度与 Paper 2 完全一致，用于直接比较。
-    simulation: 继承 Paper 2 A4 的 52 周 K=2 分段仿真；Pareto 前沿解数预期从 6 增至 10+。
+      保持 T1+T2+T4 优化维度与完全一致，用于直接比较。
+    simulation: 继承A4 的 52 周 K=2 分段仿真；Pareto 前沿解数预期从 6 增至 10+。
     optimization: >
-      NSGA-II 双目标（同 Paper 2 A4）+ 更大搜索预算；
+      NSGA-II 双目标（同A4）+ 更大搜索预算；
       T1×3（三餐蛋白量）+ T2（晚餐时间窗 17:00-22:00）+ T4（阶段切换时机）；
       对比焦点：大预算下 T2 选择的最优晚餐时间是否向 21:00 偏移？
     result: 预期 Pareto 前沿更完整（10-15个解），hypervolume 提升约 5-10%；T2 最优时间收敛于 20:00-21:00。
     conclusion: 期望结论是 T2 晚餐时机优化结论对种群规模稳健，大预算搜索进一步精化了可行区间边界。
-    limitations: 计算成本显著高于 Paper 2 A4，适合最终发表前的精化搜索而非实时交互。
+    limitations: 计算成本显著高于A4，适合最终发表前的精化搜索而非实时交互。
   ratings:
     topic_importance: 2 - 方法论收尾验证，非独立科学需求
     framework_demand: 2 - S4收尾模型，附录级，不被其他模型引用
@@ -31,7 +31,7 @@ metadata:
     innovation: 2 - 搜索预算扩展验证，方法论意义大于科学新颖性
   tags: [ckd, protein, muscle]
   references:
-    - "参见 s2/ckd_protein_a4_s2.yaml 完整引用"
+    - "参见 s2/ckd_protein.yaml 完整引用"
     - "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
     - "Snijders T et al. (2015) Pre-sleep protein. J Nutr 145(6):1178-1184"
   step_size:
@@ -39,14 +39,10 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/ckd_protein_a4_s2
+  - papers/s2/ckd_protein
 
-# 继承 s2/ckd_protein_a4_s2 的全部变量、公式、约束
+# 继承 s2/ckd_protein 的全部变量、公式、约束
 # 仅覆盖 optimizer 配置（更大种群 + 同一 T1+T2+T4 inputs）
-  mc:
-    runs: 30
-    seed: 19
-    description: "MC 采样 alpha、mu_s、mu_u（比 Paper2 多10次），验证 T2 结论稳健性"
 
 
 optimizer:
@@ -155,6 +151,10 @@ simulation:
   start_date: "2026-01-01"
   end_date:   "2026-12-31"
   output_variables: [GFR, muscle_mass, BUN, dietary_protein, lm_score]
+  mc:
+    runs: 30
+    seed: 19
+    description: "MC 采样 alpha、mu_s、mu_u（比 Paper2 多10次），验证 T2 结论稳健性"
   plans:
     - id: "kidney_protect"
       label: "肾保护极端（GFR 端点，待运行更新）"

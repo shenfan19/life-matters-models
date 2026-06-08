@@ -1,12 +1,12 @@
 metadata:
-  name: infant_breastfeeding_m10
+  name: infant_breastfeeding
   updated: 2026-05-30
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
     brief: >
-      新生儿母乳喂养优化模型（M10）：在宝宝充分摄奶与妈妈夜间睡眠质量之间寻找 Pareto 最优喂养方案。
+      新生儿母乳喂养优化模型：在宝宝充分摄奶与妈妈夜间睡眠质量之间寻找 Pareto 最优喂养方案。
     need: >
       新生儿喂养是产后最常见的多目标决策问题：
       少喂多量→胃容量不足→吐奶+营养流失+生长迟缓；

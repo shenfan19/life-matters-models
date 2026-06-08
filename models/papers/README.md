@@ -10,32 +10,40 @@
 
 ```
 papers/
-  s1/   S1 — JOSS 软件工具论文（撰写中）
-  s2/   S2 — JAMIA 临床框架验证（撰写中）
-  s3/   S3 — 英文系统科学范式论文（撰写中）
-  s4/   S4 — JBI 优化方法论文（待撰写）
+  s1/   LMML 根论文（格式/规范/模型库）
+  s2/   MASLD-HUA 临床应用论文
+  s3/   IHIO 系统科学范式论文
+  s4/   数字健康生态基础设施论文
+  s5/   K×4 控制理论论文
 ```
 
-| 目录 | 论文 | 目标期刊 | 状态 |
-|------|------|---------|------|
-| `s1/` | S1 — 软件工具论文 | JOSS / SoftwareX | 撰写中 |
-| `s2/` | S2 — 临床框架验证 | JAMIA / JBI | 撰写中 |
-| `s3/` | S3 — IHIO 系统科学范式 | Systems Research / EJOR | 撰写中 |
-| `s4/` | S4 — 优化方法论文 | JBI / AI in Medicine | 待撰写 |
+| 目录 | 论文定位 | 目标期刊 | 状态 |
+|------|---------|---------|------|
+| `s1/` | LMML 根论文 | SoftwareX | 撰写中 |
+| `s2/` | 临床应用（MASLD-HUA） | JMIR Formative Research | 撰写中 |
+| `s3/` | IHIO 系统科学范式 | JBI / IEEE JBHI | 撰写中 |
+| `s4/` | 数字健康基础设施 | 系统工程理论与实践（中文） | 待撰写 |
+| `s5/` | K×4 控制理论 | Applied Mathematical Modelling | 待撰写 |
 
 ## 文件清单
 
-| 文件 | 案例 | 所属论文 | 状态 |
-|------|------|---------|------|
-| `s1/fatty_liver_a1_s1.yaml` | A1：脂肪肝运动优化 | S1 | TODO：参数待填 |
-| `s1/banister_b3_s1.yaml` | B3：Banister 16周V2协议 | S1 | ✅ 可运行 |
-| `s2/ckd_protein_a4_s2.yaml` | A4：CKD 蛋白质-肌肉权衡 | S2 | ✅ 可运行 |
-| `s2/hypertension_gout_a5_s2.yaml` | A5：高血压+痛风药物冲突 | S2 | TODO：公式待细化 |
-| `s3/masld_hua_a7_s3.yaml` | A7：MASLD-HUA 可行域分岔分析 | S3 | TODO |
-| `s3/ckd_protein_a4_s3.yaml` | A4：CKD 联合可行窗口验证 | S3 | TODO |
-| `s4/ckd_protein_pareto_a4_s4.yaml` | A4深化：完整Pareto对照 | S4 | TODO |
-| `s4/hypertension_gout_3obj_a5_s4.yaml` | A5深化：三目标扩展 | S4 | TODO |
-| `s4/smoking_stress_a6_s4.yaml` | A6：压力×吸烟×精神健康 | S4 | TODO：参数待确认 |
+| 文件 | 案例描述 | 状态 |
+|------|---------|------|
+| `s1/banister.yaml` | Banister 双室适应-疲劳验证 | ✅ 可运行 |
+| `s1/fatty_liver_noref.yaml` | 脂肪肝运动 Regimen 优化 | 待参数补全 |
+| `s1/sleep_schedule_noopt.yaml` | Borbély 双过程睡眠优化 | opt 待修复 |
+| `s1/burnout_allostatic_noopt.yaml` | 工作应激-恢复行为跨域 | opt 待修复 |
+| `s2/bergman_glucose.yaml` | Bergman 最小模型血糖-胰岛素 | ✅ 可运行 |
+| `s2/ckd_protein_noref.yaml` | CKD 蛋白质-肌肉权衡 | 待参数补全 |
+| `s2/hypertension_gout_noref.yaml` | 高血压合并痛风药物冲突 | 待参数补全 |
+| `s2/ibs_diet.yaml` | 肠易激综合征饮食管理 | ✅ 可运行 |
+| `s2/masld_insulin_noref.yaml` | MASLD×胰岛素抵抗联合仿真 | 待参数补全 |
+| `s3/ckd_protein_nosim.yaml` | CKD 联合可行窗口验证（继承 s2） | sim 待修复 |
+| `s3/masld_hua_nosim.yaml` | MASLD-HUA IHIO 可行域分析（继承 s2） | sim 待修复 |
+| `s4/ckd_protein_pareto_nosim.yaml` | CKD 完整 Pareto 前沿对照 | sim 待修复 |
+| `s4/hypertension_gout_3obj_nosim.yaml` | 高血压痛风三目标扩展 | sim 待修复 |
+| `s4/smoking_stress_noref.yaml` | 工作压力-吸烟-健康跨域 | 待参数补全 |
+| `s5/infant_breastfeeding.yaml` | 新生儿母乳喂养时机优化 | ✅ 可运行 |
 
 ## 验证要求
 
@@ -43,12 +51,12 @@ papers/
 
 | 场景 | 验证层 |
 |------|--------|
-| b3_banister | 层1（解析解）+ 层2（Morton 1990 Fig.3） |
-| a4_ckd_protein | 层2（GFR下降速率、KDIGO自然史） |
-| a5_hypertension_gout | 层2（HCTZ效应量，Law 2009） |
+| `s1/banister` | 层1（解析解）+ 层2（Morton 1990 Fig.3） |
+| `s2/ckd_protein` | 层2（GFR下降速率、KDIGO自然史） |
+| `s2/hypertension_gout` | 层2（HCTZ效应量，Law 2009） |
 | s3 系列 | 层3（可行域结构 + IHIO 论点验证） |
 | s4 系列 | 层3（Pareto合理性 + 对照实验） |
 
 ## 与 temp/ 的区别
 
-`models/temp/` 存放调试用快速场景（PK 测试场景、1周快测等），**临时目录，后续清理删除**。凡需要长期保留和论文引用的场景，应移入此目录并完善参数文献来源。
+`models/temp/` 存放调试用快速场景，**临时目录，后续清理删除**。凡需要长期保留和论文引用的场景，应移入此目录并完善参数文献来源。

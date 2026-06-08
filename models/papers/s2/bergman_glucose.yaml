@@ -1,5 +1,5 @@
 metadata:
-  name: a8_bergman_glucose_insulin
+  name: bergman_glucose_insulin
   updated: 2026-05-22
   authors:
   - name: Fan Shen
@@ -7,9 +7,9 @@ metadata:
   - name: Minghui Wu
     email: wuminghui@gzucm.edu.cn
   description:
-    brief: Bergman 最小模型日尺度适配（A8），Paper 2 内分泌主轴——血糖-胰岛素敏感性动力学与用餐/运动时机优化。
+    brief: Bergman 最小模型日尺度适配内分泌主轴——血糖-胰岛素敏感性动力学与用餐/运动时机优化。
     need: >
-      为 Paper 2 提供内分泌科核心机制模型：Bergman 最小模型（1981）是血糖-胰岛素
+      为提供内分泌科核心机制模型：Bergman 最小模型（1981）是血糖-胰岛素
       动力学的经典基准，广泛用于胰岛素敏感性估算（IVGTT 实验）。
       日尺度适配后，可表达生活方式干预（饮食结构、运动时机、间歇性禁食）对
       空腹血糖、餐后血糖峰值和 HbA1c 的中长期影响，

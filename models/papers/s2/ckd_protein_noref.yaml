@@ -1,5 +1,5 @@
 metadata:
-  name: a4_ckd_protein
+  name: ckd_protein
   updated: 2026-05-22
   authors:
   - name: Fan Shen
@@ -7,9 +7,9 @@ metadata:
   - name: Minghui Wu
     email: wuminghui@gzucm.edu.cn
   description:
-    brief: CKD 蛋白质-肌肉权衡（A4），展示低蛋白保护肾功能与肌少症风险的临床冲突，并通过 T1+T2+T4 全维度优化。
+    brief: CKD 蛋白质-肌肉权衡，展示低蛋白保护肾功能与肌少症风险的临床冲突，并通过 T1+T2+T4 全维度优化。
     need: >
-      为 Paper 2 展示 LM 如何把指南营养建议、个体差异和多目标优化放进同一动态模型。
+      为展示 LM 如何把指南营养建议、个体差异和多目标优化放进同一动态模型。
       进一步：不只优化"吃多少蛋白"（T1），还优化"几点吃主要蛋白"（T2，时间生物学）
       和"何时从限蛋白期过渡到标准期"（T4，干预时机）。
     problem: >

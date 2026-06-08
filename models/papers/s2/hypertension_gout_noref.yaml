@@ -1,5 +1,5 @@
 metadata:
-  name: a5_hypertension_gout
+  name: hypertension_gout
   updated: 2026-05-22
   authors:
   - name: Fan Shen
@@ -7,9 +7,9 @@ metadata:
   - name: Minghui Wu
     email: wuminghui@gzucm.edu.cn
   description:
-    brief: 高血压合并痛风药物冲突（A5），展示 HCTZ 降压收益与尿酸风险权衡，并通过 T1+T2+T4 优化药物时机。
+    brief: 高血压合并痛风药物冲突，展示 HCTZ 降压收益与尿酸风险权衡，并通过 T1+T2+T4 优化药物时机。
     need: >
-      为 Paper 2 展示 LM 如何处理两个指南推荐在同一患者身上发生冲突的场景。
+      为展示 LM 如何处理两个指南推荐在同一患者身上发生冲突的场景。
       进一步：不只优化"吃多少剂量"（T1），还优化"几点服药"（T2，时间药理学）
       和"何时引入别嘌醇"（T4，治疗时机）。
     problem: >
