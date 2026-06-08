@@ -301,13 +301,20 @@ metadata:
 ```yaml
 metadata:
   description:
-    brief: "模型一句话简介。"
-    problem: "关键问题。"
-    method: "建模方法。"
-    result: "已有结果或预期结果。"
+    problem: "是什么 + 为什么存在 + 核心科学张力，3–5 句。"
+    result: "仿真结论或 Pareto 前沿摘要，2–4 句；未运行时写理论预期并注明。"
+    limitations: "已知建模边界与待精化参数，1–3 句。"
 ```
 
-结构化写法推荐使用英文键名。字段不固定，GUI 会按 YAML 中的字段顺序显示所有非空字段；没有写的字段不会显示，也不会占用空白。推荐字段为 `brief`、`need`、`problem`、`method`、`simulation`、`optimization`、`result`、`conclusion`、`limitations`。作者可以按模型需要增加其他字段，例如 `cohort`、`scope`、`assumption`、`usage`。
+结构化写法推荐使用英文键名。字段不固定，GUI 会按 YAML 中的字段顺序显示所有非空字段；没有写的字段不会显示，也不会占用空白。
+
+**`papers/` 模型标准结构（ADR 0097）**：使用三字段 `problem / result / limitations`。
+- `problem`：合并原 `brief` + `need`，用非专业读者可理解的语言描述模型背景和核心问题；去掉框架内部符号（T1/T2/T3/T4、K×4、NSGA-II 等）。
+- `result`：合并原 `result` + `conclusion`，描述仿真输出或 Pareto 前沿；单解或多解均可，长度随结果复杂度自然变化。
+- `limitations`：保留，给后来者提供改进方向。
+- 删除：`brief`、`need`、`method`、`simulation`、`optimization`、`conclusion`。
+
+**`references/` 和其他非论文模型**：可按需使用任意字段，不受三字段限制。
 
 科学依据、文献解释、机制公式、时间尺度和建模假设也放在 `description` 内，但应尽量拆成更具体的字段，例如 `evidence`、`mechanism`、`time_scale`、`sources`、`assumption`。不使用同级的 `metadata.science_note` 或顶层 `science_note`，也不推荐在 `description` 内继续使用笼统的 `science_note`。
 
@@ -317,7 +324,7 @@ metadata:
 
 ```yaml
 description:
-  method: |
+  problem: |
     第一段。
     第二段。
 ```
