@@ -1,5 +1,6 @@
 metadata:
   name: test_step_minute
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates 1-minute step size with intra-day meal scheduling: three meals per day at

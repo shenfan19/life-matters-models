@@ -1,13 +1,13 @@
-# LMML 快速入门
+# LM format 快速入门
 
-> 目标：30 分钟内写出并运行你的第一个 LMML 模型。  
+> 目标：30 分钟内写出并运行你的第一个 LM format 模型。  
 > 前提：能读懂临床文献，无需编程背景。
 
 ---
 
 ## 核心概念（3 种变量）
 
-LMML 模型只有三种积木：
+LM format 模型只有三种积木：
 
 | 类型 | 含义 | 类比 |
 |------|------|------|
@@ -27,7 +27,7 @@ LMML 模型只有三种积木：
 metadata:
   name: hypertension_intro
   description:
-    brief: "降压药物效果演示——LMML 入门示例"
+    brief: "降压药物效果演示——LM format 入门示例"
   step_size:
     value: 1
     unit: day

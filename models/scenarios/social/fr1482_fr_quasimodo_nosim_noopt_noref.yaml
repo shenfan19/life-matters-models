@@ -1,6 +1,7 @@
 category: social
 metadata:
   name: fr1482_fr_quasimodo
+  lm_format_version: "1.0"
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn

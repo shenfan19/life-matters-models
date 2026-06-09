@@ -1,6 +1,7 @@
 
 metadata:
   name: l1_drug_single_obj
+  lm_format_version: "1.0"
   title: "[TEST L1] 单目标快速优化"
   description:
     problem: >

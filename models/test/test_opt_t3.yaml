@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_t3
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates weekly-pattern optimisation: both the training load value and which days of the

@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_results
+  lm_format_version: "1.0"
   description:
     problem: >
       Tests three features together: (1) optimizer evaluation window shorter than simulation

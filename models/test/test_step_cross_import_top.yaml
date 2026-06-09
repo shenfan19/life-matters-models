@@ -1,5 +1,6 @@
 metadata:
   name: test_step_cross_import_top
+  lm_format_version: "1.0"
   description:
     problem: >
       Core multi-scale correctness check: this model runs at 1-hour steps and imports

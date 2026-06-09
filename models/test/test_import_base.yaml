@@ -1,5 +1,6 @@
 metadata:
   name: test_import_base
+  lm_format_version: "1.0"
   description:
     problem: >
       Pure component model (no input variables): provides cardiovascular state variables

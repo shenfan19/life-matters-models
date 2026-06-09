@@ -11,11 +11,11 @@
 
 ## 模型格式
 
-所有模型须符合 LMML 格式规范：
+所有模型须符合 LM format 格式规范：
 
 - 格式入门：[docs/quickstart.md](docs/quickstart.md)
 - 完整 Schema：[docs/model.md](docs/model.md)
-- 格式规范全文：[docs/LMML_1.0.md](docs/LMML_1.0.md)
+- 格式规范全文：[docs/LM_format_1.0.md](docs/LM_format_1.0.md)
 
 ## 质量要求
 

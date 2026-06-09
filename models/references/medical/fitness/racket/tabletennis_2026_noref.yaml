@@ -20,6 +20,7 @@ metadata:
       此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。
       未区分不同打法（弧圈型/快攻型）和优势手的代谢差异；分钟步长对 3-5 秒回合结构为时间尺度近似。
   name: tabletennis
+  lm_format_version: "1.0"
   ratings:
     topic_importance: 3 - 乒乓球在亚洲普及但反应速度-神经疲劳模型复用场景有限
     framework_demand: 1 - noref，复用价值极低

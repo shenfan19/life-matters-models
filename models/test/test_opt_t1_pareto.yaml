@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_t1_pareto
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates multi-variable value-only optimisation with Pareto objectives and a hard

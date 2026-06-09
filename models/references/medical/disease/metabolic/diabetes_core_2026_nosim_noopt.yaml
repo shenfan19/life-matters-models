@@ -17,6 +17,7 @@ metadata:
       本模块为多组件聚合的基础框架，各子模块的参数描述简略，缺少文献来源标注。
       变量和公式依赖多个导入模块的状态，独立运行时行为不完整，需结合完整的上层场景校准。
   name: diabetes_core
+  lm_format_version: "1.0"
   ratings:
     topic_importance: 5 - 糖尿病核心组件，聚合多个生理系统，是代谢场景的枢纽模块
     framework_demand: 4 - 糖尿病核心枢纽，被依赖性强，多个上层场景依赖

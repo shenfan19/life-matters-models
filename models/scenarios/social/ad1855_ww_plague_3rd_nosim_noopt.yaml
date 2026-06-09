@@ -2,6 +2,7 @@ category: dynamics
 
 metadata:
   name: ad1855_ww_plague_3rd
+  lm_format_version: "1.0"
   updated: 2026-05-23
   authors:
   - name: Fan Shen

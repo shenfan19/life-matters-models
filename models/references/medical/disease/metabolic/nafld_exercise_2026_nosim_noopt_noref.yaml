@@ -2,6 +2,7 @@ category: physiological
 
 metadata:
   name: nafld_exercise
+  lm_format_version: "1.0"
   updated: 2026-05-23
   authors:
   - name: Fan Shen

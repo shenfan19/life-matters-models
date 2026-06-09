@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_t4
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates date-start window optimisation: the caloric restriction intervention can begin

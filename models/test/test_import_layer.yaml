@@ -1,5 +1,6 @@
 metadata:
   name: test_import_layer
+  lm_format_version: "1.0"
   description:
     problem: >
       Intermediate import layer in a 2-level chain: imports test_import_base (cardiovascular

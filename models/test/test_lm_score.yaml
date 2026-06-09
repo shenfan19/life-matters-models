@@ -1,5 +1,6 @@
 metadata:
   name: test_lm_score
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates both lm_score semantics on a hypertension management model. Cumulative mode:

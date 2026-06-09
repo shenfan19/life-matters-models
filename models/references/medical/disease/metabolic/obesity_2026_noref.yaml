@@ -1,5 +1,6 @@
 metadata:
   name: obesity
+  lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
   - name: Fan Shen

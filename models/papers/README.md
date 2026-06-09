@@ -10,7 +10,7 @@
 
 ```
 papers/
-  s1/   LMML 根论文（格式/规范/模型库）
+  s1/   LM format 根论文（格式/规范/模型库）
   s2/   MASLD-HUA 临床应用论文
   s3/   IHIO 系统科学范式论文
   s4/   数字健康生态基础设施论文
@@ -19,7 +19,7 @@ papers/
 
 | 目录 | 论文定位 | 目标期刊 | 状态 |
 |------|---------|---------|------|
-| `s1/` | LMML 根论文 | SoftwareX | 撰写中 |
+| `s1/` | LM format 根论文 | SoftwareX | 撰写中 |
 | `s2/` | 临床应用（MASLD-HUA） | JMIR Formative Research | 撰写中 |
 | `s3/` | IHIO 系统科学范式 | JBI / IEEE JBHI | 撰写中 |
 | `s4/` | 数字健康基础设施 | 系统工程理论与实践（中文） | 待撰写 |

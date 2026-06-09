@@ -1,6 +1,7 @@
 category: social
 metadata:
   name: uk1830_uk_oliver_twist
+  lm_format_version: "1.0"
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn

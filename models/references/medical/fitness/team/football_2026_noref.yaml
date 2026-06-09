@@ -20,6 +20,7 @@ metadata:
       未区分前锋、中场、后卫等位置的跑动模式和体能消耗差异；
       补液策略和环境温度对糖原消耗和疲劳的影响未建模。
   name: football
+  lm_format_version: "1.0"
   ratings:
     topic_importance: 3 - 足球是全球第一大运动，间歇高强度生理特征有广泛研究价值
     framework_demand: 1 - noref，复用价值极低

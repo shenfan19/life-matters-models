@@ -1,5 +1,6 @@
 metadata:
   name: fatty_liver_periodization
+  lm_format_version: "1.0"
   updated: 2026-05-22
   version: "1.0.0"
   authors:

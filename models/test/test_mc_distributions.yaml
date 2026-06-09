@@ -1,5 +1,6 @@
 metadata:
   name: test_mc_distributions
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates the three parameter distribution forms — normal(), uniform(), and lognormal() —
