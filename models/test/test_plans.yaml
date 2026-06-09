@@ -1,5 +1,6 @@
 metadata:
   name: test_plans
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates simulation.plans loading without a sibling simulation.schedules block.

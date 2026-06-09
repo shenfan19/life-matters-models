@@ -21,6 +21,7 @@ metadata:
       未区分场地类型（硬地/红土/草地）对跑动距离和体能消耗的影响；
       发球速度与肩关节负荷的关系未建模，无法评估损伤风险。
   name: tennis
+  lm_format_version: "1.0"
   ratings:
     topic_importance: 3 - 网球是全球主流运动，间歇爆发特征有一定运动科学复用价值
     framework_demand: 1 - noref，复用价值极低

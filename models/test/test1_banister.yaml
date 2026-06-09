@@ -1,5 +1,6 @@
 metadata:
   name: test_banister
+  lm_format_version: "1.0"
   updated: 2026-05-01
   author: LM Test
   description:

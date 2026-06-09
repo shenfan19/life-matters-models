@@ -1,6 +1,7 @@
 
 metadata:
   name: l2_drug_pareto
+  lm_format_version: "1.0"
   title: "[TEST L2] 三剂时段 · 双目标 Pareto"
   description:
     problem: >

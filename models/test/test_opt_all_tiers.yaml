@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_all_tiers
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates all four optimizer tiers simultaneously in one model: value-only search (insulin

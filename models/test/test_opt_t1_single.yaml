@@ -1,5 +1,6 @@
 metadata:
   name: test_opt_t1_single
+  lm_format_version: "1.0"
   description:
     problem: >
       Minimal single-variable, single-objective optimisation using the gradient-based L-BFGS-B

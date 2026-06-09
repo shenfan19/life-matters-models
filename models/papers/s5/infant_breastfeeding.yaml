@@ -1,5 +1,6 @@
 metadata:
   name: infant_breastfeeding
+  lm_format_version: "1.0"
   updated: 2026-05-30
   authors:
   - name: Fan Shen

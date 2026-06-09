@@ -1,6 +1,7 @@
 category: social
 metadata:
   name: es1600_es_don_quixote
+  lm_format_version: "1.0"
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn

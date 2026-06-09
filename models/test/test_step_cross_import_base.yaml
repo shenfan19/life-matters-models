@@ -1,5 +1,6 @@
 metadata:
   name: test_step_cross_import_base
+  lm_format_version: "1.0"
   description:
     problem: >
       Base component (step=1 day) for the cross-step-size import test. Body mass decays

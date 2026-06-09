@@ -1,6 +1,7 @@
 category: social
 metadata:
   name: ru1865_ru_raskolnikov
+  lm_format_version: "1.0"
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn

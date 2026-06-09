@@ -2,6 +2,7 @@ category: physiological
 
 metadata:
   name: coronary_bypass
+  lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
   - name: Fan Shen

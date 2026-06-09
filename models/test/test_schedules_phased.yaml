@@ -1,5 +1,6 @@
 metadata:
   name: test_schedules_phased
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates phased schedules using date_range and days filters simultaneously across a

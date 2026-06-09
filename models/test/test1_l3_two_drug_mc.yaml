@@ -1,6 +1,7 @@
 
 metadata:
   name: l3_two_drug_mc
+  lm_format_version: "1.0"
   title: "[TEST L3] 五时段给药 · 双目标 + MC"
   description:
     problem: >

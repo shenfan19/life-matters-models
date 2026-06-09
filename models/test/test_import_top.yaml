@@ -1,5 +1,6 @@
 metadata:
   name: test_import_top
+  lm_format_version: "1.0"
   description:
     problem: >
       Top-level composite model for diamond-dependency deduplication: directly imports

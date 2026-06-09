@@ -1,6 +1,7 @@
 category: social
 metadata:
   name: ch1907_de_hans_castorp
+  lm_format_version: "1.0"
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn

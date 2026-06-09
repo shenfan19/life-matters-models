@@ -1,5 +1,6 @@
 metadata:
   name: test_evidence_types
+  lm_format_version: "1.0"
   description:
     problem: >
       Validates Loader handling of all 8 evidence subtypes (rr, or, hr, ard, cohens_d, ir, beta, pk)

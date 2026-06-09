@@ -1,5 +1,5 @@
 ---
-title: Life Matters Model Language (LMML) 1.0
+title: Life Matters Format (LM format) 1.0
 version: "1.0"
 status: draft
 initial_author: Fan Shen
@@ -7,31 +7,31 @@ institutional_affiliation_at_initial_release: Sun Yat-sen University, School of 
 date: 2026-05-10
 ---
 
-# Life Matters Model Language (LMML) 1.0
+# Life Matters Format (LM format) 1.0
 
-**LMML is a scholarly model specification. The LM Reference Engine is one implementation of this specification. Future versions of the specification may be maintained by the author and contributors through the public LMML governance process.**
+**LM format is a scholarly model specification. The LM Reference Engine is one implementation of this specification. Future versions of the specification may be maintained by the author and contributors through the public LM format governance process.**
 
 ---
 
 ## Introduction
 
-Life Matters Model Language (LMML) is an open YAML specification for defining executable models of individual-level health and social dynamics. LMML enables researchers to express physiological, behavioral, and socio-environmental models as structured, citable, and interoperable YAML files — without requiring programming expertise to author models.
+Life Matters Format (LM format) is an open YAML specification for defining executable models of individual-level health and social dynamics. LM format enables researchers to express physiological, behavioral, and socio-environmental models as structured, citable, and interoperable YAML files — without requiring programming expertise to author models.
 
-LMML is not a software product. It is a **format standard**, in the tradition of SBML (systems biology markup language), CellML, and COMBINE/OMEX, but targeting a distinct modeling scope:
+LM format is not a software product. It is a **format standard**, in the tradition of SBML (systems biology markup language), CellML, and COMBINE/OMEX, but targeting a distinct modeling scope:
 
-> **LMML addresses individual-level behavioral intervention modeling** — the space where clinical guidelines, lifestyle behavior, pharmacological schedules, and social environment interact over daily-to-yearly time scales to produce health outcomes.
+> **LM format addresses individual-level behavioral intervention modeling** — the space where clinical guidelines, lifestyle behavior, pharmacological schedules, and social environment interact over daily-to-yearly time scales to produce health outcomes.
 
 This niche is not currently served by existing formats:
 - SBML and CellML target biochemical network models (molecular to cellular scale).
 - COMBINE/OMEX addresses packaging of multi-format model archives.
 - PhysiCell and agent-based frameworks address multicellular and population dynamics.
-- No existing open format addresses the **calendar-semantic, multi-scale, individual behavioral intervention** space that LMML targets.
+- No existing open format addresses the **calendar-semantic, multi-scale, individual behavioral intervention** space that LM format targets.
 
 ---
 
 ## Scope
 
-LMML is designed for:
+LM format is designed for:
 
 - **Health and social dynamics models** at the individual level (one person, one social context)
 - **Multi-scale composition**: models operating at different native time scales (hours, days, weeks, months, years) that share state variables and can be coupled
@@ -39,7 +39,7 @@ LMML is designed for:
 - **Optimization targets**: models whose inputs are candidates for regimen optimization
 - **Model library sharing**: YAML files that can be contributed to a public library, cited independently, and composed by other researchers
 
-LMML is **not** designed for:
+LM format is **not** designed for:
 - Molecular dynamics or sub-cellular biochemical networks (use SBML)
 - Population-level epidemiological models (use existing ODE/ABM frameworks)
 - Multi-organ systems requiring continuous fluid dynamics (use FEA/CFD tools)
@@ -50,29 +50,29 @@ LMML is **not** designed for:
 
 | Term | Definition |
 |------|-----------|
-| **LMML** | Life Matters Model Language — this specification |
-| **LMML file** | A YAML file conforming to this specification |
-| **Component** | An LMML file defining reusable physiological or behavioral sub-models |
-| **Scenario** | An LMML file that includes a `simulation:` block and is directly runnable |
-| **Story** | An LMML file that includes a `game:` block for card-game conversion |
-| **LMML-compatible engine** | Any software that can load, validate, and execute LMML files according to this specification |
-| **LM Reference Engine** | The first LMML-compatible engine, authored by Fan Shen at Sun Yat-sen University |
+| **LM format** | Life Matters format — this specification |
+| **LM file** | A YAML file conforming to this specification |
+| **Component** | An LM file defining reusable physiological or behavioral sub-models |
+| **Scenario** | An LM file that includes a `simulation:` block and is directly runnable |
+| **Story** | An LM file that includes a `game:` block for card-game conversion |
+| **LM-compatible engine** | Any software that can load, validate, and execute LM files according to this specification |
+| **LM Reference Engine** | The first LM-compatible engine, authored by Fan Shen at Sun Yat-sen University |
 | **K×4 Regimen** | A calendar-semantic input formalism defined in this specification (§6) |
-| **Model Library** | A curated collection of LMML files, open for contribution and citation |
+| **Model Library** | A curated collection of LM files, open for contribution and citation |
 | **step** | The canonical time step duration as declared in `metadata.step_size` |
 
 ---
 
 ## 1. File Format
 
-LMML files are YAML 1.2 documents. A conforming LMML file must have a `metadata:` block and at least one of: `variables:`, `formulas:`, `imports:`. All keys are lowercase snake_case.
+LM files are YAML 1.2 documents. A conforming LM file must have a `metadata:` block and at least one of: `variables:`, `formulas:`, `imports:`. All keys are lowercase snake_case.
 
 ### 1.1 Top-Level Structure
 
 ```yaml
-# Top-level keys in an LMML file (all optional except metadata)
+# Top-level keys in an LM file (all optional except metadata)
 metadata:       # Required. Identification, versioning, citation, license.
-imports:        # Optional. References to other LMML files to merge.
+imports:        # Optional. References to other LM files to merge.
 variables:      # Optional. state, input, and parameter declarations.
 evidence:       # Optional. Literature-derived effect sizes (RR, OR, HR, Cohen's d, etc.).
 formulas:       # Optional. Dynamic equations and instantaneous calculations.
@@ -96,7 +96,7 @@ metadata:
   description:
     brief: "CKD protein-muscle tradeoff model."
     problem: "Bidirectional conflict: low protein protects kidneys but accelerates muscle wasting."
-    method: "Euler ODE, day-scale, coupled via LMML imports."
+    method: "Euler ODE, day-scale, coupled via LM format imports."
   # Plain string form is also valid: description: "CKD protein-muscle tradeoff model."
 
   # --- Classification (recommended) ---
@@ -107,7 +107,7 @@ metadata:
     - disease: chronic_kidney_disease
     - scale: day
     - scale: week
-  lmml_version: "1.0"                    # Which LMML version this file targets
+  lm_format_version: "1.0"                    # Which LM format version this file targets
 
   # --- Time scale (required for Scenarios; recommended for Components) ---
   step_size:
@@ -126,11 +126,11 @@ metadata:
   # --- Citation (required for Model Library submission) ---
   citation:
     preferred: >
-      Shen F. (2026). Life Matters Model Language (LMML): CKD protein-muscle
+      Shen F. (2026). Life Matters Format (LM format): CKD protein-muscle
       tradeoff model v1.0. [Model Library entry]. DOI: 10.XXXX/lmml.ckd.v1
     doi: "10.XXXX/lmml.ckd.v1"          # Zenodo or equivalent DOI
     format_citation: >
-      Shen F. (2026). Life Matters Model Language (LMML) 1.0. [Specification].
+      Shen F. (2026). Life Matters Format (LM format) 1.0. [Specification].
       Sun Yat-sen University. DOI: 10.XXXX/lmml-spec.v1
 
   # --- Sources (required if parameters come from literature) ---
@@ -158,7 +158,7 @@ metadata:
 
 ## 2. Variables
 
-The `variables:` block declares all quantities in the model. Every variable has a `type` that determines how it is treated by LMML-compatible engines.
+The `variables:` block declares all quantities in the model. Every variable has a `type` that determines how it is treated by LM-compatible engines.
 
 ### 2.1 Variable Types
 
@@ -225,7 +225,7 @@ In Monte Carlo mode, each run samples all distribution-valued parameters exactly
 
 The `evidence:` block (top-level, not nested under `variables:`) declares literature-derived effect sizes that require unit conversion before use in formulas. An OR=1.65 cannot enter an equation directly, but the Loader-computed effective risk multiplier can.
 
-LMML-compatible engines must apply the following conversion rules at load time. Formulas reference the variable name; the engine automatically supplies the `_effective` value.
+LM-compatible engines must apply the following conversion rules at load time. Formulas reference the variable name; the engine automatically supplies the `_effective` value.
 
 ```yaml
 evidence:
@@ -384,7 +384,7 @@ imports:
 
 ### 4.2 Step Size in Multi-Model Scenarios
 
-Each component may declare its own native `step_size`. When a Scenario imports components with different step sizes, LMML-compatible engines must:
+Each component may declare its own native `step_size`. When a Scenario imports components with different step sizes, LM-compatible engines must:
 - Simulate each component at its native step size, or
 - Convert all components to the Scenario's declared step size by rescaling rate coefficients.
 
@@ -394,7 +394,7 @@ The `step` symbol in formula expressions always equals the component's native st
 
 ## 5. Simulation Block
 
-The `simulation:` block makes an LMML file a runnable Scenario.
+The `simulation:` block makes an LM file a runnable Scenario.
 
 ```yaml
 simulation:
@@ -566,7 +566,7 @@ The `optimizer` block may declare an independent evaluation time window (`start_
 
 A conforming engine must apply the following priority when resolving evaluation time:
 1. Values passed by the interactive session (e.g., GUI toolbar) as runtime overrides — highest priority.
-2. `optimizer.start_date` / `end_date` / `step_size` — declared in the LMML file.
+2. `optimizer.start_date` / `end_date` / `step_size` — declared in the LM file.
 3. `simulation.start_date` / `end_date` and `metadata.step_size` — inherited defaults.
 
 ### 6.2 optimizer.results Design Principles
@@ -580,7 +580,7 @@ A conforming engine must apply the following priority when resolving evaluation 
 
 ## 7. K×4 Regimen Specification
 
-**K×4 Regimen** is LMML's canonical input formalism for behavioral intervention optimization. It is a first-class part of the LMML specification, not an engine feature.
+**K×4 Regimen** is LM format's canonical input formalism for behavioral intervention optimization. It is a first-class part of the LM format specification, not an engine feature.
 
 ### 7.1 Motivation
 
@@ -617,7 +617,7 @@ K×4 Regimen outputs are directly human-readable and exportable:
 - `p_k` maps to RRULE (DAILY, WEEKLY, etc.)
 - `v_k` maps to the event description (dose, duration, intensity)
 
-This makes K×4 Regimen the **only optimization output format** in LMML that can be directly given to a patient as an executable plan.
+This makes K×4 Regimen the **only optimization output format** in LM format that can be directly given to a patient as an executable plan.
 
 ### 7.4 YAML Representation
 
@@ -660,9 +660,9 @@ This YAML is human-readable and directly exportable as iCal: each segment maps t
 
 ---
 
-## 8. Game Conversion Block (LMML-Game Extension)
+## 8. Game Conversion Block (LM Game Extension)
 
-The optional `game:` block defines conversion hints for transforming an LMML Scenario into a card-based educational game. This is a first-class extension in LMML 1.0.
+The optional `game:` block defines conversion hints for transforming an LM Scenario into a card-based educational game. This is a first-class extension in LM format 1.0.
 
 ```yaml
 game:
@@ -698,13 +698,13 @@ game:
   conversion_rules_version: "0.1"
 ```
 
-LMML-Game conversion rules (how YAML state/input/formula maps to card mechanics) are specified in a separate document: `LM_GAME_CONVERSION_0.1.md`.
+LM Game conversion rules (how YAML state/input/formula maps to card mechanics) are specified in a separate document: `LM_GAME_CONVERSION_0.1.md`.
 
 ---
 
 ## 9. Model Library Standards
 
-An LMML file is eligible for submission to the **LM Open Model Library** if it meets all of the following:
+An LM file is eligible for submission to the **LM Open Model Library** if it meets all of the following:
 
 ### 9.1 Required Fields
 
@@ -713,11 +713,11 @@ An LMML file is eligible for submission to the **LM Open Model Library** if it m
 - `metadata.citation` (a preferred citation string; DOI strongly recommended)
 - `metadata.sources` (at least one entry for each literature-derived parameter)
 - `metadata.license` (must be CC BY 4.0 or more permissive for Library inclusion)
-- `metadata.lmml_version: "1.0"`
+- `metadata.lm_format_version: "1.0"`
 
 ### 9.2 Validation
 
-A Library-eligible LMML file must pass validation by an LMML-compatible engine:
+A Library-eligible LM file must pass validation by an LM-compatible engine:
 - All variable references in formulas resolve to declared variables
 - All import paths resolve
 - Initial values are within declared bounds
@@ -741,7 +741,7 @@ An optional YAML field `metadata.reviewed: true` may be set by the author to ind
 
 ### 9.4 Contribution License Agreement
 
-By contributing an LMML file to the LM Open Model Library, contributors confirm:
+By contributing an LM file to the LM Open Model Library, contributors confirm:
 1. They have the right to submit the contribution.
 2. They agree to license their model contribution under CC BY 4.0.
 3. The contribution does not reproduce verbatim text from copyrighted materials.
@@ -750,7 +750,7 @@ By contributing an LMML file to the LM Open Model Library, contributors confirm:
 
 ## 10. Versioning
 
-### 10.1 LMML Version History
+### 10.1 LM format Version History
 
 | Version | Date | Status | Notes |
 |---------|------|--------|-------|
@@ -765,21 +765,21 @@ By contributing an LMML file to the LM Open Model Library, contributors confirm:
 
 ### 10.2 Versioning Policy
 
-LMML uses semantic versioning:
+LM format uses semantic versioning:
 - **Patch** (1.0.x): Clarifications, editorial fixes, no schema changes
 - **Minor** (1.x.0): Backward-compatible additions (new optional fields)
 - **Major** (x.0.0): Breaking schema changes
 
-LMML files declare `metadata.lmml_version` to indicate which version of the specification they target. LMML-compatible engines should accept files targeting older LMML versions.
+LM files declare `metadata.lm_format_version` to indicate which version of the specification they target. LM-compatible engines should accept files targeting older LM format versions.
 
-### 10.3 Planned Extensions (LMML 1.1+)
+### 10.3 Planned Extensions (LM format 1.1+)
 
 - Validation metadata (uncertainty ranges, sensitivity indices)
 - Model composition constraints (required/prohibited imports)
 - Multi-individual simulation (household, cohort scenarios)
 - Probabilistic event modeling (stochastic state transitions)
 
-Features already implemented in Reference Engine (backported into LMML 1.0): `evidence:` block, `simulation.plans`, `optimizer.results`, flat-list `simulation.schedules`.
+Features already implemented in Reference Engine (backported into LM format 1.0): `evidence:` block, `simulation.plans`, `optimizer.results`, flat-list `simulation.schedules`.
 
 ---
 
@@ -795,9 +795,9 @@ Repository: [GITHUB_URL]
 License: PolyForm Noncommercial 1.0.0 (engine code); CC BY 4.0 (documentation, YAML schemas)
 ```
 
-The Reference Engine is **one possible implementation** of LMML. Other engines — commercial or open-source — may implement LMML compatibility independently. A conforming engine must:
+The Reference Engine is **one possible implementation** of LM format. Other engines — commercial or open-source — may implement LM format compatibility independently. A conforming engine must:
 
-1. Load and parse LMML 1.0 YAML files
+1. Load and parse LM format 1.0 YAML files
 2. Resolve imports recursively
 3. Validate all variable references and bounds
 4. Execute formulas in the declared priority order with correct step-scaling
@@ -808,11 +808,11 @@ The Reference Engine is **one possible implementation** of LMML. Other engines �
 
 ## 12. Citation
 
-If you use LMML in a publication, please cite:
+If you use LM format in a publication, please cite:
 
 ```bibtex
-@techreport{shen2026lmml,
-  title     = {{Life Matters Model Language (LMML) 1.0: An Open YAML Specification
+@techreport{shen2026lmformat,
+  title     = {{Life Matters Format (LM format) 1.0: An Open YAML Specification
                 for Executable Health and Social Dynamics Models}},
   author    = {Shen, Fan},
   year      = {2026},
@@ -838,10 +838,10 @@ If you use the LM Reference Engine, additionally cite:
 
 ## 13. Governance
 
-LMML 1.0 is authored and maintained by Fan Shen. The specification is intended to evolve as a **shared research commons** — meaning:
+LM format 1.0 is authored and maintained by Fan Shen. The specification is intended to evolve as a **shared research commons** — meaning:
 
 - The format itself is public and open.
-- Anyone may implement an LMML-compatible engine.
+- Anyone may implement an LM-compatible engine.
 - Contributions to the format specification may be proposed via the public repository.
 - Commercial products may implement or support the LM Format; the LM name should primarily identify the open specification, model library, and scholarly community.
 
@@ -849,5 +849,5 @@ LMML 1.0 is authored and maintained by Fan Shen. The specification is intended t
 
 ---
 
-*Life Matters Model Language (LMML) 1.0 — Initial draft, Fan Shen, 2026-05-10*  
+*Life Matters Format (LM format) 1.0 — Initial draft, Fan Shen, 2026-05-10*  
 *Sun Yat-sen University, School of Systems Science and Engineering*
