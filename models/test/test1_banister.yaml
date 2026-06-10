@@ -136,22 +136,25 @@ optimizer:
       type: soft
       description: "表现下限：减量期不得低于基准值"
 
-  regimen:
-    variable: training_load
-    description: "以周为单位安排训练负荷，每天一个事件，周内统一负荷"
-    events:
-      - time: "09:00"
-        dose_bounds: [0, 140]
-        days: [Mon, Wed, Fri]
-        label: "主训练日"
-      - time: "09:00"
-        dose_bounds: [0, 60]
-        days: [Tue, Thu]
-        label: "辅助训练日"
-      - time: "09:00"
-        dose_bounds: [0, 20]
-        days: [Sat, Sun]
-        label: "恢复/休息日"
+  schedules:
+    - variable: training_load
+      time: "09:00"
+      days: [Mon, Wed, Fri]
+      label: "主训练日"
+      optimize:
+        value: [0, 140]
+    - variable: training_load
+      time: "09:00"
+      days: [Tue, Thu]
+      label: "辅助训练日"
+      optimize:
+        value: [0, 60]
+    - variable: training_load
+      time: "09:00"
+      days: [Sat, Sun]
+      label: "恢复/休息日"
+      optimize:
+        value: [0, 20]
 
 
   algorithm:
