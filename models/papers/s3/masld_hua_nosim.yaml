@@ -6,17 +6,17 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    problem: >
-      MASLD（消化科）与 HOMA-IR（内分泌科）联合管理下，快速减重（>0.3 kg/周）触发酮体-IR 恶化循环，
-      使跨科室联合可行域收缩乃至成为非凸区域。IHIO 核心问题：减重速率是否构成跨病种的分岔控制参数——
-      即存在某个速率阈值，使 Pareto 前沿形状发生质变？基于 S2 A7 模型，在不同减重速率约束下比较前沿变化。
-    result: >
-      仿真预期：温和减重约束（≤0.27 kg/周）下 Pareto 前沿 hypervolume 下降约 30%，
-      但 HOMA-IR 端点改善更大（消除酮体恶化循环）；空腹晨练优势在两种约束下均稳健。
+    problem: |
+      MASLD（消化科）与 HOMA-IR（内分泌科）联合管理下，减重速率超过 0.3 kg/周会触发酮体-IR 恶化循环，使跨科室联合可行域收缩乃至成为非凸区域。
+      IHIO 核心问题：减重速率是否构成跨病种的分岔控制参数——即是否存在某个速率阈值，使 Pareto 前沿形状发生质变？基于 S2 A7 模型，在不同减重速率约束下比较前沿变化。
+    result: |
+      仿真预期：
+      1. 温和减重约束（≤0.27 kg/周）下，Pareto 前沿 hypervolume 下降约 30%；
+      2. 但 HOMA-IR 端点改善更大，因为消除了酮体恶化循环；
+      3. 空腹晨练优势在两种约束下均稳健。
       注：仿真尚未运行。
-    limitations: >
-      酮体-IR 恶化的动力学系数为估算值，待精化；分岔阈值 0.3 kg/周来自 MASLD 文献，
-      个体差异通过参数分布隐含；仿真尚未运行（nosim）。
+    limitations: |
+      酮体-IR 恶化的动力学系数为估算值，待精化；分岔阈值 0.3 kg/周来自 MASLD 文献，个体差异通过参数分布隐含；仿真尚未运行（nosim）。
   ratings:
     topic_importance: 4 - 分岔点分析兼具系统科学和临床双重意义
     framework_demand: 3 - S3分析模型，import自s2 A7，被s4引用
