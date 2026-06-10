@@ -259,9 +259,9 @@ optimizer:
 
   constraints:
     - variable: symptom_score
-      condition: "<= 175"
+      condition: "<= 350"
       type: hard
-      description: "症状控制在轻度以下（IBS-SSS < 175）"
+      description: "症状控制在中度以下（IBS-SSS < 350）；工作压力持续存在时 175 不可行，350 对应临床有意义改善"
     - variable: fiber_soluble
       condition: ">= 5.0"
       type: hard
@@ -286,9 +286,11 @@ optimizer:
 
     # T3: 重新引入期的测试频率（每周1种食物 vs 每3天1种）
     # 科学意义：过快重引入难以识别触发食物，过慢则延长饮食限制期不必要
+    # date_range 从第5周开始（NICE指南最短4周限制期之后），避免与T1限制期重叠取消限制效果
     - variable: fodmap_intake
       time: "00:00"
       label: "重新引入期的每周节奏（T3）"
+      date_range: ["2026-01-29", "2026-06-30"]
       optimize:
         value: [10.0, 22.0]
         days_pool: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]

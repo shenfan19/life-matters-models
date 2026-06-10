@@ -36,14 +36,10 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/ckd_protein
+  - papers/s2/ckd_protein_noref
 
-# 继承 s2/ckd_protein 全部变量、公式和约束
+# 继承 s2/ckd_protein_noref 全部变量、公式和约束
 # 覆盖 optimizer：同规模 NSGA-II，核心目的是展示联合可行窗口的涌现性（IHIO 论点）
-  mc:
-    runs: 20
-    seed: 19
-    description: "MC 验证联合可行窗口在个体差异（残余肾功能、肌肉合成响应）下的稳健性"
 
 
 optimizer:
@@ -153,6 +149,10 @@ simulation:
     - BUN
     - dietary_protein
     - lm_score
+  mc:
+    runs: 20
+    seed: 19
+    description: "MC 验证联合可行窗口在个体差异（残余肾功能、肌肉合成响应）下的稳健性"
   plans:
     - id: "kdigo_strict"
       label: "KDIGO 严格限蛋白（0.65 g/kg/day，肾保护极端）"

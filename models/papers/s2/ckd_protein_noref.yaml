@@ -99,8 +99,8 @@ variables:
     reference: "Carrero JJ et al. (2013)"
 
   beta0:
-    description: 非蛋白质因素导致的 GFR 基础下降速率（CKD 3期平均值）
-    value: 0.003
+    description: 非蛋白质因素导致的 GFR 基础下降速率（CKD 3期平均值，约 1.5 mL/min/1.73m² 每年）
+    value: 0.0011
     unit: 1/day
     type: parameter
     bounds: [0.001, 0.008]
@@ -149,11 +149,11 @@ formulas:
   gfr_decline:
     description: |
       GFR 下降：蛋白质超过安全阈值的损伤 + 非蛋白质基础下降。
-      蛋白质低于 0.6 g/kg/day 时超载项为零（不继续保护，仅不再损伤）。
+      单次餐次蛋白低于 0.30 g/kg（约合三餐累计 0.9 g/kg/day）时超载项为零（不继续保护，仅不再损伤）。
     condition: true
     priority: 6
     dynamics:
-      GFR: GFR - alpha * max(0, dietary_protein - 0.6) * GFR - beta0 * GFR * step
+      GFR: GFR - alpha * max(0, dietary_protein - 0.30) * GFR - beta0 * GFR * step
     reference: "KDIGO 2020; Kalantar-Zadeh K et al. (2017)"
 
   muscle_dynamics:
@@ -270,9 +270,9 @@ optimizer:
       type: hard
       description: "GFR 下限：不得进入 CKD 4 期"
     - variable: dietary_protein
-      condition: ">= 0.6"
+      condition: ">= 0.10"
       type: hard
-      description: "KDIGO 建议最低蛋白摄入量 0.6 g/kg/day"
+      description: "单次餐次蛋白下限 0.10 g/kg（三餐累计须达 KDIGO 0.6 g/kg/day，此处约束单次事件值）"
 
   schedules:
     # T1: 早餐蛋白量（固定08:00，优化量）

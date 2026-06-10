@@ -34,14 +34,10 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/masld_insulin
+  - papers/s2/masld_insulin_noref
 
-# 继承 s2/masld_insulin 全部变量、公式和约束
+# 继承 s2/masld_insulin_noref 全部变量、公式和约束
 # 覆盖 optimizer：双约束对比验证分岔假说（减重速率 ≤0.38 vs ≤0.27 kg/w）
-  mc:
-    runs: 20
-    seed: 19
-    description: "MC 验证分岔结论稳健性（alpha_exercise_fat, gamma_IR_liverfat 个体差异）"
 
 
 optimizer:
@@ -164,6 +160,10 @@ simulation:
     - exercise_met_min
     - dietary_glycemic_load
     - lm_score
+  mc:
+    runs: 20
+    seed: 19
+    description: "MC 验证分岔结论稳健性（alpha_exercise_fat, gamma_IR_liverfat 个体差异）"
   plans:
     - id: "fast_loss"
       label: "快速减重方案（~0.45 kg/w，分岔右侧）"
