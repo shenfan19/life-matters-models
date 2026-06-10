@@ -48,7 +48,7 @@ variables:
     type: state
     value: 0.0
     unit: prob/day
-    description: Statin-protected CVD daily rate (hr evidence: baseline_ir × HR / 365).
+    description: "Statin-protected CVD daily rate (hr evidence: baseline_ir × HR / 365)."
 
   or_adjusted_prob:
     type: state
