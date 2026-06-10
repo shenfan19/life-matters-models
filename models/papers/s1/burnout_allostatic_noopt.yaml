@@ -336,7 +336,7 @@ optimizer:
       label: "工作日睡眠时长与就寝时机"
       optimize:
         value: [6.0, 9.0]
-        time: ["21:00", "01:00"]
+        time: ["21:00", "23:59"]
 
     - variable: sleep_hours
       time: "22:30"

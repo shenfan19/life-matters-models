@@ -30,9 +30,9 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/ckd_protein
+  - papers/s2/ckd_protein_noref
 
-# 继承 s2/ckd_protein 的全部变量、公式、约束
+# 继承 s2/ckd_protein_noref 的全部变量、公式、约束
 # 仅覆盖 optimizer 配置（更大种群 + 同一 T1+T2+T4 inputs）
 
 

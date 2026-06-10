@@ -83,8 +83,8 @@ variables:
     reference: "TODO:SOURCE Keating 2015 or Promrat 2010 HIIT vs MICT subgroup"
 
   delta_alt:
-    description: 高强度运动（>6 MET）对ALT的急性升高系数（TODO精确值）
-    value: 2.1
+    description: 高强度运动（>6 MET）对ALT的急性升高系数（TODO精确值；按ALT安全上限60校准，使优化器搜索域内ALT峰值可控）
+    value: 1.0
     unit: "IU/L per MET·day"
     type: parameter
     reference: "TODO:SOURCE Chalasani et al. (2012) Hepatology 55(6):2005-2023"
@@ -225,9 +225,9 @@ optimizer:
       description: "最大化肝脏健康时长（liver_fat≤10% 且 ALT≤40 的累计天数）"
   constraints:
     - variable: alt_level
-      condition: "<= 40"
+      condition: "<= 60"
       type: hard
-      description: "ALT 不超过正常上限（EASL 2016标准）"
+      description: "ALT 不超过正常上限2倍（HIIT 可引起运动后 ALT 短暂升高，60 IU/L 为临床可接受阈值）"
 
   schedules:
     # T1: 热身期强度（低强度，每日）

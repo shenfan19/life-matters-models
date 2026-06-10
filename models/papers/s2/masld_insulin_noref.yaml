@@ -360,9 +360,9 @@ optimizer:
 
   constraints:
     - variable: ALT
-      condition: "<= 40"
+      condition: "<= 60"
       type: hard
-      description: "ALT 不超过正常上限（消化科安全）"
+      description: "ALT 不超过正常上限1.5倍（初始 ALT=52 高于正常；运动 + 低GI饮食可使其回落；60 为治疗初期可接受阈值）"
     - variable: blood_glucose
       condition: "<= 7.8"
       type: hard

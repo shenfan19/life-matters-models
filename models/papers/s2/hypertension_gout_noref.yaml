@@ -154,9 +154,9 @@ formulas:
     dynamics:
       uric_acid: >
         uric_acid
-        + (ua_baseline_prod - 0.001 * uric_acid * (1 - gamma_T * thiazide_dose)) * step
-        - kappa_A * allopurinol_dose
-        + max(0, psi_ketone * caloric_deficit / 700 - 15.0)
+        + (ua_baseline_prod - 0.476 * uric_acid * (1 - gamma_T * thiazide_dose)) * step
+        - kappa_A * allopurinol_dose * step
+        + max(0, psi_ketone * caloric_deficit / 700 - 15.0) * step
     reference: "Choi HK et al. (2012); Dessein PH et al. (2000)"
 
   weight_dynamics:
@@ -250,12 +250,14 @@ optimizer:
   constraints:
     - variable: blood_pressure
       condition: "<= 130"
+      metric: final
       type: hard
-      description: "ESC目标：收缩压 ≤ 130 mmHg"
+      description: "ESC目标：26周末收缩压 ≤ 130 mmHg（治疗终点目标；初始值155已超标，按终值而非全程评估）"
     - variable: uric_acid
       condition: "<= 360"
+      metric: final
       type: hard
-      description: "ACR目标：尿酸 ≤ 360 μmol/L"
+      description: "ACR目标：26周末血尿酸 ≤ 360 μmol/L（治疗终点目标；初始值420已超标，按终值而非全程评估）"
     - variable: caloric_deficit
       condition: "<= 700"
       type: hard
