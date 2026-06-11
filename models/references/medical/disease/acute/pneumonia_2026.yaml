@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       社区获得性细菌性肺炎（CAP）的治疗存在一个核心张力：抗生素剂量必须足够高才能快速清除细菌，
@@ -200,12 +200,14 @@ optimizer:
       description: "抗生素剂量上限（避免毒副作用）"
   schedules:
     - variable: antibiotic_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "抗生素晨服剂量"
       optimize:
         value: [0.5, 2.0]
     - variable: antibiotic_dose
-      time: "20:00"
+      time_start: "20:00"
+      time_end: "20:00"
       label: "抗生素晚服剂量"
       optimize:
         value: [0.5, 2.0]

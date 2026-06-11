@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       跑步是最普及的有氧耐力运动，其生理响应的核心在于配速与代谢负荷的关系。
@@ -138,7 +138,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables: [heart_rate, vo2, distance, calories_burned, fatigue, lactate, performance]
   schedules:
     - variable: training_intensity
@@ -174,13 +174,15 @@ optimizer:
       description: "疲劳感不超过9（避免过度训练）"
   schedules:
     - variable: training_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "训练强度（RPE 0-10）"
       optimize:
         value: [0.0, 10.0]
     - variable: pace
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "配速（min/km）"
       optimize:

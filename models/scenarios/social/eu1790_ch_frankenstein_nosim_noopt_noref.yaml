@@ -3,8 +3,8 @@ metadata:
   name: eu1790_ch_frankenstein
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       维克多·弗兰肯斯坦（玛丽·雪莱《弗兰肯斯坦》1818）逃离造物后面临三重张力：
@@ -22,13 +22,13 @@ metadata:
     innovation: 2 - 将逃避责任的心理代价和身体崩溃转化为动力学系统意图清晰，但尚未完善
     social_value: 5 - 触及科学伦理、造物者责任和现代技术隐患的普世主题，社会价值极高
   tags:
-  - science
-  - ethics
-  - isolation
-  - obsession
-  - literature
+    - science
+    - ethics
+    - isolation
+    - obsession
+    - literature
   references:
-  - Frankenstein (Mary Shelley, 1818)
+    - Frankenstein (Mary Shelley, 1818)
   step_size:
     value: 1
     unit: month
@@ -38,8 +38,8 @@ variables:
     value: 0.5
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 压制造物知情范围：是否主动压制关于造物存在的消息，保密程度
     reference: TODO:SOURCE
   confrontation_willingness:
@@ -47,8 +47,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 直面造物的意愿：是否尝试与造物沟通或对峙（而非逃跑）
     reference: TODO:SOURCE
   research_continuation:
@@ -56,8 +56,8 @@ variables:
     value: 1.0
     unit: intensity
     bounds:
-    - 0
-    - 2
+      - 0
+      - 2
     description: 继续研究强度：是否继续推进科学研究（以控制/销毁造物）
     reference: TODO:SOURCE
   health:
@@ -65,8 +65,8 @@ variables:
     value: 85
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 维克多生命力：身体健康状态：过度劳累、北极追逐、精神崩溃的综合损耗
     reference: TODO:SOURCE
     io_role: output
@@ -75,8 +75,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 伦理负担：未承担责任的道德重量：逃避→累积，直面→缓解
     reference: TODO:SOURCE
     io_role: output
@@ -85,8 +85,8 @@ variables:
     value: 90
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 亲情存续：威廉、贾斯汀、克拉维尔、伊丽莎白等至亲的存续状态
     reference: TODO:SOURCE
     io_role: output
@@ -95,8 +95,8 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 造物威胁等级：造物的复仇行动强度：被忽视则升高，被面对则可能谈判
     reference: TODO:SOURCE
     io_role: output
@@ -105,8 +105,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 对造物的科学掌控：能否通过研究理解/控制/销毁造物
     reference: TODO:SOURCE
     io_role: output
@@ -128,8 +128,7 @@ formulas:
     reference: TODO:SOURCE
   health_decay:
     formula:
-      health: max(0, health - (research_continuation * 1.2) - ((ethical_burden / 100) * 1.5) - ((creature_threat / 100) *
-        0.8))
+      health: max(0, health - (research_continuation * 1.2) - ((ethical_burden / 100) * 1.5) - ((creature_threat / 100) * 0.8))
     description: 研究+伦理负担+威胁三重消耗健康
     reference: TODO:SOURCE
   scientific_progress:
@@ -141,63 +140,66 @@ simulation:
   start_date: '1790-01-01'
   end_date: '1792-06-30'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: relationships_intact
-    metric: final
-    direction: maximize
-  - variable: health
-    metric: final
-    direction: maximize
+    - variable: relationships_intact
+      metric: final
+      direction: maximize
+    - variable: health
+      metric: final
+      direction: maximize
   schedules:
-  - variable: concealment_effort
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 压制造物知情范围
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: confrontation_willingness
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 直面造物的意愿
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: research_continuation
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 继续研究强度
-    optimize:
-      value:
-      - 0
-      - 2
+    - variable: concealment_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 压制造物知情范围
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: confrontation_willingness
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 直面造物的意愿
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: research_continuation
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 继续研究强度
+      optimize:
+        value:
+          - 0
+          - 2
   algorithm:
     population_size: 50
     n_generations: 80

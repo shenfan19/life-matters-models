@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       游戏专用简化营养摄入组件：三餐触发时将碳水化合物、蛋白质、脂肪和水分按固定比例注入胃部缓冲区。
@@ -156,25 +156,29 @@ optimizer:
       direction: minimize
   schedules:
     - variable: food_carbohydrate
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "碳水化合物摄入（g）"
       optimize:
         value: [0.0, 200.0]
     - variable: food_protein
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "蛋白质摄入（g）"
       optimize:
         value: [0.0, 100.0]
     - variable: food_fat
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "脂肪摄入（g）"
       optimize:
         value: [0.0, 80.0]
     - variable: water_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "水分摄入（ml）"
       optimize:

@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       慢性肾病（CKD）患者面临一个无法回避的营养矛盾：低蛋白饮食（0.6至0.8 g/kg/天）可减缓肾小球滤过率（GFR）的下降，
@@ -26,11 +26,11 @@ metadata:
     popularity: 4 - 肾病领域核心场景依赖，A4 系列多次导入的基础组件
   tags: [nephrology, ckd, protein, muscle, sarcopenia, optimization, physiological, A4]
   references:
-  - "KDIGO (2021) KDIGO 2020 CKD Clinical Practice Guideline. Kidney Int Suppl 11(1):1-169. [Section 3.1.3 低蛋白建议与肌少症权衡]"
-  - "Klahr S et al. (1994) The effects of dietary protein restriction and blood-pressure control on the progression of CKD (MDRD Study). NEJM 330(13):877-884. [低蛋白可减缓35%GFR下降]"
-  - "Kalantar-Zadeh K et al. (2017) Dietary restrictions in dialysis patients. JASN 28(8):2354-2368. [透析患者高蛋白需求]"
-  - "Fouque D, Aparicio M (2007) Eleven reasons to control protein intake of patients with CKD. Nat Clin Pract Nephrol 3(7):383-392. [蛋白限制临床依据]"
-  - "Carrero JJ et al. (2013) Etiology of the protein-energy wasting syndrome in CKD. J Ren Nutr 23(2):77-90. [CKD蛋白-能量消耗综合征]"
+    - "KDIGO (2021) KDIGO 2020 CKD Clinical Practice Guideline. Kidney Int Suppl 11(1):1-169. [Section 3.1.3 低蛋白建议与肌少症权衡]"
+    - "Klahr S et al. (1994) The effects of dietary protein restriction and blood-pressure control on the progression of CKD (MDRD Study). NEJM 330(13):877-884. [低蛋白可减缓35%GFR下降]"
+    - "Kalantar-Zadeh K et al. (2017) Dietary restrictions in dialysis patients. JASN 28(8):2354-2368. [透析患者高蛋白需求]"
+    - "Fouque D, Aparicio M (2007) Eleven reasons to control protein intake of patients with CKD. Nat Clin Pract Nephrol 3(7):383-392. [蛋白限制临床依据]"
+    - "Carrero JJ et al. (2013) Etiology of the protein-energy wasting syndrome in CKD. J Ren Nutr 23(2):77-90. [CKD蛋白-能量消耗综合征]"
 
   step_size:
     value: 1
@@ -184,7 +184,8 @@ optimizer:
 
   schedules:
     - variable: protein_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Daily protein intake (g/kg/day)"
       optimize:
         value: [0.3, 2.0]

@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       塞麦尔维斯（1847–1865）推动洗手预防产褥热的案例展示了创新扩散的正反馈障碍：
@@ -98,13 +98,13 @@ simulation:
   start_date: "1847-01-01"
   end_date: "1865-01-01"
   output_variables:
-  - mental_health
-  - acceptance
-  - evidence
-  - isolation
-  - patient_mortality
-  - research_effort
-  - advocacy_intensity
+    - mental_health
+    - acceptance
+    - evidence
+    - isolation
+    - patient_mortality
+    - research_effort
+    - advocacy_intensity
 formulas:
 
   # 1. 研究积累证据
@@ -182,46 +182,49 @@ optimizer:
     n_generations: 80
 
   objectives:
-  - variable: acceptance
-    metric: final
-    direction: maximize
-  - variable: mental_health
-    metric: mean
-    direction: maximize
-  - variable: patient_mortality
-    metric: final
-    direction: minimize
+    - variable: acceptance
+      metric: final
+      direction: maximize
+    - variable: mental_health
+      metric: mean
+      direction: maximize
+    - variable: patient_mortality
+      metric: final
+      direction: minimize
 
   constraints:
-  - variable: mental_health
-    condition: ">= 20"
-    description: "心理健康不能完全崩溃（送入精神病院）"
-  - variable: evidence
-    condition: ">= 40"
-    metric: final
-    description: "评估期末需积累足够证据（initial evidence=20，期末达标即可，非全程约束）"
+    - variable: mental_health
+      condition: ">= 20"
+      description: "心理健康不能完全崩溃（送入精神病院）"
+    - variable: evidence
+      condition: ">= 40"
+      metric: final
+      description: "评估期末需积累足够证据（initial evidence=20，期末达标即可，非全程约束）"
 
   schedules:
-  - variable: research_effort
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    date_range: ["1847-01-01", "1848-12-21"]
-    label: "研究阶段强度（前24个月）"
-    optimize:
-      value: [0.0, 3.0]
-  - variable: advocacy_intensity
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    date_range: ["1848-12-22", "1865-01-01"]
-    label: "倡导阶段强度（24个月后）"
-    optimize:
-      value: [0.0, 3.0]
-  - variable: self_care
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "自我照护水平"
-    optimize:
-      value: [0.0, 1.0]
+    - variable: research_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["1847-01-01", "1848-12-21"]
+      label: "研究阶段强度（前24个月）"
+      optimize:
+        value: [0.0, 3.0]
+    - variable: advocacy_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["1848-12-22", "1865-01-01"]
+      label: "倡导阶段强度（24个月后）"
+      optimize:
+        value: [0.0, 3.0]
+    - variable: self_care
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "自我照护水平"
+      optimize:
+        value: [0.0, 1.0]
 
   analysis:
     pareto_description: |

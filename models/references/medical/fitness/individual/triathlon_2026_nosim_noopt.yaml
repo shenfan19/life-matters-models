@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       奥林匹克铁人三项（游泳 1.5 km + 自行车 40 km + 跑步 10 km）是跨三种运动模式的持续性耐力竞赛，
@@ -140,7 +140,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables: [energy_stores_glycogen, energy_stores_fat, heart_rate, fatigue_accumulated, race_time_elapsed]
   schedules:
     # 游泳段（0-20分钟）
@@ -205,17 +205,20 @@ optimizer:
       description: "心率安全上限 195 bpm"
   schedules:
     - variable: intensity_pct_threshold
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "游泳段强度（%阈值，65=保守，90=激进）"
       optimize:
         value: [65.0, 90.0]
     - variable: intensity_pct_threshold
-      time: "07:20"
+      time_start: "07:20"
+      time_end: "07:20"
       label: "自行车段强度（%阈值，65=保守，90=激进）"
       optimize:
         value: [65.0, 90.0]
     - variable: intensity_pct_threshold
-      time: "08:30"
+      time_start: "08:30"
+      time_end: "08:30"
       label: "跑步段强度（%阈值，65=保守，90=激进）"
       optimize:
         value: [65.0, 90.0]

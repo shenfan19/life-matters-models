@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       非酒精性脂肪肝（NAFLD）是全球患病率最高的慢性肝病，肝脏脂肪堆积超过5%即达到诊断阈值。
@@ -140,7 +140,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-04-01"
+  end_date: "2026-04-01"
   output_variables: [liver_fat_pct, alt_level, fatigue_score, exercise_intensity]
   schedules:
     - variable: exercise_intensity
@@ -168,7 +168,8 @@ optimizer:
       description: "ALT不超正常上限（EASL 2016）"
   schedules:
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Wed, Fri]
       label: "主训练日运动强度（MET）"
       optimize:

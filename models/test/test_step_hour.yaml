@@ -64,7 +64,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-30"
+  end_date: "2026-01-30"
   plans:
     - id: default
       label: Default
@@ -87,7 +87,8 @@ optimizer:
       type: hard
   schedules:
     - variable: oral_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Daily dose (mg)"
       optimize:
         value: [50.0, 500.0]

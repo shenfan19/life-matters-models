@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       排球是以垂直起跳为核心爆发动作的间歇性运动，每次扣球或拦网跳约持续 3-5 秒，
@@ -127,7 +127,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -171,7 +171,8 @@ optimizer:
       description: "拦网高度不低于280cm（技战术下限）"
   schedules:
     - variable: spike_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       label: "扣球强度（RPE 4-10）"
       optimize:
         value: [4.0, 10.0]

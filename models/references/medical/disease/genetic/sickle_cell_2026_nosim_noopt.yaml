@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       镰状细胞病（SCD）是一种由基因突变导致的遗传性血液病，患者红细胞在低氧等诱因下发生镰变，
@@ -214,7 +214,8 @@ optimizer:
       description: "目标：疼痛评分<4（日常功能保留）"
   schedules:
     - variable: hydroxyurea_dose_mg_per_kg
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "羟基脲剂量（mg/kg/day）"
       optimize:
         value: [10.0, 25.0]

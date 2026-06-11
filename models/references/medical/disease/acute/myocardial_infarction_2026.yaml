@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       急性心肌梗死（STEMI）发生后，梗死区心肌经历从坏死到纤维化疤痕的修复序列，整个过程约6至8周。
@@ -218,7 +218,8 @@ optimizer:
       description: "EF不低于基线（防止过度训练损伤）"
   schedules:
     - variable: cardiac_rehab_met
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       label: "康复训练强度（MET）"
       optimize:
         value: [1.0, 6.0]

@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       阿司匹林（乙酰水杨酸）在心血管预防（低剂量 75–100 mg/day，抗血小板）和镇痛（标准 325–650 mg）两种适应证中的剂量方案截然不同。
@@ -206,7 +206,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-03"
+  end_date: "2026-01-03"
   output_variables:
     - salicylate_plasma
     - asa_gi
@@ -237,7 +237,8 @@ optimizer:
       description: "毒性约束：血浆水杨酸<100 mg/L（避免耳鸣、酸中毒）"
   schedules:
     - variable: aspirin_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "晨服阿司匹林剂量（mg）"
       optimize:
         value: [75, 325]
@@ -251,7 +252,7 @@ optimizer:
     n_solutions: 5
     elapsed_seconds: 67.4
     pareto_front:
-      - {x: [75.0],  f: [75.0,  -8640.0]}
+      - {x: [75.0], f: [75.0, -8640.0]}
       - {x: [100.0], f: [100.0, -11520.0]}
       - {x: [150.0], f: [150.0, -17280.0]}
       - {x: [200.0], f: [200.0, -23040.0]}

@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       诸葛亮北伐（228–234 AD）的核心张力来自”食少事烦，其能久乎”的历史叙述：
@@ -118,14 +118,14 @@ simulation:
   start_date: "0228-03-01"
   end_date: "0228-09-01"
   output_variables:
-  - health
-  - fatigue
-  - strategy
-  - nutrition
-  - supply_level
-  - morale
-  - court_stability
-  - work_intensity
+    - health
+    - fatigue
+    - strategy
+    - nutrition
+    - supply_level
+    - morale
+    - court_stability
+    - work_intensity
 formulas:
 
   # 1. 饮食消化：食物→营养
@@ -241,52 +241,56 @@ optimizer:
     n_generations: 60
 
   objectives:
-  - variable: strategy
-    metric: final
-    direction: maximize
-  - variable: health
-    metric: mean
-    direction: maximize
-  - variable: morale
-    metric: mean
-    direction: maximize
+    - variable: strategy
+      metric: final
+      direction: maximize
+    - variable: health
+      metric: mean
+      direction: maximize
+    - variable: morale
+      metric: mean
+      direction: maximize
 
   constraints:
-  - variable: health
-    condition: ">= 40"
-    description: "丞相健康不能低于40（历史约束：需维持基本军务能力）"
-  - variable: supply_level
-    condition: ">= 10"
-    description: "军粮不能完全耗尽"
-  - variable: morale
-    condition: ">= 20"
-    description: "军心不能崩溃"
+    - variable: health
+      condition: ">= 40"
+      description: "丞相健康不能低于40（历史约束：需维持基本军务能力）"
+    - variable: supply_level
+      condition: ">= 10"
+      description: "军粮不能完全耗尽"
+    - variable: morale
+      condition: ">= 20"
+      description: "军心不能崩溃"
 
   schedules:
-  - variable: work_intensity
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "每日军务强度"
-    optimize:
-      value: [0.5, 3.0]
-  - variable: rest_quality
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "每日休息质量"
-    optimize:
-      value: [0.3, 1.0]
-  - variable: food_intake
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "每日食物摄入量"
-    optimize:
-      value: [60.0, 300.0]
-  - variable: political_address
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "朝廷事务投入"
-    optimize:
-      value: [0.0, 1.5]
+    - variable: work_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "每日军务强度"
+      optimize:
+        value: [0.5, 3.0]
+    - variable: rest_quality
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "每日休息质量"
+      optimize:
+        value: [0.3, 1.0]
+    - variable: food_intake
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "每日食物摄入量"
+      optimize:
+        value: [60.0, 300.0]
+    - variable: political_address
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "朝廷事务投入"
+      optimize:
+        value: [0.0, 1.5]
 
   analysis:
     pareto_description: |

@@ -3,8 +3,8 @@ metadata:
   name: ru1865_ru_raskolnikov
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       拉斯柯尔尼科夫（陀思妥耶夫斯基《罪与罚》1866）谋杀放贷人后面临三重张力：
@@ -22,14 +22,14 @@ metadata:
     innovation: 2 - 将道德冲突外化为"精神发烧"动力学的意图极具创意，但尚未完善
     social_value: 5 - 探索道德越界的心理代价和救赎的可能性，是陀思妥耶夫斯基最重要作品
   tags:
-  - poverty
-  - crime
-  - mental-health
-  - fever
-  - redemption
-  - literature
+    - poverty
+    - crime
+    - mental-health
+    - fever
+    - redemption
+    - literature
   references:
-  - Crime and Punishment (Dostoyevsky, 1866)
+    - Crime and Punishment (Dostoyevsky, 1866)
   step_size:
     value: 1
     unit: day
@@ -39,8 +39,8 @@ variables:
     value: 0.6
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 掩盖罪行努力：主动消除痕迹、控制表现、避免暴露
     reference: TODO:SOURCE
   spiritual_seeking:
@@ -48,8 +48,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 精神救赎寻求：与索尼娅等人的真实交流，寻求道德出路
     reference: TODO:SOURCE
   social_withdrawal:
@@ -57,8 +57,8 @@ variables:
     value: 0.7
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 社会退缩程度：拒绝人际接触、独居程度（越高越安全，也越快崩溃）
     reference: TODO:SOURCE
   mental_health:
@@ -66,8 +66,8 @@ variables:
     value: 45
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 精神状态：罪恶感·发烧·妄想·心理分裂的综合状态（高=稳定）
     reference: TODO:SOURCE
     io_role: output
@@ -76,8 +76,8 @@ variables:
     value: 30
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 发烧强度：心理创伤导致的生理发热（陀思妥耶夫斯基式症状）
     reference: TODO:SOURCE
     io_role: output
@@ -86,8 +86,8 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 被侦探发现的风险：波费利等侦探逐渐收紧包围圈的程度
     reference: TODO:SOURCE
     io_role: output
@@ -96,8 +96,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 救赎可能性：走向自首和灵魂重建的内在能量
     reference: TODO:SOURCE
     io_role: output
@@ -106,8 +106,8 @@ variables:
     value: 60
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 罪恶感压力：无法逃避的道德重量
     reference: TODO:SOURCE
     io_role: output
@@ -119,8 +119,7 @@ formulas:
     reference: TODO:SOURCE
   mental_health_change:
     formula:
-      mental_health: max(0, min(100, mental_health - ((fever_level / 100) * 2.5) - (concealment_effort * 1.2) - (social_withdrawal
-        * 0.8) + (spiritual_seeking * 2.0)))
+      mental_health: max(0, min(100, mental_health - ((fever_level / 100) * 2.5) - (concealment_effort * 1.2) - (social_withdrawal * 0.8) + (spiritual_seeking * 2.0)))
     description: 精神状态受发烧·掩盖努力·孤立的消耗
     reference: TODO:SOURCE
   detection_progression:
@@ -142,63 +141,66 @@ simulation:
   start_date: '1865-06-01'
   end_date: '1865-08-29'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: redemption_potential
-    metric: final
-    direction: maximize
-  - variable: mental_health
-    metric: final
-    direction: maximize
+    - variable: redemption_potential
+      metric: final
+      direction: maximize
+    - variable: mental_health
+      metric: final
+      direction: maximize
   schedules:
-  - variable: concealment_effort
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 掩盖罪行努力
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: spiritual_seeking
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 精神救赎寻求
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: social_withdrawal
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 社会退缩程度
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: concealment_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 掩盖罪行努力
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: spiritual_seeking
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 精神救赎寻求
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: social_withdrawal
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 社会退缩程度
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

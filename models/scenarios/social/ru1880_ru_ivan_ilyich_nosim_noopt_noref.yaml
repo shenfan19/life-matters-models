@@ -3,8 +3,8 @@ metadata:
   name: ru1880_ru_ivan_ilyich
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       伊万·伊里奇（托尔斯泰《伊万·伊里奇之死》1886）在确认临终后 20 周面临三重权衡：
@@ -22,14 +22,14 @@ metadata:
     innovation: 2 - 将社会体面与真实表达的权衡转化为可优化动力学的意图深刻，但尚未完善
     social_value: 5 - 触及死亡的尊严、社会体面的代价和真实陪伴的珍贵，托尔斯泰最重要中篇
   tags:
-  - death
-  - dignity
-  - authenticity
-  - social-pretense
-  - disease
-  - literature
+    - death
+    - dignity
+    - authenticity
+    - social-pretense
+    - disease
+    - literature
   references:
-  - The Death of Ivan Ilyich (Tolstoy, 1886)
+    - The Death of Ivan Ilyich (Tolstoy, 1886)
   step_size:
     value: 1
     unit: week
@@ -39,8 +39,8 @@ variables:
     value: 0.8
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 维持社会体面：继续表现正常、掩盖病情、回避死亡话题
     reference: TODO:SOURCE
   authentic_expression:
@@ -48,8 +48,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 真实表达：向家人、医生或仆人表达真实恐惧与需求
     reference: TODO:SOURCE
   pain_endurance:
@@ -57,8 +57,8 @@ variables:
     value: 0.5
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 忍痛程度：不要求镇痛药物（鸦片），强撑（当时医生能做的极少）
     reference: TODO:SOURCE
   pain_level:
@@ -66,8 +66,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 疼痛等级：内脏慢性疼痛的累积强度（19世纪无有效止痛）
     reference: TODO:SOURCE
     io_role: output
@@ -76,8 +76,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 内心平静：接受死亡、与生命和解的程度
     reference: TODO:SOURCE
     io_role: output
@@ -86,8 +86,8 @@ variables:
     value: 60
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 情感孤立：家人回避、医生敷衍、无真实连接的孤独感
     reference: TODO:SOURCE
     io_role: output
@@ -96,8 +96,8 @@ variables:
     value: 30
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 尊严完整度：在生命末期保有作为人的尊严（非社会地位，而是真实的自我）
     reference: TODO:SOURCE
     io_role: output
@@ -106,8 +106,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 身体衰竭进程：不可逆的生理衰竭积累
     reference: TODO:SOURCE
     io_role: output
@@ -141,63 +141,66 @@ simulation:
   start_date: '1880-01-01'
   end_date: '1880-05-19'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: inner_peace
-    metric: final
-    direction: maximize
-  - variable: dignity_preserved
-    metric: final
-    direction: maximize
+    - variable: inner_peace
+      metric: final
+      direction: maximize
+    - variable: dignity_preserved
+      metric: final
+      direction: maximize
   schedules:
-  - variable: facade_maintenance
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 维持社会体面
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: authentic_expression
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 真实表达
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: pain_endurance
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 忍痛程度
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: facade_maintenance
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 维持社会体面
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: authentic_expression
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 真实表达
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: pain_endurance
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 忍痛程度
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

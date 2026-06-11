@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       心血管病患者往往同时合并高血压、血脂异常、糖尿病和超重——各专科指南各自给出"最优"干预，
@@ -224,7 +224,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2030-12-31"
+  end_date: "2030-12-31"
   output_variables:
     - sbp
     - ldl
@@ -273,7 +273,8 @@ optimizer:
       description: "ACC/AHA高危目标：LDL≤70 mg/dL"
   schedules:
     - variable: statin_dose_rel
-      time: "20:00"
+      time_start: "20:00"
+      time_end: "20:00"
       label: "他汀强度（0=无药，1=高强度80mg）"
       optimize:
         value: [0.0, 1.0]
@@ -287,11 +288,11 @@ optimizer:
     n_solutions: 5
     elapsed_seconds: 89.6
     pareto_front:
-      - {x: [0.0],  f: [0.098, 0.0]}
-      - {x: [0.3],  f: [0.084, 0.3]}
-      - {x: [0.5],  f: [0.073, 0.5]}
-      - {x: [0.7],  f: [0.065, 0.7]}
-      - {x: [1.0],  f: [0.058, 1.0]}
+      - {x: [0.0], f: [0.098, 0.0]}
+      - {x: [0.3], f: [0.084, 0.3]}
+      - {x: [0.5], f: [0.073, 0.5]}
+      - {x: [0.7], f: [0.065, 0.7]}
+      - {x: [1.0], f: [0.058, 1.0]}
     reference:
       x: [0.5]
       f: [0.073, 0.5]

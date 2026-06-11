@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       瑜伽是少数同时被证明能降低皮质醇、改善心率变异性（HRV）并提升柔韧性的身心练习之一，
@@ -135,7 +135,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-26"
+  end_date: "2026-03-26"
   output_variables: [flexibility_index, cortisol_level, hrv_score, mindfulness_score]
   schedules:
     - variable: yoga_intensity
@@ -173,7 +173,8 @@ optimizer:
       description: "皮质醇下限：5 nmol/L（低于此值为肾上腺抑制，病理状态）"
   schedules:
     - variable: yoga_intensity
-      time: "07:30"
+      time_start: "07:30"
+      time_end: "07:30"
       label: "练习强度（MET，1.5=阴瑜伽，4.5=阿斯汤加）"
       optimize:
         value: [1.5, 6.0]

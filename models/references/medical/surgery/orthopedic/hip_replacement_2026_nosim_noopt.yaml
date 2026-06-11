@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       全髋关节置换术（THA，全球约 100 万例/年，满意度约 90%）后，术后 12 周康复方案
@@ -229,7 +229,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-31"
+  end_date: "2026-03-31"
   output_variables:
     - hip_function_score
     - pain_vas
@@ -296,21 +296,24 @@ optimizer:
       description: "第28天外展肌力量≥60% LSI（Trendelenburg预防）"
   schedules:
     - variable: pt_intensity
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-14"]
       label: "第1-2周PT强度"
       optimize:
         value: [1.0, 5.0]
     - variable: pt_intensity
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-15", "2026-02-11"]
       label: "第3-6周PT强度"
       optimize:
         value: [3.0, 7.0]
     - variable: pt_intensity
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-02-12", "2026-03-31"]
       label: "第7-12周PT强度"

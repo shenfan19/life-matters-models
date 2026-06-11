@@ -114,7 +114,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2027-12-31"
+  end_date: "2027-12-31"
   plans:
     - id: default
       label: Default
@@ -149,12 +149,14 @@ optimizer:
       type: hard
   schedules:
     - variable: antihypertensive
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Antihypertensive dose first half (mg)"
       optimize:
         value: [0.0, 120.0]
     - variable: antihypertensive
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Antihypertensive dose second half (mg)"
       optimize:
         value: [0.0, 120.0]

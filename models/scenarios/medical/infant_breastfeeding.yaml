@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-30
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       新生儿喂养的多目标权衡：少喂多量能减少夜醒、利于妈妈睡眠，但早期胃容量有限（约 30 mL/kg），超量喂奶会导致溢奶、净吸收减少，拖慢生长曲线。
@@ -189,7 +189,7 @@ formulas:
 # ── 仿真设置（三方案对比） ─────────────────────────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-04-01"
+  end_date: "2026-04-01"
   output_types: [input, state]
   plans:
     - id: "frequent_small"
@@ -231,7 +231,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-04-01"
+  end_date: "2026-04-01"
   step_size:
     value: 1
     unit: hour
@@ -261,35 +261,40 @@ optimizer:
   schedules:
     # 5次白天喂奶（固定时刻，优化奶量）
     - variable: breast_milk
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "白天喂奶 7:00"
       optimize:
         value: [20, 150]
 
     - variable: breast_milk
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "白天喂奶 10:00"
       optimize:
         value: [20, 150]
 
     - variable: breast_milk
-      time: "13:00"
+      time_start: "13:00"
+      time_end: "13:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "白天喂奶 13:00"
       optimize:
         value: [20, 150]
 
     - variable: breast_milk
-      time: "16:00"
+      time_start: "16:00"
+      time_end: "16:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "白天喂奶 16:00"
       optimize:
         value: [20, 150]
 
     - variable: breast_milk
-      time: "19:00"
+      time_start: "19:00"
+      time_end: "19:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "白天喂奶 19:00"
       optimize:
@@ -301,7 +306,7 @@ optimizer:
       label: "夜间喂奶一（前半夜）"
       optimize:
         value: [10, 120]
-        time: ["21:00", "23:00"]
+        time_start: ["21:00", "23:00"]
         time_step: "1h"
 
     - variable: breast_milk
@@ -309,7 +314,7 @@ optimizer:
       label: "夜间喂奶二（后半夜）"
       optimize:
         value: [10, 120]
-        time: ["02:00", "05:00"]
+        time_start: ["02:00", "05:00"]
         time_step: "1h"
 
   results:

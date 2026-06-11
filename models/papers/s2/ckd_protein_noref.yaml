@@ -3,10 +3,10 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
-  - name: Minghui Wu
-    email: wuminghui@gzucm.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
   description:
     problem: |
       慢性肾病（CKD G3b-G4）同时面临肾功能保护与肌少症预防的冲突：肾内科指南为减少含氮废物，推荐蛋白摄入 0.6–0.8 g/kg/day；肌少症指南为维持肌肉量，推荐 ≥1.0 g/kg/day，两套指南无重叠。
@@ -187,7 +187,7 @@ formulas:
 # ── 仿真设置（K=2 分段：限制期→标准期）────────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-12-31"        # 52 周 = 364 天
+  end_date: "2026-12-31"          # 52 周 = 364 天
   output_variables:
     - GFR
     - muscle_mass
@@ -198,38 +198,26 @@ simulation:
     - id: "kidney_protect"
       label: "肾保护优先（GFR 端点，全程低蛋白）"
       schedules:
-        - {variable: dietary_protein, time: "08:00", value: 0.22,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
-        - {variable: dietary_protein, time: "12:00", value: 0.21,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
-        - {variable: dietary_protein, time: "18:00", value: 0.22,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白"}
+        - {variable: dietary_protein, time: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time: "18:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白"}
 
     - id: "balanced"
       label: "临床平衡方案（K=2 分段，前26周限制后26周标准）"
       schedules:
-        - {variable: dietary_protein, time: "08:00", value: 0.22,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期早餐"}
-        - {variable: dietary_protein, time: "12:00", value: 0.21,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期午餐"}
-        - {variable: dietary_protein, time: "21:00", value: 0.22,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期晚餐（睡前）"}
-        - {variable: dietary_protein, time: "08:00", value: 0.29,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期早餐"}
-        - {variable: dietary_protein, time: "12:00", value: 0.27,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期午餐"}
-        - {variable: dietary_protein, time: "21:00", value: 0.28,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期晚餐（睡前）"}
+        - {variable: dietary_protein, time: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期早餐"}
+        - {variable: dietary_protein, time: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期午餐"}
+        - {variable: dietary_protein, time: "21:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期晚餐（睡前）"}
+        - {variable: dietary_protein, time: "08:00", value: 0.29, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期早餐"}
+        - {variable: dietary_protein, time: "12:00", value: 0.27, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期午餐"}
+        - {variable: dietary_protein, time: "21:00", value: 0.28, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期晚餐（睡前）"}
 
     - id: "muscle_preserve"
       label: "肌肉保留优先（肌肉端点，全程标准蛋白）"
       schedules:
-        - {variable: dietary_protein, time: "08:00", value: 0.38,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
-        - {variable: dietary_protein, time: "12:00", value: 0.36,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
-        - {variable: dietary_protein, time: "21:00", value: 0.37,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白（睡前）"}
+        - {variable: dietary_protein, time: "08:00", value: 0.38, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time: "12:00", value: 0.36, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time: "21:00", value: 0.37, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白（睡前）"}
 
   mc:
     runs: 20
@@ -239,7 +227,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-12-31"
+  end_date: "2026-12-31"
   step_size:
     value: 1
     unit: day
@@ -275,7 +263,8 @@ optimizer:
   schedules:
     # T1: 早餐蛋白量（固定08:00，优化量）
     - variable: dietary_protein
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "早餐蛋白量"
       optimize:
@@ -283,7 +272,8 @@ optimizer:
 
     # T1: 午餐蛋白量（固定12:00）
     - variable: dietary_protein
-      time: "12:00"
+      time_start: "12:00"
+      time_end: "12:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "午餐蛋白量"
       optimize:
@@ -297,12 +287,13 @@ optimizer:
       label: "晚餐蛋白量与用餐时机（时间营养学优化）"
       optimize:
         value: [0.15, 0.45]
-        time: ["17:00", "22:00"]
+        time_start: ["17:00", "22:00"]
 
     # T4: 限制期→标准期切换时机（在第13-39周窗口内搜索最优切换点）
     # 科学意义：GFR 稳定后才能安全提升蛋白；过早提升加速 GFR 损伤
     - variable: dietary_protein
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "标准期启动时机（限制→标准切换日）"
       optimize:

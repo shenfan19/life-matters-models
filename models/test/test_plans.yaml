@@ -58,7 +58,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"
+  end_date: "2026-06-30"
   output_variables: [body_weight]
   output_types: [input]
 
@@ -108,12 +108,14 @@ optimizer:
       direction: minimize
   schedules:
     - variable: caloric_deficit
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       label: "Daily caloric deficit (kcal/day)"
       optimize:
         value: [200.0, 1000.0]
     - variable: exercise_minutes
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "Exercise session + weekly pattern"
       optimize:
         value: [0.0, 60.0]

@@ -3,8 +3,8 @@ metadata:
   name: fr1815_fr_jean_valjean
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       冉·阿让（雨果《悲惨世界》1862）在主教的宽恕后选择救赎，面临三重持续张力：
@@ -22,14 +22,14 @@ metadata:
     innovation: 2 - 将善行-隐藏身份-自我照料的三角权衡转化为动力学意图清晰，但尚未完善
     social_value: 5 - 《悲惨世界》是探讨社会正义和人性救赎的世界级经典，社会价值极高
   tags:
-  - justice
-  - redemption
-  - labor-injury
-  - aging
-  - identity
-  - literature
+    - justice
+    - redemption
+    - labor-injury
+    - aging
+    - identity
+    - literature
   references:
-  - 悲惨世界 (Victor Hugo, 1862)
+    - 悲惨世界 (Victor Hugo, 1862)
   step_size:
     value: 1
     unit: month
@@ -39,8 +39,8 @@ variables:
     value: 1.5
     unit: intensity
     bounds:
-    - 0
-    - 2
+      - 0
+      - 2
     description: 践行善行强度：用行动救助他人、回报社会的努力
     reference: TODO:SOURCE
   concealment:
@@ -48,8 +48,8 @@ variables:
     value: 0.7
     unit: ratio
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 隐藏身份：掩盖前囚犯身份以在社会中生存
     reference: TODO:SOURCE
   self_care:
@@ -57,8 +57,8 @@ variables:
     value: 0.3
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 自我照料：注意身体恢复，减少苦役后遗症的进展
     reference: TODO:SOURCE
   physical_health:
@@ -66,8 +66,8 @@ variables:
     value: 60
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 身体状态：19年苦役的长期损伤与老化的综合健康
     reference: TODO:SOURCE
     io_role: output
@@ -76,8 +76,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 救赎进度：用善行弥补过去的积累
     reference: TODO:SOURCE
     io_role: output
@@ -86,8 +86,8 @@ variables:
     value: 15
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 贾维尔的追踪：警察对他身份和下落的掌握程度
     reference: TODO:SOURCE
     io_role: output
@@ -96,8 +96,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 社区信任：在新身份下建立的社会信任资本
     reference: TODO:SOURCE
     io_role: output
@@ -126,63 +126,66 @@ simulation:
   start_date: '1815-01-01'
   end_date: '1832-12-31'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: redemption_progress
-    metric: final
-    direction: maximize
-  - variable: community_trust
-    metric: final
-    direction: maximize
+    - variable: redemption_progress
+      metric: final
+      direction: maximize
+    - variable: community_trust
+      metric: final
+      direction: maximize
   schedules:
-  - variable: virtue_effort
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 践行善行强度
-    optimize:
-      value:
-      - 0
-      - 2
-  - variable: concealment
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 隐藏身份
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: self_care
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 自我照料
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: virtue_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 践行善行强度
+      optimize:
+        value:
+          - 0
+          - 2
+    - variable: concealment
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 隐藏身份
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: self_care
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 自我照料
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

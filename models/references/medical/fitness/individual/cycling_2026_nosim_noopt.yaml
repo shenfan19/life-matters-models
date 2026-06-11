@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       公路自行车训练的核心科学问题是功率输出与生理负荷之间的精确剂量关系。
@@ -165,7 +165,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables: [heart_rate, vo2, lactate, fatigue, calories_burned, speed]
   schedules:
     - variable: power_output
@@ -203,7 +203,8 @@ optimizer:
       description: "乳酸上限 8 mmol/L（超过此值为严重无氧区，难以维持）"
   schedules:
     - variable: power_output
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "训练功率（W，140=Z2有氧下限，310=Z6无氧上限）"
       optimize:
         value: [140.0, 310.0]

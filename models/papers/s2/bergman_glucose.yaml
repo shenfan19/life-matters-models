@@ -3,10 +3,10 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
-  - name: Minghui Wu
-    email: wuminghui@gzucm.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
   description:
     problem: |
       糖尿病前期（IFG/IGT，空腹血糖 6.1–7.0 mmol/L）患者：低 GI 饮食、有氧运动、间歇性禁食均有指南支持，但三类干预的最优时序组合——空腹晨练还是餐后运动、禁食窗口 16:8 还是 14:10——缺乏量化依据。
@@ -197,7 +197,7 @@ formulas:
 # ── 仿真设置（K=2 分段：强化期→维持期）──────────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"        # 26 周
+  end_date: "2026-07-01"          # 26 周
   output_variables:
     - fasting_glucose
     - insulin_sensitivity
@@ -210,54 +210,30 @@ simulation:
     - id: "ifg_no_intervention"
       label: "无干预基线（IFG 自然进展）"
       schedules:
-        - {variable: carb_intake_per_meal, time: "00:00", value: 70.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "高碳水"}
-        - {variable: fasting_window_hours, time: "00:00", value: 10.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "无禁食"}
+        - {variable: carb_intake_per_meal, time: "00:00", value: 70.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "高碳水"}
+        - {variable: fasting_window_hours, time: "00:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "无禁食"}
 
     - id: "ada_standard"
       label: "ADA 标准干预（低碳水+餐后散步+无IF）"
       schedules:
-        - {variable: carb_intake_per_meal, time: "00:00", value: 45.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "低碳水（45g/餐）"}
-        - {variable: exercise_met_min, time: "19:00", value: 150.0,
-           days: [Mon, Wed, Fri, Sat],
-           date_range: ["2026-01-01", "2026-07-01"], label: "餐后运动（3次+周六）"}
-        - {variable: fasting_window_hours, time: "00:00", value: 12.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "轻度12h禁食"}
+        - {variable: carb_intake_per_meal, time: "00:00", value: 45.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "低碳水（45g/餐）"}
+        - {variable: exercise_met_min, time: "19:00", value: 150.0, days: [Mon, Wed, Fri, Sat], date_range: ["2026-01-01", "2026-07-01"], label: "餐后运动（3次+周六）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 12.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "轻度12h禁食"}
 
     - id: "fasting_exercise_optimized"
       label: "空腹运动+16:8 IF 方案（时间营养学）"
       schedules:
-        - {variable: carb_intake_per_meal, time: "00:00", value: 45.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "低碳水"}
-        - {variable: exercise_met_min, time: "07:00", value: 180.0,
-           days: [Mon, Wed, Fri],
-           date_range: ["2026-01-01", "2026-07-01"], label: "空腹晨练（07:00）"}
-        - {variable: fasting_window_hours, time: "00:00", value: 16.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "16:8 间歇性禁食"}
+        - {variable: carb_intake_per_meal, time: "00:00", value: 45.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "低碳水"}
+        - {variable: exercise_met_min, time: "07:00", value: 180.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹晨练（07:00）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 16.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "16:8 间歇性禁食"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（待运行更新）"
       schedules:
-        - {variable: carb_intake_per_meal, time: "00:00", value: 42.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "低GI饮食"}
-        - {variable: exercise_met_min, time: "06:30", value: 200.0,
-           days: [Mon, Wed, Fri],
-           date_range: ["2026-01-01", "2026-07-01"], label: "空腹晨练（T2优化）"}
-        - {variable: fasting_window_hours, time: "00:00", value: 16.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2026-02-01", "2026-07-01"], label: "16:8 IF（T4起始第4周）"}
-        - {variable: fasting_window_hours, time: "00:00", value: 13.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2026-01-01", "2026-01-31"], label: "过渡期14:10（T4前）"}
+        - {variable: carb_intake_per_meal, time: "00:00", value: 42.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "低GI饮食"}
+        - {variable: exercise_met_min, time: "06:30", value: 200.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹晨练（T2优化）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 16.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-02-01", "2026-07-01"], label: "16:8 IF（T4起始第4周）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 13.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-01-31"], label: "过渡期14:10（T4前）"}
 
   mc:
     runs: 20
@@ -267,7 +243,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   step_size:
     value: 1
     unit: day
@@ -299,7 +275,8 @@ optimizer:
   schedules:
     # T1: 每餐碳水量（影响餐后峰值和慢性血糖负担）
     - variable: carb_intake_per_meal
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每餐碳水摄入量"
       optimize:
@@ -311,11 +288,12 @@ optimizer:
       label: "运动量与时机（T2 空腹 vs 餐后）"
       optimize:
         value: [100.0, 250.0]
-        time: ["06:00", "20:00"]
+        time_start: ["06:00", "20:00"]
 
     # T1+T3: 运动频率模式
     - variable: exercise_met_min
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "运动频率模式（T3）"
       optimize:
         value: [120.0, 220.0]
@@ -324,7 +302,8 @@ optimizer:
 
     # T1: 禁食窗口时长（14h vs 16h）
     - variable: fasting_window_hours
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "间歇性禁食窗口时长"
       optimize:
@@ -332,7 +311,8 @@ optimizer:
 
     # T4: 间歇性禁食开始时机（从基础12h逐步过渡到目标禁食窗口的起始时机）
     - variable: fasting_window_hours
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "间歇性禁食方案起始时机（T4）"
       optimize:

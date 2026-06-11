@@ -3,8 +3,8 @@ metadata:
   name: cn1930_cn_xiangzi
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       祥子（老舍《骆驼祥子》1936）的核心问题是：在 1930 年代北京系统性剥削中，个人努力能走多远？
@@ -20,14 +20,14 @@ metadata:
     innovation: 2 - 将系统性剥削对个人努力的抵消转化为可优化动力学意图清晰，但尚未完善
     social_value: 5 - 探索劳工阶级在制度性剥削中的命运，触及中国现代化进程的深层问题
   tags:
-  - labor
-  - class
-  - exploitation
-  - urbanization
-  - health
-  - literature
+    - labor
+    - class
+    - exploitation
+    - urbanization
+    - health
+    - literature
   references:
-  - 骆驼祥子 (老舍, 1936)
+    - 骆驼祥子 (老舍, 1936)
   step_size:
     value: 1
     unit: month
@@ -37,8 +37,8 @@ variables:
     value: 2.0
     unit: intensity
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 拉车强度：每日工作的强度——越努力省钱越快，但身体损耗越大
     reference: TODO:SOURCE
   risk_tolerance:
@@ -46,8 +46,8 @@ variables:
     value: 0.5
     unit: ratio
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 接单风险度：是否接受危险路线（军阀区/深夜单）来赚更多钱
     reference: TODO:SOURCE
   social_connection:
@@ -55,8 +55,8 @@ variables:
     value: 0.3
     unit: ratio
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 社交维护：维持与车行工友、虎妞等人际网络的投入
     reference: TODO:SOURCE
   savings:
@@ -64,8 +64,8 @@ variables:
     value: 0
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 积蓄（相对值）：向买车目标的进度（100=成功购车）
     reference: TODO:SOURCE
     io_role: output
@@ -74,8 +74,8 @@ variables:
     value: 95
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 体力：身体状态：过度劳动+营养不足的累积损耗
     reference: TODO:SOURCE
     io_role: output
@@ -84,8 +84,8 @@ variables:
     value: 90
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 精神意志：对梦想的信念和继续挣扎的意志
     reference: TODO:SOURCE
     io_role: output
@@ -94,8 +94,8 @@ variables:
     value: 0
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 被剥削程度：制度性剥削（军阀·骗子·虎妞·恶雇主）的累积伤害
     reference: TODO:SOURCE
     io_role: output
@@ -104,8 +104,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 高温损伤风险：北京夏日在烈日下拉车的中暑/热射病累积风险
     reference: TODO:SOURCE
     io_role: output
@@ -117,8 +117,7 @@ formulas:
     reference: TODO:SOURCE
   body_wear:
     formula:
-      physical_strength: max(0, physical_strength - (work_intensity * 1.8) - ((heat_injury_risk / 100) * 2.0) + social_connection
-        * 0.8)
+      physical_strength: max(0, physical_strength - (work_intensity * 1.8) - ((heat_injury_risk / 100) * 2.0) + social_connection * 0.8)
     description: 拉车强度+高温风险+营养不足→体力衰减
     reference: TODO:SOURCE
   heat_risk_build:
@@ -128,8 +127,7 @@ formulas:
     reference: TODO:SOURCE
   morale_dynamics:
     formula:
-      morale: max(0, min(100, morale - ((exploitation_damage / 100) * 2.5 + (1 - physical_strength / 100) * 1.5) + (social_connection
-        * 1.5)))
+      morale: max(0, min(100, morale - ((exploitation_damage / 100) * 2.5 + (1 - physical_strength / 100) * 1.5) + (social_connection * 1.5)))
     description: 意志随体力下降和剥削积累而消耗
     reference: TODO:SOURCE
   exploitation_growth:
@@ -141,63 +139,66 @@ simulation:
   start_date: '1930-01-01'
   end_date: '1934-12-31'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: savings
-    metric: final
-    direction: maximize
-  - variable: morale
-    metric: final
-    direction: maximize
+    - variable: savings
+      metric: final
+      direction: maximize
+    - variable: morale
+      metric: final
+      direction: maximize
   schedules:
-  - variable: work_intensity
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 拉车强度
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: risk_tolerance
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 接单风险度
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: social_connection
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 社交维护
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: work_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 拉车强度
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: risk_tolerance
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 接单风险度
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: social_connection
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 社交维护
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

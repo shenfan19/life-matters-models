@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       NBA 精英篮球比赛中，运动员的心率长时间维持在 85-90% HRmax，每场执行约 150 次垂直跳跃。
@@ -126,7 +126,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -170,7 +170,8 @@ optimizer:
       description: "决策质量指数不低于60（场上执行力底线）"
   schedules:
     - variable: fast_break_frequency
-      time: "19:30"
+      time_start: "19:30"
+      time_end: "19:30"
       label: "快攻频率（0.5-5次/min）"
       optimize:
         value: [0.5, 5.0]

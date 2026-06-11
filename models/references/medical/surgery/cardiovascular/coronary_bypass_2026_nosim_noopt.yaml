@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       冠状动脉搭桥术（CABG，全球约 80 万例/年）后，低 EF（30–40%）患者的心功能恢复轨迹
@@ -240,7 +240,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-02-11"
+  end_date: "2026-02-11"
   output_variables:
     - ejection_fraction
     - cardiac_output
@@ -295,21 +295,24 @@ optimizer:
       description: "第14天伤口愈合指数≥0.5"
   schedules:
     - variable: cardiac_rehabilitation_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-07"]
       label: "第1周康复强度"
       optimize:
         value: [1.0, 4.0]
     - variable: cardiac_rehabilitation_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-08", "2026-01-21"]
       label: "第2-3周康复强度"
       optimize:
         value: [3.0, 7.0]
     - variable: cardiac_rehabilitation_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-22", "2026-02-11"]
       label: "第4-6周康复强度"

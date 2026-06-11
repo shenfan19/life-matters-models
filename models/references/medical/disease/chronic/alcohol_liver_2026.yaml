@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       慢性酒精摄入通过累积性肝细胞毒性损伤推动肝纤维化进展，从轻度损伤（F1-F2）到肝硬化（F4）的过程往往经历数年甚至数十年。
@@ -112,7 +112,8 @@ optimizer:
       direction: minimize
   schedules:
     - variable: alcohol_dose
-      time: "19:00"
+      time_start: "19:00"
+      time_end: "19:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日饮酒剂量（0=戒酒，3=重度饮酒）"
       optimize:

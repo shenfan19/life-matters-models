@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       篮球是典型的间歇性高强度团队运动，48 分钟比赛中冲刺、跳跃等爆发动作与中低强度跑动交替出现。
@@ -153,13 +153,15 @@ optimizer:
       description: "血乳酸不超过12 mmol/L"
   schedules:
     - variable: game_intensity
-      time: "19:00"
+      time_start: "19:00"
+      time_end: "19:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "比赛强度（RPE 0-10）"
       optimize:
         value: [0.0, 10.0]
     - variable: sprint_frequency
-      time: "19:00"
+      time_start: "19:00"
+      time_end: "19:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "冲刺频率（次/分）"
       optimize:

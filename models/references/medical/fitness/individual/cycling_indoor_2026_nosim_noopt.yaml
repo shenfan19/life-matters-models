@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       室内功率自行车训练（Spin/Zwift）的核心科学问题是如何用训练压力评分（TSS）量化
@@ -146,7 +146,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -191,7 +191,8 @@ optimizer:
       description: "心率控制在180 bpm以内（Zone 5上限）"
   schedules:
     - variable: power_zone
-      time: "06:30"
+      time_start: "06:30"
+      time_end: "06:30"
       label: "功率区间（Zone 1-5，有氧-VO2max范围）"
       optimize:
         value: [1.0, 5.0]

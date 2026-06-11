@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-26
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       MASLD（消化科）与 HOMA-IR（内分泌科）联合管理下，减重速率超过 0.3 kg/周会触发酮体-IR 恶化循环，使跨科室联合可行域收缩乃至成为非凸区域。
@@ -43,7 +43,7 @@ imports:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   step_size:
     value: 1
     unit: day
@@ -73,7 +73,8 @@ optimizer:
   schedules:
     # T1: 热量缺口（控制减重速率的直接决策变量）
     - variable: caloric_deficit
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日热量缺口（分岔控制参数）"
       optimize:
@@ -85,11 +86,12 @@ optimizer:
       label: "有氧运动量与时机（T2 IHIO 时间维度）"
       optimize:
         value: [100.0, 300.0]
-        time: ["06:00", "20:00"]
+        time_start: ["06:00", "20:00"]
 
     # T1+T3: 饮食升糖负荷 + 频率模式
     - variable: exercise_met_min
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "运动频率模式（T3）"
       optimize:
         value: [150.0, 260.0]
@@ -98,7 +100,8 @@ optimizer:
 
     # T1: 饮食升糖负荷
     - variable: dietary_glycemic_load
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "饮食升糖负荷"
       optimize:
@@ -106,7 +109,8 @@ optimizer:
 
     # T4: 低GI→地中海饮食切换时机
     - variable: dietary_glycemic_load
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "饮食切换时机（T4）"
       optimize:
@@ -150,7 +154,7 @@ optimizer:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   output_variables:
     - liver_fat
     - ALT
@@ -168,44 +172,22 @@ simulation:
     - id: "fast_loss"
       label: "快速减重方案（~0.45 kg/w，分岔右侧）"
       schedules:
-        - {variable: caloric_deficit, time: "00:00", value: 550.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "较大热量缺口"}
-        - {variable: exercise_met_min, time: "16:00", value: 250.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "餐后有氧（每天）"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 110.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "地中海饮食"}
+        - {variable: caloric_deficit, time: "00:00", value: 550.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "较大热量缺口"}
+        - {variable: exercise_met_min, time: "16:00", value: 250.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "餐后有氧（每天）"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 110.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "地中海饮食"}
 
     - id: "gentle_loss"
       label: "温和减重方案（~0.25 kg/w，分岔左侧，IHIO最优区间）"
       schedules:
-        - {variable: caloric_deficit, time: "00:00", value: 270.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "温和热量缺口"}
-        - {variable: exercise_met_min, time: "07:00", value: 210.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-03-27"],
-           label: "强化期空腹有氧"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 70.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-03-27"], label: "低GI强化期"}
-        - {variable: exercise_met_min, time: "07:00", value: 180.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-03-28", "2026-07-01"],
-           label: "维持期有氧"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 100.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-03-28", "2026-07-01"], label: "维持期地中海饮食"}
+        - {variable: caloric_deficit, time: "00:00", value: 270.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "温和热量缺口"}
+        - {variable: exercise_met_min, time: "07:00", value: 210.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-03-27"], label: "强化期空腹有氧"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 70.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "低GI强化期"}
+        - {variable: exercise_met_min, time: "07:00", value: 180.0, days: [Mon, Wed, Fri], date_range: ["2026-03-28", "2026-07-01"], label: "维持期有氧"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-28", "2026-07-01"], label: "维持期地中海饮食"}
 
     - id: "k4_balanced"
       label: "K×4 平衡参考点（待运行更新）"
       schedules:
-        - {variable: caloric_deficit, time: "00:00", value: 350.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
-        - {variable: exercise_met_min, time: "07:00", value: 210.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"],
-           label: "空腹有氧"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 75.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "低GI饮食"}
+        - {variable: caloric_deficit, time: "00:00", value: 350.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
+        - {variable: exercise_met_min, time: "07:00", value: 210.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹有氧"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 75.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "低GI饮食"}

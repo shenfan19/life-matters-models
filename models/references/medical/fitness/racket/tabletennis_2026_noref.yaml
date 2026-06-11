@@ -1,7 +1,7 @@
 metadata:
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   conflicts: []
   description:
     problem: >
@@ -27,11 +27,11 @@ metadata:
     evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
     popularity: 2 - 乒乓球生理模型较小众，不属于运动科学主流基准
   tags:
-  - fitness
-  - tabletennis
-  - ping-pong
-  - reaction
-  - skill
+    - fitness
+    - tabletennis
+    - ping-pong
+    - reaction
+    - skill
   updated: 2026-04-23
   step_size:
     value: 1
@@ -39,96 +39,96 @@ metadata:
 variables:
   rally_pace:
     bounds:
-    - 1.0
-    - 10.0
+      - 1.0
+      - 10.0
     description: 回合节奏（1=慢速练习，10=高速比赛对决）
     type: input
     unit: RPE
     value: 7.0
   spin_intensity:
     bounds:
-    - 0.0
-    - 10.0
+      - 0.0
+      - 10.0
     description: 旋转/变化球强度（影响神经负荷）
     type: input
     unit: 强度
     value: 5.0
   heart_rate:
     bounds:
-    - 60.0
-    - 180.0
+      - 60.0
+      - 180.0
     description: 心率（乒乓球相比其他运动偏低）
     type: state
     unit: 次/分
     value: 70.0
   calories_burned:
     bounds:
-    - 0.0
-    - 500.0
+      - 0.0
+      - 500.0
     description: 消耗热量
     type: state
     unit: kcal
     value: 0.0
   physical_fatigue:
     bounds:
-    - 0.0
-    - 1.0
+      - 0.0
+      - 1.0
     description: 身体疲劳（肌肉、心肺）
     type: state
     unit: 无量纲
     value: 0.0
   neural_fatigue:
     bounds:
-    - 0.0
-    - 1.0
+      - 0.0
+      - 1.0
     description: 神经疲劳（反应速度、注意力衰减）
     type: state
     unit: 无量纲
     value: 0.0
   reaction_time:
     bounds:
-    - 150.0
-    - 400.0
+      - 150.0
+      - 400.0
     description: 反应时间（神经疲劳增加时上升）
     type: state
     unit: 毫秒
     value: 220.0
   spin_reading:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 判断旋转球能力（疲劳和专注度影响）
     type: state
     unit: 分
     value: 80.0
   stroke_precision:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 击球精准度（受神经疲劳影响）
     type: state
     unit: 分
     value: 82.0
   footwork_speed:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 步法移动速度（受身体疲劳影响）
     type: state
     unit: 分
     value: 80.0
   concentration:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 专注度（双重疲劳共同影响）
     type: state
     unit: 分
     value: 90.0
   performance:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 综合比赛表现评分
     type: state
     unit: 分
@@ -207,16 +207,16 @@ simulation:
       value: 5.0
       label: 旋转强度
   output_variables:
-  - heart_rate
-  - calories_burned
-  - physical_fatigue
-  - neural_fatigue
-  - reaction_time
-  - spin_reading
-  - stroke_precision
-  - footwork_speed
-  - concentration
-  - performance
+    - heart_rate
+    - calories_burned
+    - physical_fatigue
+    - neural_fatigue
+    - reaction_time
+    - spin_reading
+    - stroke_precision
+    - footwork_speed
+    - concentration
+    - performance
 
 optimizer:
   method: nsga2
@@ -240,7 +240,8 @@ optimizer:
       description: 反应时间控制在 350ms 以内
   schedules:
     - variable: rally_pace
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       label: 回合节奏（RPE 3-9）
       optimize:
         value: [3.0, 9.0]

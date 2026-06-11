@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       长期轻度睡眠不足者：早睡 1 小时 vs 午睡 20 分钟，哪种方案对认知功能恢复更有效？基于 Borbély（1982）双过程模型，仿真 4 周作息并输出可执行就寝时刻表。
@@ -193,7 +193,7 @@ formulas:
 # ── 仿真设置（4周慢性轻度睡眠剥夺基线）──────────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-28"        # 4 周 = 28 天
+  end_date: "2026-01-28"          # 4 周 = 28 天
   output_variables:
     - sleep_pressure
     - chronic_sleep_debt
@@ -206,45 +206,31 @@ simulation:
     - id: "sleep_deprived_baseline"
       label: "基线：6.5h睡眠，00:00就寝，不午睡"
       schedules:
-        - {variable: sleep_hours, time: "00:00", value: 6.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "睡眠基线"}
+        - {variable: sleep_hours, time: "00:00", value: 6.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "睡眠基线"}
 
     - id: "early_bedtime"
       label: "早睡方案：7.5h睡眠，22:30就寝，不午睡"
       schedules:
-        - {variable: sleep_hours, time: "22:30", value: 7.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "早睡7.5h"}
+        - {variable: sleep_hours, time: "22:30", value: 7.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "早睡7.5h"}
 
     - id: "nap_strategy"
       label: "午睡策略：6.5h夜间睡眠 + 每天20min午睡"
       schedules:
-        - {variable: sleep_hours, time: "00:00", value: 6.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "夜间睡眠"}
-        - {variable: nap_minutes, time: "13:00", value: 20.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2026-01-01", "2026-01-28"], label: "工作日午睡20min"}
+        - {variable: sleep_hours, time: "00:00", value: 6.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "夜间睡眠"}
+        - {variable: nap_minutes, time: "13:00", value: 20.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-01-28"], label: "工作日午睡20min"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（参考点，待运行后更新）"
       schedules:
-        - {variable: sleep_hours, time: "22:30", value: 7.5,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2026-01-01", "2026-01-28"], label: "工作日早睡"}
-        - {variable: sleep_hours, time: "23:00", value: 8.5,
-           days: [Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "周末补觉"}
-        - {variable: nap_minutes, time: "13:00", value: 15.0,
-           days: [Mon, Wed, Fri],
-           date_range: ["2026-01-01", "2026-01-28"], label: "工作日午睡（间隔执行）"}
+        - {variable: sleep_hours, time: "22:30", value: 7.5, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-01-28"], label: "工作日早睡"}
+        - {variable: sleep_hours, time: "23:00", value: 8.5, days: [Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "周末补觉"}
+        - {variable: nap_minutes, time: "13:00", value: 15.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-01-28"], label: "工作日午睡（间隔执行）"}
 
 # ── 优化设置（T1+T2+T3 联合优化）──────────────────────────────────────────────
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-01-28"
+  end_date: "2026-01-28"
   step_size:
     value: 1
     unit: day
@@ -268,7 +254,8 @@ optimizer:
   schedules:
     # T1: 工作日睡眠时长
     - variable: sleep_hours
-      time: "22:00"
+      time_start: "22:00"
+      time_end: "22:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "工作日睡眠时长"
       optimize:
@@ -281,11 +268,12 @@ optimizer:
       label: "工作日就寝时机（时间营养学）"
       optimize:
         value: [6.5, 8.5]
-        time: ["21:00", "23:59"]
+        time_start: ["21:00", "23:59"]
 
     # T1: 周末睡眠（允许补觉）
     - variable: sleep_hours
-      time: "23:00"
+      time_start: "23:00"
+      time_end: "23:00"
       days: [Sat, Sun]
       label: "周末睡眠时长（含补觉）"
       optimize:
@@ -294,7 +282,8 @@ optimizer:
     # T3: 午睡时机（哪几天、什么时候午睡）
     # 科学意义：工作日午睡 vs 隔天午睡 vs 不午睡，对慢性睡眠债恢复效率不同
     - variable: nap_minutes
-      time: "13:00"
+      time_start: "13:00"
+      time_end: "13:00"
       label: "午睡频率策略"
       optimize:
         value: [0.0, 30.0]

@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       棒球运动的生理特征高度不均匀：投手在 9 局比赛中每投一球都对肩关节产生极大外旋应力，
@@ -116,7 +116,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - shoulder_fatigue
     - arm_stress_index
@@ -159,7 +159,8 @@ optimizer:
       description: "肩部疲劳不超过0.8（损伤风险阈值）"
   schedules:
     - variable: pitch_velocity
-      time: "13:00"
+      time_start: "13:00"
+      time_end: "13:00"
       label: "投球速度（75-100 mph）"
       optimize:
         value: [75.0, 100.0]

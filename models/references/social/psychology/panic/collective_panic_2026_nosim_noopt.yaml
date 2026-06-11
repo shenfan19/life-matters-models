@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       集体恐慌具有相变特征：当恐慌比例超过临界点（约 15–25%）时社会秩序崩溃速度急剧加快
@@ -213,7 +213,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-31"
+  end_date: "2026-01-31"
   output_variables:
     - calm_population
     - panic_population
@@ -253,14 +253,16 @@ optimizer:
       description: "恐慌指数不超60（防止社会秩序崩溃临界点）"
   schedules:
     - variable: authority_message
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-10"]
       label: "危机初期干预强度"
       optimize:
         value: [0.0, 1.0]
     - variable: authority_message
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-11", "2026-01-31"]
       label: "危机后期维持性干预"
@@ -276,11 +278,11 @@ optimizer:
     n_solutions: 5
     elapsed_seconds: 76.3
     pareto_front:
-      - {x: [0.0, 0.0],   f: [8.42, 0.0]}
-      - {x: [0.3, 0.1],   f: [6.18, 0.18]}
-      - {x: [0.6, 0.2],   f: [4.37, 0.36]}
-      - {x: [0.8, 0.3],   f: [3.12, 0.52]}
-      - {x: [1.0, 0.5],   f: [2.24, 0.70]}
+      - {x: [0.0, 0.0], f: [8.42, 0.0]}
+      - {x: [0.3, 0.1], f: [6.18, 0.18]}
+      - {x: [0.6, 0.2], f: [4.37, 0.36]}
+      - {x: [0.8, 0.3], f: [3.12, 0.52]}
+      - {x: [1.0, 0.5], f: [2.24, 0.70]}
     reference:
       x: [0.6, 0.2]
       f: [4.37, 0.36]

@@ -82,7 +82,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-31"
+  end_date: "2026-01-31"
   plans:
     - id: default
       label: Default
@@ -116,17 +116,20 @@ optimizer:
       type: hard
   schedules:
     - variable: morning_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Morning dose (mg)"
       optimize:
         value: [0.0, 20.0]
     - variable: noon_dose
-      time: "12:00"
+      time_start: "12:00"
+      time_end: "12:00"
       label: "Noon dose (mg)"
       optimize:
         value: [0.0, 20.0]
     - variable: evening_dose
-      time: "20:00"
+      time_start: "20:00"
+      time_end: "20:00"
       label: "Evening dose (mg)"
       optimize:
         value: [0.0, 20.0]

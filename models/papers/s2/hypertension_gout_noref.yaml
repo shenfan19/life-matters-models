@@ -3,10 +3,10 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
-  - name: Minghui Wu
-    email: wuminghui@gzucm.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
   description:
     problem: |
       高血压合并痛风患者面临指南冲突：ESC/ESH 推荐噻嗪类利尿剂（HCTZ）降压，但 HCTZ 会升高尿酸，增加痛风发作风险。
@@ -178,7 +178,7 @@ formulas:
 # ── 仿真设置（K=2 分段：滴定期→稳定期）────────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"        # 26 周 = 182 天
+  end_date: "2026-07-01"          # 26 周 = 182 天
   output_variables:
     - blood_pressure
     - uric_acid
@@ -190,35 +190,21 @@ simulation:
     - id: "morning_hctz_no_allo"
       label: "晨服 HCTZ 25mg，不加别嘌醇（ACR指南基准方案）"
       schedules:
-        - {variable: thiazide_dose, time: "08:00", value: 25.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晨服"}
-        - {variable: caloric_deficit, time: "00:00", value: 400.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
+        - {variable: thiazide_dose, time: "08:00", value: 25.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晨服"}
+        - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "evening_hctz_with_allo"
       label: "晚间 HCTZ 22:00 + 第8周加别嘌醇（时间药理学方案）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 25.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服（22:00）"}
-        - {variable: allopurinol_dose, time: "08:00", value: 100.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇（第8周起）"}
-        - {variable: caloric_deficit, time: "00:00", value: 400.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
+        - {variable: thiazide_dose, time: "22:00", value: 25.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服（22:00）"}
+        - {variable: allopurinol_dose, time: "08:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇（第8周起）"}
+        - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（参考点，待运行后更新）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 22.8,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ（待优化时间）"}
-        - {variable: caloric_deficit, time: "00:00", value: 400.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
+        - {variable: thiazide_dose, time: "22:00", value: 22.8, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ（待优化时间）"}
+        - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
   mc:
     runs: 20
@@ -228,7 +214,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   step_size:
     value: 1
     unit: day
@@ -272,11 +258,12 @@ optimizer:
       label: "HCTZ 剂量与给药时机（时间药理学优化）"
       optimize:
         value: [6.25, 50.0]
-        time: ["06:00", "22:00"]
+        time_start: ["06:00", "22:00"]
 
     # T1: 热量缺口（全程，影响体重和尿酸酮体）
     - variable: caloric_deficit
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日热量缺口"
       optimize:
@@ -286,7 +273,8 @@ optimizer:
     # 科学意义：HCTZ开始后尿酸通常在第3-6周升高并稳定，
     # 过早引入别嘌醇（<4周）增加副作用风险，过晚（>16周）已延误治疗
     - variable: allopurinol_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "别嘌醇引入时机与剂量"
       optimize:
