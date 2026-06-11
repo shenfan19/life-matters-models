@@ -176,43 +176,52 @@ formulas:
       acceptance: "max(0, acceptance - 0.5)"
 
 optimizer:
-  method: multi_objective
-  algorithm: nsga2
-  population_size: 50
-  generations: 80
+  method: nsga2
+  algorithm:
+    population_size: 50
+    n_generations: 80
 
   objectives:
   - variable: acceptance
+    metric: final
     direction: maximize
-    weight: 1.0
   - variable: mental_health
+    metric: mean
     direction: maximize
-    weight: 0.8
   - variable: patient_mortality
+    metric: final
     direction: minimize
-    weight: 0.6
 
   constraints:
-  - expression: "mental_health >= 20"
+  - variable: mental_health
+    condition: ">= 20"
     description: "心理健康不能完全崩溃（送入精神病院）"
-  - expression: "evidence >= 40"
-    description: "需积累足够证据再大力倡导"
+  - variable: evidence
+    condition: ">= 40"
+    metric: final
+    description: "评估期末需积累足够证据（initial evidence=20，期末达标即可，非全程约束）"
 
-  variables_to_optimize:
-  - name: research_phase_effort
-    default: 2.0
-    bounds: [0.0, 3.0]
-    maps_to: "research_effort @ [0, 24]"
-
-  - name: advocacy_phase_intensity
-    default: 1.5
-    bounds: [0.0, 3.0]
-    maps_to: "advocacy_intensity @ [24, 216]"
-
-  - name: self_care_level
-    default: 0.4
-    bounds: [0.0, 1.0]
-    maps_to: "self_care"
+  schedules:
+  - variable: research_effort
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    date_range: ["1847-01-01", "1848-12-21"]
+    label: "研究阶段强度（前24个月）"
+    optimize:
+      value: [0.0, 3.0]
+  - variable: advocacy_intensity
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    date_range: ["1848-12-22", "1865-01-01"]
+    label: "倡导阶段强度（24个月后）"
+    optimize:
+      value: [0.0, 3.0]
+  - variable: self_care
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "自我照护水平"
+    optimize:
+      value: [0.0, 1.0]
 
   analysis:
     pareto_description: |
