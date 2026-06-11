@@ -1,7 +1,7 @@
 # 0099 — sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性）
 
 **日期**：2026-06-11
-**状态**：🟡 提议（修订 0098，尚未实施）
+**状态**：✅ 已实施（修订 0098）
 **类别**：仿真引擎 / 优化器 schema
 
 ---
@@ -68,14 +68,44 @@ per_step_value = value / N_steps
    - `optimizer_engine.py`：`_run_sim` 调用前（`total_steps` 已在该函数可用）。
 4. `docs/model.md` "mode: sustained" 小节补充 value 语义说明 + 换算公式 + 示例。
 
-## 影响与后续验证
+## 实现记录
 
-- **`models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`**：`care_intensity`、
-  `self_protection`、`rest_hours` 的 `optimize.value` 边界数值含义从"每小时值"变为"窗口总量"，
-  需要按对应窗口的 `N_steps` 重新换算边界（例如原边界 `[0.0, 3.0]` 若窗口为 24 步，
-  新边界约为 `[0.0, 72.0]`，具体取决于物理含义），并重跑一次 `--opt` 确认 `feasible: 100%` 仍成立。
-- **诸葛亮疲劳 scenario**：用新语义（"这段时间的工作总量"）重新填写 `value`，与本 ADR 一起验证。
-- 不影响任何现有 pulse-only 模型（`N_steps=1` 时数值不变）。
+- `regimen_runner.py`：新增 `_time_range_day_seconds`、`_n_active_days`、
+  `precompute_sustained_divisors`；`apply_regimens` 的 sustained 分支按
+  `value / ev['_n_steps']` 写入（pulse 事件 `_n_steps` 缺省为 1，行为不变）。
+- `optimizer_engine.py`（`_run_sim`）、`session_manager.py`（`start_session`）：
+  在仿真循环开始前各调用一次 `precompute_sustained_divisors`。
+- `docs/model.md`："mode: sustained" 小节新增"value 语义：窗口总量，按 N_steps 自适应分摊"说明。
+
+## 影响与验证
+
+- **`models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`**：4 个 sustained
+  schedule 条目的 `optimize.value` 已按 `N_steps`（144/264/360/360）重新换算
+  （`[0,3]→[0,432]`、`[0,2]→[0,528]`、`[0,1]→[0,360]`、`[0.1,0.8]→[36,288]`）。
+  `--opt` smoke test（pop=8, gen=2）：`success=True`，5 个解，`x` 落在新边界内，
+  `f`（patients_saved / health）数值合理，约束 `health>=10` 满足。
+- **`models/test/test_sustained_mode.yaml`**：`work_rate`/`recovery_rate` 的
+  `optimize.value`/`value` 按 `N_steps=60` 重新换算（`×60`），使每步的
+  `work_rate`/`recovery_rate` 变量值（从而轨迹）与改动前完全一致。
+  `--opt` smoke test（pop=10, gen=3）：`success=True`，10 个解，
+  `cumulative_output`/`fatigue` 的 work/fatigue 权衡符合预期。
+- 不影响任何现有 pulse-only 模型（`N_steps=1` 时 `value/1=value`，数值不变）。
+
+## 已知范围外问题（未在本 ADR 处理）
+
+- **`simulation.schedules`（`_apply_schedules`，forward `--sim`/`plans` 路径）不支持
+  `mode: sustained`**——该路径是独立实现（`model_structure/simulation.py`），只认
+  `pulse`/`step`/`linear` 插值，不读取 `mode`/`time_range`/`_n_steps`。
+  `mode: sustained` 目前**仅在 `optimizer.schedules` 与 GUI regimen 路径
+  （均经过 `apply_regimens`）生效**。如果某个 forward-sim-only 场景
+  （不跑 `--opt`）需要 sustained 输入，需要单独的 ADR 把 `_apply_schedules`
+  也接入 `precompute_sustained_divisors`/`apply_regimens` 的逻辑，或复用同一套
+  N_steps 计算。
+- 冒烟测试中发现一个与本 ADR 无关的预存在 bug：`run_optimizer(progress_callback=None)`
+  时 NSGA-II 因 `callback=None` 被当作可调用对象触发 `TypeError`
+  （`optimizer_engine.py` `_run_nsga2` 附近，`_cb = _ProgressCb() if progress_callback else None`
+  后传给 `pymoo_minimize(..., callback=_cb)`）。GUI/CLI 路径目前总是传入回调，
+  实际未受影响，仅在脚本直接调用 `run_optimizer()` 不传回调时触发。
 
 ## 与 0100 的关系
 

@@ -910,7 +910,7 @@ schedules:
     date_range: ["1945-08-06", "1945-08-11"]   # 可选：限定生效的日期窗口
     label: "前5天救治强度"
     optimize:
-      value: [0.0, 3.0]
+      value: [0.0, 432.0]   # 窗口总量；6天×24h / step=1h → N_steps=144
 ```
 
 - 默认（不写 `mode`，或 `mode` 省略）的调度是 **pulse 模式**：每个 step 开始时受控变量先清零，
@@ -923,6 +923,27 @@ schedules:
 - 适用场景：`step_size: hour`/`minute` 的模型中，决策变量代表"持续强度/持续防护/持续休息"等
   在多个连续 step 上保持恒定的输入，而非某一时刻的脉冲事件。
 - 与 `optimize.time`（T2）互斥：`mode: sustained` 表示"全程持续"，T2 表示"在某个时间窗内的某一时刻触发"，二者语义不同，不应同时使用。
+
+#### value 语义：窗口总量，按 N_steps 自适应分摊（ADR 0099）
+
+`value`（以及 `optimize.value` 的上下界）表示**整个生效窗口内的总量**，与 pulse 的"一次性总量"
+是同一量纲——这是为了让 `step_size` 只影响精度、不影响模型结果（与 Euler 离散积分章节的原则一致）。
+
+引擎在装载阶段为每个 sustained 条目预计算：
+
+```
+N_steps = 生效窗口总时长 / step_size
+```
+
+运行时每个命中 step 写入 `value / N_steps`（仍遵循"`type: input` 不乘 `step`"规则，dynamics 公式不需要改动）。
+累计贡献 = `(value / N_steps) × N_steps = value`，与 `step_size` 无关。**pulse 是 `N_steps=1` 的特例**，
+两者共用同一条规则。
+
+`生效窗口总时长` 的计算：`(date_range 覆盖的天数，缺省=整个仿真区间) × (time_range 覆盖的每日时长，缺省=24h)`，
+再按 `days` 过滤（若设置，只计入匹配星期几的天数）。
+
+> 建模时按"这段时间总共投入了多少"来填 `value`（例如"前5天救治总强度=432"），
+> 不要按"每小时/每步的强度"来填——后者是 0099 之前的语义，已废弃。
 
 ### x 向量编码规则
 
