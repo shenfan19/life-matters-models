@@ -104,17 +104,20 @@ optimizer:
 
   schedules:
     - variable: carb_intake
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "早餐碳水"
       optimize:
         value: [20, 80]
     - variable: carb_intake
-      time: "12:00"
+      time_start: "12:00"
+      time_end: "12:00"
       label: "午餐碳水"
       optimize:
         value: [30, 100]
     - variable: carb_intake
-      time: "18:30"
+      time_start: "18:30"
+      time_end: "18:30"
       label: "晚餐碳水"
       optimize:
         value: [20, 80]
@@ -129,9 +132,9 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-04"      # 3 天
   output_variables:
-  - blood_glucose
-  - stomach_carbs
-  - carb_intake
+    - blood_glucose
+    - stomach_carbs
+    - carb_intake
   plans:
     - id: default
       label: Default

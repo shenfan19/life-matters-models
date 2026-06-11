@@ -3,8 +3,8 @@ metadata:
   name: dz1940_fr_dr_rieux
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       里厄医生（加缪《鼠疫》1947）在 1940 年代奥兰鼠疫封城中面临三重权衡：
@@ -21,14 +21,14 @@ metadata:
     innovation: 2 - 将救治强度与自我保护的动态权衡转化为可优化系统意图存在，但尚未完善
     social_value: 5 - 触及责任、荒诞和人类团结的普世伦理，文学和哲学价值极高
   tags:
-  - epidemic
-  - duty
-  - existentialism
-  - isolation
-  - sacrifice
-  - literature
+    - epidemic
+    - duty
+    - existentialism
+    - isolation
+    - sacrifice
+    - literature
   references:
-  - La Peste (Albert Camus, 1947)
+    - La Peste (Albert Camus, 1947)
   step_size:
     value: 1
     unit: week
@@ -38,8 +38,8 @@ variables:
     value: 2.0
     unit: intensity
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 救治强度：医生积极投入病人救治的程度
     reference: TODO:SOURCE
   quarantine_strictness:
@@ -47,8 +47,8 @@ variables:
     value: 0.6
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 隔离执行严格度：对病患及接触者实施严格隔离的力度
     reference: TODO:SOURCE
   self_care:
@@ -56,8 +56,8 @@ variables:
     value: 0.3
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 自我保护与休息：医生自身的防护与休息
     reference: TODO:SOURCE
   patients_treated:
@@ -65,8 +65,8 @@ variables:
     value: 0
     unit: people
     bounds:
-    - 0
-    - 500
+      - 0
+      - 500
     description: 累计救治人数：在有限资源下成功治疗或减少痛苦的患者数量
     reference: TODO:SOURCE
     io_role: output
@@ -75,8 +75,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 疫情蔓延程度：疾病在城市中的扩散速度（隔离越严格，蔓延越慢）
     reference: TODO:SOURCE
     io_role: output
@@ -85,8 +85,8 @@ variables:
     value: 90
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 里厄的健康：长期过度劳累和暴露的身体状态
     reference: TODO:SOURCE
     io_role: output
@@ -95,8 +95,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 同情心疲劳：持续见证大规模死亡导致的情感麻木和耗竭
     reference: TODO:SOURCE
     io_role: output
@@ -105,16 +105,15 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 个人悲痛积累：妻子病重、盟友去世、无尽的失去带来的心理负担
     reference: TODO:SOURCE
     io_role: output
 formulas:
   treatment_rate:
     formula:
-      patients_treated: patients_treated + care_intensity * 6.0 * (max(0.3, 1 - compassion_fatigue / 100) * max(0.4, doctor_health
-        / 100))
+      patients_treated: patients_treated + care_intensity * 6.0 * (max(0.3, 1 - compassion_fatigue / 100) * max(0.4, doctor_health / 100))
     description: 救治效率受疫情扩散和医生状态影响
     reference: TODO:SOURCE
   plague_dynamics:
@@ -124,14 +123,12 @@ formulas:
     reference: TODO:SOURCE
   health_decay:
     formula:
-      doctor_health: max(0, doctor_health - ((plague_spread / 100) * care_intensity * 0.8) - (care_intensity * 0.5) + (self_care
-        * 2.5))
+      doctor_health: max(0, doctor_health - ((plague_spread / 100) * care_intensity * 0.8) - (care_intensity * 0.5) + (self_care * 2.5))
     description: 医生健康随工作强度和疫情暴露而下降
     reference: TODO:SOURCE
   fatigue_accumulation:
     formula:
-      compassion_fatigue: min(100, max(0, compassion_fatigue + ((plague_spread / 100) * 2.5 + care_intensity * 0.4) - (self_care
-        * 1.5)))
+      compassion_fatigue: min(100, max(0, compassion_fatigue + ((plague_spread / 100) * 2.5 + care_intensity * 0.4) - (self_care * 1.5)))
     description: 同情心疲劳随死亡规模累积，休息可减缓
     reference: TODO:SOURCE
   grief_accumulation:
@@ -143,63 +140,66 @@ simulation:
   start_date: '1940-04-01'
   end_date: '1941-03-30'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: patients_treated
-    metric: final
-    direction: maximize
-  - variable: doctor_health
-    metric: final
-    direction: maximize
+    - variable: patients_treated
+      metric: final
+      direction: maximize
+    - variable: doctor_health
+      metric: final
+      direction: maximize
   schedules:
-  - variable: care_intensity
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 救治强度
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: quarantine_strictness
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 隔离执行严格度
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: self_care
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 自我保护与休息
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: care_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 救治强度
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: quarantine_strictness
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 隔离执行严格度
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: self_care
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 自我保护与休息
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

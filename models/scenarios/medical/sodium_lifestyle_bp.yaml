@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   version: "1.0.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       血压的决定因素是钠的绝对摄入量，还是"摄入减去汗液排泄"的净盈余？INTERSALT 研究记录了体力活动人群的低血压现象，但汗液钠排泄作为代偿机制在建模文献中鲜被显式量化。
@@ -142,7 +142,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2028-12-31"
+  end_date: "2028-12-31"
   output_variables:
     - sbp
     - lm_score
@@ -218,7 +218,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2028-12-31"
+  end_date: "2028-12-31"
   step_size:
     value: 1
     unit: day
@@ -248,14 +248,16 @@ optimizer:
   schedules:
     # 背景：现代高钠饮食固定
     - variable: sodium_intake
-      time: "12:00"
+      time_start: "12:00"
+      time_end: "12:00"
       value: 4000
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "现代饮食背景（4000 mg/天，固定不优化）"
 
     # T1+T3: 运动量 × 每周频率
     - variable: active_met_hours
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "运动方案：每次运动量 × 每周频率"
       optimize:
         value: [1.0, 30.0]

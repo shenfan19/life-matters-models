@@ -79,7 +79,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-31"
+  end_date: "2026-03-31"
   plans:
     - id: default
       label: Default
@@ -108,7 +108,8 @@ optimizer:
   schedules:
     # T3: aerobic — value + days pattern from 3 candidate weekly schedules
     - variable: aerobic_load
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "Aerobic session (minutes + weekly pattern)"
       optimize:
         value: [20.0, 90.0]
@@ -116,7 +117,8 @@ optimizer:
         days_n: [3, 5]
     # T3: strength — value + days pattern from 2 candidate weekend schedules
     - variable: strength_load
-      time: "17:00"
+      time_start: "17:00"
+      time_end: "17:00"
       label: "Strength session (sets + weekly pattern)"
       optimize:
         value: [3.0, 12.0]

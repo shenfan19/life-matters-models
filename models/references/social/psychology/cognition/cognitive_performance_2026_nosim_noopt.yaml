@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       Yerkes-Dodson 倒 U 形定律（1908）表明适度压力（workload ≈ 0.5 归一化）提升认知表现，
@@ -213,7 +213,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"
+  end_date: "2026-06-30"
   output_variables:
     - stress_level
     - cognitive_fatigue
@@ -258,7 +258,8 @@ optimizer:
       description: "Burnout临界约束：风险指数不超0.5（Maslach 2001临床边界）"
   schedules:
     - variable: workload
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "工作日工作量（0.4-1.0）"
       optimize:

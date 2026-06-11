@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       壁球是代谢当量（MET）最高的运动之一（约 12 MET），其生理特殊性在于封闭球场极大限制了散热效率。
@@ -125,7 +125,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -169,7 +169,8 @@ optimizer:
       description: "心率控制在190 bpm以内"
   schedules:
     - variable: game_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       label: "比赛强度（RPE 4-9）"
       optimize:
         value: [4.0, 9.0]

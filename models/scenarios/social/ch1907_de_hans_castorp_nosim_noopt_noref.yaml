@@ -3,8 +3,8 @@ metadata:
   name: ch1907_de_hans_castorp
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       汉斯·卡斯托普（托马斯·曼《魔山》1924）在瑞士达沃斯疗养院原计划停留 3 周，最终滞留 7 年：
@@ -21,14 +21,14 @@ metadata:
     innovation: 2 - 将"时间感扭曲"和疗养规程的依从性转化为动力学意图存在，但尚未实现
     social_value: 4 - 探索疾病与时间感知、欧洲文明在战争前夜的深层主题
   tags:
-  - tuberculosis
-  - sanatorium
-  - time-distortion
-  - war
-  - europe
-  - literature
+    - tuberculosis
+    - sanatorium
+    - time-distortion
+    - war
+    - europe
+    - literature
   references:
-  - The Magic Mountain (Thomas Mann, 1924)
+    - The Magic Mountain (Thomas Mann, 1924)
   step_size:
     value: 1
     unit: month
@@ -38,8 +38,8 @@ variables:
     value: 0.6
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 遵从疗养规程：休息·日光浴·温度记录——疗养院的标准治疗
     reference: TODO:SOURCE
   intellectual_engagement:
@@ -47,8 +47,8 @@ variables:
     value: 0.5
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 思想探索：与塞滕布里尼·纳夫塔等人的哲学辩论（刺激但消耗体力）
     reference: TODO:SOURCE
   world_engagement:
@@ -56,8 +56,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 与外部世界的联系：关注山下的新闻、写信、尝试下山
     reference: TODO:SOURCE
   health:
@@ -65,8 +65,8 @@ variables:
     value: 45
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 肺结核状态：肺结核的恢复或进展（高=好转）
     reference: TODO:SOURCE
     io_role: output
@@ -75,8 +75,8 @@ variables:
     value: 30
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 时间感知：对时间流逝的感知扭曲（高=时间静止，低=清醒回归）
     reference: TODO:SOURCE
     io_role: output
@@ -85,8 +85,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 思想深度：在孤立中积累的哲学理解
     reference: TODO:SOURCE
     io_role: output
@@ -95,8 +95,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 与世界的疏离：与真实社会的脱节程度
     reference: TODO:SOURCE
     io_role: output
@@ -125,63 +125,66 @@ simulation:
   start_date: '1907-07-01'
   end_date: '1914-06-30'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: health
-    metric: final
-    direction: maximize
-  - variable: intellectual_depth
-    metric: final
-    direction: maximize
+    - variable: health
+      metric: final
+      direction: maximize
+    - variable: intellectual_depth
+      metric: final
+      direction: maximize
   schedules:
-  - variable: treatment_adherence
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 遵从疗养规程
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: intellectual_engagement
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 思想探索
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: world_engagement
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 与外部世界的联系
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: treatment_adherence
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 遵从疗养规程
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: intellectual_engagement
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 思想探索
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: world_engagement
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 与外部世界的联系
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

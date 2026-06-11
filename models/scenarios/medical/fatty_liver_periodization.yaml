@@ -4,8 +4,8 @@ metadata:
   updated: 2026-05-22
   version: "1.0.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       脂肪肝（NAFLD）患者运动进阶时机量化：EASL/AGA 指南推荐从中等强度开始、逐步升级至较高强度，但"何时升级"和"每周训练几次"缺乏量化依据。
@@ -147,7 +147,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-27"
+  end_date: "2026-03-27"
   output_variables:
     - liver_fat_pct
     - alt_level
@@ -204,7 +204,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-03-27"
+  end_date: "2026-03-27"
   step_size:
     value: 1
     unit: day
@@ -228,7 +228,8 @@ optimizer:
   schedules:
     # T1: 基础日常活动（全程每日，中低强度）
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "基础日常活动强度"
       optimize:
@@ -237,7 +238,8 @@ optimizer:
     # T1+T3+T4: 强化训练叠加（在基础之上；T3 控制频率，T4 控制升级时机）
     # 物理含义：强化日总强度 = 基础值 + 叠加值（两个 pulse 同时刻累加）
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "强化训练叠加量 × 频率 × 升级时机"
       optimize:
         value: [2.0, 5.5]

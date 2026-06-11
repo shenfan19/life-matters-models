@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       效率工资理论（Shapiro & Stiglitz 1984）指出高疲劳直接降低生产力，
@@ -92,19 +92,22 @@ optimizer:
       description: "疲劳水平不超过0.8（防止过劳）"
   schedules:
     - variable: overtime_hours
-      time: "18:00"
+      time_start: "18:00"
+      time_end: "18:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "加班时长（0=无加班，1=极限加班）"
       optimize:
         value: [0, 1]
     - variable: vacation_days
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Sat, Sun]
       label: "休假天数比例（0=不休假，1=充分休假）"
       optimize:
         value: [0, 1]
     - variable: skill_training
-      time: "20:00"
+      time_start: "20:00"
+      time_end: "20:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "技能培训投入（0=无，1=高强度）"
       optimize:

@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       2000 米划船比赛历时约 6-8 分钟，是有氧-无氧混合供能比例最高的竞技项目之一（约 70% 有氧、30% 无氧）。
@@ -154,7 +154,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables: [vo2, heart_rate, lactate, fatigue, split_time, race_time_elapsed]
   schedules:
     - variable: power_output
@@ -192,7 +192,8 @@ optimizer:
       description: "心率上限 200 bpm（安全上限）"
   schedules:
     - variable: power_output
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "比赛/训练功率（W，200=有氧基础，450=精英比赛强度）"
       optimize:
         value: [200.0, 450.0]

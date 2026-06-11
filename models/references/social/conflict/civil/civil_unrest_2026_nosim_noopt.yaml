@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       公民动乱的核心机制是 Gurr 相对剥夺理论所描述的"委屈积累→动员→镇压→再委屈"正反馈循环：
@@ -213,7 +213,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-12-31"
+  end_date: "2026-12-31"
   output_variables:
     - grievance_index
     - mobilization_rate
@@ -252,7 +252,8 @@ optimizer:
       description: "避免社会极度委屈"
   schedules:
     - variable: economic_inequality_gini
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       label: "基尼系数目标值"
       optimize:
         value: [0.25, 0.60]

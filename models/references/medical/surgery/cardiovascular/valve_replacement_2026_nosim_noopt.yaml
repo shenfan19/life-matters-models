@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       主动脉瓣狭窄（>75 岁人群患病率约 3.4%）的 TAVR/SAVR 术后恢复包含两个时序不同的过程：
@@ -224,7 +224,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-02-11"
+  end_date: "2026-02-11"
   output_variables:
     - aortic_gradient
     - cardiac_index
@@ -277,7 +277,8 @@ optimizer:
       description: "6周末肺动脉压≤35 mmHg"
   schedules:
     - variable: warfarin_dose
-      time: "18:00"
+      time_start: "18:00"
+      time_end: "18:00"
       label: "华法林日剂量（mg）"
       optimize:
         value: [2.0, 10.0]

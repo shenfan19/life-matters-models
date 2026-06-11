@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       慢性工作压力通过下丘脑-垂体-肾上腺轴持续升高皮质醇，长期高皮质醇状态会同时损害心血管健康、
@@ -210,7 +210,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   output_variables:
     - cortisol_level
     - cvd_risk
@@ -258,13 +258,15 @@ optimizer:
       description: "防止过度训练（>10 MET-h/day有损伤风险）"
   schedules:
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Wed, Fri]
       label: "有氧训练日运动量（MET-h）"
       optimize:
         value: [0, 8]
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Tue, Thu]
       label: "轻活动日运动量（MET-h）"
       optimize:

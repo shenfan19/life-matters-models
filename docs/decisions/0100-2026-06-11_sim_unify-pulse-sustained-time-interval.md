@@ -1,7 +1,7 @@
 # 0100 — 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day / time / sustained 三态
 
 **日期**：2026-06-11
-**状态**：🟡 部分实施（schema/引擎统一已完成；GUI 与 T2 x 向量重设计未实施）
+**状态**：🟡 部分实施（schema/引擎/GUI/T2 x 向量重设计已完成；papers/s5 术语未实施）
 **类别**：仿真引擎 / 优化器 schema / GUI
 
 ---
@@ -107,16 +107,63 @@
   `models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`（`--opt`）
   数值结果与改动前一致；旧 YAML 无需修改。
 
+## 实施记录（GUI 部分）
+
+- `types.ts`：`InputEvent` 删除 `time`/`timeEnabled`/`sustained`/`timeRangeStart`/
+  `timeRangeEnd`，新增 `timeStart`/`timeEnd: string`（始终有值；相等=pulse，
+  不等=sustained，含 `"00:00"~"24:00"` 全天）。
+- `simUtils.ts`：新增 `normalizeTimeInterval(raw)`（镜像后端
+  `_normalize_time_interval` 的等价表，用于 YAML/会话 → `{timeStart, timeEnd}`）
+  与 `migrateInputEvent`/`migrateInputEvents`（旧版 localStorage 会话的
+  `time`/`timeEnabled`/`sustained`/`timeRangeStart/End` → `timeStart`/`timeEnd`
+  迁移，已迁移过的事件原样返回）；`xToInputEvents` 的事件匹配、新建、T2 slot
+  写回均改用 `timeStart`/`timeEnd`。
+- `Simulator.tsx`：YAML↔state 各映射点（`schedList`/`schedDict`/`plan.schedules`/
+  `optimizer.schedules` 决策项匹配/会话恢复/新建事件默认值/Pareto 标签）统一改用
+  `normalizeTimeInterval`/`migrateInputEvents`/`timeStart`/`timeEnd`。
+- `optUtils.ts`：`buildOptSchedules` 用 `isPulse = ev.timeStart === ev.timeEnd`
+  统一三路 `mode='sustained'`/`time_range`/`time` 分支为 `entry.time_start`/
+  `entry.time_end`；T2（`isPulse && ev.optimizeTime`）分支保持 `optBlock.time`/
+  `time_step`，不发送 `time_start`/`time_end`（避免与后端区间解析优先级冲突）。
+- `useSimulation.ts`：regimen payload 三处统一为
+  `{ id, time: ev.timeStart, value, time_start: ev.timeStart, time_end: ev.timeEnd }`。
+- `SimSetupTab.tsx`/`OptSetupTab.tsx`：删除"时"/"续"开关与"每天"提示，新增
+  始终显示的"起始时间 → 结束时间"控件对；`timeStart===timeEnd` 时结束时间
+  灰显/虚线（pulse），编辑结束时间使其不同即变为 sustained，并提供折叠按钮
+  （×）重置回 pulse。`OptSetupTab.tsx` 中 T2（`opt` toggle + 时间窗 + step
+  选择器）仅在 pulse 态显示，逻辑与字段名不变。
+- 4 个 locale（en/zh-CN/zh-TW/fr）：删除 `tog.time`/`tog.time_tip`/
+  `tog.sustained`/`tog.sustained_tip`/`setup.daily`，新增
+  `time_start_tip`/`time_end_tip`/`time_collapse_tip`。
+
+## 实施记录（T2 x 向量重设计）
+
+- **schema**：`optimize.time` 改名为 `optimize.time_start`（旧名仍受支持，作为别名）。
+  仅写 `time_start` → 1 维（区间宽度固定，`time_end` = 搜索后 `time_start` + 原宽度）；
+  额外写 `optimize.time_end` → 2 维（起止独立搜索）。未实现"4 维（各自带独立上下界）"——
+  ADR 草案中的"4 个数"对应的就是 2 维场景下两个窗口各自的 `[lo,hi]`，并非额外维度。
+- `optimizer_engine.py`：新增 `_hhmm_to_min`/`_shift_time` 辅助函数；`var_specs`
+  的 `kind='time'` 拆分为 `'time_start'`/`'time_end'`；解码时 `d0` 预计算
+  `_width_min`（= 条目自身 `time_end - time_start`）与 `_time2dim`
+  （是否声明了 `optimize.time_end`）；`time_start` 解码后若非 2 维，
+  按 `_shift_time` 推算 `time_end`；输出 `ev2` 始终带 `time_start`/`time_end`
+  （及兼容字段 `time = time_start`）。
+- `optUtils.ts`：`buildOptSchedules` 始终透传 `entry.time_start`/`entry.time_end`
+  作为宽度模板；`ev.optimizeTime` → `optBlock.time_start`；sustained 事件下
+  新增 `ev.optimizeTimeEnd` → `optBlock.time_end`（2 维）。
+- `types.ts`：`InputEvent` 新增 `optimizeTimeEnd`/`timeEndWindowStart`/`timeEndWindowEnd`。
+- `OptSetupTab.tsx`：T2 `opt` toggle 对 pulse/sustained 均显示（不再仅限 pulse）；
+  sustained 且 `optimizeTime` 时新增"终"（`time_end`）toggle 行，控制是否独立搜索区间终点。
+- `simUtils.ts`：新增 `hhmmToMin`/`shiftTime`（镜像后端），`xToInputEvents` 的 T2
+  分支按 1/2 维分别消费 1/2 个 x 分量。
+- `Simulator.tsx`：YAML→state 的 `optimize.time_start`/`time_end` 解析（含
+  `optimize.time` 旧别名兼容）。
+- `docs/model.md`：T2 小节改写为 1/2 维 schema 说明，x 向量编码表新增对应分支。
+- 4 个 locale：新增 `sim.opt.tog.time_end`/`time_end_on_tip`/`time_end_off_tip`/
+  `time_end_fixed_hint`。
+
 ## 未实施部分
 
-- **GUI**：`sim_gui` 的 `types.ts`（`InputEvent` 字段）、`Simulator.tsx`
-  （YAML↔state 映射）、`SimSetupTab.tsx`/`OptSetupTab.tsx`（控件改造为
-  "起始时间 + 可选结束时间"）、`optUtils.ts`、各语言 locale 仍使用
-  `time`/`mode: sustained`+`time_range`。
-- **T2 x 向量重设计**：`optimize.time_start`/`time_end` 的 1/2/4 维编码
-  （区间宽度固定 only-start / 双端独立 / 双端各自带上下界）、
-  `_build_regimen_events` 对应解码逻辑、`docs/model.md` x 向量编码表的
-  对应分支。
 - **papers/s5**：K×4 → K×(可变维度) 的术语调整。
 
 由于向后兼容，旧模型无需因本 ADR 重新仿真；上述未实施部分可作为独立任务排期。

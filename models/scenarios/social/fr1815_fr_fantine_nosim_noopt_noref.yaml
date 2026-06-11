@@ -3,8 +3,8 @@ metadata:
   name: fr1815_fr_fantine
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       芳汀（雨果《悲惨世界》1862）被工厂因未婚母亲身份解雇后面临三重权衡：
@@ -21,14 +21,14 @@ metadata:
     innovation: 2 - 将自我牺牲程度与健康损耗的动态建模意图存在，但尚未完善
     social_value: 5 - 触及贫困、母爱与制度性压迫的普世主题，是《悲惨世界》最动人的叙事
   tags:
-  - poverty
-  - single-mother
-  - tuberculosis
-  - exploitation
-  - sacrifice
-  - literature
+    - poverty
+    - single-mother
+    - tuberculosis
+    - exploitation
+    - sacrifice
+    - literature
   references:
-  - 悲惨世界 (Victor Hugo, 1862)
+    - 悲惨世界 (Victor Hugo, 1862)
   step_size:
     value: 1
     unit: month
@@ -38,8 +38,8 @@ variables:
     value: 2.0
     unit: intensity
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 劳动强度：做工努力程度：高则多挣钱，但加速肺病
     reference: TODO:SOURCE
   sacrifice_level:
@@ -47,8 +47,8 @@ variables:
     value: 0.5
     unit: ratio
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 自我牺牲程度：为寄钱给珂赛特牺牲自身生存资源（头发/牙齿/身体）
     reference: TODO:SOURCE
   seek_help:
@@ -56,8 +56,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 寻求援助：向教会/官员/善人求助（风险高，尊严代价大）
     reference: TODO:SOURCE
   cosette_wellbeing:
@@ -65,8 +65,8 @@ variables:
     value: 40
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 珂赛特生存状态：女儿在客栈的生活质量（取决于汇款）
     reference: TODO:SOURCE
     io_role: output
@@ -75,8 +75,8 @@ variables:
     value: 75
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 芳汀的健康：肺结核+营养不足+过度劳动的累积损耗
     reference: TODO:SOURCE
     io_role: output
@@ -85,8 +85,8 @@ variables:
     value: 50
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 月收入（相对）：当前的劳动收入水平
     reference: TODO:SOURCE
     io_role: output
@@ -95,8 +95,8 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 绝望程度：社会排斥·健康恶化·资源枯竭的综合绝望
     reference: TODO:SOURCE
     io_role: output
@@ -105,16 +105,15 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 肺结核进展：结核病的不可逆进展
     reference: TODO:SOURCE
     io_role: output
 formulas:
   health_decay:
     formula:
-      health: max(0, health - ((tb_progression / 100) * 2.5) - (work_intensity * 0.8) - (sacrifice_level * 1.5) + seek_help
-        * 0.5)
+      health: max(0, health - ((tb_progression / 100) * 2.5) - (work_intensity * 0.8) - (sacrifice_level * 1.5) + seek_help * 0.5)
     description: 肺结核+劳动强度+营养不足消耗健康
     reference: TODO:SOURCE
   tb_growth:
@@ -141,63 +140,66 @@ simulation:
   start_date: '1815-01-01'
   end_date: '1817-12-31'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: cosette_wellbeing
-    metric: final
-    direction: maximize
-  - variable: health
-    metric: final
-    direction: maximize
+    - variable: cosette_wellbeing
+      metric: final
+      direction: maximize
+    - variable: health
+      metric: final
+      direction: maximize
   schedules:
-  - variable: work_intensity
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 劳动强度
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: sacrifice_level
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 自我牺牲程度
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: seek_help
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 寻求援助
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: work_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 劳动强度
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: sacrifice_level
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 自我牺牲程度
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: seek_help
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 寻求援助
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

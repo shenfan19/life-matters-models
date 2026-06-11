@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       骨科术后（以全膝关节置换 TKR 为代表）的康复存在一个核心张力：早期强化训练能加速肌力恢复，
@@ -220,7 +220,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-27"   # 12 周
+  end_date: "2026-03-27"     # 12 周
   output_variables:
     - muscle_strength_pct
     - functional_score
@@ -281,14 +281,16 @@ optimizer:
       description: "12周末肌力恢复目标≥80%"
   schedules:
     - variable: pt_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-01", "2026-01-28"]
       label: "早期康复强度（周1-4）"
       optimize:
         value: [1, 5]
     - variable: pt_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-29", "2026-03-27"]
       label: "强化期强度（周5-12）"

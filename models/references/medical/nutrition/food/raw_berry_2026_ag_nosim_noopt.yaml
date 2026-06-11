@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       游戏专用浆果食物组件：将生浆果摄入量（克）转换为碳水化合物、蛋白质和脂肪营养素。
@@ -86,7 +86,8 @@ optimizer:
       direction: minimize
   schedules:
     - variable: berry_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "浆果摄入量（g）"
       optimize:

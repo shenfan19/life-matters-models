@@ -3,8 +3,8 @@ metadata:
   name: af1943_fr_little_prince
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       飞行员在撒哈拉沙漠与小王子相遇 8 天：修飞机（survival resource）、真正聆听（connection depth）、说服小王子留下
@@ -20,14 +20,14 @@ metadata:
     innovation: 2 - 将叙事选择（聆听vs修飞机）转化为可优化动力学意图存在，但尚未实现
     social_value: 5 - 触及人与人之间联系、意义和告别的普世主题，文学价值极高
   tags:
-  - desert
-  - meaning
-  - connection
-  - loss
-  - philosophy
-  - literature
+    - desert
+    - meaning
+    - connection
+    - loss
+    - philosophy
+    - literature
   references:
-  - Le Petit Prince (Antoine de Saint-Exupéry, 1943)
+    - Le Petit Prince (Antoine de Saint-Exupéry, 1943)
   step_size:
     value: 1
     unit: day
@@ -37,8 +37,8 @@ variables:
     value: 1.5
     unit: intensity
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 修飞机努力：飞行员修复发动机的专注程度（关系到他自己的生存）
     reference: TODO:SOURCE
   listening_depth:
@@ -46,8 +46,8 @@ variables:
     value: 0.5
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 真正聆听小王子：放下大人视角，真正理解小王子说的话
     reference: TODO:SOURCE
   persuasion_attempt:
@@ -55,8 +55,8 @@ variables:
     value: 0.3
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 说服小王子留下：尝试说服小王子不要回去（留在地球）
     reference: TODO:SOURCE
   pilot_survival:
@@ -64,8 +64,8 @@ variables:
     value: 40
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 飞行员生存概率：在沙漠中的水和飞机修复进度（低=必死）
     reference: TODO:SOURCE
     io_role: output
@@ -74,8 +74,8 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 真正理解：飞行员对小王子所说重要之物的真实理解程度
     reference: TODO:SOURCE
     io_role: output
@@ -84,8 +84,8 @@ variables:
     value: 70
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 小王子的回家意志：小王子对回到玫瑰身边的决心（高=不可动摇）
     reference: TODO:SOURCE
     io_role: output
@@ -94,8 +94,8 @@ variables:
     value: 5
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 连接的深度：两人之间真实的理解与连接（这才是故事真正的遗产）
     reference: TODO:SOURCE
     io_role: output
@@ -124,63 +124,66 @@ simulation:
   start_date: '1943-05-01'
   end_date: '1943-05-08'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: connection_depth
-    metric: final
-    direction: maximize
-  - variable: understanding
-    metric: final
-    direction: maximize
+    - variable: connection_depth
+      metric: final
+      direction: maximize
+    - variable: understanding
+      metric: final
+      direction: maximize
   schedules:
-  - variable: repair_effort
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 修飞机努力
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: listening_depth
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 真正聆听小王子
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: persuasion_attempt
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 说服小王子留下
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: repair_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 修飞机努力
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: listening_depth
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 真正聆听小王子
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: persuasion_attempt
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 说服小王子留下
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

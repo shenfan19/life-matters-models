@@ -848,20 +848,58 @@ optimizer:
 
 ### T2：时间窗优化
 
+T2 基于 `time_start`/`time_end` 统一区间字段（上一节）。`optimize.time_start`
+搜索区间起点；区间宽度（`time_end - time_start`）默认固定不变（**1 维**，最常见情形）。
+若额外声明 `optimize.time_end`，区间终点也独立搜索（**2 维**）。
+
+**1 维：起点搜索，宽度固定**（pulse 的"几点触发"、sustained 的"几点开始，持续时长不变"均属此类）：
+
 ```yaml
 schedules:
   - variable: meal_carbs
+    time_start: "08:00"
+    time_end: "08:00"            # pulse；宽度 = 0，搜索后仍为 pulse
     days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 固定星期（T3 未激活）
     label: "早餐碳水"
     optimize:
       value: [30, 80]
-      time: ["07:00", "09:00"]   # 时刻搜索窗 [start, end]
-      time_step: "1h"            # 可选；缺省 1h；精细场景可设 15min
+      time_start: ["07:00", "09:00"]   # 起点搜索窗 [lo, hi]
+      time_step: "1h"                  # 可选；缺省 1h；精细场景可设 15min
 ```
 
-- `optimize.time` 格式：`["HH:MM", "HH:MM"]`（24 小时制，起止含边界）。
-- `time_step` 合法值：`"1h"`（缺省）、`"15min"`。引擎展开为离散时间槽，例如 `["07:00","09:00"]` + `1h` → `["07:00","08:00","09:00"]`（3 个槽）。
-- T2 激活时，顶层 `time:` 字段不写（无固定时刻）。
+```yaml
+schedules:
+  - variable: care_intensity
+    time_start: "08:00"
+    time_end: "20:00"             # sustained，宽度 = 12h
+    label: "白天救治强度"
+    optimize:
+      value: [0.0, 288.0]
+      time_start: ["06:00", "10:00"]   # 起点在 [06:00,10:00] 内搜索，宽度仍为 12h
+```
+
+**2 维：起点、终点独立搜索**（区间宽度本身也是决策变量）：
+
+```yaml
+schedules:
+  - variable: care_intensity
+    time_start: "08:00"
+    time_end: "20:00"
+    label: "白天救治强度（起止均搜索）"
+    optimize:
+      value: [0.0, 288.0]
+      time_start: ["06:00", "10:00"]   # 起点搜索窗
+      time_end: ["18:00", "22:00"]     # 终点搜索窗（独立于起点）
+```
+
+- `optimize.time_start` / `optimize.time_end` 格式均为 `["HH:MM", "HH:MM"]`（24 小时制，起止含边界）。
+- `time_step` 合法值：`"1h"`（缺省）、`"15min"`，对两个窗口同时生效。引擎展开为离散时间槽，
+  例如 `["07:00","09:00"]` + `1h` → `["07:00","08:00","09:00"]`（3 个槽）。
+- 仅写 `optimize.time_start`（不写 `optimize.time_end`）时为 1 维：搜索后的 `time_end` =
+  搜索后的 `time_start` + 固定宽度（= 该条目自身 `time_end - time_start`，pulse 时宽度为 0）。
+- 同时写 `optimize.time_start` 和 `optimize.time_end` 时为 2 维：两端独立搜索，互不联动。
+- 旧字段 `optimize.time`（无 `time_start`/`time_end` 区分）仍受支持，等价于 `optimize.time_start`
+  （1 维，pulse 场景下宽度恒为 0，行为与改名前一致）。
 - 科学意义：时间生物学（Chrono-nutrition / Chronopharmacology）中，干预时机本身是关键决策变量，本框架将其显式纳入优化搜索空间。
 
 ### T3：星期组合搜索
@@ -983,38 +1021,30 @@ schedules:
 三者是同一对字段在数轴上的位置关系，不是三个独立的开关/分支。`days`（星期几过滤）、
 `date_range`（日历区间）字段不变，与 `time_start`/`time_end` 正交。
 
-> GUI 控件改造与 `optimize.time`（T2，见下节）的 `time_start`/`time_end` 多维
-> （1/2/4 维）重设计尚未实施（ADR 0100，远期方案）；当前 GUI 仍使用
-> `time` / `mode: sustained` + `time_range` 控件，`optimize.time` 继续按
-> 1 维时间槽搜索（不受本节影响）。
-
 ### x 向量编码规则
 
-x 向量按 `schedules` 列表顺序展开，每个条目按 `[value?, time?, days?, date_start?, date_end?]` 顺序贡献维度：
+x 向量按 `schedules` 列表顺序展开，每个条目按 `[value?, time_start?, time_end?, days?, date_start?, date_end?]` 顺序贡献维度：
 
 | 条目启用的 Tier | x 贡献维度 | 变量类型 |
 |--------------|-----------|---------|
 | T1 only | 1（value） | 连续实数 |
-| T2 only | 1（time_slot_idx） | 整数 |
-| T1 + T2 | 2（value, time_slot_idx） | 实数 + 整数 |
+| T2 only，1 维（仅 `time_start`） | 1（time_start_idx） | 整数 |
+| T2 only，2 维（`time_start`+`time_end`） | 2（time_start_idx, time_end_idx） | 整数×2 |
+| T1 + T2（1 维） | 2（value, time_start_idx） | 实数 + 整数 |
+| T1 + T2（2 维） | 3（value, time_start_idx, time_end_idx） | 实数 + 整数×2 |
 | T1 + T3 | 2（value, combo_idx） | 实数 + 整数 |
 | T1 + T4 | 2~3（value, date_start_offset[, date_end_offset]） | 实数 + 整数×1~2 |
 | 固定背景量（无 optimize） | 0 | — |
 
 混合整数向量由 NSGA-II 连续松弛处理；单目标算法（L-BFGS-B / Nelder-Mead）不支持整数变量，启用 T2/T3/T4 时自动切换为 NSGA-II 并给出警告。
 
-> ADR 0100 提出将 T2 从"1 维时间槽索引"泛化为基于 `time_start`/`time_end` 的
-> 1/2/4 维编码（区间宽度固定 only-start / 双端独立 / 双端各自带上下界），尚未实施；
-> 本节描述的 T2 行为（`optimize.time` + `time_step` → 1 维 `time_slot_idx`）仍是
-> 当前唯一受支持的形式。
-
-**示例**：`meal_carbs`（T1+T2）和 `exercise_load`（T1+T3）各贡献 2 维，x 长度为 4：
+**示例**：`meal_carbs`（T1 + T2 1维）和 `exercise_load`（T1 + T3）各贡献 2 维，x 长度为 4：
 
 ```
-x = [carbs_value, time_slot_idx, exercise_value, combo_idx]
+x = [carbs_value, time_start_idx, exercise_value, combo_idx]
     [   55.3,           1,            62.0,            2   ]
-# time_slot_idx=1 → slots[1] = "08:00"
-# combo_idx=2     → combinations(pool, n)[2] = [Mon, Wed, Fri]
+# time_start_idx=1 → slots[1] = "08:00"；time_end = "08:00" + 固定宽度
+# combo_idx=2      → combinations(pool, n)[2] = [Mon, Wed, Fri]
 ```
 
 `reference.regimen` 存储解码后的人类可读结果。当条目启用了 T2/T3/T4 时，regimen 值从标量改为字典：

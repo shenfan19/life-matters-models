@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       高血压合并痛风患者同时需要降压、控尿酸和减重三个临床目标，单目标或双目标优化可能遗漏三维 Pareto 面中的非凸可行区域。
@@ -42,7 +42,7 @@ imports:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   step_size:
     value: 1
     unit: day
@@ -80,11 +80,12 @@ optimizer:
       label: "HCTZ 剂量与给药时机（时间药理学）"
       optimize:
         value: [6.25, 50.0]
-        time: ["06:00", "22:00"]
+        time_start: ["06:00", "22:00"]
 
     # T1: 热量缺口（直接影响体重目标）
     - variable: caloric_deficit
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日热量缺口"
       optimize:
@@ -92,7 +93,8 @@ optimizer:
 
     # T4: 别嘌醇引入时机与剂量
     - variable: allopurinol_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "别嘌醇引入时机与剂量"
       optimize:
@@ -138,7 +140,7 @@ optimizer:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   output_variables:
     - blood_pressure
     - uric_acid
@@ -154,32 +156,18 @@ simulation:
     - id: "low_ua_weight"
       label: "尿酸+体重友好（HCTZ低剂量晚服，待运行更新）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 10.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 低剂量晚服"}
-        - {variable: caloric_deficit, time: "00:00", value: 350.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "温和热量缺口"}
+        - {variable: thiazide_dose, time: "22:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 低剂量晚服"}
+        - {variable: caloric_deficit, time: "00:00", value: 350.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "温和热量缺口"}
 
     - id: "balanced"
       label: "三目标平衡方案（HCTZ中剂量晚服+别嘌醇，待运行更新）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 24.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服"}
-        - {variable: allopurinol_dose, time: "08:00", value: 100.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇"}
-        - {variable: caloric_deficit, time: "00:00", value: 400.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
+        - {variable: thiazide_dose, time: "22:00", value: 24.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服"}
+        - {variable: allopurinol_dose, time: "08:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇"}
+        - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "best_bp"
       label: "血压控制最优（HCTZ高剂量晚服，待运行更新）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 46.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 高剂量晚服"}
-        - {variable: caloric_deficit, time: "00:00", value: 400.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
+        - {variable: thiazide_dose, time: "22:00", value: 46.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 高剂量晚服"}
+        - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}

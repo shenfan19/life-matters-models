@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       橄榄球是少数将高强度间歇跑动与反复全身接触冲撞结合的运动项目，
@@ -126,7 +126,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -170,7 +170,8 @@ optimizer:
       description: "心率控制在190 bpm以内"
   schedules:
     - variable: sprint_ratio
-      time: "15:00"
+      time_start: "15:00"
+      time_end: "15:00"
       label: "冲刺时间占比（5-35%）"
       optimize:
         value: [0.05, 0.35]

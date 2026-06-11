@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       缺血性脑卒中后，大脑存在一个神经可塑性高峰期（发病后前30天），此时康复训练的效益最大。
@@ -225,7 +225,8 @@ optimizer:
       description: "PT强度上限（每天不超过5小时）"
   schedules:
     - variable: physiotherapy_intensity
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       label: "物理治疗强度（0-10）"
       optimize:
         value: [1.0, 8.0]

@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       流感病毒在人体内快速复制，同时触发免疫系统应答——两者之间存在固有的时序矛盾：
@@ -88,19 +88,22 @@ optimizer:
       description: "体温不超过38.5°C（避免高热危机）"
   schedules:
     - variable: rest_hours
-      time: "22:00"
+      time_start: "22:00"
+      time_end: "22:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日休息（0=不休息，1=充分休息）"
       optimize:
         value: [0, 1]
     - variable: medicine_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日用药（0=不用药，1=足量）"
       optimize:
         value: [0, 1]
     - variable: water_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日饮水（0=不足，1=充足）"
       optimize:

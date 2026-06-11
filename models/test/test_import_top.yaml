@@ -63,7 +63,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"
+  end_date: "2026-06-30"
   plans:
     - id: default
       label: Default
@@ -90,7 +90,8 @@ optimizer:
       type: hard
   schedules:
     - variable: training_load
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "Training session (min + weekly pattern)"
       optimize:
         value: [20.0, 90.0]

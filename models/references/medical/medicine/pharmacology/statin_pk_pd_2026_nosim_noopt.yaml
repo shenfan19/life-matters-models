@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       他汀类药物（以阿托伐他汀为代表）在降低 LDL 胆固醇方面遵循"30–40% 规则"：剂量翻倍仅能额外降低约 6%（非线性饱和），
@@ -147,7 +147,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-12-31"
+  end_date: "2026-12-31"
   output_variables:
     - ldl_cholesterol
     - ck_level
@@ -182,7 +182,8 @@ optimizer:
       description: "安全阈值：CK不超3×ULN=600 IU/L（Rosenson 2004）"
   schedules:
     - variable: statin_dose
-      time: "20:00"
+      time_start: "20:00"
+      time_end: "20:00"
       label: "阿托伐他汀剂量（mg/day）"
       optimize:
         value: [10, 80]

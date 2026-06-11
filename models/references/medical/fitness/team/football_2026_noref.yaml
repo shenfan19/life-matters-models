@@ -1,7 +1,7 @@
 metadata:
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   conflicts: []
   description:
     problem: >
@@ -27,11 +27,11 @@ metadata:
     evidence_quality: 2 - noref标记，参数无文献来源，机制为定性描述
     popularity: 3 - 足球生理模型有参考价值但此版本参数质量待补充
   tags:
-  - fitness
-  - football
-  - soccer
-  - interval
-  - endurance
+    - fitness
+    - football
+    - soccer
+    - interval
+    - endurance
   updated: 2026-04-23
   step_size:
     value: 1
@@ -39,104 +39,104 @@ metadata:
 variables:
   game_intensity:
     bounds:
-    - 0.0
-    - 10.0
+      - 0.0
+      - 10.0
     description: 当前运动强度（RPE 0-10）
     type: input
     unit: RPE
     value: 6.0
   sprint_ratio:
     bounds:
-    - 0.0
-    - 1.0
+      - 0.0
+      - 1.0
     description: 冲刺占比（0-1），高值=快速反击/逼抢战术
     type: input
     unit: 比例
     value: 0.25
   heart_rate:
     bounds:
-    - 60.0
-    - 200.0
+      - 60.0
+      - 200.0
     description: 心率
     type: state
     unit: 次/分
     value: 70.0
   vo2:
     bounds:
-    - 0.0
-    - 70.0
+      - 0.0
+      - 70.0
     description: 摄氧量
     type: state
     unit: mL/kg/min
     value: 5.0
   distance_covered:
     bounds:
-    - 0.0
-    - 15000.0
+      - 0.0
+      - 15000.0
     description: 累计跑动距离
     type: state
     unit: 米
     value: 0.0
   sprint_distance:
     bounds:
-    - 0.0
-    - 3000.0
+      - 0.0
+      - 3000.0
     description: 高速冲刺累计距离
     type: state
     unit: 米
     value: 0.0
   calories_burned:
     bounds:
-    - 0.0
-    - 1500.0
+      - 0.0
+      - 1500.0
     description: 消耗热量
     type: state
     unit: kcal
     value: 0.0
   fatigue:
     bounds:
-    - 0.0
-    - 1.0
+      - 0.0
+      - 1.0
     description: 疲劳指数（0=无疲劳，1=力竭）
     type: state
     unit: 无量纲
     value: 0.0
   lactate:
     bounds:
-    - 0.8
-    - 15.0
+      - 0.8
+      - 15.0
     description: 血乳酸浓度
     type: state
     unit: mmol/L
     value: 1.0
   muscle_glycogen:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 肌糖原储量百分比
     type: state
     unit: '%'
     value: 100.0
   aerobic_fitness:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 有氧适能指数（VO2max代理）
     type: parameter
     unit: 分
     value: 65.0
   technical_performance:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 技术发挥评分（传球、控球质量）
     type: state
     unit: 分
     value: 80.0
   performance:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 综合比赛表现评分
     type: state
     unit: 分
@@ -221,16 +221,16 @@ simulation:
       value: 0.25
       label: 冲刺占比
   output_variables:
-  - heart_rate
-  - vo2
-  - distance_covered
-  - sprint_distance
-  - calories_burned
-  - fatigue
-  - lactate
-  - muscle_glycogen
-  - technical_performance
-  - performance
+    - heart_rate
+    - vo2
+    - distance_covered
+    - sprint_distance
+    - calories_burned
+    - fatigue
+    - lactate
+    - muscle_glycogen
+    - technical_performance
+    - performance
 
 optimizer:
   method: nsga2
@@ -254,7 +254,8 @@ optimizer:
       description: 保留 20% 肌糖原储备
   schedules:
     - variable: game_intensity
-      time: "15:00"
+      time_start: "15:00"
+      time_end: "15:00"
       label: 比赛强度（RPE 3-9）
       optimize:
         value: [3.0, 9.0]

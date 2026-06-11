@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       阻力训练中训练量（总次数）与训练强度（%1RM）对力量增益和肌肥大的贡献机制不同：
@@ -146,7 +146,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-26"
+  end_date: "2026-03-26"
   output_variables: [muscle_strength_1rm, muscle_hypertrophy, fatigue_level, protein_synthesis_rate]
   schedules:
     - variable: training_volume
@@ -180,7 +180,8 @@ optimizer:
       description: "疲劳上限 70 分（超过此值影响训练质量和受伤风险）"
   schedules:
     - variable: training_load_pct_1rm
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "训练强度（%1RM，60=低强度耐力，92=极高强度力量）"
       optimize:
         value: [60.0, 92.0]

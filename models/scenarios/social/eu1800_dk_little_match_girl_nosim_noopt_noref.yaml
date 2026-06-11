@@ -3,8 +3,8 @@ metadata:
   name: eu1800_dk_little_match_girl
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       卖火柴的小女孩（安徒生，1845）在新年前夜 10 小时内面临三重权衡：
@@ -22,14 +22,14 @@ metadata:
     innovation: 2 - 将失温过程和幻觉作为资源消耗动力学的意图有新意，但尚未完善
     social_value: 5 - 触及儿童贫困、系统性冷漠和社会良知的普世主题，文学价值极高
   tags:
-  - poverty
-  - child
-  - cold
-  - social-neglect
-  - hallucination
-  - literature
+    - poverty
+    - child
+    - cold
+    - social-neglect
+    - hallucination
+    - literature
   references:
-  - 卖火柴的小女孩 (Hans Christian Andersen, 1845)
+    - 卖火柴的小女孩 (Hans Christian Andersen, 1845)
   step_size:
     value: 1
     unit: hour
@@ -39,8 +39,8 @@ variables:
     value: 0.5
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 叫卖努力程度：主动向路人请求购买火柴（增加成功率，但消耗体力）
     reference: TODO:SOURCE
   match_burning:
@@ -48,8 +48,8 @@ variables:
     value: 0.5
     unit: matches_per_hour
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 燃烧火柴取暖：划燃火柴取得片刻温暖（消耗存货，带来幻觉和温暖感）
     reference: TODO:SOURCE
   shelter_seeking:
@@ -57,8 +57,8 @@ variables:
     value: 0.3
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 寻找避风处：在街角墙壁等处躲风，减少寒冷损耗
     reference: TODO:SOURCE
   body_temperature:
@@ -66,8 +66,8 @@ variables:
     value: 35.5
     unit: celsius
     bounds:
-    - 20
-    - 37
+      - 20
+      - 37
     description: 体温：核心体温：低温症的生理指标（36.5=正常，<32=危险，<28=致命）
     reference: TODO:SOURCE
     io_role: output
@@ -76,8 +76,8 @@ variables:
     value: 80
     unit: count
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 剩余火柴：尚未燃烧或卖出的火柴数量
     reference: TODO:SOURCE
     io_role: output
@@ -86,8 +86,8 @@ variables:
     value: 10
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 温暖感（幻觉）：火柴光带来的主观温暖感——与体温解耦的心理状态
     reference: TODO:SOURCE
     io_role: output
@@ -96,8 +96,8 @@ variables:
     value: 40
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 希望感：对救助或奇迹的期待（随体温下降可能增幻觉）
     reference: TODO:SOURCE
     io_role: output
@@ -106,8 +106,8 @@ variables:
     value: 0
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 售出收入：卖出火柴赚到的铜板（是否能回家的关键）
     reference: TODO:SOURCE
     io_role: output
@@ -129,8 +129,7 @@ formulas:
     reference: TODO:SOURCE
   warmth_feeling_dynamics:
     formula:
-      warmth_feeling: max(0, min(100, warmth_feeling + (match_burning * 15.0 * (max(1.0, (36 - body_temperature) * 0.5)))
-        - (8.0)))
+      warmth_feeling: max(0, min(100, warmth_feeling + (match_burning * 15.0 * (max(1.0, (36 - body_temperature) * 0.5))) - (8.0)))
     description: 温暖感随火柴燃烧和体温共同变化；低体温时幻觉强度增加
     reference: TODO:SOURCE
   hope_dynamics:
@@ -142,63 +141,66 @@ simulation:
   start_date: '1800-12-31'
   end_date: '1800-12-31'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: coins_earned
-    metric: final
-    direction: maximize
-  - variable: body_temperature
-    metric: final
-    direction: maximize
+    - variable: coins_earned
+      metric: final
+      direction: maximize
+    - variable: body_temperature
+      metric: final
+      direction: maximize
   schedules:
-  - variable: match_selling_effort
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 叫卖努力程度
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: match_burning
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 燃烧火柴取暖
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: shelter_seeking
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 寻找避风处
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: match_selling_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 叫卖努力程度
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: match_burning
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 燃烧火柴取暖
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: shelter_seeking
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 寻找避风处
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

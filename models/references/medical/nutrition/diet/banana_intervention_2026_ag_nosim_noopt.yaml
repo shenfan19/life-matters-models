@@ -4,8 +4,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       游戏专用香蕉食物组件：将香蕉摄入量（克）转换为每次摄取的碳水化合物、蛋白质和脂肪营养素。
@@ -19,9 +19,9 @@ metadata:
     evidence_quality: 3 - 参数来自标准营养成分表，数值可靠但模型极简
     popularity: 1 - 专为游戏（_ag）设计的简化食物模块，通用度极低
   tags:
-  - food
-  - diet
-  - fruit
+    - food
+    - diet
+    - fruit
   step_size:
     value: 1
     unit: minute
@@ -32,8 +32,8 @@ variables:
     unit: g
     type: input
     bounds:
-    - 0
-    - 1000
+      - 0
+      - 1000
   food_carbohydrate:
     description: 产生的碳水化合物摄入量
     value: 0
@@ -85,7 +85,8 @@ optimizer:
       direction: minimize
   schedules:
     - variable: banana_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "香蕉摄入量（g）"
       optimize:

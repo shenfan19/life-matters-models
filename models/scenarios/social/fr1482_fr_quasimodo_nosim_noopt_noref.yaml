@@ -3,8 +3,8 @@ metadata:
   name: fr1482_fr_quasimodo
   lm_format_version: "1.0"
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       卡西莫多（雨果《巴黎圣母院》1831）将艾丝美拉达藏入圣母院避难后面临三重权衡：
@@ -21,14 +21,14 @@ metadata:
     innovation: 2 - 将庇护防守与体力消耗的权衡转化为动力学系统意图清晰，但尚未完善
     social_value: 4 - 探索社会边缘人的尊严和爱与牺牲，具有重要人文价值
   tags:
-  - disability
-  - isolation
-  - protection
-  - love
-  - sacrifice
-  - literature
+    - disability
+    - isolation
+    - protection
+    - love
+    - sacrifice
+    - literature
   references:
-  - Notre-Dame de Paris (Victor Hugo, 1831)
+    - Notre-Dame de Paris (Victor Hugo, 1831)
   step_size:
     value: 1
     unit: day
@@ -38,8 +38,8 @@ variables:
     value: 2.0
     unit: intensity
     bounds:
-    - 0
-    - 3
+      - 0
+      - 3
     description: 防守强度：主动抵抗攻入圣母院的人群/骑兵的激烈程度
     reference: TODO:SOURCE
   care_for_esmeralda:
@@ -47,8 +47,8 @@ variables:
     value: 0.6
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 对艾丝美拉达的照料：提供食物·安慰·陪伴（减少她的恐惧与绝望）
     reference: TODO:SOURCE
   negotiation_attempt:
@@ -56,8 +56,8 @@ variables:
     value: 0.2
     unit: intensity
     bounds:
-    - 0
-    - 1
+      - 0
+      - 1
     description: 与外界沟通尝试：通过弗罗洛等人寻求政治解决（风险：被利用）
     reference: TODO:SOURCE
   sanctuary_integrity:
@@ -65,8 +65,8 @@ variables:
     value: 80
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 庇护所防守强度：圣母院能维持的安全屏障（物理+政治+宗教权威）
     reference: TODO:SOURCE
     io_role: output
@@ -75,8 +75,8 @@ variables:
     value: 35
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 艾丝美拉达的希望：她在庇护所中的心理状态和对未来的信心
     reference: TODO:SOURCE
     io_role: output
@@ -85,8 +85,8 @@ variables:
     value: 70
     unit: hp
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 卡西莫多的体力：驼背+慢性疼痛+防守消耗的身体状态
     reference: TODO:SOURCE
     io_role: output
@@ -95,8 +95,8 @@ variables:
     value: 30
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 外部威胁压力：王室·教会·民众对驱逐艾丝美拉达的压力
     reference: TODO:SOURCE
     io_role: output
@@ -105,16 +105,15 @@ variables:
     value: 20
     unit: score
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
     description: 弗罗洛背叛风险：卡西莫多对弗罗洛的信任被利用的程度
     reference: TODO:SOURCE
     io_role: output
 formulas:
   sanctuary_defense:
     formula:
-      sanctuary_integrity: max(0, min(100, sanctuary_integrity + (defense_intensity * 5.0) - ((external_pressure / 100) *
-        4.0)))
+      sanctuary_integrity: max(0, min(100, sanctuary_integrity + (defense_intensity * 5.0) - ((external_pressure / 100) * 4.0)))
     description: 防守力度vs外部压力
     reference: TODO:SOURCE
   esmeralda_mood:
@@ -141,63 +140,66 @@ simulation:
   start_date: '1482-01-01'
   end_date: '1482-01-30'
   output_types:
-  - input
-  - state
+    - input
+    - state
 optimizer:
   method: nsga2
   objectives:
-  - variable: esmeralda_hope
-    metric: final
-    direction: maximize
-  - variable: sanctuary_integrity
-    metric: final
-    direction: maximize
+    - variable: esmeralda_hope
+      metric: final
+      direction: maximize
+    - variable: sanctuary_integrity
+      metric: final
+      direction: maximize
   schedules:
-  - variable: defense_intensity
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 防守强度
-    optimize:
-      value:
-      - 0
-      - 3
-  - variable: care_for_esmeralda
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 对艾丝美拉达的照料
-    optimize:
-      value:
-      - 0
-      - 1
-  - variable: negotiation_attempt
-    time: 09:00
-    days:
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    label: 与外界沟通尝试
-    optimize:
-      value:
-      - 0
-      - 1
+    - variable: defense_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 防守强度
+      optimize:
+        value:
+          - 0
+          - 3
+    - variable: care_for_esmeralda
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 对艾丝美拉达的照料
+      optimize:
+        value:
+          - 0
+          - 1
+    - variable: negotiation_attempt
+      time_start: "09:00"
+      time_end: "09:00"
+      days:
+        - Mon
+        - Tue
+        - Wed
+        - Thu
+        - Fri
+        - Sat
+        - Sun
+      label: 与外界沟通尝试
+      optimize:
+        value:
+          - 0
+          - 1
   algorithm:
     population_size: 50
     n_generations: 80

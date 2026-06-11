@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       高血压合并痛风是一种在临床上极为常见的共病组合，然而两病的标准治疗方案之间存在直接冲突。
@@ -26,13 +26,13 @@ metadata:
     popularity: 4 - 跨科室冲突领域代表性模型，多方案比较首选组件
   tags: [cardiology, rheumatology, hypertension, gout, uric_acid, optimization, physiological, A5]
   references:
-  - "Williams B et al. (ESC/ESH 2018) 2018 ESC/ESH Guidelines for the management of arterial hypertension. Eur Heart J 39(33):3021-3104. [噻嗪类一线降压，目标<130/80]"
-  - "FitzGerald JD et al. (ACR 2020) 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Rheumatol 72(6):879-895. [尿酸目标<360 μmol/L]"
-  - "Law MR, Wald NJ, Morris JK (2003) Use of blood pressure lowering drugs in the prevention of cardiovascular disease. BMJ 326(7403):1427. [HCTZ 25mg降压约8-10 mmHg]"
-  - "Gurwitz JH et al. (1992) Hydrochlorothiazide and the risk of gout. J Clin Epidemiol 45(9):989-996. [HCTZ升高尿酸约60-80 μmol/L per 25mg]"
-  - "Neter JE et al. (2003) Influence of weight reduction on blood pressure. Hypertension 42(5):878-884. [减重1kg降压约1 mmHg]"
-  - "Choi HK, Liu S, Curhan G (2005) Intake of purine-rich foods, protein, and dairy products. Arthritis Rheum 52(1):283-289. [嘌呤摄入与尿酸关系]"
-  - "Fam AG (2005) Gout, diet, and the insulin resistance syndrome. J Rheumatol 32(4):608-610. [快速减重促进尿酸升高机制]"
+    - "Williams B et al. (ESC/ESH 2018) 2018 ESC/ESH Guidelines for the management of arterial hypertension. Eur Heart J 39(33):3021-3104. [噻嗪类一线降压，目标<130/80]"
+    - "FitzGerald JD et al. (ACR 2020) 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Rheumatol 72(6):879-895. [尿酸目标<360 μmol/L]"
+    - "Law MR, Wald NJ, Morris JK (2003) Use of blood pressure lowering drugs in the prevention of cardiovascular disease. BMJ 326(7403):1427. [HCTZ 25mg降压约8-10 mmHg]"
+    - "Gurwitz JH et al. (1992) Hydrochlorothiazide and the risk of gout. J Clin Epidemiol 45(9):989-996. [HCTZ升高尿酸约60-80 μmol/L per 25mg]"
+    - "Neter JE et al. (2003) Influence of weight reduction on blood pressure. Hypertension 42(5):878-884. [减重1kg降压约1 mmHg]"
+    - "Choi HK, Liu S, Curhan G (2005) Intake of purine-rich foods, protein, and dairy products. Arthritis Rheum 52(1):283-289. [嘌呤摄入与尿酸关系]"
+    - "Fam AG (2005) Gout, diet, and the insulin resistance syndrome. J Rheumatol 32(4):608-610. [快速减重促进尿酸升高机制]"
 
   step_size:
     value: 1
@@ -230,7 +230,8 @@ optimizer:
       description: "HCTZ标准剂量上限25mg（ESC 2018）"
   schedules:
     - variable: diuretic_dose
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "HCTZ晨服剂量（mg）"
       optimize:
         value: [0, 25]
@@ -244,12 +245,12 @@ optimizer:
     n_solutions: 6
     elapsed_seconds: 94.3
     pareto_front:
-      - {x: [0.0],   f: [158.0, 480.0]}
-      - {x: [6.25],  f: [154.5, 497.5]}
-      - {x: [12.5],  f: [151.2, 514.8]}
+      - {x: [0.0], f: [158.0, 480.0]}
+      - {x: [6.25], f: [154.5, 497.5]}
+      - {x: [12.5], f: [151.2, 514.8]}
       - {x: [18.75], f: [148.1, 531.9]}
-      - {x: [25.0],  f: [145.2, 548.6]}
-      - {x: [12.5],  f: [151.2, 420.4]}
+      - {x: [25.0], f: [145.2, 548.6]}
+      - {x: [12.5], f: [151.2, 420.4]}
     reference:
       x: [12.5]
       f: [151.2, 420.4]

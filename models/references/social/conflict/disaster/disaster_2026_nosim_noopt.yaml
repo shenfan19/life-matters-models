@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       自然灾害（地震、洪水、飓风）的急性响应动力学由危害强度、基础设施损毁和人群安全三个状态变量刻画，
@@ -37,32 +37,32 @@ variables:
     unit: 级
     type: state
     bounds:
-    - 0
-    - 10
+      - 0
+      - 10
   damage_index:
     description: 设施受损指数
     value: 0
     unit: 分
     type: state
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
   population_safety:
     description: 人群安全评分
     value: 100
     unit: 分
     type: state
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
   rescue_progress:
     description: 救援任务进度
     value: 0
     unit: '%'
     type: state
     bounds:
-    - 0
-    - 100
+      - 0
+      - 100
   supplies_delivery:
     description: 物资投送
     value: 0
@@ -103,9 +103,9 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-03"
   output_variables:
-  - damage_index
-  - population_safety
-  - rescue_progress
+    - damage_index
+    - population_safety
+    - rescue_progress
 
 optimizer:
   method: nsga2
@@ -123,19 +123,22 @@ optimizer:
       description: "灾害损毁指数控制在0.8以内"
   schedules:
     - variable: supplies_delivery
-      time: "06:00"
+      time_start: "06:00"
+      time_end: "06:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "物资投送（0=无，1=满负荷）"
       optimize:
         value: [0, 1]
     - variable: evacuation_order
-      time: "06:00"
+      time_start: "06:00"
+      time_end: "06:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "撤离指令强度（0=不撤离，1=强制撤离）"
       optimize:
         value: [0, 1]
     - variable: infrastructure_repair
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "基础设施修复力度（0=无，1=全力修复）"
       optimize:

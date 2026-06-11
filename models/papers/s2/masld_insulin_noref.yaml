@@ -3,10 +3,10 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
-  - name: Minghui Wu
-    email: wuminghui@gzucm.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
   description:
     problem: |
       代谢相关脂肪性肝病（MASLD，消化科）与胰岛素抵抗（IR，内分泌科）互为因果：IR 促进肝脏脂肪合成，MASLD 的炎症通路反过来加重 IR。
@@ -273,7 +273,7 @@ formulas:
 # ── 仿真设置（K=2 分段，代表性患者26周干预）──────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"        # 26 周
+  end_date: "2026-07-01"          # 26 周
   output_variables:
     - liver_fat
     - ALT
@@ -288,44 +288,25 @@ simulation:
     - id: "endocrine_first"
       label: "内分泌优先（低GI+高蛋白，优先改善HOMA-IR）"
       schedules:
-        - {variable: exercise_met_min, time: "07:00", value: 180.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹有氧"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 60.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "严格低GI"}
-        - {variable: caloric_deficit, time: "00:00", value: 300.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
+        - {variable: exercise_met_min, time: "07:00", value: 180.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹有氧"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 60.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "严格低GI"}
+        - {variable: caloric_deficit, time: "00:00", value: 300.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
 
     - id: "digestive_first"
       label: "消化科优先（EASL指南：有氧+快速减重，优先降肝脂）"
       schedules:
-        - {variable: exercise_met_min, time: "16:00", value: 250.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "餐后有氧（每天）"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 110.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "地中海饮食"}
-        - {variable: caloric_deficit, time: "00:00", value: 500.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口（较大）"}
+        - {variable: exercise_met_min, time: "16:00", value: 250.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "餐后有氧（每天）"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 110.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "地中海饮食"}
+        - {variable: caloric_deficit, time: "00:00", value: 500.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口（较大）"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（空腹运动+T4切换，待运行更新）"
       schedules:
-        - {variable: exercise_met_min, time: "07:00", value: 210.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-03-27"], label: "空腹HIIT强化期"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 70.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-03-27"], label: "强化期低GI"}
-        - {variable: exercise_met_min, time: "07:00", value: 180.0,
-           days: [Mon, Wed, Fri], date_range: ["2026-03-28", "2026-07-01"], label: "维持期有氧"}
-        - {variable: dietary_glycemic_load, time: "00:00", value: 100.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-03-28", "2026-07-01"], label: "维持期地中海饮食"}
-        - {variable: caloric_deficit, time: "00:00", value: 350.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
+        - {variable: exercise_met_min, time: "07:00", value: 210.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-03-27"], label: "空腹HIIT强化期"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 70.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "强化期低GI"}
+        - {variable: exercise_met_min, time: "07:00", value: 180.0, days: [Mon, Wed, Fri], date_range: ["2026-03-28", "2026-07-01"], label: "维持期有氧"}
+        - {variable: dietary_glycemic_load, time: "00:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-28", "2026-07-01"], label: "维持期地中海饮食"}
+        - {variable: caloric_deficit, time: "00:00", value: 350.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
 
   mc:
     runs: 20
@@ -335,7 +316,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-07-01"
+  end_date: "2026-07-01"
   step_size:
     value: 1
     unit: day
@@ -375,7 +356,8 @@ optimizer:
   schedules:
     # T1: 热量缺口
     - variable: caloric_deficit
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日热量缺口"
       optimize:
@@ -388,11 +370,12 @@ optimizer:
       label: "有氧运动量与时机（T2 空腹 vs 餐后）"
       optimize:
         value: [100.0, 300.0]
-        time: ["06:00", "20:00"]
+        time_start: ["06:00", "20:00"]
 
     # T1+T3: 饮食升糖负荷 + 运动频率模式（低GI饮食配合 HIIT 哪几天）
     - variable: exercise_met_min
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "有氧运动频率模式（T3）"
       optimize:
         value: [150.0, 280.0]
@@ -401,7 +384,8 @@ optimizer:
 
     # T1: 饮食升糖负荷（低GI强化期 vs 地中海维持期）
     - variable: dietary_glycemic_load
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "饮食升糖负荷（低GI到地中海渐进）"
       optimize:
@@ -410,7 +394,8 @@ optimizer:
     # T4: 从低GI强化期切换到地中海饮食维持期的时机
     # 科学依据：HOMA-IR 初步改善（约第8-12周）后，较高 GI 的地中海饮食才相对安全
     - variable: dietary_glycemic_load
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "饮食切换时机（低GI→地中海，T4）"
       optimize:

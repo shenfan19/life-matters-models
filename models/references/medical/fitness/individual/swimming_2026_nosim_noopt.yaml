@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       游泳是关节冲击最低的有氧运动之一，其独特性在于技术效率（划水效率）与体能的耦合关系。
@@ -155,13 +155,15 @@ optimizer:
       description: "疲劳感不超过9（避免过度训练）"
   schedules:
     - variable: training_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "训练强度（RPE 0-10）"
       optimize:
         value: [0.0, 10.0]
     - variable: stroke_rate
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "划水频率（次/分）"
       optimize:

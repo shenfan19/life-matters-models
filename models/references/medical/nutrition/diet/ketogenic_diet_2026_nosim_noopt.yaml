@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       生酮饮食（碳水 < 50g/天）通过肝糖原耗竭触发脂肪动员和酮体生成，
@@ -250,7 +250,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-31"
+  end_date: "2026-03-31"
   output_variables:
     - blood_ketones_mmol_l
     - blood_glucose_mg_dl
@@ -299,7 +299,8 @@ optimizer:
       description: "防止低血糖（≥65 mg/dL）"
   schedules:
     - variable: carb_intake_g_day
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "碳水摄入（g/day）"
       optimize:
         value: [10.0, 80.0]

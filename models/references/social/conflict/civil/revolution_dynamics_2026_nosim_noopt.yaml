@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       革命的"事后不可避免、事前难以预测"悖论源于 Kuran（1991）的雪崩效应：
@@ -219,7 +219,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2030-12-31"
+  end_date: "2030-12-31"
   output_variables:
     - state_capacity_index
     - popular_legitimacy
@@ -258,7 +258,8 @@ optimizer:
       description: "维持最低国家能力，防止失败国家"
   schedules:
     - variable: repression_intensity
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       label: "镇压强度决策"
       optimize:
         value: [0.0, 0.8]

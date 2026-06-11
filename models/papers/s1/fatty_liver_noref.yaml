@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       脂肪肝（NAFLD）运动处方优化：每周几次高强度间歇训练（HIIT）、何时从低强度升级，才能在肝酶（ALT）不超标的前提下最大化 12 周减脂效果？
@@ -154,7 +154,7 @@ formulas:
 # ── 仿真设置（K=3 分段：热身→升级→维持）───────────────────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-27"        # 12 周 = 84 天
+  end_date: "2026-03-27"          # 12 周 = 84 天
   output_variables:
     - liver_fat_pct
     - alt_level
@@ -165,32 +165,20 @@ simulation:
     - id: "daily_walk"
       label: "每日步行（EASL基准，MET 3.5，7天/周）"
       schedules:
-        - {variable: exercise_intensity, time: "07:00", value: 3.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-03-27"], label: "每日步行"}
+        - {variable: exercise_intensity, time: "07:00", value: 3.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "每日步行"}
 
     - id: "hiit_unconstrained"
       label: "无约束HIIT（MET 8.0，Mon/Wed/Fri，全程）"
       schedules:
-        - {variable: exercise_intensity, time: "07:00", value: 8.0,
-           days: [Mon, Wed, Fri],
-           date_range: ["2026-01-01", "2026-03-27"], label: "HIIT主训"}
-        - {variable: exercise_intensity, time: "07:00", value: 3.5,
-           days: [Tue, Thu, Sat, Sun],
-           date_range: ["2026-01-01", "2026-03-27"], label: "辅助低强度"}
+        - {variable: exercise_intensity, time: "07:00", value: 8.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-03-27"], label: "HIIT主训"}
+        - {variable: exercise_intensity, time: "07:00", value: 3.5, days: [Tue, Thu, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "辅助低强度"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（参考点，待运行后更新）"
       schedules:
-        - {variable: exercise_intensity, time: "07:00", value: 3.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "热身期低强度"}
-        - {variable: exercise_intensity, time: "07:00", value: 7.5,
-           days: [Mon, Wed, Fri],
-           date_range: ["2026-01-29", "2026-03-27"], label: "HIIT（3次/周）"}
-        - {variable: exercise_intensity, time: "07:00", value: 3.5,
-           days: [Tue, Thu, Sat, Sun],
-           date_range: ["2026-01-29", "2026-03-27"], label: "辅助低强度"}
+        - {variable: exercise_intensity, time: "07:00", value: 3.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "热身期低强度"}
+        - {variable: exercise_intensity, time: "07:00", value: 7.5, days: [Mon, Wed, Fri], date_range: ["2026-01-29", "2026-03-27"], label: "HIIT（3次/周）"}
+        - {variable: exercise_intensity, time: "07:00", value: 3.5, days: [Tue, Thu, Sat, Sun], date_range: ["2026-01-29", "2026-03-27"], label: "辅助低强度"}
 
   mc:
     runs: 20
@@ -200,7 +188,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-03-27"
+  end_date: "2026-03-27"
   step_size:
     value: 1
     unit: day
@@ -227,7 +215,8 @@ optimizer:
   schedules:
     # T1: 热身期强度（低强度，每日）
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-28"]
       label: "热身期强度（低强度步行）"
@@ -237,7 +226,8 @@ optimizer:
     # T1+T3: HIIT 阶段强度 + 每周频率（几次/周 HIIT）
     # 科学意义：Mon/Wed/Fri（3次）vs Mon-Fri每天 vs Mon/Tue/Thu/Sat（4次）
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "HIIT主训频率与强度"
       optimize:
         value: [6.0, 10.0]
@@ -246,7 +236,8 @@ optimizer:
 
     # T1: HIIT日辅助低强度（非HIIT日恢复性运动）
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "恢复日低强度强度"
       optimize:
@@ -255,7 +246,8 @@ optimizer:
     # T4: 高强度（HIIT）启动时机（从第2周到第6周窗口内启动）
     # 科学意义：体能未建立时过早引入HIIT→ALT超标；过晚则浪费减脂机会
     - variable: exercise_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       days: [Mon, Wed, Fri]
       label: "高强度升级时机"
       optimize:

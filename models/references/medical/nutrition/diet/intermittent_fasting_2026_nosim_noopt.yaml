@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       间歇性禁食（16:8 方案）的代谢益处通过禁食窗口而非单纯热量限制实现：禁食期胰岛素水平下降，触发脂肪动员和自噬激活。
@@ -230,7 +230,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-06-29"
+  end_date: "2026-06-29"
   output_variables:
     - insulin_sensitivity_index
     - autophagy_marker_lc3_ratio
@@ -279,7 +279,8 @@ optimizer:
       description: "进食窗口不低于6小时（营养充足底线）"
   schedules:
     - variable: eating_window_hours
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "进食窗口（小时）"
       optimize:
         value: [6.0, 14.0]
@@ -293,9 +294,9 @@ optimizer:
     n_solutions: 5
     elapsed_seconds: 54.2
     pareto_front:
-      - {x: [6.0],  f: [0.748, 70.8]}
-      - {x: [7.0],  f: [0.731, 71.2]}
-      - {x: [8.0],  f: [0.713, 71.5]}
+      - {x: [6.0], f: [0.748, 70.8]}
+      - {x: [7.0], f: [0.731, 71.2]}
+      - {x: [8.0], f: [0.713, 71.5]}
       - {x: [10.0], f: [0.677, 71.8]}
       - {x: [14.0], f: [0.605, 72.0]}
     reference:

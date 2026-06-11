@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       高强度间歇训练（HIIT）能在较短总运动时间内产生与传统中等强度有氧训练相当甚至更大的心肺和代谢改善，
@@ -148,7 +148,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-03-26"
+  end_date: "2026-03-26"
   output_variables: [vo2max, insulin_sensitivity, mitochondrial_density, fat_oxidation_rate]
   schedules:
     - variable: interval_intensity
@@ -198,7 +198,8 @@ optimizer:
       description: "强度上限 97% VO2max（超过此值心律失常和过度疲劳风险急增）"
   schedules:
     - variable: interval_intensity
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "间隔强度（%VO2max，70=阈值，95=接近 VO2max）"
       optimize:
         value: [70.0, 97.0]

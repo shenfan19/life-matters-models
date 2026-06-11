@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
       戒烟的最优时机和减量策略：吸烟短期缓解压力并维持工作产出，但戒烟初期 2–4 周会出现皮质醇升高的戒断反应，导致工作产出下降。在工作压力低谷期开始戒烟是否优于高峰期？
@@ -207,7 +207,7 @@ formulas:
 # 5年 = 1826 天（日步长对年级肺功能仍合理，跨尺度近似）
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2030-12-31"
+  end_date: "2030-12-31"
   output_variables:
     - nicotine_plasma
     - work_output
@@ -218,46 +218,29 @@ simulation:
   plans:
     - id: "immediate_quit"
       label: "立即戒烟（2026-01-01起，0支/天）"
-      schedules:
-        []   # 无schedule条目 = cigarettes_per_day 全程为0
+      schedules: [] # 无schedule条目 = cigarettes_per_day 全程为0
 
     - id: "weekday_first"
       label: "工作日先戒策略（2027-01-01开始减量，工作日0支→周末渐减）"
       schedules:
-        - {variable: cigarettes_per_day, time: "09:00", value: 20.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "吸烟期"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 0.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2027-01-01", "2027-06-30"], label: "工作日先戒"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 10.0,
-           days: [Sat, Sun],
-           date_range: ["2027-01-01", "2027-06-30"], label: "周末过渡期"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 5.0,
-           days: [Sat, Sun],
-           date_range: ["2027-07-01", "2027-12-31"], label: "周末减少"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 20.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "吸烟期"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 0.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2027-01-01", "2027-06-30"], label: "工作日先戒"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 10.0, days: [Sat, Sun], date_range: ["2027-01-01", "2027-06-30"], label: "周末过渡期"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 5.0, days: [Sat, Sun], date_range: ["2027-07-01", "2027-12-31"], label: "周末减少"}
 
     - id: "weekend_first"
       label: "周末先戒策略（2027-01-01开始减量，周末0支→工作日渐减）"
       schedules:
-        - {variable: cigarettes_per_day, time: "09:00", value: 20.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "吸烟期"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 15.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2027-01-01", "2027-06-30"], label: "工作日过渡期"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 0.0,
-           days: [Sat, Sun],
-           date_range: ["2027-01-01", "2027-06-30"], label: "周末先戒"}
-        - {variable: cigarettes_per_day, time: "09:00", value: 8.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2027-07-01", "2027-12-31"], label: "工作日减少"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 20.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "吸烟期"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 15.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2027-01-01", "2027-06-30"], label: "工作日过渡期"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 0.0, days: [Sat, Sun], date_range: ["2027-01-01", "2027-06-30"], label: "周末先戒"}
+        - {variable: cigarettes_per_day, time: "09:00", value: 8.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2027-07-01", "2027-12-31"], label: "工作日减少"}
 
 # ── 优化设置（T1+T3+T4 联合优化）──────────────────────────────────────────────
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2030-12-31"
+  end_date: "2030-12-31"
   step_size:
     value: 1
     unit: day
@@ -289,7 +272,8 @@ optimizer:
   schedules:
     # T1: 减量期日吸烟量（不为0，表示减量而非立即戒断）
     - variable: cigarettes_per_day
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "减量期吸烟量（支/天）"
       optimize:
@@ -299,7 +283,8 @@ optimizer:
     # 科学意义：工作日结构化环境（同事监督+任务专注）抑制冲动吸烟
     # vs 周末自由时间可能增加吸烟冲动（社交饮酒等）
     - variable: cigarettes_per_day
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       label: "严格减量日模式选择"
       optimize:
         value: [0.0, 8.0]
@@ -309,7 +294,8 @@ optimizer:
     # T4: 减量期起始时机（在第6-30个月窗口内搜索）
     # 科学意义：选择工作压力相对低的季节启动减量→戒断期皮质醇峰值更低
     - variable: cigarettes_per_day
-      time: "09:00"
+      time_start: "09:00"
+      time_end: "09:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "减量期启动时机（哪个月开始减量）"
       optimize:

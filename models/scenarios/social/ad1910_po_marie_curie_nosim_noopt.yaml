@@ -3,8 +3,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-04-23
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       居里夫人放射性研究（1898–1906，巴黎）中，辐射积累随实验强度线性增长（radiation += research_intensity × exposure_factor），
@@ -95,10 +95,10 @@ simulation:
   start_date: "1910-01-01"
   end_date: "1918-01-01"
   output_variables:
-  - health
-  - radiation
-  - research_progress
-  - money
+    - health
+    - radiation
+    - research_progress
+    - money
 formulas:
   # 研究产出洞见，同时积累辐射
   research_gain:
@@ -178,46 +178,50 @@ optimizer:
     n_generations: 60
 
   objectives:
-  - variable: research_progress
-    metric: final
-    direction: maximize
-  - variable: health
-    metric: mean
-    direction: maximize
-  - variable: radiation
-    metric: final
-    direction: minimize
+    - variable: research_progress
+      metric: final
+      direction: maximize
+    - variable: health
+      metric: mean
+      direction: maximize
+    - variable: radiation
+      metric: final
+      direction: minimize
 
   constraints:
-  - variable: health
-    condition: ">= 30"
-    description: "健康不能低于30（历史约束：居里夫人坚持工作至生命最后阶段）"
-  - variable: money
-    condition: ">= 5"
-    description: "最低经费维持实验室基本运转"
+    - variable: health
+      condition: ">= 30"
+      description: "健康不能低于30（历史约束：居里夫人坚持工作至生命最后阶段）"
+    - variable: money
+      condition: ">= 5"
+      description: "最低经费维持实验室基本运转"
 
   schedules:
-  - variable: research_intensity
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "实验室研究强度"
-    optimize:
-      value: [0.0, 1.0]
-  - variable: rest_time
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "休养时间比例"
-    optimize:
-      value: [0.0, 0.5]
-  - variable: teaching_load
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "授课负荷"
-    optimize:
-      value: [0.0, 0.7]
-  - variable: fundraise_effort
-    time: "09:00"
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "经费申请投入"
-    optimize:
-      value: [0.0, 0.5]
+    - variable: research_intensity
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "实验室研究强度"
+      optimize:
+        value: [0.0, 1.0]
+    - variable: rest_time
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "休养时间比例"
+      optimize:
+        value: [0.0, 0.5]
+    - variable: teaching_load
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "授课负荷"
+      optimize:
+        value: [0.0, 0.7]
+    - variable: fundraise_effort
+      time_start: "09:00"
+      time_end: "09:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "经费申请投入"
+      optimize:
+        value: [0.0, 0.5]

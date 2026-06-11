@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       山地徒步的能量消耗由速度、坡度和背包重量共同决定，三者的交互关系高度非线性。
@@ -162,7 +162,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables: [energy_expenditure_rate, heart_rate, cumulative_fatigue, joint_stress_index, altitude, cumulative_distance]
   schedules:
     - variable: hiking_speed
@@ -206,7 +206,8 @@ optimizer:
       description: "心率目标上限 170 bpm（有氧-无氧阈值，维持可持续行军）"
   schedules:
     - variable: hiking_speed
-      time: "07:00"
+      time_start: "07:00"
+      time_end: "07:00"
       label: "徒步速度（km/h，2.5=慢速恢复，7.0=快速行军）"
       optimize:
         value: [2.5, 7.0]

@@ -3,10 +3,10 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
-  - name: Minghui Wu
-    email: wuminghui@gzucm.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
   description:
     problem: |
       肠易激综合征（IBS，全球患病率 10–15%）患者的症状由饮食和工作应激共同驱动——高 FODMAP 食物在肠道发酵产气，工作应激则通过脑-肠轴起作用，但患者只能控制饮食。
@@ -181,7 +181,7 @@ formulas:
 # ── 仿真设置（K=3 分段：限制期→重新引入期→个体化维持期）────────────────────────
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"        # 26 周
+  end_date: "2026-06-30"          # 26 周
   output_variables:
     - symptom_score
     - gut_permeability
@@ -193,41 +193,23 @@ simulation:
     - id: "high_fodmap_no_intervention"
       label: "无干预基线（高FODMAP 35g/day）"
       schedules:
-        - {variable: fodmap_intake, time: "00:00", value: 35.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-06-30"], label: "高FODMAP饮食"}
-        - {variable: fiber_soluble, time: "00:00", value: 7.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-06-30"], label: "普通纤维"}
+        - {variable: fodmap_intake, time: "00:00", value: 35.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "高FODMAP饮食"}
+        - {variable: fiber_soluble, time: "00:00", value: 7.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "普通纤维"}
 
     - id: "standard_lowfodmap_4wk"
       label: "标准低FODMAP方案（4周限制+8周重引入，NICE指南）"
       schedules:
-        - {variable: fodmap_intake, time: "00:00", value: 7.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-01-28"], label: "4周限制期"}
-        - {variable: fodmap_intake, time: "00:00", value: 20.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-29", "2026-04-01"], label: "8周重新引入"}
-        - {variable: fodmap_intake, time: "00:00", value: 22.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-04-02", "2026-06-30"], label: "维持期"}
+        - {variable: fodmap_intake, time: "00:00", value: 7.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-28"], label: "4周限制期"}
+        - {variable: fodmap_intake, time: "00:00", value: 20.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-29", "2026-04-01"], label: "8周重新引入"}
+        - {variable: fodmap_intake, time: "00:00", value: 22.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-04-02", "2026-06-30"], label: "维持期"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（延长限制期+保守重引入，待运行更新）"
       schedules:
-        - {variable: fodmap_intake, time: "00:00", value: 6.5,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-02-18"], label: "延长限制期（7周）"}
-        - {variable: fodmap_intake, time: "00:00", value: 15.0,
-           days: [Mon, Tue, Wed, Thu, Fri],
-           date_range: ["2026-02-19", "2026-05-13"], label: "工作日保守重引入"}
-        - {variable: fodmap_intake, time: "00:00", value: 20.0,
-           days: [Sat, Sun],
-           date_range: ["2026-02-19", "2026-05-13"], label: "周末适度放松"}
-        - {variable: fiber_soluble, time: "00:00", value: 11.0,
-           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-06-30"], label: "全程可溶性纤维"}
+        - {variable: fodmap_intake, time: "00:00", value: 6.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-02-18"], label: "延长限制期（7周）"}
+        - {variable: fodmap_intake, time: "00:00", value: 15.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-02-19", "2026-05-13"], label: "工作日保守重引入"}
+        - {variable: fodmap_intake, time: "00:00", value: 20.0, days: [Sat, Sun], date_range: ["2026-02-19", "2026-05-13"], label: "周末适度放松"}
+        - {variable: fiber_soluble, time: "00:00", value: 11.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "全程可溶性纤维"}
 
   mc:
     runs: 20
@@ -237,7 +219,7 @@ simulation:
 optimizer:
   method: nsga2
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"
+  end_date: "2026-06-30"
   step_size:
     value: 1
     unit: day
@@ -269,7 +251,8 @@ optimizer:
   schedules:
     # T1: 限制期 FODMAP 目标量（最低耐受量）
     - variable: fodmap_intake
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "限制期每日FODMAP目标量"
       optimize:
@@ -277,7 +260,8 @@ optimizer:
 
     # T1: 可溶性纤维摄入（益生元保护）
     - variable: fiber_soluble
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "每日可溶性纤维补充量"
       optimize:
@@ -287,7 +271,8 @@ optimizer:
     # 科学意义：过快重引入难以识别触发食物，过慢则延长饮食限制期不必要
     # date_range 从第5周开始（NICE指南最短4周限制期之后），避免与T1限制期重叠取消限制效果
     - variable: fodmap_intake
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       label: "重新引入期的每周节奏（T3）"
       date_range: ["2026-01-29", "2026-06-30"]
       optimize:
@@ -297,7 +282,8 @@ optimizer:
 
     # T4: 限制期持续时长（4周 vs 6周 vs 8周，优化切换时机）
     - variable: fodmap_intake
-      time: "00:00"
+      time_start: "00:00"
+      time_end: "00:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "限制期→重新引入期切换时机（T4）"
       optimize:

@@ -1,7 +1,7 @@
 metadata:
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   conflicts: []
   description:
     problem: >
@@ -28,10 +28,10 @@ metadata:
     evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
     popularity: 3 - 网球在运动科学有一定地位但不属于教科书级基准模型
   tags:
-  - fitness
-  - tennis
-  - racket
-  - interval
+    - fitness
+    - tennis
+    - racket
+    - interval
   updated: 2026-04-23
   step_size:
     value: 1
@@ -39,88 +39,88 @@ metadata:
 variables:
   rally_intensity:
     bounds:
-    - 0.0
-    - 10.0
+      - 0.0
+      - 10.0
     description: 回合强度（RPE 0-10），高值=长回合/快节奏
     type: input
     unit: RPE
     value: 7.0
   serve_speed:
     bounds:
-    - 100.0
-    - 220.0
+      - 100.0
+      - 220.0
     description: 发球速度
     type: input
     unit: km/h
     value: 160.0
   heart_rate:
     bounds:
-    - 60.0
-    - 200.0
+      - 60.0
+      - 200.0
     description: 心率
     type: state
     unit: 次/分
     value: 70.0
   calories_burned:
     bounds:
-    - 0.0
-    - 1000.0
+      - 0.0
+      - 1000.0
     description: 消耗热量
     type: state
     unit: kcal
     value: 0.0
   distance_covered:
     bounds:
-    - 0.0
-    - 5000.0
+      - 0.0
+      - 5000.0
     description: 累计移动距离
     type: state
     unit: 米
     value: 0.0
   fatigue:
     bounds:
-    - 0.0
-    - 1.0
+      - 0.0
+      - 1.0
     description: 疲劳指数（0=无疲劳，1=力竭）
     type: state
     unit: 无量纲
     value: 0.0
   lactate:
     bounds:
-    - 0.8
-    - 12.0
+      - 0.8
+      - 12.0
     description: 血乳酸浓度
     type: state
     unit: mmol/L
     value: 1.0
   serve_accuracy:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 发球精准度（疲劳时下降）
     type: state
     unit: '%'
     value: 85.0
   footwork_quality:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 步法质量（协调性与到位速度）
     type: state
     unit: 分
     value: 80.0
   shot_consistency:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 击球稳定性（非受迫性失误率的反指标）
     type: state
     unit: 分
     value: 80.0
   performance:
     bounds:
-    - 0.0
-    - 100.0
+      - 0.0
+      - 100.0
     description: 综合比赛表现评分
     type: state
     unit: 分
@@ -199,15 +199,15 @@ simulation:
       value: 160.0
       label: 发球速度
   output_variables:
-  - heart_rate
-  - calories_burned
-  - distance_covered
-  - fatigue
-  - lactate
-  - serve_accuracy
-  - footwork_quality
-  - shot_consistency
-  - performance
+    - heart_rate
+    - calories_burned
+    - distance_covered
+    - fatigue
+    - lactate
+    - serve_accuracy
+    - footwork_quality
+    - shot_consistency
+    - performance
 
 optimizer:
   method: nsga2
@@ -231,7 +231,8 @@ optimizer:
       description: 血乳酸控制在 10 mmol/L 以内
   schedules:
     - variable: rally_intensity
-      time: "10:00"
+      time_start: "10:00"
+      time_end: "10:00"
       label: 回合强度（RPE 3-9）
       optimize:
         value: [3.0, 9.0]

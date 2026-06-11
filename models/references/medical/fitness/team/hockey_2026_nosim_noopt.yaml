@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       冰球的班次制运动结构（每班次约 45-60 秒接近最大强度，随后 3-4 分钟板凳休息）
@@ -133,7 +133,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-01-01"
+  end_date: "2026-01-01"
   output_variables:
     - heart_rate
     - vo2
@@ -177,7 +177,8 @@ optimizer:
       description: "心率控制在195 bpm以内"
   schedules:
     - variable: skating_intensity
-      time: "19:00"
+      time_start: "19:00"
+      time_end: "19:00"
       label: "滑行强度（RPE 5-10）"
       optimize:
         value: [5.0, 10.0]

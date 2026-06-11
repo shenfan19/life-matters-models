@@ -107,7 +107,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2027-12-31"
+  end_date: "2027-12-31"
   plans:
     - id: default
       label: Default
@@ -127,7 +127,7 @@ optimizer:
 
   # Evaluation window shorter than simulation (6 months vs 2 years → faster search)
   start_date: "2026-01-01"
-  end_date:   "2026-06-30"
+  end_date: "2026-06-30"
   step_size:
     value: 1
     unit: day
@@ -150,12 +150,14 @@ optimizer:
 
   schedules:
     - variable: protein_intake
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Daily protein (g/kg/day)"
       optimize:
         value: [0.5, 2.0]
     - variable: carb_load
-      time: "08:00"
+      time_start: "08:00"
+      time_end: "08:00"
       label: "Daily carbohydrates (g/day)"
       optimize:
         value: [100.0, 350.0]

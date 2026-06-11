@@ -5,8 +5,8 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-17
   authors:
-  - name: Fan Shen
-    email: shenfan@mail.sysu.edu.cn
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
       地中海饮食是目前证据最强的心血管保护饮食模式，核心成分为橄榄油、鱼类和豆类，
@@ -246,7 +246,7 @@ formulas:
 
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2026-12-31"
+  end_date: "2026-12-31"
   output_variables:
     - ldl_mg_dl
     - crp_mg_l
@@ -301,7 +301,8 @@ optimizer:
       description: "SBP目标≤130 mmHg"
   schedules:
     - variable: olive_oil_ml_day
-      time: "12:00"
+      time_start: "12:00"
+      time_end: "12:00"
       label: "橄榄油（mL/day）"
       optimize:
         value: [10.0, 80.0]
