@@ -172,45 +172,52 @@ formulas:
       health: "max(0, health - 0.5)"
 
 optimizer:
-  method: multi_objective
-  algorithm: nsga2
-  population_size: 50
-  generations: 60
+  method: nsga2
+  algorithm:
+    population_size: 50
+    n_generations: 60
 
   objectives:
   - variable: research_progress
+    metric: final
     direction: maximize
-    weight: 1.0
   - variable: health
+    metric: mean
     direction: maximize
-    weight: 0.8
   - variable: radiation
+    metric: final
     direction: minimize
-    weight: 0.6
 
   constraints:
-  - expression: "health >= 30"
+  - variable: health
+    condition: ">= 30"
     description: "健康不能低于30（历史约束：居里夫人坚持工作至生命最后阶段）"
-  - expression: "money >= 5"
+  - variable: money
+    condition: ">= 5"
     description: "最低经费维持实验室基本运转"
 
-  variables_to_optimize:
-  - name: research_fraction
-    default: 0.6
-    bounds: [0.0, 1.0]
-    maps_to: research_intensity
-
-  - name: rest_fraction
-    default: 0.2
-    bounds: [0.0, 0.5]
-    maps_to: rest_time
-
-  - name: teaching_fraction
-    default: 0.3
-    bounds: [0.0, 0.7]
-    maps_to: teaching_load
-
-  - name: fundraise_fraction
-    default: 0.1
-    bounds: [0.0, 0.5]
-    maps_to: fundraise_effort
+  schedules:
+  - variable: research_intensity
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "实验室研究强度"
+    optimize:
+      value: [0.0, 1.0]
+  - variable: rest_time
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "休养时间比例"
+    optimize:
+      value: [0.0, 0.5]
+  - variable: teaching_load
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "授课负荷"
+    optimize:
+      value: [0.0, 0.7]
+  - variable: fundraise_effort
+    time: "09:00"
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "经费申请投入"
+    optimize:
+      value: [0.0, 0.5]

@@ -901,6 +901,29 @@ schedules:
 - T4 激活时，顶层 `date_range:` 字段不写（固定日期范围）。
 - 典型场景：治疗介入时机、季节性干预窗口、灾后救援资源投放时机。
 
+### mode: sustained — 持续生效输入（子日步长模型）
+
+```yaml
+schedules:
+  - variable: care_intensity
+    mode: sustained
+    date_range: ["1945-08-06", "1945-08-11"]   # 可选：限定生效的日期窗口
+    label: "前5天救治强度"
+    optimize:
+      value: [0.0, 3.0]
+```
+
+- 默认（不写 `mode`，或 `mode` 省略）的调度是 **pulse 模式**：每个 step 开始时受控变量先清零，
+  仅 `time: "HH:MM"` 命中的那一个 step 写入 `value`。对 `step_size: hour`/`minute` 的模型，
+  这意味着该变量每天只在某一小时/分钟生效，其余时间为 0——无法表达"全天/全程持续"的输入。
+- `mode: sustained` 改为：只要该条目的 `days`/`date_range` 过滤通过，**每个 step 都生效**（值不被清零）。
+  顶层 `time:` 字段在此模式下被忽略。
+- 可选 `time_range: ["HH:MM", "HH:MM"]`：在 `mode: sustained` 基础上进一步限定每天内的生效时间窗
+  （用于子日内的非整日区间，例如 `[0,8)` 小时）。
+- 适用场景：`step_size: hour`/`minute` 的模型中，决策变量代表"持续强度/持续防护/持续休息"等
+  在多个连续 step 上保持恒定的输入，而非某一时刻的脉冲事件。
+- 与 `optimize.time`（T2）互斥：`mode: sustained` 表示"全程持续"，T2 表示"在某个时间窗内的某一时刻触发"，二者语义不同，不应同时使用。
+
 ### x 向量编码规则
 
 x 向量按 `schedules` 列表顺序展开，每个条目按 `[value?, time?, days?, date_start?, date_end?]` 顺序贡献维度：
