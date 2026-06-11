@@ -1,0 +1,113 @@
+metadata:
+  name: test_sustained_mode
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `mode: sustained` + `time_range` schedule entries (ADR 0098) on an hour-step
+      model. A worker accumulates output during a daytime work window and recovers from
+      fatigue overnight. The default plan uses ordinary single-instant pulse events
+      (CLI `--sim` baseline); `optimizer.schedules` uses `mode: sustained` + `time_range` for
+      both inputs (CLI `--opt`, via apply_regimens). In the GUI Simulation tab, toggling the new
+      "Sustained" control on work_rate/recovery_rate and setting a daytime/overnight time_range
+      switches the same inputs from a single daily pulse to an hour-by-hour sustained pattern.
+    result: >
+      `--sim`: cumulative_output rises by 60 at 08:00 and fatigue rises by 18 then falls by 24
+      at 20:00 each day. `--opt`: with sustained mode, cumulative_output rises by work_rate on
+      each of the 12 daytime hours (08:00-20:00) and fatigue rises during work hours and falls
+      during the overnight recovery window (20:00-08:00, crossing midnight); the optimizer finds
+      the work_rate/fatigue tradeoff (higher work_rate raises both cumulative_output and final
+      fatigue). GUI: toggling "Sustained" on work_rate/recovery_rate with the same time ranges
+      reproduces the hour-by-hour pattern in an interactive session.
+    limitations: Linear toy dynamics; for engine validation only, not a real productivity model.
+  tags: [test, sustained, time_range, schedules, step_size, hour]
+  references: ["TEST: mode=sustained + time_range schedule entries (ADR 0098)"]
+  step_size:
+    value: 1
+    unit: hour
+
+variables:
+  cumulative_output:
+    type: state
+    value: 0.0
+    unit: units
+    description: Total output accumulated so far; rises by work_rate each working hour.
+
+  fatigue:
+    type: state
+    value: 0.0
+    unit: score
+    description: Accumulated fatigue; rises during work hours, falls during overnight recovery.
+
+  work_rate:
+    type: input
+    value: 0.0
+    unit: units/hour
+    description: Output rate during the daytime work window (sustained pulse, no step multiplication).
+
+  recovery_rate:
+    type: input
+    value: 0.0
+    unit: score/hour
+    description: Fatigue recovery rate during the overnight window (sustained pulse, no step multiplication).
+
+  fatigue_cost:
+    type: parameter
+    value: 0.3
+    unit: score per unit
+    description: Fatigue accrued per unit of work output.
+
+formulas:
+  output_accum:
+    description: Cumulative output rises by work_rate on each firing hour (pulse, no step).
+    dynamics:
+      cumulative_output: "cumulative_output + work_rate"
+    priority: 10
+
+  fatigue_dynamics:
+    description: Fatigue rises with work, falls with overnight recovery; floored at 0.
+    dynamics:
+      fatigue: "max(0.0, fatigue + work_rate * fatigue_cost - recovery_rate)"
+    priority: 5
+
+simulation:
+  start_date: "2026-01-01"
+  end_date:   "2026-01-06"
+  plans:
+    - id: default
+      label: Default
+      schedules:
+        - variable: work_rate
+          time: "08:00"
+          value: 60.0
+          label: "Daily work output (single pulse)"
+        - variable: recovery_rate
+          time: "20:00"
+          value: 24.0
+          label: "Daily recovery (single pulse)"
+  output_variables: [cumulative_output, fatigue, work_rate, recovery_rate]
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: cumulative_output
+      metric: final
+      direction: maximize
+    - variable: fatigue
+      metric: final
+      direction: minimize
+  schedules:
+    - variable: work_rate
+      mode: sustained
+      time_range: ["08:00", "20:00"]
+      label: "Daytime work rate (units/hour)"
+      optimize:
+        value: [1.0, 10.0]
+    - variable: recovery_rate
+      mode: sustained
+      time_range: ["20:00", "08:00"]
+      value: 2.0
+      label: "Overnight recovery (fixed)"
+  algorithm:
+    population_size: 30
+    n_generations: 30
+    seed: 19
