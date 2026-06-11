@@ -901,7 +901,11 @@ schedules:
 - T4 激活时，顶层 `date_range:` 字段不写（固定日期范围）。
 - 典型场景：治疗介入时机、季节性干预窗口、灾后救援资源投放时机。
 
-### mode: sustained — 持续生效输入（子日步长模型）
+### mode: sustained — 持续生效输入（子日步长模型，ADR 0098 旧格式）
+
+> 本节描述的 `mode: sustained` + `time_range` 是 ADR 0100 之前的写法，仍受支持
+> （引擎按下一节的等价表映射，数值结果不变）。新模型推荐直接使用下一节的
+> `time_start`/`time_end` 统一区间字段。
 
 ```yaml
 schedules:
@@ -945,6 +949,45 @@ N_steps = 生效窗口总时长 / step_size
 > 建模时按"这段时间总共投入了多少"来填 `value`（例如"前5天救治总强度=432"），
 > 不要按"每小时/每步的强度"来填——后者是 0099 之前的语义，已废弃。
 
+### 统一区间表示：time_start / time_end（ADR 0100）
+
+`time`（pulse 单点）与 `mode: sustained` + `time_range`（区间）本质上是同一对
+`[time_start, time_end)` 字段在数轴上的不同取值，统一表示为：
+
+| `time_start` / `time_end` 关系 | 含义 |
+|---|---|
+| `time_end == time_start` | **pulse**：零宽区间，`N_steps=1`，`value` 原样写入该 step |
+| `time_end != time_start`（不跨越全天） | **sustained**：区间内每个 step 按 `value/N_steps`（上节公式） |
+| `time_start="00:00"`, `time_end="24:00"` | **全天**：`[0,24)` 全覆盖，是 sustained 在区间宽度=全天时的取值，不是单独状态 |
+
+```yaml
+schedules:
+  - variable: care_intensity
+    time_start: "08:00"
+    time_end: "20:00"           # [08:00, 20:00) 区间，sustained
+    date_range: ["1945-08-06", "1945-08-11"]
+    label: "白天救治强度"
+    optimize:
+      value: [0.0, 288.0]        # 窗口总量；6天×12h / step=1h → N_steps=72
+```
+
+**向后兼容**（数值结果不变，引擎在解析层做字段映射，旧 YAML 无需修改）：
+
+| 旧字段 | 等价 `time_start`/`time_end` |
+|---|---|
+| `time: "HH:MM"`（pulse，默认） | `time_start = time_end = "HH:MM"` |
+| `mode: sustained` + `time_range: [a, b]` | `time_start=a, time_end=b` |
+| `mode: sustained`，无 `time_range` | `time_start="00:00", time_end="24:00"`（全天） |
+
+新模型推荐直接写 `time_start`/`time_end`，不需要先判断"我要的是单点/区间/全天"——
+三者是同一对字段在数轴上的位置关系，不是三个独立的开关/分支。`days`（星期几过滤）、
+`date_range`（日历区间）字段不变，与 `time_start`/`time_end` 正交。
+
+> GUI 控件改造与 `optimize.time`（T2，见下节）的 `time_start`/`time_end` 多维
+> （1/2/4 维）重设计尚未实施（ADR 0100，远期方案）；当前 GUI 仍使用
+> `time` / `mode: sustained` + `time_range` 控件，`optimize.time` 继续按
+> 1 维时间槽搜索（不受本节影响）。
+
 ### x 向量编码规则
 
 x 向量按 `schedules` 列表顺序展开，每个条目按 `[value?, time?, days?, date_start?, date_end?]` 顺序贡献维度：
@@ -959,6 +1002,11 @@ x 向量按 `schedules` 列表顺序展开，每个条目按 `[value?, time?, da
 | 固定背景量（无 optimize） | 0 | — |
 
 混合整数向量由 NSGA-II 连续松弛处理；单目标算法（L-BFGS-B / Nelder-Mead）不支持整数变量，启用 T2/T3/T4 时自动切换为 NSGA-II 并给出警告。
+
+> ADR 0100 提出将 T2 从"1 维时间槽索引"泛化为基于 `time_start`/`time_end` 的
+> 1/2/4 维编码（区间宽度固定 only-start / 双端独立 / 双端各自带上下界），尚未实施；
+> 本节描述的 T2 行为（`optimize.time` + `time_step` → 1 维 `time_slot_idx`）仍是
+> 当前唯一受支持的形式。
 
 **示例**：`meal_carbs`（T1+T2）和 `exercise_load`（T1+T3）各贡献 2 维，x 长度为 4：
 
