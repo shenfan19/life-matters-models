@@ -1,7 +1,7 @@
 # 0100 — 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day / time / sustained 三态
 
 **日期**：2026-06-11
-**状态**：🟡 提议（远期方案，未实施，依赖 0099 先落地）
+**状态**：🟡 部分实施（schema/引擎统一已完成；GUI 与 T2 x 向量重设计未实施）
 **类别**：仿真引擎 / 优化器 schema / GUI
 
 ---
@@ -88,7 +88,35 @@
 - 不引入 "intensity/rate" 概念——`value` 永远是"区间内总量"（同 0099），
   与 ADR 0092 的裸单位规则一致。
 
-## 状态
+## 实施记录（schema/引擎部分）
 
-设计已记录，**暂不排期实施**。0099 落地并验证（含 ad1945 重新标定）后，可作为独立任务排期；
-由于向后兼容，旧模型无需因本 ADR 重新仿真。
+- `regimen_runner.py`：新增 `_normalize_time_interval(ev) -> (time_start, time_end)`，
+  按本 ADR 的等价表把 `time` / `mode: sustained`+`time_range` / 显式 `time_start`+`time_end`
+  统一映射为一对 `"HH:MM"` 字符串；`_time_range_day_seconds` 改为接收
+  `(time_start, time_end)`；`precompute_sustained_divisors` 与 `apply_regimens`
+  均按 `time_start == time_end`（pulse）/ `!=`（sustained，含全天）分支，
+  不再依赖 `mode` 字段判断。
+- `routes/simulation.py`：`RegimenEventData` 新增 `time_start`/`time_end`
+  （`Optional[str]`），与 `time`/`mode`/`time_range` 并存，按解析优先级生效。
+- `optimizer_engine.py`：`fixed_events_map` 与 `_build_regimen_events` 的
+  `d0`/`ev2` 透传 `time_start`/`time_end`（若 YAML 条目提供）。
+- `docs/model.md`：新增"统一区间表示：time_start / time_end"小节（含等价表、
+  向后兼容映射），`mode: sustained` 小节标注为旧格式但仍受支持，x 向量编码
+  小节注明 T2 多维重设计未实施。
+- 验证：`models/test/test_sustained_mode.yaml`（`--sim`/`--opt`）、
+  `models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`（`--opt`）
+  数值结果与改动前一致；旧 YAML 无需修改。
+
+## 未实施部分
+
+- **GUI**：`sim_gui` 的 `types.ts`（`InputEvent` 字段）、`Simulator.tsx`
+  （YAML↔state 映射）、`SimSetupTab.tsx`/`OptSetupTab.tsx`（控件改造为
+  "起始时间 + 可选结束时间"）、`optUtils.ts`、各语言 locale 仍使用
+  `time`/`mode: sustained`+`time_range`。
+- **T2 x 向量重设计**：`optimize.time_start`/`time_end` 的 1/2/4 维编码
+  （区间宽度固定 only-start / 双端独立 / 双端各自带上下界）、
+  `_build_regimen_events` 对应解码逻辑、`docs/model.md` x 向量编码表的
+  对应分支。
+- **papers/s5**：K×4 → K×(可变维度) 的术语调整。
+
+由于向后兼容，旧模型无需因本 ADR 重新仿真；上述未实施部分可作为独立任务排期。
