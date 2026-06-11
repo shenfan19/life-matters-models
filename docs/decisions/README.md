@@ -90,5 +90,5 @@
 | [0096](0096-2026-06-06_model_filename-quality-markers.md) | 模型文件名质量标记约定（_nosim / _noopt / _noref） | ✅ 已实施 | 2026-06-06 |
 | [0097](0097-2026-06-08_model_description-3-fields.md) | papers/ 模型 description 简化为三字段（brief / problem / method） | ✅ 已实施 | 2026-06-08 |
 | [0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimizer.schedules 新增 mode: sustained（子日步长持续输入） | ✅ 已实施 | 2026-06-11 |
-| [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | 🟡 提议 | 2026-06-11 |
+| [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 提议（远期） | 2026-06-11 |

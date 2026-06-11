@@ -96,17 +96,22 @@ optimizer:
       metric: final
       direction: minimize
   schedules:
+    # ADR 0099: value/optimize.value is the TOTAL over the active window, not a
+    # per-hour rate. Both entries cover 5 days x 12h = 60 steps (step_size=hour),
+    # so N_steps=60. Bounds below are the old per-hour bounds x 60, which keeps
+    # the per-step `work_rate`/`recovery_rate` variable values (and therefore the
+    # simulated trajectory) identical to the pre-0099 behavior.
     - variable: work_rate
       mode: sustained
       time_range: ["08:00", "20:00"]
-      label: "Daytime work rate (units/hour)"
+      label: "Daytime work output total (60 steps)"
       optimize:
-        value: [1.0, 10.0]
+        value: [60.0, 600.0]   # = [1,10] x 60
     - variable: recovery_rate
       mode: sustained
       time_range: ["20:00", "08:00"]
-      value: 2.0
-      label: "Overnight recovery (fixed)"
+      value: 120.0   # = 2.0 x 60
+      label: "Overnight recovery total (fixed, 60 steps)"
   algorithm:
     population_size: 30
     n_generations: 30
