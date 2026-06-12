@@ -166,10 +166,10 @@ optimizer:
     seed: 19
 
 # ── 仿真设置 ──────────────────────────────────────────────────────────────────
-# 测试用：1 周训练模式验证 Fitness-Fatigue 动力学，7 步快速完成
+# 18 周训练块 + 减量期（约126天），与优化器的 16 周训练 + 2 周减量设计一致
 simulation:
   start_date: "2026-01-01"
-  end_date: "2026-01-07"          # 7 天（1 周）
+  end_date: "2026-05-07"          # 126 天（约18周）
   output_variables:
     - fitness
     - fatigue
@@ -179,17 +179,31 @@ simulation:
     - id: default
       label: Default
       schedules:
+        # 16 周训练块
         - variable: training_load
           time: "09:00"
           value: 70.0
           days: [Mon, Tue, Wed, Thu, Fri]
-          date_range: ["2026-01-01", "2026-01-07"]
+          date_range: ["2026-01-01", "2026-04-23"]
           label: "主训练日"
         - variable: training_load
           time: "09:00"
           value: 35.0
           days: [Sat]
-          date_range: ["2026-01-01", "2026-01-07"]
+          date_range: ["2026-01-01", "2026-04-23"]
           label: "恢复日"
+        # 2 周减量期
+        - variable: training_load
+          time: "09:00"
+          value: 30.0
+          days: [Mon, Tue, Wed, Thu, Fri]
+          date_range: ["2026-04-24", "2026-05-07"]
+          label: "减量期训练日"
+        - variable: training_load
+          time: "09:00"
+          value: 15.0
+          days: [Sat]
+          date_range: ["2026-04-24", "2026-05-07"]
+          label: "减量期恢复日"
   mc:
     runs: 8
