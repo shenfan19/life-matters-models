@@ -21,6 +21,9 @@
 | [0075](decisions/0075-2026-05-17_model_remove-type-standalone-fields.md) | **删除 YAML 顶层 `type` 和 `standalone` 字段** | ⭐⭐ | ✅ |
 | [0092](decisions/0092-2026-06-05_model_input-variable-bare-unit-rule.md) | **`type: input` 变量裸单位规范（事件量，禁止速率单位）** | ⭐⭐ | ✅ |
 | [0096](decisions/0096-2026-06-06_model_filename-quality-markers.md) | **文件名质量标记：`_nosim` / `_noopt` / `_noref` 后缀约定** | ⭐⭐ | ✅ |
+| [0098](decisions/0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimizer.schedules 新增 `mode: sustained`（子日步长持续输入） | ⭐ | ✅（旧格式，由 0100 取代但仍受支持） |
+| [0099](decisions/0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 `value` 语义修正：窗口总量 / N_steps（step-size 不变性） | ⭐⭐ | ✅ |
+| [0100](decisions/0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | **统一 pulse/sustained 为时间区间 `time_start`/`time_end`；GUI 取消 full day/time/sustained 三态** | ⭐⭐ | 🟡 部分实施（papers/s5 术语未实施） |
 
 ---
 
