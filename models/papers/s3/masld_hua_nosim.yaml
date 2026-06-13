@@ -61,7 +61,9 @@ optimizer:
   constraints:
     - variable: ALT
       condition: "<= 40"
+      metric: final
       type: hard
+      description: "26周末ALT回落至正常上限（初始ALT=52高于此阈值，作为治疗终点目标而非全程安全约束）"
     - variable: blood_glucose
       condition: "<= 7.8"
       type: hard
