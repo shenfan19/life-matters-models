@@ -1,0 +1,68 @@
+metadata:
+  name: test_formula_condition
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `formulas[].condition` branching logic: two `dynamics:` formulas
+      target the same state variable (`room_temp`) with mutually exclusive
+      conditions (`< setpoint` vs `>= setpoint`), modeling a bang-bang thermostat.
+      Exactly one branch must fire per step — no double-update, no stall.
+    result: >
+      `room_temp` starts at 15°C and ramps up by `heating_rate=2°C/h` while
+      `heater_on` (room_temp < 20) is true: 15→17→19→21. Once room_temp >= 20,
+      `heater_off` fires and room_temp drops by `cooling_rate=0.5°C/h`: 21→20.5→20.0→19.5,
+      at which point `heater_on` fires again. The trajectory should oscillate in a
+      bang-bang pattern roughly within [19.5, 21] for the remainder of the 48-hour run,
+      never staying flat (one of the two conditions is always true) and never jumping
+      by both rates in the same step.
+    limitations: Linear bang-bang toy thermostat; for engine validation only, not a real thermal model.
+  tags: [test, formulas, condition]
+  references: ["TEST: formulas[].condition mutually-exclusive branching"]
+  step_size:
+    value: 1
+    unit: hour
+
+variables:
+  room_temp:
+    type: state
+    value: 15.0
+    unit: "°C"
+    description: Room temperature; driven by a bang-bang heater around setpoint.
+
+  setpoint:
+    type: parameter
+    value: 20.0
+    unit: "°C"
+    description: Thermostat setpoint.
+
+  heating_rate:
+    type: parameter
+    value: 2.0
+    unit: "°C/hour"
+    description: Room warming rate while the heater is on.
+
+  cooling_rate:
+    type: parameter
+    value: 0.5
+    unit: "°C/hour"
+    description: Ambient cooling rate while the heater is off.
+
+formulas:
+  heater_on:
+    description: Heater on while room_temp is below setpoint; warms the room.
+    condition: "room_temp < setpoint"
+    dynamics:
+      room_temp: "room_temp + heating_rate * step"
+    priority: 1
+
+  heater_off:
+    description: Heater off once room_temp reaches setpoint; room cools toward ambient.
+    condition: "room_temp >= setpoint"
+    dynamics:
+      room_temp: "room_temp - cooling_rate * step"
+    priority: 1
+
+simulation:
+  start_date: "2026-01-01"
+  end_date:   "2026-01-03"
+  output_variables: [room_temp]

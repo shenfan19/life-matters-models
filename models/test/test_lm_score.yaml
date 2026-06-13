@@ -147,6 +147,10 @@ optimizer:
     - variable: sbp
       condition: "<= 220"
       type: hard
+    - variable: sbp
+      condition: ">= 90"
+      type: hard
+      description: "避免降压过度导致医源性低血压（正常收缩压下限约90 mmHg）"
   schedules:
     - variable: antihypertensive
       time_start: "08:00"
