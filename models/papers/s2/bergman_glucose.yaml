@@ -140,14 +140,16 @@ formulas:
     description: >
       胰岛素敏感性：运动改善（空腹运动效率高约1.3倍，Erickson 2019）
       + 禁食窗口改善 - 工作压力皮质醇轻度恶化。
-      时间常数约 20-30 天（慢变量）。
+      时间常数约 20-30 天（慢变量）。改善项乘以饱和因子
+      max(0, 1.2 - insulin_sensitivity)，使 SI 渐近趋向约1.2
+      （生理上限附近）而非无限增长直接撞到 bounds 上限2.0。
     condition: true
     priority: 6
     dynamics:
       insulin_sensitivity: >
         insulin_sensitivity
-        + insulin_sensitivity_recovery * (exercise_met_min / 180) * step
-        + 0.002 * max(0, fasting_window_hours - 10) * step
+        + max(0, 1.2 - insulin_sensitivity) * insulin_sensitivity_recovery * (exercise_met_min / 180) * step
+        + max(0, 1.2 - insulin_sensitivity) * 0.002 * max(0, fasting_window_hours - 10) * step
         - 0.001 * work_pressure * step
         - 0.005 * (carb_intake_per_meal / 65 - 1) * insulin_sensitivity * step
     reference: "Bergman RN (1981); Erickson ML (2019); Lowe DA (2020)"

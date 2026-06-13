@@ -98,8 +98,14 @@ variables:
     reference: "Halmos EP et al. (2014)"
 
   stress_symptom_coeff:
-    description: 工作压力对 IBS 症状评分的每日增量系数（脑-肠轴，Koloski 2012）
-    value: 25.0
+    description: |
+      工作压力对 IBS 症状评分的每日增量系数（脑-肠轴，Koloski 2012）。
+      值从25降至15：原值与衰减系数0.05组合后，仅工作压力（work_pressure≈0.6）
+      驱动的症状评分稳态即≈350（≈constraints的350上限本身），
+      使任何饮食干预都无法将症状评分压到lm_score阈值175以下，
+      导致opt feasible恒为0%。降至15后，理想饮食（低FODMAP+高纤维）
+      的稳态约68（缓解区），高FODMAP基线稳态约443（仍严重但不顶死bounds=500）。
+    value: 15.0
     unit: AU/day
     type: parameter
     reference: "Koloski NA et al. (2012)"
@@ -145,28 +151,35 @@ formulas:
     reference: "Gibson PR (2010); Halmos EP (2014); Koloski NA (2012)"
 
   gut_permeability_dynamics:
-    description: "肠道通透性：高FODMAP升高，低FODMAP+纤维降低（修复）"
+    description: |
+      肠道通透性：高FODMAP升高，低FODMAP+纤维降低（修复）。
+      驱动项系数从0.005降至0.0006：原值相对恢复项（permeability_recovery_rate=0.03，已×step）
+      偏大约一个量级，导致高FODMAP基线30-60天内冲到bounds上限3.0、
+      低FODMAP方案则压到bounds下限0.5，均为不现实的快速饱和。
     condition: true
     priority: 5
     dynamics:
       gut_permeability: >
         gut_permeability
-        + 0.005 * max(0, fodmap_intake - 10)
+        + 0.0006 * max(0, fodmap_intake - 10)
         - permeability_recovery_rate * max(0, gut_permeability - 1.0) * step
-        - 0.005 * fiber_soluble
+        - 0.0006 * fiber_soluble
     reference: "Camilleri M et al. (2012)"
 
   microbiome_stability_dynamics:
     description: >
       菌群稳定性：严格低FODMAP（<8g/day）轻度损耗菌群多样性（缺乏发酵底物）；
       充足可溶性纤维（益生元作用）维持多样性；中等FODMAP（10-20g/day）最有利于长期菌群健康。
+      纤维项系数从0.004降至0.0005：原值相对损耗/衰减项（均×step，约0.003量级）
+      偏大约一个量级，导致任何方案（含高FODMAP无干预基线）下菌群稳定性
+      均在约30天内升至bounds上限1.5，与"高FODMAP损伤菌群"的机制描述矛盾。
     condition: true
     priority: 4
     dynamics:
       microbiome_stability: >
         microbiome_stability
         - microbiome_decline_rate * max(0, 8.0 - fodmap_intake) * step
-        + 0.004 * min(fiber_soluble, 12)
+        + 0.0005 * min(fiber_soluble, 12)
         - 0.003 * max(0, microbiome_stability - 1.0) * step
     reference: "Staudacher HM et al. (2012); Moayyedi P (2020)"
 

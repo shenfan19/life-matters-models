@@ -58,10 +58,13 @@ variables:
     description: >
       慢性皮质醇活化水平（相对基线：1.0=正常，>1.5=需关注，>1.8=临床干预阈值）；
       工作压力升高、恢复行为不足时积累；良好恢复行为时消退。
+      上界放宽至6：在当前动力学参数下，emotional_exhaustion饱和至1时，
+      最低恢复方案的理论平衡点≈4.9、最佳恢复方案≈3.5，原上界3会使两类方案
+      在12周内均触顶饱和，抹平cvd_risk的方案间差异。
     value: 1.1
     unit: AU
     type: state
-    bounds: [0.5, 3]
+    bounds: [0.5, 6]
     reference: "McEwen BS (1998); Juster RP et al. (2010)"
 
   cvd_risk:

@@ -90,18 +90,26 @@ variables:
     description: |
       肌肉蛋白合成效率（每 g/kg 蛋白质事件量生成 kg 肌肉）。
       MC 时代表个体合成代谢能力差异（Carrero 2013）。
-    value: "normal(0.008, 0.002)"
+      取值需与基础降解速率 mu_d（0.002/day × ~28kg ≈ 0.056/day）量级匹配，
+      使日均蛋白摄入 ~0.65-1.11 g/kg 时合成与降解处于同一数量级，
+      否则肌肉量在所有方案下都会单调跌至下界，无法形成 Pareto 权衡（原值0.008过小约一个数量级）。
+    value: "normal(0.05, 0.012)"
     unit: kg/(g/kg)
     type: parameter
-    bounds: [0.002, 0.018]
-    reference: "Carrero JJ et al. (2013)"
+    bounds: [0.01, 0.10]
+    reference: "TODO:SOURCE 合成效率系数为估算值，待校准；Carrero JJ et al. (2013)"
 
   beta0:
-    description: 非蛋白质因素导致的 GFR 基础下降速率（CKD 3期平均值，约 1.5 mL/min/1.73m² 每年）
-    value: 0.0011
+    description: |
+      非蛋白质因素导致的 GFR 基础下降速率（CKD 3期平均值，约 1.5 mL/min/1.73m² 每年）。
+      原值0.0011/day在GFR=45时对应约18 mL/min/年的下降（远超描述的1.5），
+      导致即使蛋白质过载项为零，GFR仍在364天内跌破30，使GFR>=30约束
+      在整个搜索空间内不可行（feasible: 0%）。按"1.5 mL/min/年 @ GFR=45"
+      换算为相对速率：1.5/45/365 ≈ 0.0000913/day。
+    value: 0.0000913
     unit: 1/day
     type: parameter
-    bounds: [0.001, 0.008]
+    bounds: [0.00005, 0.0003]
     reference: "KDIGO 2020"
 
   mu_d:
@@ -170,10 +178,14 @@ formulas:
     description: |
       血尿素氮：蛋白质分解产生 − GFR 清除。
       BUN 是约束变量：>20 mg/dL 代表蛋白质过量。
+      清除系数从 0.0015 调整为 0.003：原值在 GFR 随时间下降的所有方案中
+      均导致清除项弱于产生项，BUN 单调爬升至 bounds 上限(60)，
+      使 BUN<=20 约束在整个搜索空间内不可行（feasible: 0%）。
+      调整后在 GFR>=30（约束下限）时 BUN 平衡点约14 mg/dL，留出可行域。
     condition: true
     priority: 4
     dynamics:
-      BUN: BUN + sigma_urea * dietary_protein * body_weight - 0.0015 * GFR * BUN * step
+      BUN: BUN + sigma_urea * dietary_protein * body_weight - 0.003 * GFR * BUN * step
     reference: "TODO:SOURCE BUN-蛋白关系文献"
 
   lm_score_update:

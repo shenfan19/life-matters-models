@@ -111,8 +111,11 @@ variables:
     reference: "Dessein PH et al. (2000)"
 
   kappa_A:
-    description: 别嘌醇降尿酸系数（100mg/day约↓60 μmol/L，TODO精确值）
-    value: 0.6
+    description: |
+      别嘌醇抑制尿酸产生的系数（100mg/day约稳态降尿酸60 μmol/L，TODO精确值）。
+      值从0.6调整为0.27：原值0.6配合旧的"每步累加"写法会在数天内使尿酸跌至bounds下限；
+      改为产生项抑制并经清除项弛豫后，0.27对应100mg/day稳态降幅约60μmol/L，与描述一致。
+    value: 0.27
     unit: "μmol/L per mg"
     type: parameter
     reference: "TODO:SOURCE 别嘌醇剂量-效应文献"
@@ -134,28 +137,34 @@ variables:
 # ── 动力学公式 ──────────────────────────────────────────────────────────────────
 formulas:
   bp_dynamics:
-    description: "血压：HCTZ降压 + 体重减轻降压 - 自然反弹至稳态"
+    description: |
+      血压：向"治疗后稳态目标"弛豫，目标 = 未治疗基线155 - HCTZ降压效果 - 体重减轻降压效果。
+      原写法将 lambda_T*thiazide_dose 作为每步累加的固定降幅，
+      在每日服药场景下导致血压在约13天内跌至bounds下限80mmHg
+      （30天内累计降幅达数百mmHg，临床上不可能）。
+      改为弛豫至目标值，使HCTZ的8mmHg降压效果（25mg×0.32）体现为稳态偏移而非逐日累加。
     condition: true
     priority: 6
     dynamics:
       blood_pressure: >
         blood_pressure
-        - lambda_T * thiazide_dose
-        - lambda_W * (caloric_deficit / 7700)
-        - 0.04 * (blood_pressure - 155) * step
+        - 0.04 * (blood_pressure - (155 - lambda_T * thiazide_dose - lambda_W * (caloric_deficit / 7700))) * step
     reference: "Law MR et al. (2009)"
 
   ua_dynamics:
     description: |
       尿酸：基础产生 + HCTZ抑制清除（URAT1竞争）- 别嘌醇抑制产生 - 自然清除。
       快速减重（>0.5 kg/周）触发酮体-URAT1竞争，额外升高尿酸。
+      原写法 "- kappa_A * allopurinol_dose * step" 将别嘌醇效果作为每步累加的固定降幅，
+      在每日服药场景下导致尿酸在数天内跌至bounds下限100（远超"100mg/day约↓60"的预期）。
+      改为别嘌醇抑制产生项（机制：抑制黄嘌呤氧化酶减少尿酸生成），
+      经清除项弛豫后体现为稳态偏移：100mg/day约对应稳态↓60 μmol/L。
     condition: true
     priority: 5
     dynamics:
       uric_acid: >
         uric_acid
-        + (ua_baseline_prod - 0.476 * uric_acid * (1 - gamma_T * thiazide_dose)) * step
-        - kappa_A * allopurinol_dose * step
+        + (ua_baseline_prod - kappa_A * allopurinol_dose - 0.476 * uric_acid * (1 - gamma_T * thiazide_dose)) * step
         + max(0, psi_ketone * caloric_deficit / 700 - 15.0) * step
     reference: "Choi HK et al. (2012); Dessein PH et al. (2000)"
 
