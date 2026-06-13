@@ -1,0 +1,92 @@
+metadata:
+  name: test_opt_inner_mc
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `optimizer.mc.runs` (inner robust-optimization Monte Carlo): each
+      candidate `dose` is evaluated across multiple samples of `absorption_rate`
+      (an individual-variability `parameter` with a `normal(μ, σ)` distribution),
+      and the optimizer should use the aggregated (e.g. mean) objective across runs
+      rather than a single deterministic draw.
+    result: >
+      `plasma` rises by `dose * absorption_rate` (one-time pulse at day 1) and decays
+      at `elimination_rate = 0.1/day`. With `optimizer.mc.runs: 5`, repeated optimizer
+      runs with the same `seed` should converge to a similar `dose` near its upper
+      bound (maximize final plasma), and the reported objective should reflect the
+      across-run average rather than a single noisy `absorption_rate` draw.
+    limitations: Linear one-compartment toy PK; for engine validation only, not a calibrated PK model.
+  tags: [test, optimizer, mc, robust]
+  references: ["TEST: optimizer.mc.runs (inner robust optimization)"]
+  step_size:
+    value: 1
+    unit: day
+
+variables:
+  plasma:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Drug plasma concentration; rises with absorbed dose, decays at elimination_rate.
+
+  dose:
+    type: input
+    value: 0.0
+    unit: mg
+    description: One-time oral dose (pulse) on day 1.
+
+  absorption_rate:
+    type: parameter
+    value: "normal(0.5, 0.1)"
+    unit: fraction
+    bounds: [0.1, 1.0]
+    description: "Individual absorption fraction; sampled once per MC run (σ=0.1 illustrative)."
+
+  elimination_rate:
+    type: parameter
+    value: 0.1
+    unit: 1/day
+    description: First-order elimination rate constant.
+
+formulas:
+  drug_pk:
+    description: Dose pulse absorbed at absorption_rate, then first-order elimination.
+    dynamics:
+      plasma: "max(0.0, plasma + dose * absorption_rate - plasma * elimination_rate * step)"
+    priority: 5
+
+simulation:
+  start_date: "2026-01-01"
+  end_date:   "2026-01-06"
+  output_variables: [plasma, dose, absorption_rate]
+  mc:
+    runs: 10
+    seed: 19
+  schedules:
+    - variable: dose
+      time: "00:00"
+      value: 0.0
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "One-time dose (overridden by optimizer)"
+
+optimizer:
+  method: nelder-mead
+  objectives:
+    - variable: plasma
+      metric: final
+      direction: maximize
+      description: "Maximize final plasma concentration, robust to absorption_rate variability."
+  schedules:
+    - variable: dose
+      time_start: "00:00"
+      time_end: "00:00"
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "Dose amount"
+      optimize:
+        value: [0.0, 100.0]
+  mc:
+    runs: 5
+    seed: 19
+  algorithm:
+    population_size: 1
+    n_generations: 40
+    seed: 19
