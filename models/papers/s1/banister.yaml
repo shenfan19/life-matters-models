@@ -188,7 +188,8 @@ optimizer:
     - variable: performance
       condition: ">= 480"
       type: soft
-      description: 表现不低于基础值 480 AU
+      metric: final
+      description: 第16周末表现不低于基础值 480 AU（训练初期fatigue快于fitness积累，performance会先降后升，约束仅检查终值）
 
   schedules:
     # T1: 渐进期负荷强度（每日，固定区间）

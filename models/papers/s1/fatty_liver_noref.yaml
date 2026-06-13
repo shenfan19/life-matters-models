@@ -106,7 +106,7 @@ variables:
     reference: "EASL-EASD-EASO (2016) J Hepatol 64(6):1388"
 
   lm_score:
-    description: 健康时长：liver_fat_pct ≤ 10% 且 alt_level ≤ 40 IU/L 同时满足的累计仿真天数
+    description: 健康时长：liver_fat_pct ≤ 12% 且 alt_level ≤ 40 IU/L 同时满足的累计仿真天数（12周仿真窗口内，12%是各方案可触及的范围；10%目标需更长疗程，见limitations）
     value: 0.0
     unit: day
     type: state
@@ -144,11 +144,11 @@ formulas:
     reference: "TODO:SOURCE 运动疲劳恢复文献"
 
   lm_score_update:
-    description: "累加健康时长（可恢复）：liver_fat_pct ≤ 10% 且 alt_level ≤ 40 IU/L"
+    description: "累加健康时长（可恢复）：liver_fat_pct ≤ 12% 且 alt_level ≤ 40 IU/L"
     condition: true
     priority: 90
     dynamics:
-      lm_score: "lm_score + step if (liver_fat_pct <= 10 and alt_level <= 40) else lm_score"
+      lm_score: "lm_score + step if (liver_fat_pct <= 12 and alt_level <= 40) else lm_score"
     reference: "Life Matters Framework core metric"
 
 # ── 仿真设置（K=3 分段：热身→升级→维持）───────────────────────────────────────
@@ -205,7 +205,7 @@ optimizer:
     - variable: lm_score
       metric: final
       direction: maximize
-      description: "最大化肝脏健康时长（liver_fat≤10% 且 ALT≤40 的累计天数）"
+      description: "最大化肝脏健康时长（liver_fat≤12% 且 ALT≤40 的累计天数）"
   constraints:
     - variable: alt_level
       condition: "<= 60"

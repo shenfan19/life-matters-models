@@ -115,15 +115,21 @@ variables:
 
   # ── 参数 ─────────────────────────────────────────────────────────────────────
   alpha_exercise_fat:
-    description: 运动对肝脂的消耗系数（Keating 2015）
-    value: 0.0015
+    description: >
+      运动对肝脂的消耗系数（Keating 2015 meta-analysis：约12周有氧运动使肝脂相对下降3-5个百分点）。
+      原值 0.0015 在本模型逐日累积下会使 liver_fat 在约60-90天内跌至下界0并锁定，
+      与 Keating 2015 报告的12周3-5百分点降幅量级不符，下调至 0.0003（约5倍）使181天累积效应落在该范围内。
+    value: 0.0003
     unit: "% per MET·min"
     type: parameter
     reference: "Keating SE et al. (2015)"
 
   alpha_exercise_IR:
-    description: 运动改善胰岛素敏感性系数（Erickson 2019；空腹运动效率高约1.4×）
-    value: 0.0008
+    description: >
+      运动改善胰岛素敏感性系数（Erickson 2019；空腹运动效率高约1.4×）。
+      原值 0.0008 在本模型逐日累积下会使 HOMA_IR 在约20天内跌至下界0.5并锁定，
+      与 Erickson 2019 报告的12周量级改善（约0.3-0.8）不符，下调至 0.0001（约8倍）使181天累积效应落在该范围内。
+    value: 0.0001
     unit: "HOMA-IR per MET·min"
     type: parameter
     reference: "Erickson ML et al. (2019)"
@@ -195,13 +201,15 @@ formulas:
       肝脂：热量缺口减脂 + 运动消耗（空腹运动有额外加成）- HOMA-IR 驱动的de novo脂肪合成 + 高GL饮食加重。
       空腹运动（06:00-08:00 schedule触发时，engine解析为 fasting_exercise_flag=1）简化处理：
       若 exercise_met_min > 0 且在 06:00-09:00 触发，乘以 (1 + fasting_exercise_bonus)。
+      caloric_deficit 系数原值 0.0005（350kcal/day约合181天31.7个百分点）会使 liver_fat 在约60-90天内
+      跌至下界0并锁定，下调至 0.00012（约4倍）使181天累积降幅落在约5-8个百分点（与体重-肝脂关联的量级一致）。
     condition: true
     priority: 7
     dynamics:
       liver_fat: >
         liver_fat
         - alpha_exercise_fat * exercise_met_min * (1 + fasting_exercise_bonus)
-        - max(0, 0.0005 * caloric_deficit)
+        - max(0, 0.00012 * caloric_deficit)
         + gamma_IR_liverfat * max(0, HOMA_IR - 2.5) * step
         + max(0, (dietary_glycemic_load - 100) * 0.0002) * step
     reference: "Bril F & Cusi (2019); Keating SE (2015)"
