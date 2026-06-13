@@ -164,14 +164,14 @@ simulation:
         - {variable: caloric_deficit, time: "00:00", value: 350.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "温和热量缺口"}
 
     - id: "balanced"
-      label: "三目标平衡方案（HCTZ中剂量晚服+别嘌醇，待运行更新）"
+      label: "三目标平衡方案（HCTZ 47mg 晚服+别嘌醇165mg）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 24.5, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服"}
-        - {variable: allopurinol_dose, time: "08:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇"}
+        - {variable: thiazide_dose, time: "22:00", value: 47.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服"}
+        - {variable: allopurinol_dose, time: "08:00", value: 165.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "best_bp"
-      label: "血压控制最优（HCTZ高剂量晚服，待运行更新）"
+      label: "血压控制最优（HCTZ 49mg 晚服，不加别嘌醇）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 46.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 高剂量晚服"}
+        - {variable: thiazide_dose, time: "22:00", value: 49.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 高剂量晚服"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}

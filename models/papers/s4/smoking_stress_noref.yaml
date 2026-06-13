@@ -135,9 +135,16 @@ variables:
     reference: "TODO:SOURCE Heishman SJ et al. (2010) 推算"
 
   delta_fev1_smk:
-    description: 每支烟FEV1加速下降量（Fletcher & Peto 1977：每日20支约下降0.004L）
-    value: 0.0002
-    unit: L/支
+    description: |
+      每支烟FEV1加速下降量。Fletcher & Peto (1977)：重度吸烟者（20支/天）FEV1年下降速率
+      约50 mL/年，其中年龄性下降约25 mL/年（见delta_fev1_age），吸烟归因的额外下降约
+      25 mL/年。原值0.0002 L/支按日步长(step=1day)累加，在20支/天下导致FEV1每天下降
+      0.004L，1年内即下降约1.46L（远超Fletcher & Peto文献的50 mL/年），使所有方案在
+      第1年（仍处吸烟期）就跌破lm_score阈值2.5L，2027年起的减量/戒烟策略对lm_score
+      不再产生任何影响。改为0.0000034 L/支/day，使20支/天对应吸烟归因额外下降
+      ≈0.0000034*20*365≈0.025 L/年，与文献一致。
+    value: 0.0000034
+    unit: L/支/day
     type: parameter
     reference: "Fletcher CM & Peto R (1977)"
 
