@@ -203,6 +203,9 @@ formulas:
     description: >
       工作产出：认知负荷升高时降低，恢复行为（睡眠、营养）改善时升高；
       不由工作压力本身决定——高压力但充分恢复可维持较高产出（Sonnentag 2007）。
+      运动和主动休息占用当日可用工作时间，超出基线（30min运动+20min休息）的部分
+      按时间机会成本折算，避免恢复行为在仿真中"越多越好、无上限"（产出与CVD风险
+      之间缺乏真实权衡，导致优化解全部堆积在搜索区间边界）。
     condition: true
     priority: 3
     formula:
@@ -211,7 +214,9 @@ formulas:
           - 0.35 * cognitive_load
           - 0.25 * emotional_exhaustion
           + 0.1 * (sleep_hours - 6) / 2
-          + 0.05 * (nutrition_score - 5) / 5)
+          + 0.05 * (nutrition_score - 5) / 5
+          - 0.002 * max(0, exercise_min - 30)
+          - 0.002 * max(0, break_min - 20))
     reference: "Sonnentag S & Fritz C (2007)"
 
   cvd_risk_accumulation:

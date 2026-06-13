@@ -203,13 +203,16 @@ formulas:
       若 exercise_met_min > 0 且在 06:00-09:00 触发，乘以 (1 + fasting_exercise_bonus)。
       caloric_deficit 系数原值 0.0005（350kcal/day约合181天31.7个百分点）会使 liver_fat 在约60-90天内
       跌至下界0并锁定，下调至 0.00012（约4倍）使181天累积降幅落在约5-8个百分点（与体重-肝脂关联的量级一致）。
+      改善项（运动+热量缺口）乘以饱和因子 max(0, liver_fat - 5) / 15，使 liver_fat 渐近趋向
+      约5%（MRI-PDFF正常上限附近）而非无限下降直接撞到 bounds 下限0；
+      恶化项（HOMA-IR驱动脂肪合成、高GL饮食）不受此饱和约束。
     condition: true
     priority: 7
     dynamics:
       liver_fat: >
         liver_fat
-        - alpha_exercise_fat * exercise_met_min * (1 + fasting_exercise_bonus)
-        - max(0, 0.00012 * caloric_deficit)
+        - max(0, liver_fat - 5) / 15 * alpha_exercise_fat * exercise_met_min * (1 + fasting_exercise_bonus)
+        - max(0, liver_fat - 5) / 15 * max(0, 0.00012 * caloric_deficit)
         + gamma_IR_liverfat * max(0, HOMA_IR - 2.5) * step
         + max(0, (dietary_glycemic_load - 100) * 0.0002) * step
     reference: "Bril F & Cusi (2019); Keating SE (2015)"
@@ -230,16 +233,34 @@ formulas:
       + 慢性工作压力通过皮质醇-GR 通路轻度加重（Qi & Rodrigues 2021）。
       work_pressure_level 为外生参数，代表不可控的心理社会应激背景；
       其效应量约为运动改善效应的1/10-1/5，属于混杂因素校正项。
+      修正：
+      (1) 原 "0.003 * work_pressure_level * HOMA_IR" 与 HOMA_IR 自身成正比，
+      构成无界正反馈，182天内可将 HOMA_IR 推高至6+并连带 blood_glucose 触顶15
+      （远超 <=7.8 安全约束，feasible: 0%）。改为不含 HOMA_IR 自乘的固定项。
+      (2) 内脏脂肪项系数 0.001 在 alpha_exercise_IR 因前次调参下调8倍后
+      （0.0008→0.0001）相对过大：visceral_fat=120时该项贡献0.02/day，
+      超过运动改善项（exercise_met_min=180、3/7天时仅约0.0077/day），
+      导致 HOMA_IR 整体趋势仍为上升而非改善。下调至 0.0001 与运动改善项量级匹配。
+      (3) 运动改善项 "alpha_exercise_IR * exercise_met_min" 原本无界，
+      持续运动可在181天内将 HOMA_IR 压至 bounds 下限0.5并锁定（导致 opt.csv
+      100个解的 HOMA_IR 目标退化为单点0.5）。改为乘以饱和因子
+      max(0, HOMA_IR - 1.0)/2.5，使运动改善项随 HOMA_IR 接近1.0（正常范围
+      上限附近）而衰减至0，渐近趋向约1.0而非0.5。
+      (4) 原 "- 0.02 * max(0, 2.5 - HOMA_IR) * step" 在 HOMA_IR<2.5 时
+      （即已改善区间）取正值并带负号，效果是让 HOMA_IR 进一步下降，
+      与"恢复力"的预期方向相反，实质上与(3)共同加剧了向下界的饱和。
+      改为正号的恢复项 "+ 0.02 * max(0, 1.0 - HOMA_IR) * step"，
+      当 HOMA_IR 低于正常下限1.0时小幅回拉，形成与(3)对称的下方渐近边界。
     condition: true
     priority: 5
     dynamics:
       HOMA_IR: >
         HOMA_IR
-        - alpha_exercise_IR * exercise_met_min
+        - max(0, HOMA_IR - 1.0) / 2.5 * alpha_exercise_IR * exercise_met_min
         + beta_GI_IR * max(0, dietary_glycemic_load - 100) * 0.01 * step
-        + 0.001 * max(0, visceral_fat - 100) * step
-        + 0.003 * work_pressure_level * HOMA_IR * step
-        - 0.02 * max(0, 2.5 - HOMA_IR) * step
+        + 0.0001 * max(0, visceral_fat - 100) * step
+        + 0.003 * work_pressure_level * step
+        + 0.02 * max(0, 1.0 - HOMA_IR) * step
     reference: "Matthews DR (1985); Erickson ML (2019); Bril & Cusi (2019); Qi & Rodrigues (2021)"
 
   blood_glucose_dynamics:

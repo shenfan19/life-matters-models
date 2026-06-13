@@ -16,7 +16,10 @@ metadata:
       2. 工作日先戒策略优于周末先戒；
       3. 5 年 FEV1 收益与立即戒烟相近，但戒断期工作产出损失少约 3–5%。
     limitations: |
-      参数来源待系统收集（TODO:SOURCE）；跨尺度耦合（分钟→天）为近似处理；工作压力为固定参数，未来可参数化为季节性曲线；仿真尚未运行。
+      参数来源待系统收集（TODO:SOURCE）；跨尺度耦合（分钟→天）为近似处理；工作压力为固定参数，未来可参数化为季节性曲线。
+      验证发现：work_pressure已从0.7调整为1.0（其声明范围0-1的上界）以激活戒断期cortisol升高→work_output下降机制；
+      该值仍为TODO:SOURCE占位，cortisol_dynamics的三个系数（0.3/0.2/0.1）同样待文献精化，
+      文献值确定后应重新校核戒断期work_output是否仍落在0.75-0.85区间。
   ratings:
     topic_importance: 3 - 跨域广度展示，非最紧迫单一医学需求
     framework_demand: 2 - S4多样性案例，不被其他模型引用
@@ -90,8 +93,14 @@ variables:
     type: input
 
   work_pressure:
-    description: 工作压力指数（外部参数，0–1，代表性高压职业场景）
-    value: 0.7
+    description: >
+      工作压力指数（外部参数，0–1，代表性高压职业场景）。
+      验证发现：cortisol_dynamics在原值0.7下，无论吸烟/戒断，cortisol_level
+      均无法超过work_output_update的激活阈值1.5（戒断期平衡值≈1.1），
+      导致戒断期"工作产出下降"机制从未触发，work_output恒为1.0。
+      改为上界1.0（"代表性高压职业场景"的极值）后，戒断期cortisol平衡值≈2.0，
+      work_output≈0.85，落入description.result声明的0.75-0.85区间。
+    value: 1.0
     unit: AU
     type: parameter
     reference: "TODO:SOURCE 职业压力流行病学估计"

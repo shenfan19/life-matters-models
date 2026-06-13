@@ -13,6 +13,10 @@ metadata:
       仿真预期最优方案：22:00–23:00 就寝以对齐昼夜节律峰值，并在工作日 12:30 午睡 20 分钟；相比 6.5 小时、00:00 入睡的基线方案，认知表现提升 12–18%，健康风险降低约 15%。
     limitations: |
       日步长模拟丢失了小时级昼夜节律细节；早睡型与晚睡型等个体生物钟差异通过参数分布近似，未精确建模；认知表现公式为线性近似，高强度认知任务场景需要更精细的模型。
+      验证发现：tau_s_wake/tau_s_sleep隐含的sleep_pressure平衡点≈8.0h（=optimal_sleep）；睡眠时长一旦持续≥8h，sleep_pressure在28天内衰减至0、cognitive_performance冲到上界，
+      health_risk_index恒为0，两目标在该区域无法形成权衡。optimizer.schedules中工作日/周末睡眠时长上界曾收窄至8.0h，
+      但8.0h恰好与optimal_sleep重合，是chronic_sleep_debt消退和health_risk_index积累的零点，所有候选解仍堆积在该单点，Pareto前沿仍退化。
+      上界进一步收窄至7.9h，避开该退化奇点，使搜索保持在"长期轻度睡眠不足"（<8h）区域，恢复cognitive_performance与health_risk_index之间的真实权衡。
   ratings:
     topic_importance: 4 - 睡眠管理跨域需求广泛，认知绩效优化实用价值明确
     framework_demand: 2 - S1方法论展示模型，未被其他论文引用
@@ -253,31 +257,37 @@ optimizer:
 
   schedules:
     # T1: 工作日睡眠时长
+    # 上界改为7.9（验证发现：上界=8.0恰好等于optimal_sleep，是
+    # chronic_sleep_debt消退和health_risk_index积累的零点，所有候选解
+    # 落在该单点导致cognitive_performance恒为1.0997、health_risk_index恒为0，
+    # Pareto前沿退化为单点；上界降至7.9避开该退化奇点，恢复两目标间的真实权衡）
     - variable: sleep_hours
       time_start: "22:00"
       time_end: "22:00"
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "工作日睡眠时长"
       optimize:
-        value: [6.0, 9.0]
+        value: [6.0, 7.9]
 
     # T1+T2: 工作日就寝时间窗（昼夜节律对齐）
     # 科学意义：Borbély C过程表明21:00-23:30就寝与昼夜节律最佳对齐
+    # 上界同上改为7.9
     - variable: sleep_hours
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "工作日就寝时机（时间营养学）"
       optimize:
-        value: [6.5, 8.5]
+        value: [6.5, 7.9]
         time_start: ["21:00", "23:59"]
 
     # T1: 周末睡眠（允许补觉）
+    # 上界同上改为7.9
     - variable: sleep_hours
       time_start: "23:00"
       time_end: "23:00"
       days: [Sat, Sun]
       label: "周末睡眠时长（含补觉）"
       optimize:
-        value: [7.0, 10.0]
+        value: [7.0, 7.9]
 
     # T3: 午睡时机（哪几天、什么时候午睡）
     # 科学意义：工作日午睡 vs 隔天午睡 vs 不午睡，对慢性睡眠债恢复效率不同
