@@ -139,8 +139,8 @@ formulas:
   insulin_sensitivity_dynamics:
     description: >
       胰岛素敏感性：运动改善（空腹运动效率高约1.3倍，Erickson 2019）
-      + 禁食窗口改善 - 工作压力皮质醇轻度恶化。
-      时间常数约 20-30 天（慢变量）。改善项乘以饱和因子
+      + 禁食窗口改善 + 低碳水摄入改善 - 工作压力皮质醇轻度恶化。
+      时间常数约 20-30 天（慢变量）。所有改善项均乘以饱和因子
       max(0, 1.2 - insulin_sensitivity)，使 SI 渐近趋向约1.2
       （生理上限附近）而非无限增长直接撞到 bounds 上限2.0。
     condition: true
@@ -150,8 +150,9 @@ formulas:
         insulin_sensitivity
         + max(0, 1.2 - insulin_sensitivity) * insulin_sensitivity_recovery * (exercise_met_min / 180) * step
         + max(0, 1.2 - insulin_sensitivity) * 0.002 * max(0, fasting_window_hours - 10) * step
+        + max(0, 1.2 - insulin_sensitivity) * 0.005 * max(0, 1 - carb_intake_per_meal / 65) * insulin_sensitivity * step
         - 0.001 * work_pressure * step
-        - 0.005 * (carb_intake_per_meal / 65 - 1) * insulin_sensitivity * step
+        - 0.005 * max(0, carb_intake_per_meal / 65 - 1) * insulin_sensitivity * step
     reference: "Bergman RN (1981); Erickson ML (2019); Lowe DA (2020)"
 
   fasting_glucose_dynamics:
@@ -235,7 +236,9 @@ simulation:
         - {variable: carb_intake_per_meal, time: "00:00", value: 42.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "低GI饮食"}
         - {variable: exercise_met_min, time: "06:30", value: 200.0, days: [Mon, Wed, Fri], date_range: ["2026-01-01", "2026-07-01"], label: "空腹晨练（T2优化）"}
         - {variable: fasting_window_hours, time: "00:00", value: 16.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-02-01", "2026-07-01"], label: "16:8 IF（T4起始第4周）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 16.0, days: [Sat, Sun], date_range: ["2026-02-01", "2026-07-01"], label: "16:8 IF（周末延续）"}
         - {variable: fasting_window_hours, time: "00:00", value: 13.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-01-31"], label: "过渡期14:10（T4前）"}
+        - {variable: fasting_window_hours, time: "00:00", value: 13.0, days: [Sat, Sun], date_range: ["2026-01-01", "2026-01-31"], label: "过渡期14:10（周末延续）"}
 
   mc:
     runs: 20

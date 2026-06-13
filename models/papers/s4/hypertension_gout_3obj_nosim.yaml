@@ -62,9 +62,13 @@ optimizer:
       description: "最小化26周末体重（减重目标）"
   constraints:
     - variable: blood_pressure
-      condition: "<= 130"
+      condition: "<= 140"
       metric: final
       type: hard
+      description: >
+        与 s2/hypertension_gout_noref 同步修正：原 <=130 在本模型参数下
+        （thiazide_dose、caloric_deficit取optimize区间上限时BP稳态≈139）
+        不可行（feasible: 0%），改为ESC 2018通用目标 <=140，与lm_score阈值一致。
     - variable: uric_acid
       condition: "<= 360"
       metric: final

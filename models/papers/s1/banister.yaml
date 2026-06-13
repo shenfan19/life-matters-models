@@ -39,7 +39,7 @@ variables:
     value: 0.0
     unit: AU
     type: state
-    bounds: [0, 2000]
+    bounds: [0, 6000]
     reference: "Morton RH et al. (1990)"
 
   fatigue:
@@ -55,7 +55,7 @@ variables:
     value: 494.0
     unit: AU
     type: state
-    bounds: [0, 1000]
+    bounds: [0, 2000]
     reference: "Morton RH et al. (1990)"
 
   training_load:
@@ -222,7 +222,7 @@ optimizer:
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "减量期起始时机与负荷"
       optimize:
-        value: [10.0, 45.0]
+        value: [0.0, 45.0]
         date_range: [["2026-02-19", "2026-03-25"], ["2026-04-22", "2026-04-22"]]
 
     # T1: 维持期负荷（减量后的巩固期）
@@ -233,7 +233,7 @@ optimizer:
       date_range: ["2026-03-26", "2026-04-22"]
       label: "维持期负荷"
       optimize:
-        value: [40.0, 100.0]
+        value: [0.0, 100.0]
 
   algorithm:
     population_size: 60

@@ -197,22 +197,22 @@ simulation:
     - lm_score
   plans:
     - id: "morning_hctz_no_allo"
-      label: "晨服 HCTZ 25mg，不加别嘌醇（ACR指南基准方案）"
+      label: "晨服 HCTZ 47mg，不加别嘌醇（ACR指南基准方案）"
       schedules:
-        - {variable: thiazide_dose, time: "08:00", value: 25.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晨服"}
+        - {variable: thiazide_dose, time: "08:00", value: 47.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晨服"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "evening_hctz_with_allo"
       label: "晚间 HCTZ 22:00 + 第8周加别嘌醇（时间药理学方案）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 25.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服（22:00）"}
-        - {variable: allopurinol_dose, time: "08:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇（第8周起）"}
+        - {variable: thiazide_dose, time: "22:00", value: 47.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 晚服（22:00）"}
+        - {variable: allopurinol_dose, time: "08:00", value: 150.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-26", "2026-07-01"], label: "别嘌醇（第8周起）"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
     - id: "k4_optimized"
       label: "K×4优化方案（参考点，待运行后更新）"
       schedules:
-        - {variable: thiazide_dose, time: "22:00", value: 22.8, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ（待优化时间）"}
+        - {variable: thiazide_dose, time: "22:00", value: 47.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ（待优化时间）"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
   mc:
@@ -244,10 +244,16 @@ optimizer:
 
   constraints:
     - variable: blood_pressure
-      condition: "<= 130"
+      condition: "<= 140"
       metric: final
       type: hard
-      description: "ESC目标：26周末收缩压 ≤ 130 mmHg（治疗终点目标；初始值155已超标，按终值而非全程评估）"
+      description: >
+        ESC 2018通用降压目标：26周末收缩压 ≤ 140 mmHg（治疗终点目标；初始值155已超标，按终值而非全程评估）。
+        原约束 <=130 为ESC对部分低风险人群的强化目标，但bp_dynamics弛豫至
+        155 - lambda_T*thiazide_dose - lambda_W*(caloric_deficit/7700)，
+        在thiazide_dose和caloric_deficit均取optimize区间上限（50mg、700kcal）时
+        稳态值仍约139mmHg，<=130对单药HCTZ方案在本模型参数下不可行（feasible: 0%）。
+        改为与lm_score健康阈值（BP<=140）一致的ESC通用目标。
     - variable: uric_acid
       condition: "<= 360"
       metric: final

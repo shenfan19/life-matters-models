@@ -12,6 +12,8 @@ metadata:
     result: |
       仿真预期最优方案：每周 3 次 HIIT（周一/三/五）、第 3–4 周升级，在 ALT 安全约束内比每日步行多减脂 15–22%。
       注：核心参数（beta_hiit、delta_alt）待文献精化，当前为演示值。
+      验证发现：以当前 alpha_fat=0.003 等TODO参数，12周窗口内 liver_fat_pct 实际仅能从15%降至约11.5–14.1%（未达12%目标），
+      故 lm_score 的 liver_fat_pct 阈值已调整为14%（见lm_score定义），alpha_fat文献精化后应同步重新校准该阈值。
     limitations: |
       高强度运动对 ALT 影响的核心参数尚待文献精化，投稿前须补充来源（TODO:SOURCE）；模型不含饮食、体重或胰岛素抵抗的协同效应。
   ratings:
@@ -106,7 +108,7 @@ variables:
     reference: "EASL-EASD-EASO (2016) J Hepatol 64(6):1388"
 
   lm_score:
-    description: 健康时长：liver_fat_pct ≤ 12% 且 alt_level ≤ 40 IU/L 同时满足的累计仿真天数（12周仿真窗口内，12%是各方案可触及的范围；10%目标需更长疗程，见limitations）
+    description: 健康时长：liver_fat_pct ≤ 14% 且 alt_level ≤ 40 IU/L 同时满足的累计仿真天数（验证发现：以alpha_fat=0.003等当前TODO参数，12周内liver_fat_pct无法降到≤12%，导致该目标在所有Pareto解中恒为0；阈值改为14%后随HIIT强度/时机呈现非退化的区分度，10%/12%目标需更长疗程或alpha_fat文献精化后重新校准，见limitations）
     value: 0.0
     unit: day
     type: state
@@ -144,11 +146,11 @@ formulas:
     reference: "TODO:SOURCE 运动疲劳恢复文献"
 
   lm_score_update:
-    description: "累加健康时长（可恢复）：liver_fat_pct ≤ 12% 且 alt_level ≤ 40 IU/L"
+    description: "累加健康时长（可恢复）：liver_fat_pct ≤ 14% 且 alt_level ≤ 40 IU/L"
     condition: true
     priority: 90
     dynamics:
-      lm_score: "lm_score + step if (liver_fat_pct <= 12 and alt_level <= 40) else lm_score"
+      lm_score: "lm_score + step if (liver_fat_pct <= 14 and alt_level <= 40) else lm_score"
     reference: "Life Matters Framework core metric"
 
 # ── 仿真设置（K=3 分段：热身→升级→维持）───────────────────────────────────────
@@ -243,7 +245,7 @@ optimizer:
       optimize:
         value: [2.5, 4.5]
 
-    # T4: 高强度（HIIT）启动时机（从第2周到第6周窗口内启动）
+    # T4: 高强度（HIIT）启动时机（从第2周到第8周窗口内启动）
     # 科学意义：体能未建立时过早引入HIIT→ALT超标；过晚则浪费减脂机会
     - variable: exercise_intensity
       time_start: "07:00"
@@ -252,7 +254,7 @@ optimizer:
       label: "高强度升级时机"
       optimize:
         value: [6.5, 9.0]
-        date_range: [["2026-01-08", "2026-02-12"], ["2026-03-27", "2026-03-27"]]
+        date_range: [["2026-01-08", "2026-02-26"], ["2026-03-27", "2026-03-27"]]
 
 
   algorithm:

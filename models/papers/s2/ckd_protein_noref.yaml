@@ -90,10 +90,13 @@ variables:
     description: |
       肌肉蛋白合成效率（每 g/kg 蛋白质事件量生成 kg 肌肉）。
       MC 时代表个体合成代谢能力差异（Carrero 2013）。
-      取值需与基础降解速率 mu_d（0.002/day × ~28kg ≈ 0.056/day）量级匹配，
-      使日均蛋白摄入 ~0.65-1.11 g/kg 时合成与降解处于同一数量级，
-      否则肌肉量在所有方案下都会单调跌至下界，无法形成 Pareto 权衡（原值0.008过小约一个数量级）。
-    value: "normal(0.05, 0.012)"
+      取值需与基础降解速率 mu_d、尿毒症降解 mu_u 共同决定的总降解量级匹配。
+      原均值0.05在 dietary_protein 为单日累计值（三餐合计~0.65-1.11 g/kg/day）下，
+      合成项（mu_s*protein≈0.033-0.056/day）仍小于 mu_d*muscle(~0.056/day)，
+      导致肌肉量在所有方案下364天内单调跌至下界10kg（Pareto前沿退化为单点）。
+      上调均值至0.08，并同步下调 mu_d/mu_u（见各自条目），使52周末肌肉损失落在
+      Carrero 2013文献区间2-5kg，且蛋白摄入越高损失越小，形成有效的muscle-GFR权衡。
+    value: "normal(0.08, 0.012)"
     unit: kg/(g/kg)
     type: parameter
     bounds: [0.01, 0.10]
@@ -113,8 +116,12 @@ variables:
     reference: "KDIGO 2020"
 
   mu_d:
-    description: 肌肉基础降解速率（CKD 患者高于正常人，Carrero 2013）
-    value: 0.002
+    description: |
+      肌肉基础降解速率（CKD 患者高于正常人，Carrero 2013）。
+      原值0.002与上调后的mu_s（见该条目说明）和mu_u共同导致52周肌肉损失
+      远超Carrero 2013文献区间(2-5kg)；下调至0.0012（仍在bounds内），
+      配合mu_s=0.08、mu_u均值下调，使损失落入2-5kg区间。
+    value: 0.0012
     unit: 1/day
     type: parameter
     bounds: [0.001, 0.005]
@@ -124,7 +131,12 @@ variables:
     description: |
       尿毒症驱动的肌肉分解增强系数（GFR 每下降1单位额外增加的分解率）。
       敏感性分析中最重要的参数（Wang & Mitch 2014）。
-    value: "normal(0.0015, 0.0005)"
+      原均值0.0015在GFR下降10-15单位时使该项达0.015-0.0225/day，
+      远超mu_d*muscle量级，导致肌肉量在所有方案下单调跌至下界10kg，
+      Pareto前沿退化为单点（muscle_mass恒为bounds下限）。下调均值至接近bounds下限的0.00025，
+      配合mu_s=0.08、mu_d=0.0012，使52周末肌肉损失落入Carrero 2013区间(2-5kg)，
+      且高蛋白方案损失更小，形成muscle-GFR权衡。
+    value: "normal(0.00025, 0.00007)"
     unit: 1/(day·mL/min/1.73m²)
     type: parameter
     bounds: [0.0002, 0.004]
