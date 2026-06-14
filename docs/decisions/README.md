@@ -87,9 +87,9 @@
 | [0091](0091-2026-06-01_project_cli-batch-tool.md) | `sim_cli/`：批量仿真 CLI 工具 | ✅ 已实施 | 2026-06-01 |
 | [0092](0092-2026-06-05_model_input-variable-bare-unit-rule.md) | `type: input` 单位规范：裸单位（事件量），禁止速率单位（/day 等） | ✅ 已实施 | 2026-06-05 |
 | [0093](0093-2026-06-05_sim_runtime-log-panel.md) | Sim/Opt 运行时日志面板：内容分层（模型信息、NaN/bounds 警告、完成统计）与实现 | ✅ 已实施 | 2026-06-05 |
-| [0096](0096-2026-06-06_model_filename-quality-markers.md) | 模型文件名质量标记约定（_nosim / _noopt / _noref） | ✅ 已实施 | 2026-06-06 |
+| [0096](0096-2026-06-06_model_filename-quality-markers.md) | 模型文件名质量标记约定（_nosim / _noopt / _noref） | ⚪ 已被 0101 取代 | 2026-06-06 |
 | [0097](0097-2026-06-08_model_description-3-fields.md) | papers/ 模型 description 简化为三字段（brief / problem / method） | ✅ 已实施 | 2026-06-08 |
 | [0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimizer.schedules 新增 mode: sustained（子日步长持续输入） | ✅ 已实施 | 2026-06-11 |
 | [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 部分实施（papers 术语已补充说明，未做全文改写） | 2026-06-11 |
-| [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（部分取代 0096） | 🟡 部分实施（spec + 1 个试点文件） | 2026-06-14 |
+| [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | 🟢 已实施 | 2026-06-14 |

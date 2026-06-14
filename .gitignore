@@ -1,7 +1,4 @@
-# ignore all yaml files that lack of reference, simulation and optimization tests
-**/*_noref*.yaml
-**/*_nosim*.yaml
-**/*_noopt*.yaml
+# ignore yaml files with pending metadata.todo items (see ADR 0101)
 **/*_HOLD.yaml
 
 # ignore output folder and the results of the tests
