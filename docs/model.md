@@ -4,7 +4,30 @@
 
 ## 文件名质量标记
 
-`models/` 中的 YAML 文件名用后缀表达质量状态，只有三种标记：
+### `_HOLD` + `metadata.todo`（ADR 0101，当前约定）
+
+`models/` 中文件名以 `_HOLD` 结尾，表示该文件存在一项或多项待处理事项，详情记录在 `metadata.todo`：
+
+```yaml
+metadata:
+  todo:
+    - type: nosim | noopt | noref | quality | other
+      issue: "一句话描述问题"
+      evidence: "诊断依据：具体数值/现象/复现方式，使下次处理不需要重新诊断"
+      next: "建议的下一步，或留给人工判断的选项；不替人工下结论"
+```
+
+- `type` 取值含义：`nosim`=sim 无法运行；`noopt`=sim 通过但 optimizer 失败；`noref`=缺文献来源（`TODO:SOURCE`）；`quality`=sim/opt 均成功但结果有疑点（如 Pareto 前沿退化、可行域为空集）；`other`=其他。
+- `evidence` 是核心：把诊断过程中得到的具体数值/现象写下来，避免下次处理（无论 AI 或人工）重新运行诊断。
+- **无 `_HOLD` 后缀 且 无 `metadata.todo` = 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimizer:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
+- 所有 `todo` 项处理完毕后删除该字段并去掉 `_HOLD` 后缀，文件回到"干净"状态。
+- gitignore：`**/*_HOLD.yaml`。
+
+注：`models/papers/` 下的目录级 `_HOLD`（如 `s3_HOLD/`）是论文结构"暂缓"标记，与本节文件名级 `_HOLD`（技术/质量维度）是不同维度，可共存。
+
+### 旧约定（ADR 0096，迁移中）
+
+部分文件仍使用旧的三后缀标记，迁移完成前继续有效：
 
 | 后缀 | 含义 | 是否 gitignore |
 |------|------|--------------|
@@ -12,11 +35,7 @@
 | `_noopt` | sim 通过，optimizer 块存在但运行失败 | ✓ |
 | `_noref` | 缺乏文献来源（存在 `TODO:SOURCE`） | ✓ |
 
-组合写法 `_nosim_noopt` 表示"未经测试"（保守默认），是新建或未验证模型的初始状态。
-
-**无后缀 = 已确认通过**：`--sim` ✓、`--opt` ✓（或无 `optimizer:` 块时自动跳过）、所有参数有文献来源。
-
-`_mw`（纯组件）和 `_TODO`（草稿）已废弃，统一使用上述三种标记替代。
+组合写法 `_nosim_noopt` 表示"未经测试"（保守默认），是新建或未验证模型的初始状态。`_mw`（纯组件）和 `_TODO`（草稿）已废弃。
 
 ### test_batch 过滤模式
 
@@ -28,7 +47,7 @@ MODEL_FOLDER=models/references bash script/test_batch.sh
 FILTER_BROKEN=true MODEL_FOLDER=models/references bash script/test_batch.sh
 ```
 
-`FILTER_BROKEN=true` 时只测文件名含 `_nosim` 或 `_noopt` 的文件。通过后删除后缀，模型进入"干净"状态，不再被 batch 触碰。
+`FILTER_BROKEN=true` 时只测文件名含 `_nosim`、`_noopt` 或 `_HOLD` 的文件。通过后删除后缀/清空 `todo`，模型进入"干净"状态，不再被 batch 触碰。
 
 ### reviewed: true
 
