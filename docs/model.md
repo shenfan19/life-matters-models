@@ -43,6 +43,26 @@ python sim_cli/batch.py --folder models/references --no-skip
 
 ---
 
+## 改进历史：`metadata.log`（ADR 0103）
+
+可选字段，记录模型的改动历史，弥补 git log 在跨文件批量 commit 下追溯单个模型修改脉络的不足：
+
+```yaml
+metadata:
+  log:
+    "2026-06-14_10-30-00":
+      change: "一句话描述本次改了什么"
+      reason: "为什么这样改"
+```
+
+- key 为 `YYYY-MM-DD_HH-mm-ss` 时间戳（本地时间）；字符串字典序即时间顺序，新条目追加在末尾，不修改/删除历史条目。
+- 每条只有 `change` + `reason` 两个字段：`change` 是什么靠 git diff 可查证，核心价值在 `reason`——补全 git diff 给不出的修改动机/背景。关联的 ADR、`metadata.todo` 项编号等直接写进 `reason` 文本，不单独建字段。
+- 与 `metadata.todo`（前瞻：待办）互补（回顾：已完成）；处理某个 `todo` 项后，可在 `log` 追加一条说明处理结果，再从 `todo` 中删除该项。
+- 仅对有语义影响的改动（参数/公式/约束/结构调整、文献依据更新）记录；格式化、拼写修正不必记录。
+- 可选字段，不是发布门控；现有模型不强制回填，从下次有意义的修改开始追加即可。
+
+---
+
 ## 变量类型（4 种）
 
 | 类型 | 引擎读取 | 建模者填入 | 用途 | 优化归属 |
@@ -122,6 +142,10 @@ metadata:
   step_size:           # 必填：模型时钟分辨率
     value: 1           # canonical 步长，建议保持 1
     unit: minute       # minute | hour | day；决定公式中 step 的含义
+  log:                 # 可选：改进历史，见"改进历史：metadata.log"节
+    "2026-06-14_10-30-00":
+      change: "一句话描述本次改了什么"
+      reason: "为什么这样改"
 
 imports:
   - papers/paper2/ckd_protein_a4_p2     # 从 models/ 根出发，不写 .yaml，不写 models/ 前缀
