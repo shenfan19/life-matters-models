@@ -76,12 +76,15 @@ simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-14"
   output_variables: [stock, order_qty, order_cost]
-  schedules:
-    - variable: order_qty
-      time: "00:00"
-      value: 0.0
-      date_range: ["2026-01-01", "2026-01-01"]
-      label: "Up-front order (overridden by optimizer)"
+  plans:
+    - id: "default"
+      label: "Default"
+      schedules:
+        - variable: order_qty
+          time: "00:00"
+          value: 0.0
+          date_range: ["2026-01-01", "2026-01-01"]
+          label: "Up-front order (overridden by optimizer)"
 
 optimizer:
   method: nelder-mead

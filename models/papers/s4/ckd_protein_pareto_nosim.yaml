@@ -23,7 +23,7 @@ metadata:
     innovation: 2 - 搜索预算扩展验证，方法论意义大于科学新颖性
   tags: [ckd, protein, muscle]
   references:
-    - "参见 s2/ckd_protein.yaml 完整引用"
+    - "参见 s1/ckd_protein_noref.yaml 完整引用"
     - "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
     - "Snijders T et al. (2015) Pre-sleep protein. J Nutr 145(6):1178-1184"
   step_size:
@@ -31,9 +31,9 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/ckd_protein_noref
+  - papers/s1/ckd_protein_noref
 
-# 继承 s2/ckd_protein_noref 的全部变量、公式、约束
+# 继承 s1/ckd_protein_noref 的全部变量、公式、约束
 # 仅覆盖 optimizer 配置（更大种群 + 同一 T1+T2+T4 inputs）
 
 
@@ -108,6 +108,10 @@ optimizer:
         date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
 
 
+  mc:
+    runs: 5
+    seed: 19
+
   algorithm:
     population_size: 150
     n_generations: 300
@@ -147,9 +151,9 @@ simulation:
   end_date: "2026-12-31"
   output_variables: [GFR, muscle_mass, BUN, dietary_protein, lm_score]
   mc:
-    runs: 30
+    runs: 5
     seed: 19
-    description: "MC 采样 alpha、mu_s、mu_u（比 Paper2 多10次），验证 T2 结论稳健性"
+    description: "MC 采样 alpha、mu_s、mu_u（继承 S1），在更大搜索规模下验证 T2 结论稳健性"
   plans:
     - id: "kidney_protect"
       label: "肾保护极端（GFR 端点，待运行更新）"

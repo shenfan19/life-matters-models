@@ -338,7 +338,7 @@ simulation:
         - {variable: caloric_deficit, time: "00:00", value: 350.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "热量缺口"}
 
   mc:
-    runs: 20
+    runs: 5
     seed: 19
 
 # ── 优化设置（T1+T2+T3+T4 全维度优化）──────────────────────────────────────────
@@ -431,6 +431,10 @@ optimizer:
         value: [95.0, 120.0]
         date_range: [["2026-02-26", "2026-05-01"], ["2026-07-01", "2026-07-01"]]
 
+
+  mc:
+    runs: 5
+    seed: 19
 
   algorithm:
     population_size: 100

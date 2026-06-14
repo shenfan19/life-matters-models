@@ -241,7 +241,7 @@ simulation:
         - {variable: fasting_window_hours, time: "00:00", value: 13.0, days: [Sat, Sun], date_range: ["2026-01-01", "2026-01-31"], label: "过渡期14:10（周末延续）"}
 
   mc:
-    runs: 20
+    runs: 5
     seed: 19
 
 # ── 优化设置（T1+T2+T3+T4 血糖管理优化）──────────────────────────────────────
@@ -324,6 +324,10 @@ optimizer:
         value: [14.0, 17.0]
         date_range: [["2026-01-15", "2026-03-01"], ["2026-07-01", "2026-07-01"]]
 
+
+  mc:
+    runs: 5
+    seed: 19
 
   algorithm:
     population_size: 80

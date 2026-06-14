@@ -215,10 +215,6 @@ simulation:
         - {variable: thiazide_dose, time: "22:00", value: 47.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ（待优化时间）"}
         - {variable: caloric_deficit, time: "00:00", value: 400.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "每日热量缺口"}
 
-  mc:
-    runs: 20
-    seed: 19
-
 # ── 优化设置（T1+T2+T4 联合优化）──────────────────────────────────────────────
 optimizer:
   method: nsga2
