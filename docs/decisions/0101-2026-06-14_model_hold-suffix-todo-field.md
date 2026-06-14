@@ -1,7 +1,7 @@
 # 0101 — 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表
 
 **日期**：2026-06-14
-**状态**：🟡 部分实施（spec + 1 个试点文件；全量迁移见 home 任务）
+**状态**：🟢 已实施（spec + 全量迁移完成：`models/` 下所有 `_nosim`/`_noopt`/`_noref` 文件已迁移为 `_HOLD` + `metadata.todo`）
 **类别**：模型库管理 / 工程约定
 
 ---
@@ -47,9 +47,8 @@ metadata:
 
 ### 4. 与旧约定（ADR 0096）的关系
 
-- `_nosim` / `_noopt` / `_noref` 及其 gitignore 规则**暂时保留**，未迁移的文件继续按旧约定有效。
-- 新发现的问题统一用 `_HOLD` + `metadata.todo` 记录；不要求一次性迁移现存所有文件。
-- 全量迁移（旧后缀 → `_HOLD` + `todo`，含 `docs/model.md` 旧表格清理、`sim_cli/batch.py` 修复队列过滤逻辑更新）作为独立任务推进。
+- `_nosim` / `_noopt` / `_noref` 三后缀及其 gitignore 规则已废弃，全部迁移为 `_HOLD` + `metadata.todo`（2026-06-14 完成全量迁移）。
+- 新发现的问题统一用 `_HOLD` + `metadata.todo` 记录。
 
 ### 5. 与目录级 `_HOLD` 的关系
 
@@ -61,10 +60,14 @@ metadata:
 
 对 `models/papers/s3_HOLD/burnout_allostatic_noopt.yaml` 应用新约定：重命名为 `burnout_allostatic_HOLD.yaml`，添加 `metadata.todo`，记录本次用新版 `sim_cli` 跑 `--opt` 时发现的"联合可行域为空集"诊断结论（约束 `cortisol_chronic <= 1.8` 与当前动力学不匹配，模型自带的"结构化恢复方案"示例 84 天内 cortisol_chronic 从 1.14 升至 3.27）。
 
+## 全量迁移（2026-06-14）
+
+`models/` 下其余约 100 个 `_nosim`/`_noopt`/`_noref`（含组合）文件已批量迁移为 `_HOLD` + `metadata.todo`。迁移仅做后缀→`todo` 的结构转换，`evidence` 字段标注为"迁移自旧后缀标记，尚未重新运行 --sim/--opt 诊断"；后续通过 `sim_cli/batch.py` 修复队列逐个跑 `--sim`/`--opt` 补充具体诊断证据并清空 `todo`。
+
 ---
 
 ## 关联
 
 - `docs/model.md` — 文件名质量标记节
-- ADR 0096 — 三后缀约定（部分取代）
-- `c:/fan/b_lm_home/` 任务 — 全量迁移
+- ADR 0096 — 三后缀约定（已被本 ADR 取代）
+- 内部任务记录 `2026-06-14_task_hold-todo-migration.md` — 全量迁移记录

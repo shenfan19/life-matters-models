@@ -25,29 +25,17 @@ metadata:
 
 注：`models/papers/` 下的目录级 `_HOLD`（如 `s3_HOLD/`）是论文结构"暂缓"标记，与本节文件名级 `_HOLD`（技术/质量维度）是不同维度，可共存。
 
-### 旧约定（ADR 0096，迁移中）
-
-部分文件仍使用旧的三后缀标记，迁移完成前继续有效：
-
-| 后缀 | 含义 | 是否 gitignore |
-|------|------|--------------|
-| `_nosim` | sim 无法运行（YAML 解析错误、变量引用错误等） | ✓ |
-| `_noopt` | sim 通过，optimizer 块存在但运行失败 | ✓ |
-| `_noref` | 缺乏文献来源（存在 `TODO:SOURCE`） | ✓ |
-
-组合写法 `_nosim_noopt` 表示"未经测试"（保守默认），是新建或未验证模型的初始状态。`_mw`（纯组件）和 `_TODO`（草稿）已废弃。
-
-### test_batch 过滤模式
+### sim_cli batch 过滤模式
 
 ```bash
-# 默认：测指定目录下所有文件
-MODEL_FOLDER=models/references bash script/test_batch.sh
+# 默认：只测文件名含 _HOLD 的文件（修复队列模式）
+python sim_cli/batch.py --folder models/references
 
-# 只测有问题标记的文件（修复队列模式）
-FILTER_BROKEN=true MODEL_FOLDER=models/references bash script/test_batch.sh
+# 测指定目录下所有文件
+python sim_cli/batch.py --folder models/references --no-skip
 ```
 
-`FILTER_BROKEN=true` 时只测文件名含 `_nosim`、`_noopt` 或 `_HOLD` 的文件。通过后删除后缀/清空 `todo`，模型进入"干净"状态，不再被 batch 触碰。
+通过 `--sim`/`--opt` 后删除 `metadata.todo` 中对应项；`todo` 清空后去掉 `_HOLD` 后缀，模型进入"干净"状态，不再被 batch 触碰。
 
 ### reviewed: true
 
