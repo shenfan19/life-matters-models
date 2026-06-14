@@ -59,14 +59,17 @@ simulation:
   end_date:   "2026-01-06"
   output_variables: [plasma, dose, absorption_rate]
   mc:
-    runs: 10
+    runs: 5
     seed: 19
-  schedules:
-    - variable: dose
-      time: "00:00"
-      value: 0.0
-      date_range: ["2026-01-01", "2026-01-01"]
-      label: "One-time dose (overridden by optimizer)"
+  plans:
+    - id: "default"
+      label: "Default"
+      schedules:
+        - variable: dose
+          time: "00:00"
+          value: 0.0
+          date_range: ["2026-01-01", "2026-01-01"]
+          label: "One-time dose (overridden by optimizer)"
 
 optimizer:
   method: nelder-mead

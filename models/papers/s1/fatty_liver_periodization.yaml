@@ -197,7 +197,7 @@ simulation:
           date_range: ["2026-01-01", "2026-03-27"]
           label: "强化叠加 +4.5 MET（全程，5 次/周）"
   mc:
-    runs: 20
+    runs: 5
     seed: 19
 
 
@@ -218,6 +218,10 @@ optimizer:
       metric: max
       direction: minimize
       description: "最小化训练期疲劳峰值（损伤/脱落风险代理指标）"
+
+  mc:
+    runs: 5
+    seed: 19
 
   algorithm:
     population_size: 80

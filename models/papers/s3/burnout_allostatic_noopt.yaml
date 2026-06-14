@@ -273,7 +273,7 @@ simulation:
         - {variable: break_min, time: "00:00", value: 480.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-09", "2026-02-15"], label: "第6周集中休假"}
 
   mc:
-    runs: 20
+    runs: 5
     seed: 19
 
 # ── 优化设置（T1+T2+T3+T4 恢复行为优化，工作压力固定为参数）────────────────────
@@ -364,6 +364,10 @@ optimizer:
         value: [400.0, 480.0]
         date_range: [["2026-01-26", "2026-02-25"], ["2026-03-27", "2026-03-27"]]
 
+
+  mc:
+    runs: 5
+    seed: 19
 
   algorithm:
     population_size: 60

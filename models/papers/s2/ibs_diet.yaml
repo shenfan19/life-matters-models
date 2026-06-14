@@ -230,7 +230,7 @@ simulation:
         - {variable: fiber_soluble, time: "00:00", value: 11.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "全程可溶性纤维"}
 
   mc:
-    runs: 20
+    runs: 5
     seed: 19
 
 # ── 优化设置（T1+T3+T4）──────────────────────────────────────────────────────────
@@ -308,6 +308,10 @@ optimizer:
         value: [14.0, 22.0]
         date_range: [["2026-01-22", "2026-03-05"], ["2026-06-30", "2026-06-30"]]
 
+
+  mc:
+    runs: 5
+    seed: 19
 
   algorithm:
     population_size: 80

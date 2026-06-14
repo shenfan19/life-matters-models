@@ -1,0 +1,423 @@
+metadata:
+  name: postpartum_recovery
+  lm_format_version: "1.0"
+  updated: 2026-06-09
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    brief: "产后12周母婴多维恢复优化：喂养节奏×营养×运动介入对母乳质量、体力恢复、睡眠债、产后抑郁风险的Pareto权衡。"
+    need: |
+      产后恢复期有四个目标同时推进、相互影响：
+      - 母乳质量，依赖营养和睡眠质量；
+      - 体力恢复，依赖运动和睡眠，但运动介入时机有禁忌；
+      - 睡眠，被夜奶频次直接压缩；
+      - 产后抑郁风险，与睡眠债和体力恢复强耦合。
+      每个维度都有专业建议，但没有工具能给出跨维度的综合方案。
+    problem: |
+      三组核心冲突：
+      1. 夜奶频次 vs 睡眠质量：多次夜奶保障婴儿营养，但睡眠碎片化积累睡眠债，超过阈值后会影响母乳质量本身，并形成产后抑郁风险的负反馈。
+      2. 营养摄入 vs 体重恢复：哺乳期额外 500kcal/天支持泌乳（IOM 2002），但过早热量限制会影响母乳质量；运动消耗与摄入不匹配会加速肌肉损失。
+      3. 运动介入时机 vs 盆底恢复：产后 6 周内的过早高强度运动会增加盆底功能障碍风险，但延迟介入会影响体力恢复进度和产后抑郁缓解。
+      infant_breastfeeding.yaml 以小时精度建模婴儿视角（胃排空、体重、溢奶）；本模型聚焦母体视角，日精度，12 周跨度，优化喂养节奏、营养和运动介入时机。
+    method: |
+      日步长 ODE，84 天（12 周）。4 类优化决策变量：夜间喂奶次数(T1)、哺乳额外热量(T1)、运动量(T1)、运动介入起始时机(T4)。
+      产后抑郁风险为状态变量，表示风险因子的累积，不是临床诊断工具；母乳质量评分由母体营养充足性和睡眠质量共同驱动。
+    result: |
+      仿真预期揭示：
+      1. 运动介入时机（产后第 3 周 vs 第 6 周起步）对体力恢复轨迹有显著差异，但须在满足盆底恢复安全阈值（lm_pelvic_safe 条件）后才能介入；
+      2. 夜奶后移、合并为 2 次（凌晨前后各 1 次），在相同泌乳量下能改善睡眠连续性；
+      3. 哺乳额外热量在 600–700 kcal/day 区间，对母乳质量的边际收益趋于平缓；
+      4. Pareto 前沿显示，母乳质量与体力快速恢复之间存在权衡窗口——运动消耗的能量与泌乳所需能量相互竞争；产后抑郁风险最小化路径需要睡眠和运动同时达标。
+    limitations: |
+      母乳供需的泌乳反射-需求耦合未建模；运动类型未区分有氧、盆底康复与力量训练；产后抑郁为风险因子积累指标，非 PHQ-9 量表诊断；社会支持（伴侣、父母参与夜奶）未纳入；母婴耦合建模见 infant_breastfeeding.yaml（小时精度）。
+  ratings:
+    topic_importance: 5 - 全球母婴健康核心议题，传播力最强人群之一
+    framework_demand: 4 - 跨营养×运动×心理×睡眠四域，是 LM format 跨域能力的强展示
+    evidence_quality: 4 - 营养和运动参数文献扎实；抑郁动力学为简化近似
+    paper_value: 5 - slides Case B 对应案例，媒体友好，用户群体最广
+    innovation: 4 - 运动介入T4时机优化 + 产后抑郁作为可优化结果，在此场景下首次
+  tags: [postpartum, breastfeeding, sleep, physical_recovery, depression, nutrition, lactation, maternal_health, pediatrics]
+  references:
+  - "Institute of Medicine (2002) Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Protein, and Amino Acids. National Academies Press."
+  - "Kent JC et al. (2006) Volume and frequency of breastfeedings and fat content of breast milk throughout the day. Pediatrics 117(3):e387-e395."
+  - "Dror DK & Allen LH (2018) Overview of nutrients in human milk. Adv Nutr 9(suppl_1):278S-294S."
+  - "Dennis CL & Ross L (2005) Relationships among infant sleep patterns, maternal fatigue, and development of depressive symptomatology. Birth 32(3):187-193."
+  - "Okun ML et al. (2011) Sleep disturbances, mood states, and biomarkers: a 2-week study. Sleep 34(4):527-535."
+  - "Daley AJ et al. (2015) The effectiveness of exercise as treatment for postnatal depression: systematic review and meta-analysis. Br J Gen Pract 65(635):e322-328."
+  - "Mottola MF & Artal R (2016) Fetal and maternal metabolic responses to exercise during pregnancy. Early Hum Dev 94:33-41."
+  - "Bø K et al. (2017) Evidence-based physical therapy for the pelvic floor. 3rd ed. Elsevier."
+  - "Doan T et al. (2007) Breast-feeding increases sleep duration of new parents. J Perinat Neonatal Nurs 21(3):200-206."
+  - "O'Connor EA et al. (2016) Primary care–relevant interventions for depression. JAMA 315(4):381-399."
+  - "WHO (2011) Guidelines on optimal infant feeding. World Health Organization."
+  - "Borbely AA (1982) A two process model of sleep regulation. Hum Neurobiol 1(3):195-204."
+  step_size:
+    value: 1
+    unit: day
+
+# ── 变量 ─────────────────────────────────────────────────────────────────────────
+variables:
+
+  # ── 可优化干预变量（inputs） ─────────────────────────────────────────────────────
+
+  night_feed_count:
+    type: input
+    value: 2.0
+    unit: sessions
+    bounds: [0, 4]
+    optimizable: true
+    io_role: input
+    description: >
+      每晚夜奶次数（22:00-06:00）。WHO建议0-6月龄按需喂养；
+      每次夜奶增加0.75h睡眠债（Doan 2007）。
+      T1优化目标：在保证婴儿摄入量前提下最小化夜奶次数。
+    reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200."
+
+  extra_caloric_intake:
+    type: input
+    value: 500.0
+    unit: kcal
+    bounds: [200, 900]
+    optimizable: true
+    io_role: input
+    description: >
+      哺乳期每日额外热量摄入（超出产前基础代谢的热量，kcal/day）。
+      IOM建议哺乳期额外500kcal/day；低于400kcal影响母乳脂肪和蛋白含量；
+      超过700kcal对母乳质量边际收益趋于平缓（Dror & Allen 2018）。
+    reference: "Institute of Medicine (2002); Dror DK & Allen LH (2018) Adv Nutr 9:278S."
+
+  exercise_session:
+    type: input
+    value: 0.0
+    unit: MET-h
+    bounds: [0, 4]
+    optimizable: true
+    io_role: input
+    description: >
+      当日运动量（代谢当量×小时，MET-h）。
+      低强度步行~2 MET-h；中强度有氧~3-4 MET-h。
+      T1+T4联合优化：量(T1) × 介入起始时机(T4)。
+      产后<3周禁止高强度运动（Bø 2017），T4约束编码在optimizer.constraints。
+    reference: "Mottola MF & Artal R (2016); Bø K et al. (2017)"
+
+  # ── 母体状态变量（states） ────────────────────────────────────────────────────────
+
+  mother_sleep_debt:
+    type: state
+    value: 5.0
+    unit: hour
+    bounds: [0, 30]
+    io_role: output
+    description: >
+      妈妈累计睡眠债（小时）。产后初始值约5h（分娩消耗）；
+      夜间每次喂奶+0.75h，自然恢复速率0.083h/h。
+      超过15h阈值后显著影响母乳质量和产后抑郁风险（Dennis & Ross 2005）。
+    reference: "Doan T et al. (2007); Dennis CL & Ross L (2005)"
+
+  physical_strength:
+    type: state
+    value: 0.30
+    unit: AU
+    bounds: [0, 1]
+    io_role: output
+    description: >
+      母体体力恢复进度（0=产后即刻水平，1=产前基线）。
+      自然恢复速率~0.004/天（约8个月自然恢复，Mottola 2016）；
+      运动加速恢复；睡眠债>15h时恢复率减半。
+    reference: "Mottola MF & Artal R (2016)"
+
+  breastmilk_quality:
+    type: state
+    value: 0.75
+    unit: AU
+    bounds: [0, 1]
+    io_role: output
+    description: >
+      母乳综合质量评分（0-1，1=最优）。
+      由母体营养充足性（extra_caloric_intake）和睡眠质量（sleep_debt）共同驱动。
+      营养不足（<400kcal额外）导致脂肪和维生素B12含量下降（Dror 2018）；
+      睡眠债>15h后催乳素分泌节律受扰，泌乳量和质量下降（Okun 2011）。
+    reference: "Dror DK & Allen LH (2018); Okun ML et al. (2011)"
+
+  postpartum_depression_risk:
+    type: state
+    value: 0.10
+    unit: AU
+    bounds: [0, 1]
+    io_role: output
+    description: >
+      产后抑郁风险因子积累指数（非PHQ-9量表，风险信号非诊断工具）。
+      全球产后抑郁患病率约13-19%（O'Connor 2016）；
+      主要风险因子：睡眠剥夺（每+1h睡眠债 → +0.005风险）、体力低下（<0.4强度 → 保护缺失）。
+      运动是有效干预：中等强度有氧运动与抗抑郁药物等效（Daley 2015）。
+    reference: "O'Connor EA et al. (2016) JAMA 315(4):381; Daley AJ et al. (2015)"
+
+  # ── 综合健康评分（lm_score） ──────────────────────────────────────────────────────
+
+  lm_baby_nutrition:
+    type: state
+    value: 0.0
+    unit: day
+    io_role: output
+    description: "婴儿营养充足天数：夜奶≥2次或daytime保障摄入，母乳质量≥0.7的累计天数。"
+    reference: "WHO (2011); Life Matters Framework"
+
+  lm_mother_wellbeing:
+    type: state
+    value: 0.0
+    unit: day
+    io_role: output
+    description: >
+      母体综合健康天数：同时满足以下三条的累计天数：
+      ① 睡眠债 < 15h；② physical_strength ≥ 0.5；③ 产后抑郁风险 < 0.35。
+    reference: "Dennis & Ross (2005); Life Matters Framework"
+
+  # ── 参数 ──────────────────────────────────────────────────────────────────────
+
+  sleep_recovery_rate:
+    type: parameter
+    value: 0.083
+    unit: hour/hour
+    description: "睡眠债自然恢复速率（每小时恢复0.083h，即约2h/day净恢复）。"
+    reference: "Borbely AA (1982) Hum Neurobiol 1(3):195."
+
+  sleep_disruption_per_nightfeed:
+    type: parameter
+    value: 0.75
+    unit: hour
+    description: "每次夜间喂奶消耗的有效睡眠时间（醒来+喂奶+安抚+再入睡≈45min）。"
+    reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200."
+
+  strength_recovery_rate_base:
+    type: parameter
+    value: 0.004
+    unit: 1/day
+    description: "体力自然恢复基础速率（无运动时约8-9个月恢复至产前水平）。"
+    reference: "Mottola MF & Artal R (2016)"
+
+  exercise_strength_boost:
+    type: parameter
+    value: 0.015
+    unit: AU/(MET-h)
+    description: "每MET-h运动对体力恢复的加速系数（中等强度有氧）。"
+    reference: "Mottola MF & Artal R (2016); Bø K et al. (2017)"
+
+  nutrition_quality_threshold:
+    type: parameter
+    value: 400.0
+    unit: kcal
+    description: "母乳质量开始受影响的额外热量摄入下限（低于此值脂溶性维生素含量下降）。"
+    reference: "Dror DK & Allen LH (2018) Adv Nutr 9:278S."
+
+  depression_sleep_coupling:
+    type: parameter
+    value: 0.005
+    unit: 1/hour
+    description: "每额外1小时睡眠债对产后抑郁风险的每日增加量（DiMatteo 2004 风险模型适配）。"
+    reference: "Dennis CL & Ross L (2005) Birth 32(3):187; Okun ML et al. (2011)"
+
+  exercise_depression_protection:
+    type: parameter
+    value: 0.008
+    unit: 1/(MET-h)
+    description: "每MET-h运动对产后抑郁风险的每日降低量（Daley 2015 meta-analysis 适配）。"
+    reference: "Daley AJ et al. (2015) Br J Gen Pract 65(635):e322."
+
+# ── 动力学公式 ────────────────────────────────────────────────────────────────────
+formulas:
+
+  sleep_debt_dynamics:
+    priority: 0
+    dynamics:
+      mother_sleep_debt: >
+        max(0.0,
+          mother_sleep_debt
+          - sleep_recovery_rate * 24 * step
+          + sleep_disruption_per_nightfeed * night_feed_count * step)
+    description: >
+      睡眠债：每天自然恢复 sleep_recovery_rate×24h；
+      夜间喂奶次数×每次中断时间。step=1day，×24将速率转为24h总量。
+    reference: "Borbely (1982); Doan et al. (2007)"
+
+  physical_strength_dynamics:
+    priority: 10
+    dynamics:
+      physical_strength: >
+        min(1.0,
+          physical_strength
+          + (strength_recovery_rate_base
+             + exercise_strength_boost * exercise_session
+             * (0.5 if mother_sleep_debt > 15.0 else 1.0)) * step)
+    description: >
+      体力恢复：基础自然恢复 + 运动加速；
+      睡眠债>15h时运动效能减半（Okun 2011：睡眠剥夺抑制运动适应）。
+    reference: "Mottola & Artal (2016); Okun et al. (2011)"
+
+  breastmilk_quality_dynamics:
+    priority: 20
+    formula:
+      breastmilk_quality: >
+        min(1.0,
+          0.5
+          + 0.35 * min(1.0, extra_caloric_intake / 650.0)
+          - 0.25 * max(0.0, mother_sleep_debt - 15.0) / 15.0)
+    description: >
+      母乳质量瞬时评分：基础0.5 + 营养充足度贡献（最高+0.35，在650kcal时饱和）
+      - 睡眠债超过15h后的线性惩罚（最大-0.25）。
+    reference: "Dror & Allen (2018); Okun et al. (2011)"
+
+  depression_risk_dynamics:
+    priority: 30
+    dynamics:
+      postpartum_depression_risk: >
+        max(0.0, min(1.0,
+          postpartum_depression_risk
+          + depression_sleep_coupling * max(0.0, mother_sleep_debt - 10.0) * step
+          - exercise_depression_protection * exercise_session * step
+          - 0.002 * (physical_strength - 0.4) * step))
+    description: >
+      产后抑郁风险：睡眠债超过10h后每天线性积累风险；
+      运动直接保护（Daley 2015）；体力超过0.4后提供额外保护。
+    reference: "Daley et al. (2015); Dennis & Ross (2005)"
+
+  lm_score_accumulation:
+    priority: 90
+    dynamics:
+      lm_baby_nutrition: >
+        lm_baby_nutrition + step * (1 if (night_feed_count >= 1.5 and breastmilk_quality >= 0.7) else 0)
+      lm_mother_wellbeing: >
+        lm_mother_wellbeing + step * (1 if (
+          mother_sleep_debt < 15.0
+          and physical_strength >= 0.5
+          and postpartum_depression_risk < 0.35
+        ) else 0)
+    description: >
+      双维度健康时长累积：
+      lm_baby_nutrition：夜奶≥1.5次（约等于有1次充分夜奶）且母乳质量≥0.7；
+      lm_mother_wellbeing：睡眠债<15h AND 体力≥0.5 AND 抑郁风险<0.35三条同时满足。
+    reference: "Life Matters Framework core metric"
+
+# ── 仿真设置（三方案对比） ─────────────────────────────────────────────────────────
+simulation:
+  start_date: "2026-01-01"
+  end_date: "2026-03-27"
+  output_variables:
+  - mother_sleep_debt
+  - physical_strength
+  - breastmilk_quality
+  - postpartum_depression_risk
+  - night_feed_count
+  - extra_caloric_intake
+  - exercise_session
+  - lm_baby_nutrition
+  - lm_mother_wellbeing
+
+  plans:
+  - id: "who_baseline"
+    label: "WHO建议基线（2次夜奶，500kcal额外，产后6周起运动）"
+    schedules:
+    - {variable: night_feed_count, time: "22:00", value: 2.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "夜奶2次"}
+    - {variable: extra_caloric_intake, time: "08:00", value: 500.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "额外500kcal"}
+    - {variable: exercise_session, time: "09:00", value: 2.0, days: [Mon, Wed, Fri], date_range: ["2026-02-12", "2026-03-27"], label: "产后6周起低强度有氧"}
+
+  - id: "early_exercise"
+    label: "提前运动方案（产后3周起低强度，营养650kcal）"
+    schedules:
+    - {variable: night_feed_count, time: "22:00", value: 2.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "夜奶2次"}
+    - {variable: extra_caloric_intake, time: "08:00", value: 650.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "额外650kcal"}
+    - {variable: exercise_session, time: "09:00", value: 1.5, days: [Mon, Wed, Fri], date_range: ["2026-01-22", "2026-03-27"], label: "产后3周起散步"}
+    - {variable: exercise_session, time: "09:00", value: 2.5, days: [Mon, Wed, Fri], date_range: ["2026-02-12", "2026-03-27"], label: "产后6周升强度"}
+
+  - id: "minimal_disruption"
+    label: "少夜奶方案（1次夜奶，高营养，积极运动）"
+    schedules:
+    - {variable: night_feed_count, time: "22:00", value: 1.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "夜奶1次"}
+    - {variable: extra_caloric_intake, time: "08:00", value: 700.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-27"], label: "额外700kcal"}
+    - {variable: exercise_session, time: "09:00", value: 3.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-02-12", "2026-03-27"], label: "产后6周中强度有氧"}
+
+# ── 优化设置（喂养×营养×运动×时机 四维K×4优化） ──────────────────────────────────
+optimizer:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-03-27"
+  step_size:
+    value: 1
+    unit: day
+
+  objectives:
+  - variable: lm_baby_nutrition
+    metric: final
+    direction: maximize
+    description: "最大化婴儿营养充足且母乳质量达标的天数"
+  - variable: lm_mother_wellbeing
+    metric: final
+    direction: maximize
+    description: "最大化母体综合健康天数（睡眠+体力+心理同时达标）"
+  - variable: physical_strength
+    metric: final
+    direction: maximize
+    description: "最大化12周末体力恢复水平"
+
+  constraints:
+  - variable: breastmilk_quality
+    condition: ">= 0.60"
+    type: hard
+    description: "全程母乳质量不低于0.60（保证婴儿基本营养）"
+  - variable: postpartum_depression_risk
+    condition: "<= 0.50"
+    type: hard
+    description: "产后抑郁风险不超过0.50（临界干预阈值）"
+
+  algorithm:
+    population_size: 60
+    n_generations: 100
+    seed: 19
+
+  schedules:
+    # T1: 夜奶次数（最直接影响睡眠债的变量）
+  - variable: night_feed_count
+    time_start: 22:00
+    time_end: 22:00
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "夜奶次数优化"
+    optimize:
+      value: [1.0, 3.5]
+
+    # T1+T4: 哺乳期额外热量（前6周 vs 后6周可不同策略）
+  - variable: extra_caloric_intake
+    time_start: 08:00
+    time_end: 08:00
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "前期营养摄入（产后1-6周）"
+    optimize:
+      value: [400.0, 800.0]
+      date_range: [["2026-01-01", "2026-02-11"], ["2026-02-11", "2026-02-11"]]
+
+  - variable: extra_caloric_intake
+    time_start: 08:00
+    time_end: 08:00
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    label: "后期营养摄入（产后7-12周）"
+    optimize:
+      value: [400.0, 800.0]
+      date_range: [["2026-02-12", "2026-03-27"], ["2026-03-27", "2026-03-27"]]
+
+    # T1+T4: 运动量 + 运动介入时机（最有科学价值的优化维度）
+    # 约束：产后<3周(21天)不优化运动（固定为0，通过date_range控制）
+  - variable: exercise_session
+    time_start: 09:00
+    time_end: 09:00
+    days: [Mon, Wed, Fri]
+    label: "运动强度与介入时机（3-6周窗口起步）"
+    optimize:
+      value: [0.5, 2.5]
+      date_range: [["2026-01-22", "2026-02-11"], ["2026-02-11", "2026-02-11"]]
+
+  - variable: exercise_session
+    time_start: 09:00
+    time_end: 09:00
+    days: [Mon, Tue, Wed, Thu, Fri]
+    label: "运动强度（产后6周后）"
+    optimize:
+      value: [1.5, 4.0]
+      date_range: [["2026-02-12", "2026-03-27"], ["2026-03-27", "2026-03-27"]]
