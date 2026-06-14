@@ -201,7 +201,7 @@ evidence:
 formulas:
   formula_name:
     condition: "expression"       # 条件满足时才执行
-    priority: 0                   # 执行顺序（-100 到 100，小值先执行）
+    priority: 0                   # 执行顺序（-100 到 100，数值越大越先执行；详见"公式执行顺序"节）
     dynamics:                     # 动力学更新（dt 驱动），与 formula 二选一
       var: "expression"
     formula: "expression"         # 静态指标计算（不依赖 dt）
@@ -409,6 +409,33 @@ dynamics:
 # ✅ 瞬时类：input 脉冲不乘 step
 dynamics:
   stomach_carbs: stomach_carbs + carb_intake
+```
+
+---
+
+## 公式执行顺序（priority）
+
+每个 step 内，公式按 `priority` **降序**排序后依次执行（数值越大越先执行；未声明默认为 0）。
+排序是**全局一次性**的：不区分 `dynamics:`/`formula:` 字段类型，按公式整体的 `priority` 排序，
+单条公式内部按 `condition` → `dynamics` → `formula`（字典形式）→ `formula`（字符串形式）的固定顺序求值。
+
+**同 step 内顺序写入语义（非"快照"）**：每条公式算出的新值会立即写回模型变量
+（含 `bounds` 裁剪），随即对**本 step 内后续执行的公式**可见。
+即：`priority` 数值更大的公式先执行，其写回结果会被本 step 内 `priority` 数值更小的公式读到，
+而不是读到上一 step 的旧值。若公式 B 需要读取公式 A 本 step 的最新结果，
+应给 A 设置比 B 更大的 `priority`。
+
+```yaml
+formulas:
+  feed_intake:          # 先把奶量加入胃，处理溢奶
+    priority: 10
+    dynamics:
+      stomach_volume: "stomach_volume + intake - max(0, stomach_volume + intake - capacity)"
+
+  gastric_emptying:     # 后执行：读到 feed_intake 本 step 已更新的 stomach_volume
+    priority: 0
+    dynamics:
+      stomach_volume: "stomach_volume - emptying_rate * stomach_volume * step"
 ```
 
 ---
