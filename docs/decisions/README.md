@@ -93,3 +93,4 @@
 | [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 部分实施（papers 术语已补充说明，未做全文改写） | 2026-06-11 |
 | [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | 🟢 已实施 | 2026-06-14 |
+| [0102](0102-2026-06-14_model_formula-priority-execution-order.md) | 澄清 formula `priority` 执行顺序（数值越大越先执行）与同 step 内顺序写入语义 | ✅ 已实施 | 2026-06-14 |

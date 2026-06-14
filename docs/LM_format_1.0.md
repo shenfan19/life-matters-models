@@ -311,7 +311,7 @@ formulas:
     description: "GFR declines daily at rate modulated by protein intake"
     source_id: "kdigo2020"
     condition: "gfr > 5"                # Formula only applies when condition is true
-    priority: 1                         # Execution order within the same step (lower = first)
+    priority: 1                         # Execution order within the same step (higher = first)
     dynamics:                           # State derivatives — multiplied by step automatically
       gfr: >
         gfr - gfr * gfr_decline_rate
@@ -355,11 +355,23 @@ Formula expressions are Python-compatible arithmetic strings. Available symbols:
 
 ### 3.3 Execution Order
 
-Within a single time step:
-1. All `formula:` (instantaneous) blocks execute first, in `priority` order.
-2. All `dynamics:` blocks execute next, in `priority` order.
-3. Conditional formulas whose `condition` evaluates to False are skipped.
-4. Bound constraints are applied after all formulas execute.
+Within a single time step, formulas are processed in **one pass**, sorted by `priority`
+in **descending** order (higher numeric `priority` runs first; default `0`).
+
+For each formula, in order:
+1. Evaluate `condition` (default `true`). If false, skip the entire formula (both
+   `dynamics:` and `formula:`).
+2. Evaluate `dynamics:` entries and write the results back to the model variables
+   immediately, clamped to `bounds`.
+3. Evaluate dict-form `formula:` entries (`{var: expr}`) and write back, same as `dynamics:`.
+4. Evaluate string-form `formula:` (instantaneous expression) and store the result
+   under the formula's name (not written to a variable).
+
+**Sequential (Gauss-Seidel) update semantics**: writes happen immediately, so a formula
+executed later in the pass (lower `priority`) reads the values already written by formulas
+executed earlier in the same step (higher `priority`) — not the values from the previous
+step. If formula B depends on formula A's result for the *same* step, give A a higher
+`priority` than B.
 
 ---
 

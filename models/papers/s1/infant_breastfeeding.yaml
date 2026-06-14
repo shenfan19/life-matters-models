@@ -147,7 +147,7 @@ variables:
 formulas:
 
   stomach_intake_and_overflow:
-    priority: 0
+    priority: 10
     dynamics:
       baby_stomach_volume: "baby_stomach_volume + breast_milk - max(0.0, baby_stomach_volume + breast_milk - stomach_capacity_per_kg * baby_weight)"
       spit_up_volume: "spit_up_volume + max(0.0, baby_stomach_volume + breast_milk - stomach_capacity_per_kg * baby_weight)"
@@ -157,13 +157,14 @@ formulas:
     reference: "Scammon & Doyle (1920)"
 
   gastric_emptying_and_growth:
-    priority: 10
+    priority: 0
     dynamics:
       baby_stomach_volume: "max(0.0, baby_stomach_volume - gastric_emptying_rate * baby_stomach_volume * step)"
       baby_weight: "baby_weight + weight_gain_per_ml_absorbed * gastric_emptying_rate * baby_stomach_volume * step"
     description: >
       一阶胃排空（速率0.46/h，半衰期1.5h）；同步将离开胃的奶量转化为体重增长。
-      此公式在 stomach_intake_and_overflow（priority 0）之后执行，读取溢奶修正后的胃内奶量。
+      priority 数值越大越先执行，本公式在 stomach_intake_and_overflow（priority 10）之后执行，
+      读取溢奶修正后的胃内奶量。
     reference: "Cavell (1981); AAP (2012)"
 
   maternal_sleep_tracking:
