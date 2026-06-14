@@ -25,7 +25,7 @@ metadata:
     innovation: 4 - 跨越目标维度的新权衡发现，三维可视化方法是独立贡献
   tags: [hypertension, gout, pareto, chronotherapy]
   references:
-    - "参见 s2/hypertension_gout.yaml 完整引用"
+    - "参见 s4/hypertension_gout_noref.yaml 完整引用"
     - "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
     - "Hermida RC et al. (2010) MAPEC study. Chronobiol Int 27(8):1629-1651"
   step_size:
@@ -33,9 +33,9 @@ metadata:
     unit: day
 
 imports:
-  - papers/s2/hypertension_gout_noref
+  - papers/s4/hypertension_gout_noref
 
-# 继承 s2/hypertension_gout_noref 的全部变量、公式和约束
+# 继承 s4/hypertension_gout_noref 的全部变量、公式和约束
 # 覆盖 optimizer：加入第三目标 body_weight + 更大种群
 
 
@@ -66,7 +66,7 @@ optimizer:
       metric: final
       type: hard
       description: >
-        与 s2/hypertension_gout_noref 同步修正：原 <=130 在本模型参数下
+        与 s4/hypertension_gout_noref 同步修正：原 <=130 在本模型参数下
         （thiazide_dose、caloric_deficit取optimize区间上限时BP稳态≈139）
         不可行（feasible: 0%），改为ESC 2018通用目标 <=140，与lm_score阈值一致。
     - variable: uric_acid
