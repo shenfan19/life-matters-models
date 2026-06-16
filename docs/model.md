@@ -225,9 +225,8 @@ formulas:
     step_unit: day                # 必填：minute | hour | day；公式中 step 符号所代表的时间单位
     condition: "expression"       # 条件满足时才执行
     priority: 0                   # 执行顺序（-100 到 100，数值越大越先执行；详见"公式执行顺序"节）
-    dynamics:                     # 动力学更新（dt 驱动），与 formula 二选一
+    dynamics:                     # 变量更新（含或不含 step）
       var: "expression"
-    formula: "expression"         # 静态指标计算（不依赖 dt）
     reference: "文献来源"
 
 simulation:
@@ -243,7 +242,7 @@ simulation:
   output_types: [input, state]     # 可选；input | parameter | state，按类型输出变量
   schedules:                      # 可选；单方案默认调度（向后兼容）
     - variable: var_name          # 必须是 variables 中 type: input 的变量
-      time: "HH:MM"               # 24 小时制，触发时刻
+      time_start: "HH:MM"         # 24 小时制，触发时刻（pulse：time_start = time_end）
       value: 1.5                  # 触发时写入变量的值（pulse 模式：其他步自动为 0）
       days: [Mon, Wed, Fri]       # 可选；三字母缩写 Mon–Sun；缺席 = 每天
       date_range: ["YYYY-MM-DD", "YYYY-MM-DD"]  # 可选；条目仅在此区间生效；缺席 = 全程
@@ -253,7 +252,7 @@ simulation:
       label: "方案显示名称"        # GUI 显示标签
       schedules:                  # 与 simulation.schedules 格式完全相同
         - variable: var_name
-          time: "HH:MM"
+          time_start: "HH:MM"
           value: 1.5
           days: [Mon, Wed, Fri]
           date_range: ["YYYY-MM-DD", "YYYY-MM-DD"]
@@ -283,12 +282,12 @@ optimizer:                          # 可选；优化器配置；详见「optimi
     seed: 19                        # 可选；固定整数=可复现，省略或 null=每次随机
   schedules:                        # 决策变量 + 固定背景输入（统一列表，取代旧 inputs:）
     - variable: var_name            # 固定背景量（无 optimize 块）——每次评估以固定值注入
-      time: "HH:MM"
+      time_start: "HH:MM"
       value: 1.5
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["YYYY-MM-DD", "YYYY-MM-DD"]   # 可选；固定有效期 [start, end]
     - variable: var_name            # T1：值搜索
-      time: "HH:MM"
+      time_start: "HH:MM"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "说明"
       optimize:
@@ -298,17 +297,17 @@ optimizer:                          # 可选；优化器配置；详见「optimi
       label: "说明"
       optimize:
         value: [lo, hi]
-        time: ["HH:MM", "HH:MM"]   # 时刻搜索窗 [start, end]
+        time_start: ["HH:MM", "HH:MM"]   # 起始时刻搜索窗 [lo, hi]
         time_step: "1h"             # 可选；时间槽粒度；缺省 1h；可设 15min
     - variable: var_name            # T1+T3：值 + 星期组合搜索（后台自由组合）
-      time: "HH:MM"
+      time_start: "HH:MM"
       label: "说明"
       optimize:
         value: [lo, hi]
         days_pool: [Mon, Wed, Fri, Sat, Sun]  # 候选日集合
         days_n: [min, max]          # 从 pool 中选 min~max 天（后台枚举所有合法组合）
     - variable: var_name            # T1+T4：值 + 日期范围搜索
-      time: "HH:MM"
+      time_start: "HH:MM"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "说明"
       optimize:
@@ -423,7 +422,7 @@ GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`
 
 ### formula.step_unit（当 dynamics 使用 step 时必填）
 
-**仅当公式的 `dynamics` 表达式中使用了 `step` 时，`step_unit` 才是必填字段**，用于声明该公式中 `step` 符号所代表的时间单位。不含 `step` 的静态代数公式（如 `formula:` 字典形式）无需声明 `step_unit`。
+**仅当公式的 `dynamics` 表达式中使用了 `step` 时，`step_unit` 才是必填字段**，用于声明该公式中 `step` 符号所代表的时间单位。不含 `step` 的 `dynamics:` 公式（如纯代数赋值）无需声明 `step_unit`。
 
 ```yaml
 formulas:
@@ -434,9 +433,9 @@ formulas:
       systolic_bp: "systolic_bp + (...) * step"
 
   performance_calc:
-    description: "静态计算，无 step"
-    formula:
-      performance: p0 + fitness - fatigue   # 无 step_unit 要求
+    description: "静态计算，无 step，无需 step_unit"
+    dynamics:
+      performance: p0 + fitness - fatigue
 ```
 
 `step_unit` 是公式的属性，反映系数标定时假设的时间分辨率。跨模块 import 时，每条公式携带自己的 `step_unit`，引擎据此正确换算 `step` 的数值。
@@ -461,6 +460,14 @@ simulation:
 | `step` | 当前公式的步长（单位 = `formula.step_unit`） | **唯一规范符号** |
 | `t` / `time` | 当前仿真时间（单位 = `formula.step_unit`） | |
 | ~~`step_size`~~ / ~~`dt`~~ | 同 `step` | **废弃**，禁止在新公式中使用；validator 检测到即报错 |
+
+**`step` 的计算方式**：`step = simulation.step_size / formula.step_unit`（换算为相同时间单位后相除）。
+
+| 示例 | `simulation.step_size` | `formula.step_unit` | 公式内 `step` 值 |
+|------|----------------------|---------------------|----------------|
+| 同单位 | 1 day | day | 1 |
+| 粗步长 × 细单位 | 1 day | hour | 24（每步积分 24 个小时单位） |
+| 细步长 × 粗单位 | 1 hour | day | 1/24（每步仅积分 1/24 天） |
 
 ---
 
@@ -490,8 +497,8 @@ dynamics:
 ## 公式执行顺序（priority）
 
 每个 step 内，公式按 `priority` **降序**排序后依次执行（数值越大越先执行；未声明默认为 0）。
-排序是**全局一次性**的：不区分 `dynamics:`/`formula:` 字段类型，按公式整体的 `priority` 排序，
-单条公式内部按 `condition` → `dynamics` → `formula`（字典形式）→ `formula`（字符串形式）的固定顺序求值。
+排序是**全局一次性**的：按公式整体的 `priority` 排序，
+单条公式内部按 `condition` → `dynamics` 的固定顺序求值。
 
 **同 step 内顺序写入语义（非"快照"）**：每条公式算出的新值会立即写回模型变量
 （含 `bounds` 裁剪），随即对**本 step 内后续执行的公式**可见。
@@ -541,17 +548,17 @@ simulation:
   end_date:   "2026-01-04"
   schedules:
     - variable: carb_intake
-      time: "07:00"
+      time_start: "07:00"
       value: 50.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 可省略，缺席 = 每天
       date_range: ["2026-01-01", "2026-01-04"]        # 可省略，缺席 = 全程
       label: "早餐碳水"
     - variable: carb_intake
-      time: "12:00"
+      time_start: "12:00"
       value: 80.0
       label: "午餐碳水"
     - variable: carb_intake
-      time: "18:30"
+      time_start: "18:30"
       value: 60.0
       label: "晚餐碳水"
 ```
@@ -561,7 +568,8 @@ simulation:
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `variable` | string | ✅ | 必须是 `variables` 中 `type: input` 的变量名 |
-| `time` | `"HH:MM"` | ✅ | 触发时刻（24 小时制） |
+| `time_start` | `"HH:MM"` | ✅ | 触发时刻（24 小时制）；pulse 时 `time_end` 默认等于 `time_start` |
+| `time_end` | `"HH:MM"` | — | 区间结束时刻；等于 `time_start` = pulse，不等 = sustained |
 | `value` | number | ✅ | 触发时写入的值 |
 | `days` | `[Mon…Sun]` | — | 三字母缩写列表；缺席 = 每天都触发 |
 | `date_range` | `["YYYY-MM-DD", "YYYY-MM-DD"]` | — | 条目仅在此日历区间内生效；缺席 = 从 `start_date` 到 `end_date` 全程 |
@@ -582,12 +590,12 @@ simulation:
 # ✅ 正确：用 date_range 区分阶段
 schedules:
   - variable: training_load
-    time: "09:00"
+    time_start: "09:00"
     value: 50.0
     days: [Mon, Tue, Wed, Thu, Fri]
     date_range: ["2026-01-01", "2026-01-28"]   # 基础期 4 周
   - variable: training_load
-    time: "09:00"
+    time_start: "09:00"
     value: 100.0
     days: [Mon, Tue, Wed, Thu, Fri]
     date_range: ["2026-01-29", "2026-02-25"]   # 强化期 4 周
@@ -621,12 +629,12 @@ YAML Schedule 的优先级**高于** GUI Regimen（用户在界面上填写的�
 ```yaml
 # ✅ 只写非零时刻
 - variable: carb_intake
-  time: "07:00"
+  time_start: "07:00"
   value: 50.0
 
 # ❌ 冗余的 0 值点
 - variable: carb_intake
-  time: "07:30"
+  time_start: "07:30"
   value: 0.0    # 不需要，pulse 模式自动补零
 ```
 
@@ -657,46 +665,46 @@ simulation:
       label: "肾保护优先（Pareto 端点）"
       schedules:
         - variable: dietary_protein
-          time: "08:00"
+          time_start: "08:00"
           value: 0.22
           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
           label: "早餐蛋白质"
         - variable: dietary_protein
-          time: "12:00"
+          time_start: "12:00"
           value: 0.21
           label: "午餐蛋白质"
         - variable: dietary_protein
-          time: "18:00"
+          time_start: "18:00"
           value: 0.22
           label: "晚餐蛋白质"
     - id: "balanced"
       label: "临床平衡方案"
       schedules:
         - variable: dietary_protein
-          time: "08:00"
+          time_start: "08:00"
           value: 0.29
           label: "早餐蛋白质"
         - variable: dietary_protein
-          time: "12:00"
+          time_start: "12:00"
           value: 0.27
           label: "午餐蛋白质"
         - variable: dietary_protein
-          time: "18:00"
+          time_start: "18:00"
           value: 0.28
           label: "晚餐蛋白质"
     - id: "muscle_preserve"
       label: "肌肉保留优先（Pareto 端点）"
       schedules:
         - variable: dietary_protein
-          time: "08:00"
+          time_start: "08:00"
           value: 0.38
           label: "早餐蛋白质"
         - variable: dietary_protein
-          time: "12:00"
+          time_start: "12:00"
           value: 0.36
           label: "午餐蛋白质"
         - variable: dietary_protein
-          time: "18:00"
+          time_start: "18:00"
           value: 0.37
           label: "晚餐蛋白质"
 ```
@@ -835,7 +843,7 @@ variables:
 formulas:
   lm_alive_check:
     condition: "not (GFR >= 15 and SBP <= 160)"
-    formula:
+    dynamics:
       lm_alive: "0.0"                    # 一旦触发，永久为 0
     description: "检测崩溃并锁定存活标志"
   lm_score_update:
@@ -902,7 +910,7 @@ formulas:
 optimizer:
   schedules:
     - variable: metformin_dose      # 固定背景量（无 optimize 块）
-      time: "08:00"
+      time_start: "08:00"
       value: 500
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       label: "二甲双胍基础用药（背景）"
@@ -1006,8 +1014,7 @@ schedules:
 - 仅写 `optimize.time_start`（不写 `optimize.time_end`）时为 1 维：搜索后的 `time_end` =
   搜索后的 `time_start` + 固定宽度（= 该条目自身 `time_end - time_start`，pulse 时宽度为 0）。
 - 同时写 `optimize.time_start` 和 `optimize.time_end` 时为 2 维：两端独立搜索，互不联动。
-- 旧字段 `optimize.time`（无 `time_start`/`time_end` 区分）仍受支持，等价于 `optimize.time_start`
-  （1 维，pulse 场景下宽度恒为 0，行为与改名前一致）。
+- 旧字段 `optimize.time` 已废弃，不再受支持。请使用 `optimize.time_start`。
 - 科学意义：时间生物学（Chrono-nutrition / Chronopharmacology）中，干预时机本身是关键决策变量，本框架将其显式纳入优化搜索空间。
 
 ### T3：星期组合搜索
@@ -1015,7 +1022,7 @@ schedules:
 ```yaml
 schedules:
   - variable: exercise_load
-    time: "17:00"
+    time_start: "17:00"
     label: "运动"
     optimize:
       value: [30, 90]
@@ -1032,7 +1039,7 @@ schedules:
 ```yaml
 schedules:
   - variable: caloric_restriction
-    time: "08:00"
+    time_start: "08:00"
     days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
     label: "热量限制"
     optimize:
@@ -1047,11 +1054,10 @@ schedules:
 - T4 激活时，顶层 `date_range:` 字段不写（固定日期范围）。
 - 典型场景：治疗介入时机、季节性干预窗口、灾后救援资源投放时机。
 
-### mode: sustained — 持续生效输入（子日步长模型，ADR 0098 旧格式）
+### mode: sustained — 持续生效输入（子日步长模型，ADR 0098 旧格式，已废弃）
 
-> 本节描述的 `mode: sustained` + `time_range` 是 ADR 0100 之前的写法，仍受支持
-> （引擎按下一节的等价表映射，数值结果不变）。新模型推荐直接使用下一节的
-> `time_start`/`time_end` 统一区间字段。
+> ⚠️ 本节描述的 `mode: sustained` + `time_range` 是 ADR 0100 之前的写法，**已不再支持**。
+> 请直接使用下一节的 `time_start`/`time_end` 统一区间字段。旧 YAML 文件需手动更新。
 
 ```yaml
 schedules:
@@ -1117,15 +1123,15 @@ schedules:
       value: [0.0, 288.0]        # 窗口总量；6天×12h / step=1h → N_steps=72
 ```
 
-**向后兼容**（数值结果不变，引擎在解析层做字段映射，旧 YAML 无需修改）：
+**旧字段已废弃**（旧 YAML 文件需手动更新，旧字段不再被引擎读取）：
 
-| 旧字段 | 等价 `time_start`/`time_end` |
+| 旧字段（不再支持） | 等价的新写法 |
 |---|---|
-| `time: "HH:MM"`（pulse，默认） | `time_start = time_end = "HH:MM"` |
-| `mode: sustained` + `time_range: [a, b]` | `time_start=a, time_end=b` |
-| `mode: sustained`，无 `time_range` | `time_start="00:00", time_end="24:00"`（全天） |
+| `time: "HH:MM"`（pulse） | `time_start: "HH:MM"`（`time_end` 省略 = 默认同值 = pulse） |
+| `mode: sustained` + `time_range: [a, b]` | `time_start: a, time_end: b` |
+| `mode: sustained`（无 `time_range`） | `time_start: "00:00", time_end: "24:00"` |
 
-新模型推荐直接写 `time_start`/`time_end`，不需要先判断"我要的是单点/区间/全天"——
+直接写 `time_start`/`time_end`，不需要先判断"我要的是单点/区间/全天"——
 三者是同一对字段在数轴上的位置关系，不是三个独立的开关/分支。`days`（星期几过滤）、
 `date_range`（日历区间）字段不变，与 `time_start`/`time_end` 正交。
 
@@ -1163,7 +1169,7 @@ reference:
     meal_carbs:
       "早餐碳水":
         value: 55.3
-        time: "08:00"             # T2 解码结果
+        time_start: "08:00"       # T2 解码结果
     exercise_load:
       "运动":
         value: 62.0
