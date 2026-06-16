@@ -419,19 +419,24 @@ GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`
 
 ## 时间与步长
 
-步长分为两个独立概念，分别在不同字段声明（ADR 0104）：
+步长分为两个独立概念，分别在不同字段声明（ADR 0104、ADR 0105）：
 
-### formula.step_unit（必填）
+### formula.step_unit（当 dynamics 使用 step 时必填）
 
-每条公式必须显式声明 `step_unit`，说明该公式中 `step` 符号所代表的时间单位：
+**仅当公式的 `dynamics` 表达式中使用了 `step` 时，`step_unit` 才是必填字段**，用于声明该公式中 `step` 符号所代表的时间单位。不含 `step` 的静态代数公式（如 `formula:` 字典形式）无需声明 `step_unit`。
 
 ```yaml
 formulas:
   bp_dynamics:
     description: "..."
-    step_unit: day        # minute | hour | day
+    step_unit: day        # minute | hour | day（dynamics 使用 step 时必填）
     dynamics:
       systolic_bp: "systolic_bp + (...) * step"
+
+  performance_calc:
+    description: "静态计算，无 step"
+    formula:
+      performance: p0 + fitness - fatigue   # 无 step_unit 要求
 ```
 
 `step_unit` 是公式的属性，反映系数标定时假设的时间分辨率。跨模块 import 时，每条公式携带自己的 `step_unit`，引擎据此正确换算 `step` 的数值。
@@ -453,9 +458,9 @@ simulation:
 
 | 符号 | 含义 | 说明 |
 |------|------|------|
-| `step` | 当前公式的步长（单位 = `formula.step_unit`） | **规范符号** |
-| `step_size` / `dt` | 同 `step` | 向后兼容别名 |
+| `step` | 当前公式的步长（单位 = `formula.step_unit`） | **唯一规范符号** |
 | `t` / `time` | 当前仿真时间（单位 = `formula.step_unit`） | |
+| ~~`step_size`~~ / ~~`dt`~~ | 同 `step` | **废弃**，禁止在新公式中使用；validator 检测到即报错 |
 
 ---
 
