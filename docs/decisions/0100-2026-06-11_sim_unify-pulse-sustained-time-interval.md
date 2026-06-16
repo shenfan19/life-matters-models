@@ -1,7 +1,7 @@
 # 0100 — 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day / time / sustained 三态
 
-**日期**：2026-06-11
-**状态**：🟡 部分实施（schema/引擎/GUI/T2 x 向量重设计已完成；papers 术语已补充说明，未做全文改写）
+**日期**：2026-06-11（补充：2026-06-16）
+**状态**：✅ 已完成（schema/引擎/GUI/T2/CLI 路径全部实施；旧字段向下兼容已移除）
 **类别**：仿真引擎 / 优化器 schema / GUI
 
 ---
@@ -36,11 +36,16 @@
 
 `days`（星期几过滤）、`date_range`（日历区间）字段不变，与 `time_start/time_end` 正交。
 
-### 向后兼容（旧 YAML 数值不变）
+### 向下兼容（已废弃，2026-06-16 移除）
 
-- 旧 `time: "HH:MM"` → 等价于 `time_start = time_end = "HH:MM"`（pulse，`N_steps=1`，数值与现状完全一致）。
-- 旧 `mode: sustained` + `time_range: [a,b]` → 等价于 `time_start=a, time_end=b`。
-- **不需要重新仿真任何现有模型**——schema 解析层做字段映射即可，输出数值不变。
+旧字段（`time`、`mode: sustained`、`time_range`）**不再受支持**，引擎不再做字段映射。
+旧 YAML 文件须手动更新，对应关系如下：
+
+| 旧写法（不再支持） | 等价的新写法 |
+|---|---|
+| `time: "HH:MM"` | `time_start: "HH:MM"`（`time_end` 省略默认同值 = pulse） |
+| `mode: sustained` + `time_range: [a, b]` | `time_start: a, time_end: b` |
+| `mode: sustained`（无 `time_range`） | `time_start: "00:00", time_end: "24:00"` |
 
 ### GUI：单一"起始时间"控件 + 可选"结束时间"
 
@@ -172,4 +177,28 @@
   搜索时该分段贡献第 5 个决策变量（K×5 扩展，罕见情形）。S3 定义 2 同步加注指向
   该补充说明。S2/S4 仅非形式化引用 K×4，无需改动。S5（尚未起草）写作时需纳入该扩展。
 
-由于向后兼容，旧模型无需因本 ADR 重新仿真。
+旧字段移除后，旧 YAML 文件需手动更新（参见"向下兼容"映射表）。
+
+## 实施记录（CLI 路径，2026-06-16 补充）
+
+原实施仅覆盖 API/GUI 路径（`apply_regimens`）；CLI 路径（YAML 文件直接跑仿真）的
+`_apply_schedules` + `InputSchedule`/`SchedulePoint` 机制不支持 `time_end` 和 sustained。
+本次补充将 CLI 路径对齐 GUI，两条路径均走 `apply_regimens`：
+
+- `model_structure/loader.py`：`_parse_schedule_entries` 不再展开绝对时间点
+  （`InputSchedule`/`SchedulePoint`），改为输出 regimen 兼容格式的 list，每条 entry
+  变成 `{variable, events: [{time_start, time_end, value, days?, valid_start?, valid_end?}]}`。
+  结果存入 `model.plans[plan_id]`（`List[dict]`）和第一个 plan 存入 `model.schedule_entries`。
+  旧字段 `time:` 的读取一并删除（不再向下兼容）。
+- `model_structure/core.py`：新增 `self.schedule_entries: list = []` 属性。
+- `simulator_engine.py`：`run_simulation` 在步进循环前调用
+  `precompute_sustained_divisors`，每步先调 `apply_regimens` 再调 `model.step()`，
+  与 `session_manager.py` 的 GUI 循环完全对称；`run_simulation_all_plans` 改为
+  设置 `model.schedule_entries` 而非 `model.schedules`。
+- `_apply_schedules` 保留，但仅处理 `daily_inputs`（绝对时间 `InputSchedule` 对象）；
+  plan-based schedule entries 已移出 `self.schedules`，不会双重计算。
+- `docs/model.md`：`mode: sustained` 小节标注为"已废弃（不再支持）"；
+  旧字段映射表措辞从"仍受支持"改为"旧写法（不再支持）"。
+- 验证：`test_plans`（三 plan、pulse）、`test_sustained_mode`（pulse + sustained，
+  含跨午夜窗口 `20:00~08:00`）两个测试模型通过 `run_simulation_all_plans`，
+  结果与 GUI 路径预期一致（pulse 5 天 cumulative_output=300；sustained 5 天=60）。

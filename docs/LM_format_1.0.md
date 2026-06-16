@@ -329,7 +329,7 @@ formulas:
 
   ckd_stage_update:
     description: "Instantaneous CKD stage classification"
-    formula:                            # Instantaneous — NOT multiplied by step
+    dynamics:
       ckd_stage: >
         1 if gfr >= 90
         else 2 if gfr >= 60
@@ -351,7 +351,7 @@ Formula expressions are Python-compatible arithmetic strings. Available symbols:
 | `sin`, `cos`, `exp`, `log`, `sqrt`, `abs`, `max`, `min` | Standard math functions |
 | `if ... else ...` | Ternary conditional |
 
-**Multiplier rule**: In `dynamics:` blocks, formulas must explicitly multiply by `step` to convert a rate into a step-sized change. In `formula:` blocks (instantaneous), `step` is never multiplied.
+**Multiplier rule**: In `dynamics:` blocks, formulas that represent rates must explicitly multiply by `step` to convert to a step-sized change. Algebraic assignments (e.g. `ckd_stage`, `performance`) do not use `step`.
 
 ### 3.3 Execution Order
 
@@ -359,13 +359,9 @@ Within a single time step, formulas are processed in **one pass**, sorted by `pr
 in **descending** order (higher numeric `priority` runs first; default `0`).
 
 For each formula, in order:
-1. Evaluate `condition` (default `true`). If false, skip the entire formula (both
-   `dynamics:` and `formula:`).
+1. Evaluate `condition` (default `true`). If false, skip.
 2. Evaluate `dynamics:` entries and write the results back to the model variables
    immediately, clamped to `bounds`.
-3. Evaluate dict-form `formula:` entries (`{var: expr}`) and write back, same as `dynamics:`.
-4. Evaluate string-form `formula:` (instantaneous expression) and store the result
-   under the formula's name (not written to a variable).
 
 **Sequential (Gauss-Seidel) update semantics**: writes happen immediately, so a formula
 executed later in the pass (lower `priority`) reads the values already written by formulas

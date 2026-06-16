@@ -59,7 +59,17 @@ simulation:
 - **必填**：validator 强制检查。
 - `optimizer.step_size` 保持可选（缺省沿用 API 传入的覆盖值）。
 
-### 3. `metadata.step_size` 移除
+### 3. `step` 数值的计算方式
+
+引擎每步将 `simulation.step_size` 换算为秒（`step_size_sec`），将 `formula.step_unit` 也换算为秒（`step_unit_sec`），两者相除得到注入公式的 `step` 数值：
+
+```
+step = step_size_sec / step_unit_sec
+```
+
+示例：`simulation.step_size = 1 day`，`formula.step_unit = hour` → `step = 86400 / 3600 = 24`。
+
+### 4. `metadata.step_size` 移除
 
 - 从 metadata 中删除 `step_size` 字段。
 - 现有 YAML 文件全部迁移：`metadata.step_size` 拆分为 `simulation.step_size` + 每条 `formula.step_unit`。

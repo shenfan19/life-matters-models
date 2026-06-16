@@ -15,6 +15,8 @@ ADR 0104 规定每条公式必须声明 `step_unit`。但执行后发现该规�
 
 此外，原始公式符号表（ADR 0046）曾记录 `dt` 和 `step_size` 作为 `step` 的别名，部分旧模型（如 `digestive_system`）在动力学表达式中使用 `dt`。随着 `step` 成为唯一规范符号，这些别名应当废弃。
 
+`formula:` 字典形式（即将 key-value 映射直接写在 `formula:` 块下，用于静态代数赋值）曾被允许，与 `dynamics:` 语义重叠，已由 ADR 0106 统一移除：所有变量更新一律使用 `dynamics:`，`formula:` 仅保留字符串形式（存入 formula_results）。
+
 ---
 
 ## 决策
@@ -26,8 +28,8 @@ ADR 0104 规定每条公式必须声明 `step_unit`。但执行后发现该规�
 | 公式类型 | `step_unit` | 说明 |
 |---------|-------------|------|
 | `dynamics:` 含 `step` | **必填** | validator 强制检查 |
-| `formula:` 字典（静态代数） | **不需要** | 无时间步进，无需声明 |
-| `dynamics:` 不含步长符号 | **不需要** | 极少见；无步进语义 |
+| `dynamics:` 不含 `step`（纯代数赋值） | **不需要** | 无时间步进，无需声明 |
+| `formula:` 字符串（存入 formula_results） | **不需要** | 不更新模型变量，无步进语义 |
 
 ### 2. 废弃 `dt` 和 `step_size` 作为动力学符号
 
