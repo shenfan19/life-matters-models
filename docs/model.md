@@ -403,11 +403,10 @@ description:
 
 典型用法：component 模型（`references/` 下）通常有自己的 `simulation` 块用于独立运行，import 后根模型的 `simulation` 会覆盖其起止日期和步长——这是预期行为，component 的仿真配置仅作组件独立运行用。
 
-**输出变量选择规则（特殊处理）：**
+**输出变量选择规则：**
 
-- 根模型**未定义** `simulation.output_variables` 和 `output_types`：沿用所有 imported models 输出选择的并集
-- 根模型**显式定义了任一**输出字段：根模型定义优先，不再混入 imports 的输出字段
-- `output_variables` 和 `output_types` 同时存在时，最终输出取并集
+- 根模型**未定义** `simulation.output_variables` 和 `output_types`：继承最后一个 import 的输出选择（与其他字段的 deep merge 行为一致）
+- 根模型**显式定义了任一**输出字段：根模型定义优先；若仅定义其中一个，另一个从 import 继承的值同时清除
 - 两个字段都不存在或都为空：输出所有变量
 
 GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`simulation` 和 `optimizer` 都包含 imports 合并后的结果。模型页会标出各字段来自哪个 YAML（provenance）。
