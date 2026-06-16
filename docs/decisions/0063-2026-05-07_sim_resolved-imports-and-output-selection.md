@@ -47,3 +47,7 @@ Paper3 这类模型会通过 `imports` 复用 Paper2 的变量、方程和仿真
 ## 后续
 
 如后续需要更完整的 provenance，可把来源信息扩展到 `simulation`、`optimizer` 的每个子字段，并在 GUI 中增加专门的 import/source summary。
+
+## 修订（2026-06-16，ADR 0107）
+
+决策 3 中"继承 imports 输出选择并集"规则已修订：`output_variables` 和 `output_types` 改为与其他字段统一行为——遵循 deep merge（后 import 覆盖前），根模型覆盖 imports。不再特殊收集并集。详见 [ADR 0107](0107-2026-06-16_model_output-variables-import-overwrite.md)。

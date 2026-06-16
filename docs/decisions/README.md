@@ -97,3 +97,4 @@
 | [0103](0103-2026-06-14_model_metadata-log-field.md) | 新增 `metadata.log`：模型内改进历史记录 | ✅ 已实施 | 2026-06-14 |
 | [0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | 步长设计重构：per-formula `step_unit` + `simulation.step_size`（取代 `metadata.step_size`） | ✅ 已实施 | 2026-06-16 |
 | [0105](0105-2026-06-16_model_step-unit-conditional-and-deprecate-dt.md) | `step_unit` 改为条件必填 + 废弃 `dt`/`step_size` 动力学符号 | ✅ 已实施 | 2026-06-16 |
+| [0107](0107-2026-06-16_model_output-variables-import-overwrite.md) | `output_variables` / `output_types` import 行为统一为覆盖（取代并集） | ✅ 已实施 | 2026-06-16 |

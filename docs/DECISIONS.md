@@ -17,7 +17,8 @@
 | [0046](decisions/0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | ~~step_size 元数据~~（已由 ADR 0104 替代） | | 🔴 已废弃 |
 | [0104](decisions/0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | **per-formula `step_unit`（必填）+ `simulation.step_size`；移除 `metadata.step_size`** | ⭐⭐ | ✅ |
 | [0053](decisions/0053-2026-05-03_sim_date_range调度字段与YAML-schedule优先级修复.md) | date_range 字段；YAML Schedule 优先于 GUI Regimen | ⭐ | ✅ |
-| [0063](decisions/0063-2026-05-07_sim_resolved-imports-and-output-selection.md) | **Resolved imports 与输出变量选择规则（output_types / output_variables 语义）** | ⭐⭐ | ✅ |
+| [0063](decisions/0063-2026-05-07_sim_resolved-imports-and-output-selection.md) | **Resolved imports 与输出变量选择规则（已由 0107 修订）** | ⭐⭐ | ✅ |
+| [0107](decisions/0107-2026-06-16_model_output-variables-import-overwrite.md) | **`output_variables` / `output_types` import 行为统一为覆盖（取代并集）** | ⭐⭐ | ✅ |
 | [0065](decisions/0065-2026-05-08_sim_structured-description.md) | metadata.description 支持结构化写法（brief/need/method 等字段） | ⭐ | ✅ |
 | [0075](decisions/0075-2026-05-17_model_remove-type-standalone-fields.md) | **删除 YAML 顶层 `type` 和 `standalone` 字段** | ⭐⭐ | ✅ |
 | [0092](decisions/0092-2026-06-05_model_input-variable-bare-unit-rule.md) | **`type: input` 变量裸单位规范（事件量，禁止速率单位）** | ⭐⭐ | ✅ |
