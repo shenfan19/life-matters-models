@@ -139,9 +139,6 @@ metadata:
     limitations: "当前限制、参数缺口和非适用范围。"
   tags: [tag1, tag2]
   references: ["Author et al. (Year) Title. Journal."]
-  step_size:           # 必填：模型时钟分辨率
-    value: 1           # canonical 步长，建议保持 1
-    unit: minute       # minute | hour | day；决定公式中 step 的含义
   log:                 # 可选：改进历史，见"改进历史：metadata.log"节
     "2026-06-14_10-30-00":
       change: "一句话描述本次改了什么"
@@ -224,18 +221,21 @@ evidence:
 
 formulas:
   formula_name:
+    description: "说明"
+    step_unit: day                # 必填：minute | hour | day；公式中 step 符号所代表的时间单位
     condition: "expression"       # 条件满足时才执行
     priority: 0                   # 执行顺序（-100 到 100，数值越大越先执行；详见"公式执行顺序"节）
     dynamics:                     # 动力学更新（dt 驱动），与 formula 二选一
       var: "expression"
     formula: "expression"         # 静态指标计算（不依赖 dt）
-    description: "说明"
     reference: "文献来源"
 
 simulation:
+  step_size:                      # 必填：仿真执行步长
+    value: 1                      # 步长数值（通常为 1）
+    unit: day                     # minute | hour | day
   start_date: "YYYY-MM-DD"        # 仿真起始日
   end_date:   "YYYY-MM-DD"        # 仿真结束日（含）
-  # step / step_unit 已移至 metadata.step_size，此处不再声明
   mc:                               # 可选；缺席或 runs=1 = 确定性模式
     runs: 30                        # 仿真可视化 MC run 数；默认 1
     seed: 19                        # 可选；固定整数=可复现，省略或 null=每次随机
@@ -263,7 +263,7 @@ optimizer:                          # 可选；优化器配置；详见「optimi
   method: nsga2                     # nsga2（默认，多目标）| l-bfgs-b | nelder-mead（单目标）
   start_date: "YYYY-MM-DD"         # 可选；优化评估时间窗起始；缺省沿用 simulation.start_date
   end_date:   "YYYY-MM-DD"         # 可选；优化评估时间窗结束；缺省沿用 simulation.end_date
-  step_size:                        # 可选；优化评估步长；缺省沿用 metadata.step_size
+  step_size:                        # 可选；优化评估步长；缺省沿用 simulation.step_size
     value: 1
     unit: day                       # minute | hour | day
   objectives:
@@ -382,21 +382,36 @@ description:
 
 裸名字检索已禁用，例如 `imports: ckd_protein_a4_p2` 不递归搜索 `models/`，须写出完整相对路径。
 
-### 合并顺序
+### 合并顺序与覆盖规则
+
+**合并顺序：**
 
 1. imports 按列表顺序加载，**靠后的覆盖靠前的**
 2. **当前文件始终覆盖所有 imports**，无论 imports 列表怎么写
 3. 循环 import 自动报错（A → B → A 不允许）
 4. 同一文件被多次 import（菱形依赖：A → B、C，B → D，C → D）时只加载一次，不重复叠加
 
-GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`simulation` 和 `optimizer` 都包含 imports 合并后的结果。模型页负责结构审阅，会标出变量、方程、输出变量来自哪个 YAML；报告页保持面向结果，不展示 import/source provenance。
+**覆盖机制（deep merge）：**
 
-输出变量选择规则：
+合并算法是全字段递归深合并——**不只是 `simulation` 和 `optimizer`，所有顶层块（`variables`、`formulas`、`metadata`、`simulation`、`optimizer`）都适用相同规则**：
 
-- 如果本模型没有定义 `simulation.output_variables` 和 `simulation.output_types`，则沿用所有 imported models 的输出选择并集。
-- 如果本模型显式定义了任一输出字段，则本模型的定义优先，不再混入 imports 的输出字段。
-- `output_variables` 和 `output_types` 同时存在时，最终输出取并集。
-- 两个字段都不存在或都为空时，输出所有变量。
+| 情况 | 结果 |
+|------|------|
+| 根模型和 import 都定义了同名 variable/formula | **根模型的版本完全替换** import 的版本（深合并：子字段也按 root 优先） |
+| 只有 import 定义的 variable/formula | **保留**，根模型不影响它 |
+| 根模型和 import 都有 `simulation.start_date` | **根模型的值覆盖** import 的值 |
+| import 有 `simulation.plans`，根模型没有 | **保留** import 的 `plans` |
+
+典型用法：component 模型（`references/` 下）通常有自己的 `simulation` 块用于独立运行，import 后根模型的 `simulation` 会覆盖其起止日期和步长——这是预期行为，component 的仿真配置仅作组件独立运行用。
+
+**输出变量选择规则（特殊处理）：**
+
+- 根模型**未定义** `simulation.output_variables` 和 `output_types`：沿用所有 imported models 输出选择的并集
+- 根模型**显式定义了任一**输出字段：根模型定义优先，不再混入 imports 的输出字段
+- `output_variables` 和 `output_types` 同时存在时，最终输出取并集
+- 两个字段都不存在或都为空：输出所有变量
+
+GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`simulation` 和 `optimizer` 都包含 imports 合并后的结果。模型页会标出各字段来自哪个 YAML（provenance）。
 - `output_types` 只支持 `input`、`parameter`、`state`。
 - `output_variables` 中不存在的变量会被跳过，并在 API/GUI 中给出 warning；不会再生成零值曲线。
 
@@ -404,13 +419,43 @@ GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`
 
 ## 时间与步长
 
-步长由 `metadata.step_size` 声明，公式中使用 `step` 符号：
+步长分为两个独立概念，分别在不同字段声明（ADR 0104）：
+
+### formula.step_unit（必填）
+
+每条公式必须显式声明 `step_unit`，说明该公式中 `step` 符号所代表的时间单位：
+
+```yaml
+formulas:
+  bp_dynamics:
+    description: "..."
+    step_unit: day        # minute | hour | day
+    dynamics:
+      systolic_bp: "systolic_bp + (...) * step"
+```
+
+`step_unit` 是公式的属性，反映系数标定时假设的时间分辨率。跨模块 import 时，每条公式携带自己的 `step_unit`，引擎据此正确换算 `step` 的数值。
+
+### simulation.step_size（必填）
+
+仿真执行步长，独立于公式的 `step_unit`：
+
+```yaml
+simulation:
+  step_size:
+    value: 1
+    unit: day             # minute | hour | day
+```
+
+`optimizer.step_size` 同格式，可选（缺省沿用 `simulation.step_size`）。
+
+### 公式内符号
 
 | 符号 | 含义 | 说明 |
 |------|------|------|
-| `step` | 当前步长（`step_size.value × 粗化倍率`，单位 = `step_size.unit`） | **规范符号** |
+| `step` | 当前公式的步长（单位 = `formula.step_unit`） | **规范符号** |
 | `step_size` / `dt` | 同 `step` | 向后兼容别名 |
-| `t` / `time` | 当前仿真时间（单位 = `step_size.unit`） | |
+| `t` / `time` | 当前仿真时间（单位 = `formula.step_unit`） | |
 
 ---
 
@@ -834,11 +879,11 @@ formulas:
 | 字段/概念 | simulation | optimizer |
 |----------|-----------|-----------|
 | 时间范围 | `simulation.start_date`/`end_date` | `optimizer.start_date`/`end_date`（可选） |
-| 步长 | `metadata.step_size` | `optimizer.step_size`（可选） |
+| 步长 | `simulation.step_size`（必填） | `optimizer.step_size`（可选，缺省沿用 sim） |
 | Monte Carlo | — | `optimizer.mc` |
 | 固定输入 + 决策变量 | `simulation.schedules`（可视化用） | `optimizer.schedules`（统一列表） |
 
-**Fallback**：`optimizer.*` 字段缺省时，引擎从对应 `simulation.*` / `metadata.*` 继承；GUI 明确标注来源（"来自 sim" vs "已覆盖"）。
+**Fallback**：`optimizer.*` 字段缺省时，引擎从对应 `simulation.*` 继承；GUI 明确标注来源（"来自 sim" vs "已覆盖"）。
 
 **GUI 转化**：
 - "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimizer.schedules` 决策变量，自动推算 bounds
@@ -868,12 +913,12 @@ optimizer:
 |------|------|------|
 | `start_date` | `"YYYY-MM-DD"` | 优化评估起始日；缺省沿用 `simulation.start_date` |
 | `end_date` | `"YYYY-MM-DD"` | 优化评估结束日；缺省沿用 `simulation.end_date` |
-| `step_size` | `{value, unit}` | 评估步长；缺省沿用 `metadata.step_size` |
+| `step_size` | `{value, unit}` | 评估步长；缺省沿用 `simulation.step_size` |
 
 **设计原则：**
-- 三者均为可选；不声明则从 simulation / metadata 继承。
+- 三者均为可选；不声明则从 simulation 继承。
 - 显式声明可保证结果可复现：发布带 `optimizer.results` 的 YAML 时，读者可用相同时间窗重跑优化。
-- 评估步长建议与 `metadata.step_size` 一致；若模型动力学时间尺度允许，可适当粗化以加速搜索。
+- 评估步长建议与 `simulation.step_size` 一致；若模型动力学时间尺度允许，可适当粗化以加速搜索。
 - GUI 的时间控件值（工具栏上的日期和步长）在运行优化时作为 `optimizer_override` 传入引擎，优先级高于 YAML 静态值。
 
 **典型用法（缩短评估窗以加速搜索）：**

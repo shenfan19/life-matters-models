@@ -28,9 +28,6 @@ metadata:
   name: hypertension_intro
   description:
     brief: "降压药物效果演示——LM format 入门示例"
-  step_size:
-    value: 1
-    unit: day
 
 variables:
   med_dose:
@@ -56,11 +53,15 @@ variables:
 
 formulas:
   bp_daily_change:
+    description: "降压药线性效应（简化模型）"
+    step_unit: day          # 公式中 step 的时间单位（必填）
     dynamics:
       SBP: SBP - bp_sensitivity * med_dose * step
-    description: "降压药线性效应（简化模型）"
 
 simulation:
+  step_size:                # 仿真执行步长（必填）
+    value: 1
+    unit: day
   start_date: "2026-01-01"
   end_date:   "2026-06-30"
   schedules:

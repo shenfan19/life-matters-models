@@ -14,7 +14,8 @@
 |-----|------|---------|------|
 | [0040](decisions/0040-2026-04-22_sim_医学证据类型与变量映射.md) | **医学证据 8 子类型（evidence vs parameter 区分）** | ⭐⭐ | ✅ |
 | [0044](decisions/0044-2026-04-30_sim_schedule作为simulation-input子类型.md) | **schedule 归属 simulation 块；pulse 模式；离散 input 不写零值点** | ⭐⭐ | ✅ |
-| [0046](decisions/0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | **step_size 元数据；公式用 `step`；simulation 不再声明 step/step_unit** | ⭐⭐ | ✅ |
+| [0046](decisions/0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | ~~step_size 元数据~~（已由 ADR 0104 替代） | | 🔴 已废弃 |
+| [0104](decisions/0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | **per-formula `step_unit`（必填）+ `simulation.step_size`；移除 `metadata.step_size`** | ⭐⭐ | ✅ |
 | [0053](decisions/0053-2026-05-03_sim_date_range调度字段与YAML-schedule优先级修复.md) | date_range 字段；YAML Schedule 优先于 GUI Regimen | ⭐ | ✅ |
 | [0063](decisions/0063-2026-05-07_sim_resolved-imports-and-output-selection.md) | **Resolved imports 与输出变量选择规则（output_types / output_variables 语义）** | ⭐⭐ | ✅ |
 | [0065](decisions/0065-2026-05-08_sim_structured-description.md) | metadata.description 支持结构化写法（brief/need/method 等字段） | ⭐ | ✅ |
