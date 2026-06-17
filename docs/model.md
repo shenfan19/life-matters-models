@@ -250,7 +250,7 @@ simulation:
   plans:                          # 可选；预定义的多方案比较（GUI 直接加载为 Plan 列表）
     - id: "plan_id"               # 方案唯一标识（小写加下划线）
       label: "方案显示名称"        # GUI 显示标签
-      schedules:                  # 与 simulation.schedules 格式完全相同
+      schedules:                  # 条目格式与下方 schedules 字段说明相同
         - variable: var_name
           time_start: "HH:MM"
           value: 1.5
@@ -535,31 +535,36 @@ dynamics:
 
 ---
 
-## simulation.schedules — 时间驱动的 input 序列
+## simulation.plans[*].schedules — 时间驱动的 input 序列
 
-`simulation.schedules` 是 `type: input` 变量的子类型，表示"随仿真时间自动变化的输入量"。引擎以 **pulse** 模式处理：命中时间窗口的步写入 `value`，其余步自动为 0。
+仿真输入方案的唯一合法位置是 `simulation.plans[*].schedules`（ADR 0109）。每个 plan 包含一组 schedules 条目，描述该方案中各 `type: input` 变量的时间驱动输入。引擎以 **pulse** 模式处理：命中时间窗口的步写入 `value`，其余步自动为 0。
 
-### 标准格式（扁平列表）
+**不再支持 `simulation.schedules` 顶层字段**（旧格式，已于 ADR 0109 废弃）。
+
+### 标准格式（单方案模型）
 
 ```yaml
 simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-04"
-  schedules:
-    - variable: carb_intake
-      time_start: "07:00"
-      value: 50.0
-      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 可省略，缺席 = 每天
-      date_range: ["2026-01-01", "2026-01-04"]        # 可省略，缺席 = 全程
-      label: "早餐碳水"
-    - variable: carb_intake
-      time_start: "12:00"
-      value: 80.0
-      label: "午餐碳水"
-    - variable: carb_intake
-      time_start: "18:30"
-      value: 60.0
-      label: "晚餐碳水"
+  plans:
+    - id: default
+      label: "Baseline plan"
+      schedules:
+        - variable: carb_intake
+          time_start: "07:00"
+          value: 50.0
+          days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 可省略，缺席 = 每天
+          date_range: ["2026-01-01", "2026-01-04"]        # 可省略，缺席 = 全程
+          label: "早餐碳水"
+        - variable: carb_intake
+          time_start: "12:00"
+          value: 80.0
+          label: "午餐碳水"
+        - variable: carb_intake
+          time_start: "18:30"
+          value: 60.0
+          label: "晚餐碳水"
 ```
 
 ### 字段说明
@@ -611,15 +616,15 @@ schedules:
 
 ### 优先级规则
 
-YAML Schedule 的优先级**高于** GUI Regimen（用户在界面上填写的值）。
+`simulation.plans[*].schedules` 的优先级**高于** GUI Regimen（用户在界面上填写的值）。
 
 | 来源 | 优先级 | 用途 |
 |------|--------|------|
-| `simulation.schedules`（YAML） | **最高** | 模型行为定义，作者决策 |
+| `simulation.plans[*].schedules`（YAML） | **最高** | 模型行为定义，作者决策 |
 | GUI Regimen（`inputEvents`） | 中（被覆盖） | 用户交互预览 |
 | 优化器 Regimen | 最高（显式抑制 schedule） | 优化搜索空间 |
 
-**建模者须知**：如果模型已在 `simulation.schedules` 定义了某变量的时序，GUI 上对该变量的手动调整仅在优化模式下（optimizeValue=true）生效。
+**建模者须知**：如果模型已在 `simulation.plans[*].schedules` 定义了某变量的时序，GUI 上对该变量的手动调整仅在优化模式下（optimizeValue=true）生效。
 
 ### 离散输入不写零值点
 
@@ -714,19 +719,9 @@ simulation:
 |------|------|------|------|
 | `id` | string | ✅ | 方案唯一标识（小写加下划线） |
 | `label` | string | ✅ | GUI 显示名称 |
-| `schedules` | list | ✅ | 与 `simulation.schedules` 格式完全相同 |
+| `schedules` | list | ✅ | 条目格式同上，每个条目为一个时间驱动输入事件 |
 
-**与 `simulation.schedules` 的关系**：
-
-| 情形 | GUI sim 标签行为 | optimizer 背景 fallback |
-|------|----------------|------------------------|
-| 仅有 `schedules` | 视为一个未命名的默认方案（单方案模式） | 使用 `schedules` |
-| 仅有 `plans` | 加载所有预置方案 | 无固定背景（除非定义 `optimizer.schedules`） |
-| 两者共存 | **`plans` 完全覆盖，`schedules` 对 GUI sim 标签无效** | 若无 `optimizer.schedules`，仍用 `schedules` 作 fallback |
-
-**建模者注意**：在有 `plans` 的模型中，`schedules` 对 GUI 仿真标签不起作用——GUI 只读取各 plan 自身的 `plan.schedules`。保留 `schedules` 唯一的意义是为 `optimizer.schedules` 提供隐式 fallback；若已显式定义 `optimizer.schedules`，则 `schedules` 可以安全删除。
-
-**papers/ 模型规范**：所有 `models/papers/` 下的论文模型**不允许同时定义 `schedules` 和 `plans`**——应仅保留 `plans`（删除 `schedules`）。论文模型具有 Pareto 前沿结果，加载时天然呈现多方案；`schedules` 在此场景下纯属冗余。详见 ADR 0087。
+**唯一合法位置（ADR 0109）**：仿真输入方案只允许存在于 `simulation.plans[*].schedules`，不允许顶层 `simulation.schedules`。单方案模型使用 `id: default` 的单个 plan。
 
 **Plan 的 session 语义**：Plan 是 GUI 运行时对象，建模者在 YAML 中预置的是初始状态；用户在 GUI 中可继续添加、修改、删除方案，不会回写到 YAML 文件。
 
@@ -786,7 +781,7 @@ accumulators:
 
 | 类型 | 特征 | optimizer 要求 |
 |------|------|--------------|
-| **可独立分析的参考模型**（fitness、disease、nutrition 等）| 有自己的 `input` 变量和 `simulation.schedules`，可直接运行 | **应有** `optimizer` 块 |
+| **可独立分析的参考模型**（fitness、disease、nutrition 等）| 有自己的 `input` 变量和 `simulation.plans[*].schedules`，可直接运行 | **应有** `optimizer` 块 |
 | **深层生理组件**（physiology/ 下的 `_mw` 系列，如 `digestive_system`、`insulin_system`、`glucose_regulation` 等）| 无 `input` 变量，主要为 `import` 的积木，单独运行无生理意义 | **不需要** `optimizer` |
 
 判断原则：若模型的 `variables` 中没有 `type: input` 的变量，说明它是纯组件，不需要 optimizer。
@@ -893,29 +888,30 @@ formulas:
 | 时间范围 | `simulation.start_date`/`end_date` | `optimizer.start_date`/`end_date`（可选） |
 | 步长 | `simulation.step_size`（必填） | `optimizer.step_size`（可选，缺省沿用 sim） |
 | Monte Carlo | — | `optimizer.mc` |
-| 固定输入 + 决策变量 | `simulation.schedules`（可视化用） | `optimizer.schedules`（统一列表） |
+| 固定输入 + 决策变量 | `simulation.plans[*].schedules`（可视化用） | `optimizer.startpoint.schedules`（统一列表） |
 
 **Fallback**：`optimizer.*` 字段缺省时，引擎从对应 `simulation.*` 继承；GUI 明确标注来源（"来自 sim" vs "已覆盖"）。
 
 **GUI 转化**：
-- "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimizer.schedules` 决策变量，自动推算 bounds
+- "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimizer.startpoint.schedules` 决策变量，自动推算 bounds
 - "发送到 Sim"：将 Pareto 参考解的 regimen 预填为 Sim inputEvents
 
-### optimizer.schedules — 决策变量与固定背景量统一列表
+### optimizer.startpoint.schedules — 决策变量与固定背景量统一列表
 
-`optimizer.schedules` 是决策变量和固定背景量的统一列表（取代旧版分离的 `optimizer.inputs` + `optimizer.schedules`）。有 `optimize:` 块的条目是决策变量；无 `optimize:` 块的是固定背景量。
+`optimizer.startpoint.schedules` 是决策变量和固定背景量的统一列表（ADR 0109）。有 `optimize:` 块的条目是决策变量；无 `optimize:` 块的是固定背景量。`startpoint` 块描述优化器从哪个初始协议出发搜索。
 
 ```yaml
 optimizer:
-  schedules:
-    - variable: metformin_dose      # 固定背景量（无 optimize 块）
-      time_start: "08:00"
-      value: 500
-      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-      label: "二甲双胍基础用药（背景）"
+  startpoint:
+    schedules:
+      - variable: metformin_dose      # 固定背景量（无 optimize 块）
+        time_start: "08:00"
+        value: 500
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "二甲双胍基础用药（背景）"
 ```
 
-**优先级**：`optimizer.schedules` > `simulation.schedules`（对同一变量，通过 `manual_overrides` 实现覆盖）。`optimizer.schedules` 不存在时 → 回退到 `simulation.schedules`（向后兼容）。
+**优先级**：`optimizer.startpoint.schedules` 对同一变量通过 `manual_overrides` 覆盖仿真输入。`optimizer.startpoint.schedules` 必须显式定义；无隐式 fallback（ADR 0109 移除 fallback 链）。
 
 ### 评估时间窗（start_date / end_date / step_size）
 
@@ -1206,7 +1202,7 @@ optimizer:
       - {x: [0.30, 0.29, 0.30], f: [65.8, 47.1]}
       - {x: [0.35, 0.33, 0.34], f: [66.9, 44.8]}
     reference:                     # 建模者从 Pareto 前沿中标注的参考点（非唯一最优）
-      x: [0.30, 0.29, 0.30]       # 决策变量值（与 optimizer.schedules 决策条目顺序对应）
+      x: [0.30, 0.29, 0.30]       # 决策变量值（与 optimizer.startpoint.schedules 决策条目顺序对应）
       f: [65.8, 47.1]             # 目标函数值（与 objectives 顺序对应）
       regimen:                    # 人类可读的方案（变量名 → 时间标签 → 值）
         dietary_protein:
@@ -1232,7 +1228,7 @@ optimizer:
 | `reference.regimen` | dict | 人类可读的方案（变量名 → {时间标签: 值}）；供人类阅读，不用于程序反解 |
 | `reference.objectives` | dict | 人类可读的目标结果（变量名: 值） |
 
-**`x` 向量与 inputEvents 的映射关系**：x 向量按 `optimizer.schedules` 中决策条目（有 `optimize:` 块）的顺序展开，每个条目按启用的 Tier 贡献维度：T1 贡献 1 维连续实数（value），T2/T3/T4 各贡献 1 维整数（时间槽索引 / 组合索引 / 天偏移）。此映射关系由 `optimizer.schedules` 的结构隐含，不需要额外存储；前端 `xToInputEvents` 函数按相同顺序解析（见 `sim_design.md`）。
+**`x` 向量与 inputEvents 的映射关系**：x 向量按 `optimizer.startpoint.schedules` 中决策条目（有 `optimize:` 块）的顺序展开，每个条目按启用的 Tier 贡献维度：T1 贡献 1 维连续实数（value），T2/T3/T4 各贡献 1 维整数（时间槽索引 / 组合索引 / 天偏移）。此映射关系由 `optimizer.startpoint.schedules` 的结构隐含，不需要额外存储；前端 `xToInputEvents` 函数按相同顺序解析（见 `sim_design.md`）。
 
 ### 设计原则
 
