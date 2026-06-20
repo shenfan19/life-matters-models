@@ -63,20 +63,39 @@ metadata:
 
 ---
 
-## 变量类型（4 种）
+## 变量类型（3 种）+ evidence 顶层换算
+
+`variables:` 块下的 `type` 只接受 3 个值：
 
 | 类型 | 引擎读取 | 建模者填入 | 用途 | 优化归属 |
 |------|---------|----------|------|---------|
 | `state` | `value`（随时间更新） | 初始值 | 随时间演化的状态变量 | — |
 | `input` | `value`（用户可调） | 控制量 | 用户干预量（行为、剂量） | **外环 opt（Simulator）** |
 | `parameter` | `value`（不变；MC 模式每 run 采样一次） | 动力学系数或分布表达式 | 直接进公式的机制系数（PK速率、方程斜率、Bergman p1/p2/p3 等）；值由内环 opt 对文献数据拟合后确定。`value` 可写为 `normal(μ, σ)` 等分布形式，表示个体间差异；确定性模式取均值，MC 模式每 run 采样一次。 | **内环 opt（Modeller，待实现）** |
-| `evidence` | `_effective`（**Loader 自动换算**） | **原始文献值** | 文献直接给出的效应量（OR/HR/RR/Cohen's d 等）；Loader 换算后供公式引用。**永不参与任何优化。** | — |
 
 > **`probability_constant` 已退役**：发病率、病死率等概率值统一用 `evidence` 下的 `type: ir` 表示。现有 YAML 中的 `probability_params:` 节仍可解析，Loader 会自动映射。
+
+**`evidence:` 不是第 4 种 `type`，而是独立的顶层 YAML 节**（不写在 `variables:` 下）：
+文献直接给出的效应量（OR/HR/RR/Cohen's d 等）声明在 `evidence:` 节，Loader 在加载阶段自动换算并
+创建一个 `{name}_effective` 变量，**类型仍是 `parameter`**，公式按 `parameter` 一样引用即可。
+换算后的变量额外携带两个溯源字段（不在 YAML 里声明，由 Loader 自动填入，仅供查询/调试用）：
+
+| 字段 | 含义 |
+|------|------|
+| `evidence_type` | 原始 evidence 的 `type`（如 `rr`/`or`/`hr`），非 evidence 来源的 parameter 为 `None` |
+| `evidence_raw_value` | 换算前的原始文献数值（如 OR=1.65），与换算后的 `value` 分开保留，用于审查/溯源 |
+
+**没有单独建 `VariableType.evidence`**：换算结果合并进 `parameter` 类型，靠上面两个字段做标记，
+不引入第 4 种类型——原因是内环优化器（Modeller）尚未实现，目前没有任何代码路径会对 `parameter`
+做自动调参，无需用类型隔离防止误优化；等 Modeller 实现时，只需让它跳过 `evidence_type is not None`
+的 parameter 即可，不必现在为一个还不存在的优化器预留类型膨胀。
 
 **`parameter` vs `evidence` 的判断准则：**
 - 文献给你一个直接可进公式的数（但来自数学拟合而非直接测量，如 Bergman 模型系数）→ `parameter`（交由 Modeller 内环优化校准）
 - 文献给你原始统计效应量（OR=1.65、HR=0.82、d=0.68、ke=0.198 h⁻¹）→ `evidence`（Loader 自动换算）
+
+**当前能力边界**：sim_gui 暂无 `evidence:` 节的可视化/编辑表单，建模者需直接编辑 YAML；
+GUI 的 variables/formulas 通用编辑器尚未实现，evidence 表单待该编辑器实现后一并补齐。
 
 **`input` 变量的单位规范（事件量，唯一规则）：**
 
