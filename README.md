@@ -1,3 +1,5 @@
+<img src="icon.svg" width="48" height="48" alt="Life Matters icon" />
+
 # Life Matters · 模型库
 
 > LM format（Life Matters format）格式的 YAML 模型库。  
