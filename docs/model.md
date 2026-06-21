@@ -746,19 +746,7 @@ simulation:
 
 ---
 
-## daily_inputs 与 accumulators
-
-`daily_inputs` 以天为单位指定输入值，引擎自动转秒级时间戳：
-
-```yaml
-daily_inputs:
-  cigarettes:
-    interpolation: step       # step（阶梯）| linear（线性插值）
-    values:
-      - { day: 1,  value: 20 }
-      - { day: 8,  value: 10 }
-      - { day: 30, value: 0  }
-```
+## accumulators
 
 `accumulators` 按天/周/月窗口自动积分：
 
