@@ -554,9 +554,9 @@ dynamics:
 
 ---
 
-## simulation.plans[*].schedules — 时间驱动的 input 序列
+## simulation.plans[*].regimens — 时间驱动的 input 序列
 
-仿真输入方案的唯一合法位置是 `simulation.plans[*].schedules`（ADR 0109）。每个 plan 包含一组 schedules 条目，描述该方案中各 `type: input` 变量的时间驱动输入。引擎以 **pulse** 模式处理：命中时间窗口的步写入 `value`，其余步自动为 0。
+仿真输入方案的唯一合法位置是 `simulation.plans[*].regimens`（ADR 0109，字段名见 sim_code ADR 0117）。每个 plan 包含一组 regimens 条目，描述该方案中各 `type: input` 变量的时间驱动输入。引擎以 **pulse** 模式处理：命中时间窗口的步写入 `value`，其余步自动为 0。
 
 **不再支持 `simulation.schedules` 顶层字段**（旧格式，已于 ADR 0109 废弃）。
 
@@ -569,7 +569,7 @@ simulation:
   plans:
     - id: default
       label: "Baseline plan"
-      schedules:
+      regimens:
         - variable: carb_intake
           time_start: "07:00"
           value: 50.0
@@ -611,7 +611,7 @@ simulation:
 
 ```yaml
 # ✅ 正确：用 date_range 区分阶段
-schedules:
+regimens:
   - variable: training_load
     time_start: "09:00"
     value: 50.0
@@ -624,7 +624,7 @@ schedules:
     date_range: ["2026-01-29", "2026-02-25"]   # 强化期 4 周
 
 # ❌ 错误：逐周罗列（冗余，条目数 = 周数 × 2）
-schedules:
+regimens:
   - variable: training_load
     value: 50.0
     date_range: ["2026-01-01", "2026-01-07"]   # 第1周
@@ -633,17 +633,15 @@ schedules:
     date_range: ["2026-01-08", "2026-01-14"]   # 第2周（与第1周相同，无意义）
 ```
 
-### 优先级规则
+### 与 GUI inputEvents 的关系
 
-`simulation.plans[*].schedules` 的优先级**高于** GUI Regimen（用户在界面上填写的值）。
+`simulation.plans[*].regimens` 是模型加载时 GUI `inputEvents` 的来源：GUI 按 plan 解析 YAML 后填充
+`inputEvents`，此后一次仿真 session 实际使用的就是 `inputEvents`（用户可编辑、可被优化结果覆盖）——
+不存在"YAML 在每步覆盖 GUI 编辑"的运行时冲突（sim_code ADR 0074/0115）。
 
-| 来源 | 优先级 | 用途 |
-|------|--------|------|
-| `simulation.plans[*].schedules`（YAML） | **最高** | 模型行为定义，作者决策 |
-| GUI Regimen（`inputEvents`） | 中（被覆盖） | 用户交互预览 |
-| 优化器 Regimen | 最高（显式抑制 schedule） | 优化搜索空间 |
-
-**建模者须知**：如果模型已在 `simulation.plans[*].schedules` 定义了某变量的时序，GUI 上对该变量的手动调整仅在优化模式下（optimizeValue=true）生效。
+**建模者须知**：GUI 上对某变量的手动调整一般直接生效；若该变量同时被 `optimizer.startpoint.regimens`
+标记为决策变量（`optimize:` 块），优化运行时由优化器接管该变量的取值，与 Sim 面板的手动值是两套独立的
+搜索/预览状态。
 
 ### 离散输入不写零值点
 
@@ -738,9 +736,9 @@ simulation:
 |------|------|------|------|
 | `id` | string | ✅ | 方案唯一标识（小写加下划线） |
 | `label` | string | ✅ | GUI 显示名称 |
-| `schedules` | list | ✅ | 条目格式同上，每个条目为一个时间驱动输入事件 |
+| `regimens` | list | ✅ | 条目格式同上，每个条目为一个时间驱动输入事件 |
 
-**唯一合法位置（ADR 0109）**：仿真输入方案只允许存在于 `simulation.plans[*].schedules`，不允许顶层 `simulation.schedules`。单方案模型使用 `id: default` 的单个 plan。
+**唯一合法位置（ADR 0109）**：仿真输入方案只允许存在于 `simulation.plans[*].regimens`，不允许顶层 `simulation.schedules`。单方案模型使用 `id: default` 的单个 plan。
 
 **Plan 的 session 语义**：Plan 是 GUI 运行时对象，建模者在 YAML 中预置的是初始状态；用户在 GUI 中可继续添加、修改、删除方案，不会回写到 YAML 文件。
 
@@ -788,7 +786,7 @@ accumulators:
 
 | 类型 | 特征 | optimizer 要求 |
 |------|------|--------------|
-| **可独立分析的参考模型**（fitness、disease、nutrition 等）| 有自己的 `input` 变量和 `simulation.plans[*].schedules`，可直接运行 | **应有** `optimizer` 块 |
+| **可独立分析的参考模型**（fitness、disease、nutrition 等）| 有自己的 `input` 变量和 `simulation.plans[*].regimens`，可直接运行 | **应有** `optimizer` 块 |
 | **深层生理组件**（physiology/ 下的 `_mw` 系列，如 `digestive_system`、`insulin_system`、`glucose_regulation` 等）| 无 `input` 变量，主要为 `import` 的积木，单独运行无生理意义 | **不需要** `optimizer` |
 
 判断原则：若模型的 `variables` 中没有 `type: input` 的变量，说明它是纯组件，不需要 optimizer。
@@ -895,22 +893,22 @@ formulas:
 | 时间范围 | `simulation.start_date`/`end_date` | `optimizer.start_date`/`end_date`（可选） |
 | 步长 | `simulation.step_size`（必填） | `optimizer.step_size`（可选，缺省沿用 sim） |
 | Monte Carlo | — | `optimizer.mc` |
-| 固定输入 + 决策变量 | `simulation.plans[*].schedules`（可视化用） | `optimizer.startpoint.schedules`（统一列表） |
+| 固定输入 + 决策变量 | `simulation.plans[*].regimens`（可视化用） | `optimizer.startpoint.regimens`（统一列表） |
 
 **Fallback**：`optimizer.*` 字段缺省时，引擎从对应 `simulation.*` 继承；GUI 明确标注来源（"来自 sim" vs "已覆盖"）。
 
 **GUI 转化**：
-- "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimizer.startpoint.schedules` 决策变量，自动推算 bounds
-- "发送到 Sim"：将 Pareto 参考解的 regimen 预填为 Sim inputEvents
+- "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimizer.startpoint.regimens` 决策变量，自动推算 bounds
+- "发送到 Sim"：将 Pareto 推荐解的 regimen 预填为 Sim inputEvents
 
-### optimizer.startpoint.schedules — 决策变量与固定背景量统一列表
+### optimizer.startpoint.regimens — 决策变量与固定背景量统一列表
 
-`optimizer.startpoint.schedules` 是决策变量和固定背景量的统一列表（ADR 0109）。有 `optimize:` 块的条目是决策变量；无 `optimize:` 块的是固定背景量。`startpoint` 块描述优化器从哪个初始协议出发搜索。
+`optimizer.startpoint.regimens` 是决策变量和固定背景量的统一列表（ADR 0109）。有 `optimize:` 块的条目是决策变量；无 `optimize:` 块的是固定背景量。`startpoint` 块描述优化器从哪个初始协议出发搜索。
 
 ```yaml
 optimizer:
   startpoint:
-    schedules:
+    regimens:
       - variable: metformin_dose      # 固定背景量（无 optimize 块）
         time_start: "08:00"
         value: 500
@@ -918,7 +916,9 @@ optimizer:
         label: "二甲双胍基础用药（背景）"
 ```
 
-**优先级**：`optimizer.startpoint.schedules` 对同一变量通过 `manual_overrides` 覆盖仿真输入。`optimizer.startpoint.schedules` 必须显式定义；无隐式 fallback（ADR 0109 移除 fallback 链）。
+**独立性**：优化器每次评估在自己的内部仿真里运行，只使用 `optimizer.startpoint.regimens` 解码出的事件，不读取
+`simulation.plans[*].regimens`——两条路径互不影响（sim_code `optimizer_eval.py`）。`optimizer.startpoint.regimens`
+必须显式定义；无隐式 fallback（ADR 0109 移除 fallback 链）。
 
 ### 评估时间窗（start_date / end_date / step_size）
 
@@ -1163,26 +1163,7 @@ x = [carbs_value, time_start_idx, exercise_value, combo_idx]
 # combo_idx=2      → combinations(pool, n)[2] = [Mon, Wed, Fri]
 ```
 
-`reference.regimen` 存储解码后的人类可读结果。当条目启用了 T2/T3/T4 时，regimen 值从标量改为字典：
-
-```yaml
-reference:
-  regimen:
-    meal_carbs:
-      "早餐碳水":
-        value: 55.3
-        time_start: "08:00"       # T2 解码结果
-    exercise_load:
-      "运动":
-        value: 62.0
-        days: [Sat, Sun]          # T3 解码结果
-    caloric_restriction:
-      "热量限制":
-        value: 620.0
-        date_start: "2026-05-08"  # T4 解码结果
-```
-
-仅 T1 的条目维持标量格式（向后兼容）。
+`optimizer.results.recommended` 只存 `x`/`f` 原始向量，不存解码后的人类可读结果——解码是从 `x` + `optimizer.startpoint.regimens` 的结构纯算法推导，不需要额外持久化（见 §`optimizer.results` 一节）。
 
 ---
 
@@ -1197,7 +1178,7 @@ reference:
 optimizer:
   method: nsga2
   objectives: [...]
-  regimen: {...}
+  startpoint: {...}
   algorithm: {...}
 
   results:                          # ← 优化完成后由 GUI 写入，无需手动填写
@@ -1208,17 +1189,9 @@ optimizer:
     pareto_front:                  # 所有非支配解（flow-style，每行一个解）
       - {x: [0.30, 0.29, 0.30], f: [65.8, 47.1]}
       - {x: [0.35, 0.33, 0.34], f: [66.9, 44.8]}
-    reference:                     # 建模者从 Pareto 前沿中标注的参考点（非唯一最优）
-      x: [0.30, 0.29, 0.30]       # 决策变量值（与 optimizer.startpoint.schedules 决策条目顺序对应）
+    recommended:                    # 建模者从 Pareto 前沿中标注的推荐点（非唯一最优）
+      x: [0.30, 0.29, 0.30]       # 决策变量值（与 optimizer.startpoint.regimens 决策条目顺序对应）
       f: [65.8, 47.1]             # 目标函数值（与 objectives 顺序对应）
-      regimen:                    # 人类可读的方案（变量名 → 时间标签 → 值）
-        dietary_protein:
-          "早餐蛋白质": 0.30
-          "午餐蛋白质": 0.29
-          "晚餐蛋白质": 0.30
-      objectives:                 # 人类可读的目标结果
-        muscle_mass: 65.8
-        GFR: 47.1
 ```
 
 ### 字段说明
@@ -1230,22 +1203,22 @@ optimizer:
 | `n_solutions` | int | Pareto 前沿解的数量 |
 | `elapsed_seconds` | float | 本次运行耗时 |
 | `pareto_front` | list | 所有非支配解，每个元素为 `{x: [...], f: [...]}` |
-| `reference.x` | list | 参考点的决策变量值（建模者从 Pareto 前沿中选定，非唯一最优） |
-| `reference.f` | list | 参考点的目标值 |
-| `reference.regimen` | dict | 人类可读的方案（变量名 → {时间标签: 值}）；供人类阅读，不用于程序反解 |
-| `reference.objectives` | dict | 人类可读的目标结果（变量名: 值） |
+| `recommended.x` | list | 推荐点的决策变量值（建模者从 Pareto 前沿中选定，非唯一最优） |
+| `recommended.f` | list | 推荐点的目标值 |
 
-**`x` 向量与 inputEvents 的映射关系**：x 向量按 `optimizer.startpoint.schedules` 中决策条目（有 `optimize:` 块）的顺序展开，每个条目按启用的 Tier 贡献维度：T1 贡献 1 维连续实数（value），T2/T3/T4 各贡献 1 维整数（时间槽索引 / 组合索引 / 天偏移）。此映射关系由 `optimizer.startpoint.schedules` 的结构隐含，不需要额外存储；前端 `xToInputEvents` 函数按相同顺序解析（见 `sim_design.md`）。
+不再存储解码后的人类可读方案/目标字典——人类可读的展示和"发送到 Sim"功能都从 `x`/`f` 现场解码（前端 `xToInputEvents`），避免维护两份格式（曾有 `recommended.regimen`/`recommended.objectives` 字典，因从未被任何代码路径读取、保存逻辑也早已不再生成，于 2026-06-21 移除）。
+
+**`x` 向量与 inputEvents 的映射关系**：x 向量按 `optimizer.startpoint.regimens` 中决策条目（有 `optimize:` 块）的顺序展开，每个条目按启用的 Tier 贡献维度：T1 贡献 1 维连续实数（value），T2/T3/T4 各贡献 1 维整数（时间槽索引 / 组合索引 / 天偏移）。此映射关系由 `optimizer.startpoint.regimens` 的结构隐含，不需要额外存储；前端 `xToInputEvents` 函数按相同顺序解析（见 `sim_design.md`）。
 
 ### 设计原则
 
 - **`results` 整体覆写**：每次保存时用新前沿完整替换旧 `results`，不保留历史；Pareto 前沿只会随搜索改善或持平，不会退化。
 - **格式统一**：`pareto_front` 使用 YAML flow-style（`{x: [...], f: [...]}` 单行），50 个解 = 50 行，不破坏模型可读性。
 - **热/冷启动（用户选择）**：Opt 控制栏的"继续计算"复选框始终可见；有已有结果时可勾选（热启动），无结果时 disabled（冷启动）。勾选热启动后若修改了目标函数、约束或决策变量搜索范围，复选框变为橙色"⚠ 继续计算"提示匹配度可能下降，但不强制切换为冷启动。
-- **Sim 读取 opt 结果**：加载含 `reference.regimen` 的模型时，Sim 面板询问是否将参考点预填为当前 inputEvents；用户可选择加载或忽略。
+- **Sim 读取 opt 结果**：加载含 `recommended.x` 的模型时，Sim 面板询问是否将推荐点预填为当前 inputEvents；用户可选择加载或忽略。
 - **Opt→Sim 多输出（N-N）**：Pareto 前沿是 N 组输入组合；软件将 N 个 Pareto 解各自重组为合规的 Sim inputEvents（Plan），供 F-MPLAN 并行仿真和比较；opt.results 仅保留原始 x/f 向量。
-- **`reference` 不代表唯一最优**：多目标优化没有单一"最优解"，`reference` 是建模者标注的平衡点，用户应结合 `pareto_front` 自行权衡选择。
-- **发布即结果**：建模者运行优化、保存模型、上传 YAML，接收者打开即看到 Pareto 前沿和参考点；`results` 可独立阅读。
+- **`recommended` 不代表唯一最优**：多目标优化没有单一"最优解"，`recommended` 是建模者标注的平衡点，用户应结合 `pareto_front` 自行权衡选择。命名避开 `reference`，是为了不与 `variables.<name>.reference`/`formulas.<name>.reference`（文献引用字段）混淆。
+- **发布即结果**：建模者运行优化、保存模型、上传 YAML，接收者打开即看到 Pareto 前沿和推荐点；`results` 可独立阅读。
 - **无结果也合法**：`optimizer.results` 是可选块；没有该字段的模型正常运行，从随机初始种群开始搜索。
 
 ### 工作流
