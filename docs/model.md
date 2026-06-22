@@ -76,8 +76,10 @@ metadata:
 > **`probability_constant` 已退役**：发病率、病死率等概率值统一用 `evidence` 下的 `type: ir` 表示。现有 YAML 中的 `probability_params:` 节仍可解析，Loader 会自动映射。
 
 **`evidence:` 不是第 4 种 `type`，而是独立的顶层 YAML 节**（不写在 `variables:` 下）：
-文献直接给出的效应量（OR/HR/RR/Cohen's d 等）声明在 `evidence:` 节，Loader 在加载阶段自动换算并
-创建一个 `{name}_effective` 变量，**类型仍是 `parameter`**，公式按 `parameter` 一样引用即可。
+文献直接给出的效应量（OR/HR/RR/Cohen's d 等）声明在 `evidence:` 节，Loader 在加载阶段自动换算，
+**换算后的变量与 evidence 同名（不加后缀）**，类型是 `parameter`，`formulas`/`dynamics` 直接写
+该名字即可——不需要额外记一个 `_effective` 之类的衍生名字。evidence 的名字不能与 `variables:`
+中已声明的变量重名（Loader 会报错）。
 换算后的变量额外携带两个溯源字段（不在 YAML 里声明，由 Loader 自动填入，仅供查询/调试用）：
 
 | 字段 | 含义 |
@@ -96,6 +98,13 @@ metadata:
 
 **当前能力边界**：sim_gui 暂无 `evidence:` 节的可视化/编辑表单，建模者需直接编辑 YAML；
 GUI 的 variables/formulas 通用编辑器尚未实现，evidence 表单待该编辑器实现后一并补齐。
+
+**自动接入 dynamics（设计阶段，待实现）**：换算出系数之后，把它接到某个状态变量的动力学
+方程上，目前完全由建模者手写。8 种子类型里，`ir`/`ard`/`hr`/`rr`/`or` 这 5 种的"接入方式"
+只有一种没有歧义的写法（都是"以换算后的系数为速率，累加进某个目标状态"），计划支持声明
+`applies_to: <state>`（rr/or 还需配 `baseline_ref`）后由 Loader 自动生成对应 dynamics；
+`cohens_d`/`beta`/`pk` 这 3 种的接入方式本身是建模判断（过渡形式、回归结构、PK 模型结构
+不唯一），不会支持自动生成，必须手写。
 
 **`input` 变量的单位规范（事件量，唯一规则）：**
 
@@ -128,7 +137,7 @@ LM 引擎以 pulse 模式执行 input 变量：schedule 触发时写入值，其
 
 ## 医学证据类型与变量映射
 
-`evidence` 变量由 Loader 在加载阶段自动换算，Simulator 只见换算后的 `_effective` 值。
+`evidence` 变量由 Loader 在加载阶段自动换算，Simulator 只见换算后的值（与 evidence 同名，无后缀）。
 `evidence` 子类型的完整换算逻辑见上方**变量类型表**，YAML 示例见下方 Schema，决策背景见 `decisions/0040`。
 
 患病率（Prevalence）直接设为对应 `state` 变量的初始 `value`，不需要单独的 `evidence` 变量。
@@ -194,7 +203,7 @@ variables:
     reference: "Donnelly et al. 2009"
 
 evidence:
-  # 文献直接来源的效应量：建模者填原始文献值，Loader 自动换算为 _effective
+  # 文献直接来源的效应量：建模者填原始文献值，Loader 自动换算（结果与下方变量名同名，无后缀）
   # type 取值: rr | or | hr | ard | cohens_d | ir | beta | pk
   smoking_lung_cancer_rr:
     type: rr
@@ -744,23 +753,6 @@ simulation:
 
 ---
 
-## accumulators
-
-`accumulators` 按天/周/月窗口自动积分：
-
-```yaml
-accumulators:
-  weekly_cigarettes:
-    source: cigarettes
-    window: week              # day | week | month
-    operation: sum            # sum | mean
-    unit: cigs/week
-```
-
-每步贡献 = `V × (dt / 86400)`，对任意步长均一致。
-
----
-
 ## 分层约束
 
 1. **Model**：只能 `import` 其他 Model，严禁引用 Story。
@@ -819,6 +811,9 @@ variables:
 
 formulas:
   lm_score_update:
+    step_unit: day    # lm_score 单位是 day，step_unit 必须声明为 day——
+                      # 若 simulation.step_size 是 hour 而这里误写成 hour，
+                      # step 会按小时累加，把 lm_score 放大 24 倍（实测过的真实事故）。
     dynamics:
       lm_score: "lm_score + step if (GFR >= 15 and SBP <= 160) else lm_score"
     description: "累加健康时长（可恢复）"
@@ -846,6 +841,7 @@ formulas:
       lm_alive: "0.0"                    # 一旦触发，永久为 0
     description: "检测崩溃并锁定存活标志"
   lm_score_update:
+    step_unit: day    # 同上：必须与 lm_score 的 day 语义一致，不能照抄其他公式的 hour
     dynamics:
       lm_score: "lm_score + lm_alive * step"
     description: "累加健康时长（不可逆）"
@@ -869,6 +865,7 @@ optimizer:
 # 顶层模型：显式合并 Model A（GFR 条件）和 Model B（SBP 条件）
 formulas:
   lm_score_update:
+    step_unit: day
     dynamics:
       lm_score: "lm_score + step if (GFR >= 15 and SBP <= 160) else lm_score"
 ```
