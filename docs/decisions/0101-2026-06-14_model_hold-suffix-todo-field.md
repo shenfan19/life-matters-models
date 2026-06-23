@@ -1,7 +1,7 @@
 # 0101 — 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表
 
 **日期**：2026-06-14
-**状态**：🟢 已实施（spec + 全量迁移完成：`models/` 下所有 `_nosim`/`_noopt`/`_noref` 文件已迁移为 `_HOLD` + `metadata.todo`）
+**状态**：⚪ 文件名部分已被 [0120](0120-2026-06-23_model_drop-hold-filename-suffix.md) 取代（`_HOLD` 后缀废除；`metadata.todo` 字段定义保留有效，仍是当前约定）
 **类别**：模型库管理 / 工程约定
 
 ---

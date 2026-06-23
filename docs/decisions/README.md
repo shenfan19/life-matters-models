@@ -92,10 +92,11 @@
 | [0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimizer.schedules 新增 mode: sustained（子日步长持续输入） | ✅ 已实施 | 2026-06-11 |
 | [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 部分实施（papers 术语已补充说明，未做全文改写） | 2026-06-11 |
-| [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | 🟢 已实施 | 2026-06-14 |
+| [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | ⚪ 文件名部分被 0120 取代 | 2026-06-14 |
 | [0102](0102-2026-06-14_model_formula-priority-execution-order.md) | 澄清 formula `priority` 执行顺序（数值越大越先执行）与同 step 内顺序写入语义 | ✅ 已实施 | 2026-06-14 |
 | [0103](0103-2026-06-14_model_metadata-log-field.md) | 新增 `metadata.log`：模型内改进历史记录 | ✅ 已实施 | 2026-06-14 |
 | [0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | 步长设计重构：per-formula `step_unit` + `simulation.step_size`（取代 `metadata.step_size`） | ✅ 已实施 | 2026-06-16 |
 | [0105](0105-2026-06-16_model_step-unit-conditional-and-deprecate-dt.md) | `step_unit` 改为条件必填 + 废弃 `dt`/`step_size` 动力学符号 | ✅ 已实施 | 2026-06-16 |
 | [0107](0107-2026-06-16_model_output-variables-import-overwrite.md) | `output_variables` / `output_types` import 行为统一为覆盖（取代并集） | ✅ 已实施 | 2026-06-16 |
 | [0108](0108-2026-06-21_project_lm-icon-design.md) | LM 品牌图标：黑白对半心形，无边框；sim 端配色为品牌绿 | ✅ 已实施 | 2026-06-21 |
+| [0120](0120-2026-06-23_model_drop-hold-filename-suffix.md) | 废除 `_HOLD` 文件名后缀，状态判定仅看 `metadata.todo`（部分取代 0101） | 🟢 已实施 | 2026-06-23 |
