@@ -2,11 +2,11 @@
 
 > 面向建模者的完整 YAML 格式规范。引擎实现细节见 `sim_impl.md`。
 
-## 文件名质量标记
+## 状态标记
 
-### `_HOLD` + `metadata.todo`（ADR 0101，当前约定）
+### `metadata.todo`（ADR 0120；文件名与发布状态无关）
 
-`models/` 中文件名以 `_HOLD` 结尾，表示该文件存在一项或多项待处理事项，详情记录在 `metadata.todo`：
+模型文件是否"可发布"只看 `metadata.todo` 是否存在/非空，**与文件名无关**（旧约定用 `_HOLD` 文件名后缀镶嵌这一状态，已被 ADR 0120 废除——重命名会破坏其他文件 `imports:` 路径，曾导致 `Cannot load model` 故障）：
 
 ```yaml
 metadata:
@@ -19,27 +19,12 @@ metadata:
 
 - `type` 取值含义：`nosim`=sim 无法运行；`noopt`=sim 通过但 optimizer 失败；`noref`=缺文献来源（`TODO:SOURCE`）；`quality`=sim/opt 均成功但结果有疑点（如 Pareto 前沿退化、可行域为空集）；`other`=其他。
 - `evidence` 是核心：把诊断过程中得到的具体数值/现象写下来，避免下次处理（无论 AI 或人工）重新运行诊断。
-- **无 `_HOLD` 后缀 且 无 `metadata.todo` = 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimizer:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
-- 所有 `todo` 项处理完毕后删除该字段并去掉 `_HOLD` 后缀，文件回到"干净"状态。
-- gitignore：`**/*_HOLD.yaml`。
-
-注：`models/papers/` 下的目录级 `_HOLD`（如 `s3_HOLD/`）是论文结构"暂缓"标记，与本节文件名级 `_HOLD`（技术/质量维度）是不同维度，可共存。
-
-### sim_cli batch 过滤模式
-
-```bash
-# 默认：只测文件名含 _HOLD 的文件（修复队列模式）
-python sim_cli/batch.py --folder models/references
-
-# 测指定目录下所有文件
-python sim_cli/batch.py --folder models/references --no-skip
-```
-
-通过 `--sim`/`--opt` 后删除 `metadata.todo` 中对应项；`todo` 清空后去掉 `_HOLD` 后缀，模型进入"干净"状态，不再被 batch 触碰。
+- **无 `metadata.todo`（或为空）= 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimizer:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
+- 所有 `todo` 项处理完毕后删除该字段，文件回到"干净"状态——**不需要重命名文件**。
 
 ### reviewed: true
 
-可在 `metadata` 中加可选字段 `reviewed: true`，表示建模者已人工确认机制合理、参数量级正确。这不是发布门控，不加入文件名，不影响 gitignore。
+可在 `metadata` 中加可选字段 `reviewed: true`，表示建模者已人工确认机制合理、参数量级正确。这不是发布门控。
 
 ---
 

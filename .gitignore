@@ -1,6 +1,2 @@
-# ignore yaml files with pending metadata.todo items (see ADR 0101)
-**/*_HOLD.yaml
-
 # ignore output folder and the results of the tests
 output/
-**/*_HOLD/
