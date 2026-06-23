@@ -99,12 +99,45 @@ metadata:
 **当前能力边界**：sim_gui 暂无 `evidence:` 节的可视化/编辑表单，建模者需直接编辑 YAML；
 GUI 的 variables/formulas 通用编辑器尚未实现，evidence 表单待该编辑器实现后一并补齐。
 
-**自动接入 dynamics（设计阶段，待实现）**：换算出系数之后，把它接到某个状态变量的动力学
-方程上，目前完全由建模者手写。8 种子类型里，`ir`/`ard`/`hr`/`rr`/`or` 这 5 种的"接入方式"
-只有一种没有歧义的写法（都是"以换算后的系数为速率，累加进某个目标状态"），计划支持声明
-`applies_to: <state>`（rr/or 还需配 `baseline_ref`）后由 Loader 自动生成对应 dynamics；
-`cohens_d`/`beta`/`pk` 这 3 种的接入方式本身是建模判断（过渡形式、回归结构、PK 模型结构
-不唯一），不会支持自动生成，必须手写。
+**自动接入 dynamics（`applies_to`，可选）**：换算出系数之后，把它接到某个状态变量的动力学
+方程上，默认仍由建模者手写。8 种子类型里 `ir`/`ard`/`hr`/`rr`/`or` 这 5 种的"接入方式"只有
+一种没有歧义的写法（都是"以换算后的系数为速率，累加进某个目标状态"），声明以下字段后
+Loader 会自动生成对应 dynamics：
+
+| 字段 | 适用子类型 | 含义 |
+|------|----------|------|
+| `applies_to` | ir/ard/hr/rr/or | 目标状态变量名（必须已在 `variables:` 声明），触发自动生成 |
+| `step_unit` | ir/ard/hr/rr/or | 生成的 dynamics 所用的步长单位，必须是 `minute`/`hour`/`day`（与 `formulas.step_unit` 同一约束） |
+| `rate_unit` | ir/ard 自身声明；hr/rr/or 从 `baseline_ref` 指向的 ir/ard 条目读取 | 速率的自然时间单位（`minute`/`hour`/`day`/`week`/`month`/`year` 之一），与 `step_unit` 的比值算成系数写进生成的表达式，不依赖 `Formula.step_unit` 表达年/周/月 |
+| `baseline_ref` | hr（已有）、rr/or（新增） | 必须指向同一文件内一个 ir/ard 类型的 evidence 条目；rr/or 的换算结果本身只是比例，需要这个基线才能生成"基线×比例"的速率 |
+
+```yaml
+evidence:
+  baseline_cvd_ir:
+    type: ir
+    value: 0.012
+    unit: prob/year
+    rate_unit: year              # 速率的自然时间单位
+    applies_to: cvd_risk_baseline # 自动生成：cvd_risk_baseline += baseline_cvd_ir * (day/year) * step
+    step_unit: day
+
+  smoking_cvd_rr:
+    type: rr
+    value: 2.5
+    baseline_ref: baseline_cvd_ir  # rr 本身只是比例，需要基线才能生成速率
+    applies_to: cvd_risk_smoker
+    step_unit: day
+```
+
+**约束**（确保不引入隐式科学假设，做不到就报错而非静默忽略）：
+- `cohens_d`/`beta`/`pk` 声明 `applies_to`会直接报错——这 3 种的接入方式本身是建模判断
+  （过渡形式、回归结构、PK 模型结构不唯一），永远不支持自动生成，必须手写 dynamics。
+- 同一个 `applies_to` 目标被两条以上 evidence 同时声明会报错——多个风险因子怎么组合
+  （相乘=比例风险假设，还是相加=竞争风险模型）本身是有争议的流行病学方法论问题，引擎不
+  代为选择，请去掉 `applies_to` 手写 dynamics。
+- 不声明 `applies_to` 时行为完全不受影响，继续手写 dynamics——这是纯增量字段。
+
+设计推导见 ADR 0040「实施记录」。
 
 **`input` 变量的单位规范（事件量，唯一规则）：**
 
