@@ -1,0 +1,122 @@
+metadata:
+  name: test_valid_step_hour
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates 1-hour step size end-to-end: one-compartment PK model with a once-daily oral
+      dose at 08:00, running 30 days (720 steps). Elimination constant ke = ln(2)/t½ where
+      t½ ≈ 20 h; steady state expected within a few days. Also tests the Nelder-Mead
+      single-objective solver as an alternative to NSGA-II.
+    problem_cn: >
+      端到端验证 1 小时步长：一室 PK 模型，每天 08:00 口服一次剂量，运行 30 天（720 步）。
+      消除速率常数 ke = ln(2)/t½，其中 t½ ≈ 20 小时；预期在数天内达到稳态。同时测试
+      Nelder-Mead 单目标求解器作为 NSGA-II 之外的替代方案。
+    result: >
+      Plasma concentration should exhibit a daily peak-and-decay pattern reaching periodic
+      steady state by roughly day 5. The optimiser should find the dose that maximises mean
+      concentration subject to a peak ceiling constraint, converging in seconds.
+    result_cn: >
+      血浆浓度应呈现每日"达峰-衰减"模式，大约在第 5 天左右达到周期性稳态。优化器应在峰值上限
+      约束下找到使平均浓度最大化的剂量，并在数秒内收敛。
+    limitations: Not physiologically calibrated; values chosen for numeric clarity only.
+    limitations_cn: 未经生理学标定；参数取值仅为使数值结果清晰易辨而选定。
+  tags: [test, step_size, hour, pharmacokinetics, nelder-mead, single-objective]
+  references: ["TEST: hour-level step size with Nelder-Mead single-objective optimizer"]
+variables:
+  plasma_conc:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Plasma drug concentration; rises on each daily dose, decays hourly.
+
+  oral_dose:
+    type: input
+    value: 0.0
+    unit: mg
+    description: Oral daily dose (pulse; bioavailability fraction applied in formula).
+
+  bioavailability:
+    type: parameter
+    value: 0.75
+    unit: fraction
+    description: Fraction of oral dose reaching systemic circulation.
+
+  volume:
+    type: parameter
+    value: 50.0
+    unit: L
+    description: Apparent volume of distribution.
+
+  ke:
+    type: parameter
+    value: 0.0347
+    unit: 1/hour
+    description: Elimination rate constant; ke = ln(2) / t½, t½ ≈ 20 h.
+
+formulas:
+  absorption:
+    description: Instantaneous absorption of oral dose (pulse, no step).
+    step_unit: hour
+    dynamics:
+      plasma_conc: "plasma_conc + oral_dose * bioavailability / volume"
+    priority: 10
+
+  elimination:
+    description: First-order elimination per hour (step in hours, rate in 1/h).
+    step_unit: hour
+    dynamics:
+      plasma_conc: "max(0.0, plasma_conc - plasma_conc * ke * step)"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-30"
+  plans:
+  - id: low_dose
+    label: "Low dose (100 mg/day) — lower periodic steady-state plasma_conc"
+    regimens:
+    - variable: oral_dose
+      time_start: "08:00"
+      value: 100.0
+      label: "Daily morning dose 100 mg"
+  - id: moderate_dose
+    label: "Moderate dose (200 mg/day, reference)"
+    regimens:
+    - variable: oral_dose
+      time_start: "08:00"
+      value: 200.0
+      label: "Daily morning dose 200 mg"
+  - id: high_dose
+    label: "High dose (400 mg/day) — higher periodic steady-state plasma_conc, same daily peak-decay pattern"
+    regimens:
+    - variable: oral_dose
+      time_start: "08:00"
+      value: 400.0
+      label: "Daily morning dose 400 mg"
+  output_variables: [plasma_conc, oral_dose]
+
+optimizer:
+  method: nelder-mead
+  objectives:
+  - variable: plasma_conc
+    metric: mean
+    direction: maximize
+  constraints:
+  - variable: plasma_conc
+    condition: "<= 8.0"
+    type: hard
+  startpoint:
+    regimens:
+    - variable: oral_dose
+      time_start: "08:00"
+      time_end: "08:00"
+      label: "Daily dose (mg)"
+      optimize:
+        value: [50.0, 500.0]
+  algorithm:
+    population_size: 20
+    n_generations: 50
+    seed: 19

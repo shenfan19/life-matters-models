@@ -1,0 +1,170 @@
+metadata:
+  name: test_valid_schedules_phased
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates phased schedules using date_range and days filters simultaneously across a
+      4-month periodisation plan (base / build / peak / taper). Aerobic volume and day patterns
+      change each phase; a separate strength phase pattern runs in parallel. Tests that multiple
+      same-variable entries within a single step accumulate correctly (pulse sum).
+    problem_cn: >
+      验证在一个跨 4 个月的周期化训练计划（基础期/建设期/巅峰期/减量期）中，同时使用
+      date_range 和 days 过滤条件的分阶段日程。有氧训练量和训练日模式在每个阶段都会变化；另有
+      一套独立的力量训练阶段模式与之并行运行。测试同一步内多条针对同一变量的条目能否正确累加
+      （脉冲求和）。
+    result: >
+      Aerobic fitness should increase fastest in the peak phase (90 min daily) and plateau
+      during taper (40 min, Mon/Wed/Fri). Days filters for all three patterns (Mon–Fri,
+      Sat–Sun, Mon/Wed/Fri) must each fire on the correct days only.
+    result_cn: >
+      有氧体能应在巅峰期（每天 90 分钟）增长最快，在减量期（每周一/三/五 40 分钟）趋于平台。
+      三种日期模式（周一至周五、周六至周日、周一/三/五）各自的 days 过滤条件必须只在正确的
+      日期触发。
+    limitations: Training adaptation parameters are simplified estimates; not validated.
+    limitations_cn: 训练适应性参数为简化估计值，未经验证。
+  tags: [test, schedules, date_range, days, phased, periodization]
+  references: ["TEST: phased schedules with date_range and days filters"]
+variables:
+  fitness:
+    type: state
+    value: 40.0
+    unit: "AU"
+    description: Cumulative fitness adaptation score.
+
+  fatigue:
+    type: state
+    value: 0.0
+    unit: "AU"
+    description: Cumulative fatigue; decays on rest days.
+
+  aerobic_minutes:
+    type: input
+    value: 0.0
+    unit: minutes
+    description: Aerobic session duration (pulse; no step multiplication).
+
+  strength_sets:
+    type: input
+    value: 0.0
+    unit: sets
+    description: Strength training volume per session (pulse; no step multiplication).
+
+  aerobic_gain:
+    type: parameter
+    value: 0.05
+    unit: AU per minute
+    description: Fitness gain per minute of aerobic exercise.
+
+  strength_gain:
+    type: parameter
+    value: 0.30
+    unit: AU per set
+    description: Fitness gain per strength training set.
+
+  fatigue_recovery:
+    type: parameter
+    value: 0.15
+    unit: 1/day
+    description: Daily fatigue recovery rate (exponential decay).
+
+formulas:
+  fitness_update:
+    description: Fitness rises with each training session (pulse inputs, no step).
+    step_unit: hour
+    dynamics:
+      fitness: "fitness + aerobic_minutes * aerobic_gain + strength_sets * strength_gain"
+    priority: 10
+
+  fatigue_update:
+    description: Fatigue rises with load then recovers exponentially (mixed pulse + rate).
+    step_unit: hour
+    dynamics:
+      fatigue: "max(0.0, fatigue + aerobic_minutes * 0.02 + strength_sets * 0.15 - fatigue * fatigue_recovery * step)"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-04-30"
+
+  plans:
+  - id: periodized
+    label: "Periodized (base/build/peak/taper) — fitness rises fastest in peak phase, plateaus in taper"
+    regimens:
+        # === Aerobic load — 4 periodization phases ===
+
+        # Phase 1: Base (Jan) — Mon to Fri, 50 min
+    - variable: aerobic_minutes
+      time_start: "07:00"
+      value: 50.0
+      days: [Mon, Tue, Wed, Thu, Fri]
+      date_range: ["2026-01-01", "2026-01-31"]
+      label: "Phase 1 Base: 50 min Mon–Fri"
+
+        # Phase 2: Build (Feb) — weekdays 70 min + weekend bonus 30 min
+    - variable: aerobic_minutes
+      time_start: "07:00"
+      value: 70.0
+      days: [Mon, Tue, Wed, Thu, Fri]
+      date_range: ["2026-02-01", "2026-02-28"]
+      label: "Phase 2 Build: 70 min Mon–Fri"
+    - variable: aerobic_minutes
+      time_start: "09:00"
+      value: 30.0
+      days: [Sat, Sun]
+      date_range: ["2026-02-01", "2026-02-28"]
+      label: "Phase 2 Build: 30 min weekend"
+
+        # Phase 3: Peak (Mar) — every day, 90 min
+    - variable: aerobic_minutes
+      time_start: "07:00"
+      value: 90.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-03-01", "2026-03-31"]
+      label: "Phase 3 Peak: 90 min daily"
+
+        # Phase 4: Taper (Apr) — Mon/Wed/Fri only, 40 min
+    - variable: aerobic_minutes
+      time_start: "07:00"
+      value: 40.0
+      days: [Mon, Wed, Fri]
+      date_range: ["2026-04-01", "2026-04-30"]
+      label: "Phase 4 Taper: 40 min MWF"
+
+        # === Strength training — 2 phases (no overlap with aerobic days tested) ===
+
+        # Strength Phase A: Jan + Feb — Tue/Thu/Sat, 4 sets
+    - variable: strength_sets
+      time_start: "17:00"
+      value: 4.0
+      days: [Tue, Thu, Sat]
+      date_range: ["2026-01-01", "2026-02-28"]
+      label: "Strength Phase A: 4 sets Tue/Thu/Sat"
+
+        # Strength Phase B: Mar + Apr — Mon/Wed/Fri, 6 sets
+    - variable: strength_sets
+      time_start: "17:00"
+      value: 6.0
+      days: [Mon, Wed, Fri]
+      date_range: ["2026-03-01", "2026-04-30"]
+      label: "Strength Phase B: 6 sets Mon/Wed/Fri"
+
+  - id: constant_load
+    label: "Constant load (no periodization) — same Mon-Fri/Tue-Thu-Sat day patterns at flat volume all 4 months, for comparison against the phased plan"
+    regimens:
+    - variable: aerobic_minutes
+      time_start: "07:00"
+      value: 65.0
+      days: [Mon, Tue, Wed, Thu, Fri]
+      date_range: ["2026-01-01", "2026-04-30"]
+      label: "Constant: 65 min Mon-Fri, all 4 months"
+    - variable: strength_sets
+      time_start: "17:00"
+      value: 5.0
+      days: [Tue, Thu, Sat]
+      date_range: ["2026-01-01", "2026-04-30"]
+      label: "Constant: 5 sets Tue/Thu/Sat, all 4 months"
+
+  output_variables: [fitness, fatigue, aerobic_minutes, strength_sets]

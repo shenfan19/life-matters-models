@@ -1,0 +1,147 @@
+metadata:
+  name: test_valid_sustained_mode
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `mode: sustained` + `time_range` schedule entries (ADR 0098) on an hour-step
+      model. A worker accumulates output during a daytime work window and recovers from
+      fatigue overnight. The default plan uses ordinary single-instant pulse events
+      (CLI `--sim` baseline); `optimizer.startpoint.regimens` uses `mode: sustained` + `time_range` for
+      both inputs (CLI `--opt`, via apply_schedules). In the GUI Simulation tab, toggling the new
+      "Sustained" control on work_rate/recovery_rate and setting a daytime/overnight time_range
+      switches the same inputs from a single daily pulse to an hour-by-hour sustained pattern.
+    problem_cn: >
+      验证小时步长模型上的 `mode: sustained` + `time_range` 日程条目（ADR 0098）。工作者在
+      白天工作窗口内累积产出，并在夜间从疲劳中恢复。默认方案使用普通的单时刻脉冲事件（作为
+      CLI `--sim` 基线）；`optimizer.startpoint.regimens` 对两个输入均使用
+      `mode: sustained` + `time_range`（通过 apply_schedules 用于 CLI `--opt`）。在 GUI 的
+      Simulation 标签页中，为 work_rate/recovery_rate 打开新增的 "Sustained" 控制项并设置
+      白天/夜间 time_range，可将同一输入从单次每日脉冲切换为逐小时的持续（sustained）模式。
+    result: >
+      `--sim`: cumulative_output rises by 60 at 08:00 and fatigue rises by 18 then falls by 24
+      at 20:00 each day. `--opt`: with sustained mode, cumulative_output rises by work_rate on
+      each of the 12 daytime hours (08:00-20:00) and fatigue rises during work hours and falls
+      during the overnight recovery window (20:00-08:00, crossing midnight); the optimizer finds
+      the work_rate/fatigue tradeoff (higher work_rate raises both cumulative_output and final
+      fatigue). GUI: toggling "Sustained" on work_rate/recovery_rate with the same time ranges
+      reproduces the hour-by-hour pattern in an interactive session.
+    result_cn: >
+      `--sim`：每天 08:00 cumulative_output 上升 60，20:00 fatigue 先上升 18 再下降 24。
+      `--opt`：在 sustained 模式下，cumulative_output 在白天 12 个小时（08:00-20:00）中的每个
+      小时都按 work_rate 上升，fatigue 在工作时段上升、在跨越午夜的夜间恢复窗口（20:00-08:00）
+      内下降；优化器会找到 work_rate 与 fatigue 之间的权衡关系（work_rate 越高，
+      cumulative_output 和最终 fatigue 都越高）。GUI：在相同时间范围下为
+      work_rate/recovery_rate 打开 "Sustained" 开关，可在交互式会话中重现逐小时的模式。
+    limitations: Linear toy dynamics; for engine validation only, not a real productivity model.
+    limitations_cn: 采用线性玩具动力学；仅用于引擎验证，不是真实的生产力模型。
+  tags: [test, sustained, time_range, schedules, step_size, hour]
+  references: ["TEST: mode=sustained + time_range schedule entries (ADR 0098)"]
+variables:
+  cumulative_output:
+    type: state
+    value: 0.0
+    unit: units
+    description: Total output accumulated so far; rises by work_rate each working hour.
+
+  fatigue:
+    type: state
+    value: 0.0
+    unit: score
+    description: Accumulated fatigue; rises during work hours, falls during overnight recovery.
+
+  work_rate:
+    type: input
+    value: 0.0
+    unit: units/hour
+    description: Output rate during the daytime work window (sustained pulse, no step multiplication).
+
+  recovery_rate:
+    type: input
+    value: 0.0
+    unit: score/hour
+    description: Fatigue recovery rate during the overnight window (sustained pulse, no step multiplication).
+
+  fatigue_cost:
+    type: parameter
+    value: 0.3
+    unit: score per unit
+    description: Fatigue accrued per unit of work output.
+
+formulas:
+  output_accum:
+    description: Cumulative output rises by work_rate on each firing hour (pulse, no step).
+    step_unit: hour
+    dynamics:
+      cumulative_output: "cumulative_output + work_rate"
+    priority: 10
+
+  fatigue_dynamics:
+    description: Fatigue rises with work, falls with overnight recovery; floored at 0.
+    step_unit: hour
+    dynamics:
+      fatigue: "max(0.0, fatigue + work_rate * fatigue_cost - recovery_rate)"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-06"
+  plans:
+  - id: pulse
+    label: "Pulse (default) — cumulative_output +60 at 08:00, fatigue +18 then -24 at 20:00, each day"
+    regimens:
+    - variable: work_rate
+      time_start: "08:00"
+      value: 60.0
+      label: "Daily work output (single pulse)"
+    - variable: recovery_rate
+      time_start: "20:00"
+      value: 24.0
+      label: "Daily recovery (single pulse)"
+  - id: sustained
+    label: "Sustained (ADR 0098/0128) — same daily totals (work +60/day, recovery -24/day) spread hour-by-hour over the 08:00-20:00 work window and 20:00-08:00 overnight window; final cumulative_output/fatigue should match the pulse plan, with a different intra-day trajectory"
+    regimens:
+    - variable: work_rate
+      time_start: "08:00"
+      time_end: "20:00"
+      value: 60.0
+      label: "Daytime work output total per day (12h window, 5/hour)"
+    - variable: recovery_rate
+      time_start: "20:00"
+      time_end: "08:00"
+      value: 24.0
+      label: "Overnight recovery total per day (12h window, 2/hour)"
+  output_variables: [cumulative_output, fatigue, work_rate, recovery_rate]
+
+optimizer:
+  method: nsga2
+  objectives:
+  - variable: cumulative_output
+    metric: final
+    direction: maximize
+  - variable: fatigue
+    metric: final
+    direction: minimize
+  startpoint:
+    regimens:
+      # ADR 0128: value/optimize.value is the TOTAL over ONE occurrence of the
+      # window (one day), not a per-hour rate and not a total across every day
+      # the entry recurs on. The 12h window at step_size=hour is 12 steps/day,
+      # so bounds below are the per-hour bounds x 12.
+    - variable: work_rate
+      time_start: "08:00"
+      time_end: "20:00"
+      label: "Daytime work output total per day (12 steps)"
+      optimize:
+        value: [12, 120]     # = [1,10] x 12
+    - variable: recovery_rate
+      time_start: "20:00"
+      time_end: "08:00"
+      value: 24     # = 2.0 x 12
+      label: "Overnight recovery total per day (fixed, 12 steps)"
+  algorithm:
+    population_size: 30
+    n_generations: 30
+    seed: 19

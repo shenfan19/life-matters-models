@@ -1,0 +1,160 @@
+metadata:
+  name: test_valid_formula_edge_cases
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates formula-expression edge cases around the asteval/compiled-function dual
+      execution path (ADR 0068/0070): a chained comparison used inside a ternary
+      (`1.0 if 0 < level < 10 else 0.0`), an `and` short-circuit guard around a division
+      (`level > 0 and (1.0 / level) < 1.0`), and a formula that deterministically raises
+      ZeroDivisionError once its denominator reaches zero (`1.0 / countdown`).
+      The zero-division probe checks that the per-formula try/except in `step()` catches
+      the runtime error, logs it, and leaves `risky_ratio` at its previous value instead
+      of crashing the simulation or propagating NaN/inf into later steps.
+    problem_cn: >
+      验证围绕 asteval / 编译函数双执行路径（ADR 0068/0070）的公式表达式边界情况：
+      三元表达式内嵌链式比较（`1.0 if 0 < level < 10 else 0.0`）、围绕除法的 `and`
+      短路保护（`level > 0 and (1.0 / level) < 1.0`），以及一个当分母降为零时必定
+      抛出 ZeroDivisionError 的公式（`1.0 / countdown`）。零除探针用于验证 `step()`
+      中逐公式的 try/except 能捕获运行时错误、记录日志，并使 `risky_ratio` 保持上一次
+      的值，而不是让仿真崩溃或将 NaN/inf 传播到后续步骤。
+    result: >
+      Within a step, formulas execute in descending priority order (engine sorts
+      `_sorted_formulas` with `reverse=True`), and each formula reads variables as of
+      the most recently completed update *this step* — so a higher-priority formula
+      sees the *previous* step's value for a variable that a lower-priority formula
+      updates later in the same step. Hourly trajectory (level starts at 5, +1/step;
+      countdown starts at 3, -1/step clamped at 0; priorities: short_circuit_probe=5 >
+      zero_division_probe=4 > countdown_dynamics=3 > zone_flag_dynamics=2 >
+      level_dynamics=1):
+      t=1: short_circuit_flag=1 (reads level=5: 5>0 and 1/5<1); risky_ratio=1/3=0.333
+      (reads countdown=3, before this step's decrement); countdown->2; zone_flag=1
+      (reads level=5: 0<5<10); level->6.
+      t=2: risky_ratio=1/2=0.5 (reads countdown=2); countdown->1; zone_flag=1 (reads
+      level=6); level->7.
+      t=3: risky_ratio=1/1=1.0 (reads countdown=1); countdown->0; zone_flag=1 (reads
+      level=7); level->8.
+      t=4: risky_ratio: reads countdown=0 -> 1/0 raises ZeroDivisionError -> caught
+      and logged by the engine, risky_ratio holds at its previous value (1.0);
+      countdown stays 0 (clamped); zone_flag=1 (reads level=8); level->9.
+      t=5: same as t=4 but reads level=9 for zone_flag (still 1); level->10.
+      t=6: zone_flag_dynamics reads level=10 -> 0<10<10 is false -> zone_flag=0;
+      level->11. From here on, zone_flag stays 0, risky_ratio stays frozen at 1.0
+      forever (countdown permanently 0, error logged every step), and
+      short_circuit_flag stays 1 (level>0 and 1/level<1 for all level>1).
+      No simulation-ending exception should occur at any point.
+    result_cn: >
+      同一步内，公式按优先级从高到低顺序执行（引擎对 `_sorted_formulas` 按
+      `reverse=True` 排序），且每个公式读取的是"当前步内最近一次已完成更新"的变量值——
+      因此优先级更高的公式，在读取一个由优先级更低的公式在本步稍后更新的变量时，读到
+      的是上一步的值。逐小时轨迹（level 初始为 5，每步 +1；countdown 初始为 3，每步 -1
+      并在 0 处截断；优先级：short_circuit_probe=5 > zero_division_probe=4 >
+      countdown_dynamics=3 > zone_flag_dynamics=2 > level_dynamics=1）：
+      t=1：short_circuit_flag=1（读取 level=5：5>0 且 1/5<1）；risky_ratio=1/3=0.333
+      （读取本步递减前的 countdown=3）；countdown→2；zone_flag=1（读取 level=5：
+      0<5<10）；level→6。
+      t=2：risky_ratio=1/2=0.5（读取 countdown=2）；countdown→1；zone_flag=1（读取
+      level=6）；level→7。
+      t=3：risky_ratio=1/1=1.0（读取 countdown=1）；countdown→0；zone_flag=1（读取
+      level=7）；level→8。
+      t=4：risky_ratio 读取 countdown=0 → 1/0 抛出 ZeroDivisionError → 被引擎捕获并
+      记录日志，risky_ratio 保持上一次的值（1.0）；countdown 保持 0（截断）；
+      zone_flag=1（读取 level=8）；level→9。
+      t=5：与 t=4 相同，但 zone_flag 读取的是 level=9（仍为 1）；level→10。
+      t=6：zone_flag_dynamics 读取 level=10 → 0<10<10 为假 → zone_flag=0；level→11。
+      此后 zone_flag 恒为 0，risky_ratio 永久冻结在 1.0（countdown 永久为 0，每步都会
+      记录一次错误），short_circuit_flag 恒为 1（对所有 level>1，level>0 且 1/level<1
+      均成立）。整个过程中不应出现导致仿真终止的异常。
+    limitations: >
+      Pure engine-validation toy; level/countdown/risky_ratio have no physical meaning.
+      Only covers the `dynamics:` evaluation path, not `formulas[].condition` (see
+      test_valid_formula_condition.yaml) or optimizer-side expression evaluation.
+    limitations_cn: >
+      纯引擎验证用玩具模型；level/countdown/risky_ratio 没有物理意义。仅覆盖
+      `dynamics:` 求值路径，不覆盖 `formulas[].condition`（见
+      test_valid_formula_condition.yaml）或优化器侧的表达式求值。
+  tags: [test, formulas, edge-case, asteval, error-handling]
+  references: ["TEST: formula expression edge cases - chained comparison, ternary, short-circuit, runtime ZeroDivisionError per-step catch"]
+  notes: |
+    覆盖了 4 类边界情况：
+    链式比较+三元表达式：1.0 if 0 < level < 10 else 0.0
+    and 短路：level > 0 and (1.0 / level) < 1.0
+    运行时 ZeroDivisionError：1.0 / countdown，countdown 在 t=3 后归零，每步触发 1/0，引擎按 try/except 捕获并记录 ERROR 日志，risky_ratio 冻结在最后一次成功值，不会让仿真崩溃或传播 NaN/inf
+    意外发现并记录：公式按 priority 降序执行（reverse=True），且同一 step 内高 priority 的公式读到的是低 priority 公式本步尚未更新前的值——这点之前没有在任何 test_ 文件里被显式验证过，我在 result: 里把执行顺序和读值时序写清楚了，可作为这个机制的文档参考。
+variables:
+  level:
+    type: state
+    value: 5.0
+    unit: a.u.
+    description: Monotonically increasing counter; drives zone_flag and short_circuit_flag.
+
+  zone_flag:
+    type: state
+    value: 0.0
+    unit: a.u.
+    description: 1 if level is strictly between 0 and 10 (chained comparison `0 < level < 10`), else 0.
+
+  countdown:
+    type: state
+    value: 3.0
+    unit: hour
+    description: Decreases by 1 each step, clamped at 0; reaches 0 at t=3 and stays there, triggering the zero-division probe.
+
+  risky_ratio:
+    type: state
+    value: 1.0
+    unit: a.u.
+    description: "1 / countdown. Undefined once countdown==0 (t>=3); the engine must catch the ZeroDivisionError per step and hold this value at its last successful result (1.0)."
+
+  short_circuit_flag:
+    type: state
+    value: 0.0
+    unit: a.u.
+    description: 1 if `level > 0 and (1.0 / level) < 1.0`; the `and` short-circuit must prevent the division from being evaluated when level <= 0 (never triggered here, but documents the pattern).
+
+formulas:
+  level_dynamics:
+    description: Unconditional increment; feeds the chained-comparison and short-circuit probes.
+    step_unit: hour
+    dynamics:
+      level: "level + 1.0"
+    priority: 1
+
+  zone_flag_dynamics:
+    description: Chained comparison inside a ternary expression.
+    step_unit: hour
+    dynamics:
+      zone_flag: "1.0 if 0 < level < 10 else 0.0"
+    priority: 2
+
+  countdown_dynamics:
+    description: Decrements toward zero, then holds at zero (clamped via max()).
+    step_unit: hour
+    dynamics:
+      countdown: "max(0.0, countdown - 1.0)"
+    priority: 3
+
+  zero_division_probe:
+    description: >
+      Deterministically raises ZeroDivisionError from t=3 onward. The engine's
+      per-formula try/except must log the error and leave risky_ratio unchanged
+      for that step (and every step after, since countdown stays at 0).
+    step_unit: hour
+    dynamics:
+      risky_ratio: "1.0 / countdown"
+    priority: 4
+
+  short_circuit_probe:
+    description: Short-circuit `and` guard around a division by `level`.
+    step_unit: hour
+    dynamics:
+      short_circuit_flag: "1.0 if (level > 0 and (1.0 / level) < 1.0) else 0.0"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [level, zone_flag, countdown, risky_ratio, short_circuit_flag]

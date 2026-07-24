@@ -1,0 +1,89 @@
+metadata:
+  name: test_valid_step_minute
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates 1-minute step size with intra-day meal scheduling: three meals per day at
+      07:30, 12:30, and 19:00, running for 3 days (4,320 steps/day). Tests that schedule
+      entries fire at sub-hour precision, that basal clearance uses step multiplication while
+      meal pulses do not, and that output_types: [state, input] filters correctly.
+    problem_cn: >
+      验证 1 分钟步长下的日内进餐日程：每天三餐分别在 07:30、12:30、19:00，共运行 3 天
+      （每天 4,320 步）。测试日程条目能否以低于小时的精度触发、基础清除是否正确使用了步长
+      相乘而进餐脉冲不相乘，以及 output_types: [state, input] 能否正确过滤。
+    result: >
+      Each meal should produce a distinct glucose spike; basal clearance pulls glucose down
+      between meals. Output should contain exactly the state and input variables, not
+      parameters. Meal pulses must not be multiplied by step.
+    result_cn: >
+      每餐都应产生一次明显的血糖峰值；两餐之间基础清除会使血糖回落。输出应恰好只包含 state
+      和 input 类型的变量，不包含 parameter。进餐脉冲不得被步长相乘。
+    limitations: Not physiologically calibrated; for feature-coverage testing only.
+    limitations_cn: 未经生理学标定；仅用于功能覆盖测试。
+  tags: [test, step_size, minute, glucose, meal, output_types]
+  references: ["TEST: minute-level step size with three-meal intra-day schedule"]
+variables:
+  blood_glucose:
+    type: state
+    value: 85.0
+    unit: mg/dL
+    description: Blood glucose; fasting baseline 85 mg/dL, clipped to 70 mg/dL floor.
+
+  meal_carbs:
+    type: input
+    value: 0.0
+    unit: g
+    description: Per-meal carbohydrate bolus (pulse; no step multiplication).
+
+  glucose_sensitivity:
+    type: parameter
+    value: 0.35
+    unit: "mg/dL per g"
+    description: Blood glucose rise per gram of carbohydrate (rough estimate).
+
+  basal_clearance_rate:
+    type: parameter
+    value: 0.002
+    unit: 1/minute
+    description: Fractional basal clearance rate returning glucose toward fasting level.
+
+formulas:
+  meal_rise:
+    description: Instantaneous glucose rise from carb bolus (pulse, no step).
+    step_unit: minute
+    dynamics:
+      blood_glucose: "blood_glucose + meal_carbs * glucose_sensitivity"
+    priority: 10
+
+  basal_return:
+    description: |
+      Exponential return toward fasting level (70 mg/dL floor).
+      Rate × step where step is in minutes — correct for continuous dynamics.
+    step_unit: minute
+    dynamics:
+      blood_glucose: "max(70.0, blood_glucose - (blood_glucose - 70.0) * basal_clearance_rate * step)"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-04"
+  plans:
+  - id: default
+    label: Default
+    regimens:
+    - variable: meal_carbs
+      time_start: "07:30"
+      value: 60.0
+      label: "Breakfast 60 g carbs"
+    - variable: meal_carbs
+      time_start: "12:30"
+      value: 80.0
+      label: "Lunch 80 g carbs"
+    - variable: meal_carbs
+      time_start: "19:00"
+      value: 70.0
+      label: "Dinner 70 g carbs"
+  output_types: [state, input]
