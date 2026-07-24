@@ -1,0 +1,124 @@
+metadata:
+  name: test_valid_opt_inner_mc
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `optimizer.mc.runs` (inner robust-optimization Monte Carlo): each
+      candidate `dose` is evaluated across multiple samples of `absorption_rate`
+      (an individual-variability `parameter` with a `normal(μ, σ)` distribution),
+      and the optimizer should use the aggregated (e.g. mean) objective across runs
+      rather than a single deterministic draw.
+    problem_cn: >
+      验证 `optimizer.mc.runs`（内层稳健优化蒙特卡洛）：每个候选 `dose` 会针对
+      `absorption_rate`（一个具有个体差异、服从 `normal(μ, σ)` 分布的 parameter）的
+      多个采样样本分别评估，优化器应使用跨多次运行的聚合目标（如均值），而非单次
+      确定性抽样。
+    result: >
+      `plasma` rises by `dose * absorption_rate` (one-time pulse at day 1) and decays
+      at `elimination_rate = 0.1/day`. With `optimizer.mc.runs: 5`, repeated optimizer
+      runs with the same `seed` should converge to a similar `dose` near its upper
+      bound (maximize final plasma), and the reported objective should reflect the
+      across-run average rather than a single noisy `absorption_rate` draw.
+    result_cn: >
+      `plasma` 因 `dose * absorption_rate`（第 1 天一次性脉冲给药）而上升，并按
+      `elimination_rate = 0.1/day` 衰减。在 `optimizer.mc.runs: 5` 的设置下，使用
+      相同 `seed` 的多次优化器运行应收敛到相近的、接近其上界的 `dose`（以最大化最终
+      plasma 为目标），且所报告的目标值应反映跨运行的平均结果，而非单次带噪声的
+      `absorption_rate` 抽样。
+    limitations: Linear one-compartment toy PK; for engine validation only, not a calibrated PK model.
+    limitations_cn: 线性单室（one-compartment）玩具级 PK 模型；仅用于引擎验证，非经过校准的 PK 模型。
+  tags: [test, optimizer, mc, robust]
+  references: ["TEST: optimizer.mc.runs (inner robust optimization)"]
+variables:
+  plasma:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Drug plasma concentration; rises with absorbed dose, decays at elimination_rate.
+
+  dose:
+    type: input
+    value: 0.0
+    unit: mg
+    description: One-time oral dose (pulse) on day 1.
+
+  absorption_rate:
+    type: parameter
+    value: "normal(0.5, 0.1)"
+    unit: fraction
+    bounds: [0.1, 1.0]
+    description: "Individual absorption fraction; sampled once per MC run (σ=0.1 illustrative)."
+
+  elimination_rate:
+    type: parameter
+    value: 0.1
+    unit: 1/day
+    description: First-order elimination rate constant.
+
+formulas:
+  drug_pk:
+    description: Dose pulse absorbed at absorption_rate, then first-order elimination.
+    step_unit: day
+    dynamics:
+      plasma: "max(0.0, plasma + dose * absorption_rate - plasma * elimination_rate * step)"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-06"
+  output_variables: [plasma, dose, absorption_rate]
+  mc:
+    runs: 5
+    seed: 19
+  plans:
+  - id: "no_dose"
+    label: "No dose (0 mg) — plasma stays at 0 regardless of absorption_rate"
+    regimens:
+    - variable: dose
+      time_start: "00:00"
+      value: 0.0
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "One-time dose (mg)"
+  - id: "moderate_dose"
+    label: "Moderate dose (50 mg) — plasma rises and decays at elimination_rate"
+    regimens:
+    - variable: dose
+      time_start: "00:00"
+      value: 50.0
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "One-time dose (mg)"
+  - id: "high_dose"
+    label: "High dose (100 mg, optimizer upper bound) — highest final plasma"
+    regimens:
+    - variable: dose
+      time_start: "00:00"
+      value: 100.0
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "One-time dose (mg)"
+
+optimizer:
+  method: nelder-mead
+  objectives:
+  - variable: plasma
+    metric: final
+    direction: maximize
+    description: "Maximize final plasma concentration, robust to absorption_rate variability."
+  startpoint:
+    regimens:
+    - variable: dose
+      time_start: "00:00"
+      time_end: "00:00"
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "Dose amount"
+      optimize:
+        value: [0.0, 100.0]
+  mc:
+    runs: 5
+    seed: 19
+  algorithm:
+    population_size: 1
+    n_generations: 40
+    seed: 19

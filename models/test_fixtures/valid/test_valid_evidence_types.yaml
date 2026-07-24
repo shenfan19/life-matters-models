@@ -1,0 +1,241 @@
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: test_valid_evidence_types
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates Loader handling of all 8 evidence subtypes (rr, or, hr, ard, cohens_d, ir, beta, pk)
+      in a single file. Each evidence variable is auto-converted in place (same name, no suffix)
+      and referenced in formulas directly. No simulation run needed — this is a loader and
+      formula correctness test.
+    problem_cn: >
+      验证 Loader 对单个文件中全部 8 种 evidence 子类型（rr, or, hr, ard, cohens_d, ir, beta,
+      pk）的处理：每个 evidence 变量原地自动转换（同名，无后缀），并直接在 formula 中引用。
+      无需运行仿真——这是一个 Loader 与公式正确性测试。
+    result: >
+      Each converted evidence value must match the known derivation:
+      rr→2.5, ir→0.012/yr, hr→0.009/yr, or→≈1.53, ard→0.008/yr,
+      cohens_d→4.08 mL/kg/min, beta→0.45 mmHg/yr, pk→0.0347/h.
+    result_cn: >
+      每个转换后的 evidence 值须与已知推导结果一致：rr→2.5, ir→0.012/yr, hr→0.009/yr,
+      or→≈1.53, ard→0.008/yr, cohens_d→4.08 mL/kg/min, beta→0.45 mmHg/yr, pk→0.0347/h。
+    limitations: Values are illustrative; no clinical interpretation intended.
+    limitations_cn: 数值仅为示意，不作临床解读。
+  tags: [test, evidence, rr, or, hr, ard, cohens_d, ir, beta, pk]
+  references: ["TEST: evidence subtype coverage test"]
+
+variables:
+  # --- States that accumulate or display evidence effective values ---
+  cvd_risk_smoker:
+    type: state
+    value: 0.0
+    unit: cumulative_prob
+    description: Cumulative CVD risk for a smoker (uses rr × ir evidence).
+
+  cvd_risk_baseline:
+    type: state
+    value: 0.0
+    unit: cumulative_prob
+    description: Cumulative baseline CVD risk (uses ir evidence directly).
+
+  systolic_bp:
+    type: state
+    value: 120.0
+    unit: mmHg
+    description: Systolic BP rising with age (uses beta evidence, per year → per day).
+
+  drug_conc:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Drug plasma concentration (uses pk evidence ke directly; step_unit is hour, step=1, no ×24 needed).
+
+  # Static display states for evidence effective values (set each step via formula:)
+  statin_daily_rate:
+    type: state
+    value: 0.0
+    unit: prob/day
+    description: "Statin-protected CVD daily rate (hr evidence: baseline_ir × HR / 365)."
+
+  or_adjusted_prob:
+    type: state
+    value: 0.0
+    unit: "dimensionless"
+    description: OR-adjusted CVD probability for obese individuals (or evidence effective).
+
+  ard_annual_benefit:
+    type: state
+    value: 0.0
+    unit: prob/year
+    description: Aspirin annual stroke risk reduction (ard evidence effective = 0.008).
+
+  vo2max_shift:
+    type: state
+    value: 0.0
+    unit: mL/kg/min
+    description: Exercise-induced VO2max shift (cohens_d effective = d × population_sd = 4.08).
+
+  # Input for PK test
+  drug_dose:
+    type: input
+    value: 0.0
+    unit: mg
+    description: Daily oral drug dose (pulse; 80% bioavailability, Vd = 10 L in formula).
+
+evidence:
+  # 1. rr — relative risk, effective = value
+  smoking_cvd_rr:
+    type: rr
+    value: 2.5
+    description: Relative risk of CVD for active smokers vs non-smokers.
+    reference: "TODO:SOURCE"
+
+  # 2. ir — incidence rate, effective = value
+  baseline_cvd_ir:
+    type: ir
+    value: 0.012
+    unit: prob/year
+    description: Baseline annual CVD incidence in non-smoking population.
+    reference: "TODO:SOURCE"
+
+  # 3. hr — hazard ratio, effective = baseline_cvd_ir × HR
+  statin_cvd_hr:
+    type: hr
+    value: 0.75
+    baseline_ref: baseline_cvd_ir
+    description: Statin reduces CVD hazard by 25%; effective = baseline_cvd_ir × 0.75.
+    reference: "TODO:SOURCE"
+
+  # 4. or — odds ratio, effective = OR / ((1−p₀) + p₀×OR)
+  obesity_cvd_or:
+    type: or
+    value: 1.65
+    baseline_prevalence: 0.12
+    description: CVD odds ratio for obese vs normal weight; p₀=0.12.
+    reference: "TODO:SOURCE"
+
+  # 5. ard — absolute risk difference, effective = value
+  aspirin_stroke_ard:
+    type: ard
+    value: 0.008
+    unit: prob/year
+    description: Aspirin reduces annual stroke risk by 0.8 percentage points absolutely.
+    reference: "TODO:SOURCE"
+
+  # 6. cohens_d — effect size, effective = d × population_sd
+  exercise_vo2_cohens_d:
+    type: cohens_d
+    value: 0.68
+    population_sd: 6.0
+    unit: mL/kg/min
+    description: Exercise program VO2max improvement; effective = 0.68 × 6.0 = 4.08 mL/kg/min.
+    reference: "TODO:SOURCE"
+
+  # 7. beta — regression coefficient, effective = value
+  age_sbp_beta:
+    type: beta
+    value: 0.45
+    unit: mmHg/year
+    description: SBP rises 0.45 mmHg per year of age.
+    reference: "TODO:SOURCE"
+
+  # 8. pk — PK parameter, effective = value
+  drug_ke:
+    type: pk
+    value: 0.0347
+    unit: 1/hour
+    description: Drug elimination rate constant; ke = ln2/t½, t½ ≈ 20 h.
+    reference: "TODO:SOURCE"
+
+formulas:
+  # rr × ir: smoker CVD risk accumulation
+  smoker_risk:
+    description: Smoker CVD daily risk = baseline_cvd_ir × smoking_cvd_rr (both effective), per day.
+    step_unit: hour
+    dynamics:
+      cvd_risk_smoker: "min(1.0, cvd_risk_smoker + baseline_cvd_ir * smoking_cvd_rr / 365.0 * step)"
+    priority: 3
+
+  # ir: baseline CVD risk accumulation
+  baseline_risk:
+    description: Baseline CVD daily risk from ir evidence effective value.
+    step_unit: hour
+    dynamics:
+      cvd_risk_baseline: "min(1.0, cvd_risk_baseline + baseline_cvd_ir / 365.0 * step)"
+    priority: 3
+
+  # beta: SBP rises per day
+  bp_aging:
+    description: SBP increases per day using beta evidence (mmHg/yr ÷ 365).
+    step_unit: hour
+    dynamics:
+      systolic_bp: "systolic_bp + age_sbp_beta / 365.0 * step"
+    priority: 2
+
+  # pk: drug elimination (ke is already an hourly rate; step_unit: hour → step=1, no ×24)
+  drug_pk:
+    description: Drug PK — absorption pulse + elimination; ke effective in 1/h, step_unit hour.
+    step_unit: hour
+    dynamics:
+      drug_conc: "max(0.0, drug_conc + drug_dose * 0.8 / 10.0 - drug_conc * drug_ke * step)"
+    priority: 5
+
+  # hr: display statin-protected daily rate (formula:, static each step)
+  display_hr:
+    description: Shows statin_cvd_hr (= baseline_ir × 0.75) as daily rate.
+    dynamics:
+      statin_daily_rate: "statin_cvd_hr / 365.0"
+    priority: 0
+
+  # or: display OR-adjusted probability (formula:, static each step)
+  display_or:
+    description: Shows obesity_cvd_or (OR-to-probability conversion).
+    dynamics:
+      or_adjusted_prob: "obesity_cvd_or"
+    priority: 0
+
+  # ard: display ARD annual benefit (formula:, static each step)
+  display_ard:
+    description: Shows aspirin_stroke_ard = 0.008 /yr.
+    dynamics:
+      ard_annual_benefit: "aspirin_stroke_ard"
+    priority: 0
+
+  # cohens_d: display VO2max shift (formula:, static each step)
+  display_cohens:
+    description: Shows exercise_vo2_cohens_d = 4.08 mL/kg/min.
+    dynamics:
+      vo2max_shift: "exercise_vo2_cohens_d"
+    priority: 0
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date:   "2026-12-31"
+  plans:
+    - id: default
+      label: Default
+      regimens:
+        - variable: drug_dose
+          time_start: "08:00"
+          value: 100.0
+          label: "Daily drug dose 100 mg"
+  output_variables:
+    - cvd_risk_smoker
+    - cvd_risk_baseline
+    - systolic_bp
+    - drug_conc
+    - statin_daily_rate
+    - or_adjusted_prob
+    - ard_annual_benefit
+    - vo2max_shift

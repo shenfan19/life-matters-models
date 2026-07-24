@@ -1,0 +1,153 @@
+metadata:
+  name: test_valid_mc_distributions
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates the three parameter distribution forms — normal(), uniform(), and lognormal() —
+      in both simulation and optimiser MC modes. Deterministic mode uses the distribution mean;
+      MC mode (runs=5) re-samples all three parameters independently per run. The optimiser
+      also uses MC: each candidate solution is evaluated 5 times and results averaged.
+    problem_cn: >
+      在仿真与优化器的蒙特卡洛（MC）模式下，验证三种参数分布形式——normal()、uniform()
+      与 lognormal()。确定性模式使用分布均值；MC 模式（runs=5）对三个参数各自独立重新
+      采样。优化器同样使用 MC：每个候选解评估 5 次并取平均。
+    result: >
+      Deterministic: clearance_rate=0.30, bioavailability=0.75, volume_dist≈49 L.
+      MC simulation: curves should visibly diverge across the distribution ranges.
+      Optimiser Pareto front balances mean_plasma coverage against peak_plasma, with
+      wider spread than a non-MC run due to bioavailability uncertainty.
+    result_cn: >
+      确定性模式：clearance_rate=0.30，bioavailability=0.75，volume_dist≈49 L。MC
+      仿真：各曲线应在分布范围内可见地发散。优化器 Pareto 前沿在 mean_plasma 覆盖度
+      与 peak_plasma 之间权衡，由于 bioavailability 的不确定性，分布范围比非 MC
+      运行更宽。
+    limitations: Drug PK parameters are synthetic; not physiologically calibrated.
+    limitations_cn: 药代动力学（PK）参数为合成数据，未经生理学校准。
+  tags: [test, mc, distributions, normal, uniform, lognormal, nsga2]
+  references: ["TEST: Monte Carlo parameter distributions — normal/uniform/lognormal"]
+variables:
+  plasma_conc:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Plasma drug concentration; builds up with daily dosing.
+
+  peak_plasma:
+    type: state
+    value: 0.0
+    unit: mg/L
+    description: Running maximum plasma concentration (for minimization objective).
+
+  daily_dose:
+    type: input
+    value: 0.0
+    unit: mg
+    description: Daily oral dose (pulse; bioavailability fraction applied in formula).
+
+  # --- MC parameters with distribution values ---
+
+  clearance_rate:
+    type: parameter
+    value: "normal(0.30, 0.05)"
+    unit: per_day
+    description: |
+      Drug daily clearance fraction sampled from N(0.30, 0.05) per MC run.
+      Deterministic mode uses mean = 0.30. Represents inter-individual PK variability.
+
+  bioavailability:
+    type: parameter
+    value: "uniform(0.60, 0.90)"
+    unit: fraction
+    description: |
+      Oral bioavailability sampled from Uniform(0.60, 0.90) per MC run.
+      Deterministic mode uses mean = 0.75. Models formulation batch variability.
+
+  volume_dist:
+    type: parameter
+    value: "lognormal(3.9, 0.2)"
+    unit: L
+    description: |
+      Volume of distribution sampled from LogNormal(μ=3.9, σ=0.2) per MC run.
+      Deterministic mode uses mean = exp(3.9 + 0.2²/2) ≈ 50.6 L.
+      Log-normal ensures positivity; σ=0.2 gives ≈20% CV.
+
+formulas:
+  drug_absorption:
+    description: Daily dose absorption (pulse, no step; bioavailability and volume are sampled per run).
+    step_unit: hour
+    dynamics:
+      plasma_conc: "plasma_conc + daily_dose * bioavailability / volume_dist"
+    priority: 10
+
+  drug_elimination:
+    description: First-order daily clearance (rate × step; clearance_rate sampled per run).
+    step_unit: hour
+    dynamics:
+      plasma_conc: "max(0.0, plasma_conc - plasma_conc * clearance_rate * step)"
+    priority: 5
+
+  peak_tracker:
+    description: Track the maximum plasma concentration achieved.
+    step_unit: hour
+    dynamics:
+      peak_plasma: "max(peak_plasma, plasma_conc)"
+    priority: 3
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-02-28"
+  plans:
+  - id: low_dose
+    label: "Low dose (100 mg/day) — lower steady-state plasma_conc and peak_plasma"
+    regimens:
+    - variable: daily_dose
+      time_start: "08:00"
+      value: 100.0
+      label: "Daily dose 100 mg"
+  - id: moderate_dose
+    label: "Moderate dose (200 mg/day, deterministic-mode reference)"
+    regimens:
+    - variable: daily_dose
+      time_start: "08:00"
+      value: 200.0
+      label: "Daily dose 200 mg"
+  - id: high_dose
+    label: "High dose (350 mg/day) — higher steady-state plasma_conc and peak_plasma, same MC spread pattern"
+    regimens:
+    - variable: daily_dose
+      time_start: "08:00"
+      value: 350.0
+      label: "Daily dose 350 mg"
+  output_variables: [plasma_conc, peak_plasma, daily_dose]
+  mc:
+    runs: 5
+    seed: 19
+
+
+optimizer:
+  method: nsga2
+  objectives:
+  - variable: plasma_conc
+    metric: mean
+    direction: maximize
+  - variable: peak_plasma
+    metric: max
+    direction: minimize
+  startpoint:
+    regimens:
+    - variable: daily_dose
+      time_start: "08:00"
+      time_end: "08:00"
+      label: "Daily dose (mg)"
+      optimize:
+        value: [50.0, 400.0]
+  mc:
+    runs: 5
+    seed: 19
+  algorithm:
+    population_size: 20
+    n_generations: 25
+    seed: 19

@@ -1,0 +1,66 @@
+metadata:
+  name: test_valid_pulse_reset_bounds_floor
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Regression fixture for the pulse-reset bounds-clamp bug: an input variable whose
+      `bounds[0] > 0` must still read exactly its regimen `value` while the pulse fires,
+      not `bounds[0] + value`. Each step, apply_schedules() zeroes controlled variables
+      before re-accumulating the firing event's value (model.md pulse semantics); if that
+      zeroing goes through the bounds-clamped setter, the floor gets pulled up to
+      `bounds[0]` instead of true 0, inflating every firing step by `bounds[0]`.
+    problem_cn: >
+      用于"脉冲重置被边界钳制"这一 bug 的回归测试：当输入变量的 `bounds[0] > 0` 时，脉冲触发时
+      它仍必须精确读取其 regimen 中的 `value`，而不是 `bounds[0] + value`。每一步，
+      apply_schedules() 会先将受控变量清零，再重新累加触发事件的值（model.md 中的脉冲语义）；
+      如果这个清零操作经过了带边界钳制的 setter，清零底线就会被拉高到 `bounds[0]` 而非真正的
+      0，导致每个触发步都被多算了 `bounds[0]`。
+    result: >
+      dose fires daily at 08:00 with value=0.8 and bounds=[0.3, 2.0]. Every simulated step
+      must show dose == 0.8 exactly (not 1.1, which is the pre-fix bug value).
+    result_cn: >
+      dose 每天 08:00 触发，value=0.8，bounds=[0.3, 2.0]。每个仿真步中 dose 都必须精确等于
+      0.8（而不是修复前 bug 版本给出的 1.1）。
+    limitations: Not a physiological model; exists only to pin the reset/bounds interaction.
+    limitations_cn: 不是生理模型；仅用于固定（pin住）重置与边界交互这一行为。
+  tags: [test, pulse, bounds, regression]
+  references: ["TEST: pulse reset must not be clamped to bounds[0]"]
+
+variables:
+  dose:
+    type: input
+    value: 0.8
+    unit: "au"
+    bounds: [0.3, 2.0]
+    description: Daily pulse dose; bounds[0] > 0 is the condition that exposes the bug.
+
+  dose_echo:
+    type: state
+    value: 0.0
+    unit: "au"
+    bounds: [0.0, 10.0]
+    description: Copies dose each step so its trajectory is inspectable via output_variables.
+
+formulas:
+  echo_dose:
+    description: Mirrors dose into a state variable for CSV inspection.
+    condition: true
+    dynamics:
+      dose_echo: "dose"
+    priority: 1
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-05"
+  output_variables: [dose, dose_echo]
+  plans:
+  - id: default
+    label: "Daily dose"
+    regimens:
+    - variable: dose
+      time_start: "08:00"
+      value: 0.8
+      label: "Daily dose (au)"

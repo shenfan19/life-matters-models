@@ -1,0 +1,81 @@
+metadata:
+  name: test_valid_formula_condition
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates `formulas[].condition` branching logic: two `dynamics:` formulas
+      target the same state variable (`room_temp`) with mutually exclusive
+      conditions (`< setpoint` vs `>= setpoint`), modeling a bang-bang thermostat.
+      Exactly one branch must fire per step — no double-update, no stall.
+    problem_cn: >
+      验证 `formulas[].condition` 分支逻辑：两个 `dynamics:` 公式作用于同一状态变量
+      （`room_temp`），条件互斥（`< setpoint` 与 `>= setpoint`），模拟一个 bang-bang
+      （通断式）温控器。每一步必须恰好触发一个分支——不能重复更新，也不能停滞。
+    result: >
+      `room_temp` starts at 15°C and ramps up by `heating_rate=2°C/h` while
+      `heater_on` (room_temp < 20) is true: 15→17→19→21. Once room_temp >= 20,
+      `heater_off` fires and room_temp drops by `cooling_rate=0.5°C/h`: 21→20.5→20.0→19.5,
+      at which point `heater_on` fires again. The trajectory should oscillate in a
+      bang-bang pattern roughly within [19.5, 21] for the remainder of the 48-hour run,
+      never staying flat (one of the two conditions is always true) and never jumping
+      by both rates in the same step.
+    result_cn: >
+      `room_temp` 从 15°C 开始，在 `heater_on`（room_temp < 20）为真时按
+      `heating_rate=2°C/h` 上升：15→17→19→21。一旦 room_temp >= 20，`heater_off`
+      触发，room_temp 按 `cooling_rate=0.5°C/h` 下降：21→20.5→20.0→19.5，此时
+      `heater_on` 再次触发。在剩余的 48 小时仿真中，轨迹应大致在 [19.5, 21] 区间内
+      呈 bang-bang 式振荡，不会保持平稳（两个条件之一始终为真），也不会在同一步内
+      叠加两种变化率。
+    limitations: Linear bang-bang toy thermostat; for engine validation only, not a real thermal model.
+    limitations_cn: 线性 bang-bang 玩具级温控器；仅用于引擎验证，非真实热力学模型。
+  tags: [test, formulas, condition]
+  references: ["TEST: formulas[].condition mutually-exclusive branching"]
+variables:
+  room_temp:
+    type: state
+    value: 15.0
+    unit: "°C"
+    description: Room temperature; driven by a bang-bang heater around setpoint.
+
+  setpoint:
+    type: parameter
+    value: 20.0
+    unit: "°C"
+    description: Thermostat setpoint.
+
+  heating_rate:
+    type: parameter
+    value: 2.0
+    unit: "°C/hour"
+    description: Room warming rate while the heater is on.
+
+  cooling_rate:
+    type: parameter
+    value: 0.5
+    unit: "°C/hour"
+    description: Ambient cooling rate while the heater is off.
+
+formulas:
+  heater_on:
+    description: Heater on while room_temp is below setpoint; warms the room.
+    step_unit: hour
+    condition: "room_temp < setpoint"
+    dynamics:
+      room_temp: "room_temp + heating_rate * step"
+    priority: 1
+
+  heater_off:
+    description: Heater off once room_temp reaches setpoint; room cools toward ambient.
+    step_unit: hour
+    condition: "room_temp >= setpoint"
+    dynamics:
+      room_temp: "room_temp - cooling_rate * step"
+    priority: 1
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables: [room_temp]

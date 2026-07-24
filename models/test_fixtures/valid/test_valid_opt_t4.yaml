@@ -1,0 +1,121 @@
+metadata:
+  name: test_valid_opt_t4
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates date-start window optimisation: the caloric restriction intervention can begin
+      on any day within a 60-day spring window (2026-04-01 to 2026-05-31). Later starts reduce
+      total accumulated deficit; the optimiser must balance start date against dose magnitude.
+      Decision vector is 2-dimensional: deficit amount and start-day offset.
+    problem_cn: >
+      验证起始日期窗口优化：热量限制干预可以在一个为期 60 天的春季窗口（2026-04-01 至
+      2026-05-31）内的任意一天开始。开始得越晚，累积的总热量赤字越小；优化器必须在起始日期与
+      剂量大小之间权衡。决策向量为 2 维：赤字量和起始日偏移量。
+    result: >
+      Optimizer should find that earlier starts with moderate deficits dominate late starts
+      with high deficits in terms of final body weight. Day offset must decode correctly from
+      index back to a calendar date in the result regimen.
+    result_cn: >
+      优化器应发现，在最终体重上，"较早开始+适度赤字"优于"较晚开始+高赤字"（即前者支配后者）。
+      结果 regimen 中的日偏移必须能从索引正确解码回具体日历日期。
+    limitations: Linear weight dynamics only; no metabolic adaptation or seasonal compliance modelled.
+    limitations_cn: 仅采用线性体重动力学，未建模代谢适应或季节性依从性。
+  tags: [test, optimizer, t4, date-start, intervention-timing, mixed-integer]
+  references: ["TEST: T4 date-start window optimization"]
+variables:
+  body_weight:
+    type: state
+    value: 90.0
+    unit: kg
+    description: Body weight; decreases as caloric deficit accumulates.
+
+  cumulative_deficit:
+    type: state
+    value: 0.0
+    unit: kcal
+    description: Total caloric deficit accumulated since intervention start.
+
+  caloric_restriction:
+    type: input
+    value: 0.0
+    unit: kcal
+    description: Daily caloric deficit event (per-event amount; fires once per day).
+
+  weight_loss_factor:
+    type: parameter
+    value: 0.000129
+    unit: kg per kcal
+    description: Weight lost per kcal deficit; 1 kg ≈ 7700 kcal → 1/7700 ≈ 0.000130.
+
+formulas:
+  weight_loss:
+    description: Body weight decreases proportionally to daily caloric deficit (rate × step).
+    step_unit: day
+    dynamics:
+      body_weight: "max(50.0, body_weight - caloric_restriction * weight_loss_factor)"
+    priority: 5
+
+  deficit_accumulation:
+    description: Track cumulative caloric deficit (rate × step).
+    step_unit: day
+    dynamics:
+      cumulative_deficit: "cumulative_deficit + caloric_restriction"
+    priority: 3
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-03-01"
+  end_date: "2026-08-31"
+  plans:
+  - id: early_start
+    label: "Early start (Apr 1, 500 kcal/day) — longest window, lowest final body_weight"
+    regimens:
+    - variable: caloric_restriction
+      time_start: "00:00"
+      value: 500.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-04-01", "2026-08-31"]
+      label: "500 kcal/day deficit starting Apr 1"
+  - id: mid_start
+    label: "Mid start (Apr 15, 500 kcal/day)"
+    regimens:
+    - variable: caloric_restriction
+      time_start: "00:00"
+      value: 500.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-04-15", "2026-08-31"]
+      label: "500 kcal/day deficit starting Apr 15"
+  - id: late_start
+    label: "Late start (May 31, 500 kcal/day) — shortest window, highest final body_weight"
+    regimens:
+    - variable: caloric_restriction
+      time_start: "00:00"
+      value: 500.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-05-31", "2026-08-31"]
+      label: "500 kcal/day deficit starting May 31"
+  output_variables: [body_weight, cumulative_deficit, caloric_restriction]
+
+optimizer:
+  method: nsga2
+  objectives:
+  - variable: body_weight
+    metric: final
+    direction: minimize
+  startpoint:
+    regimens:
+      # T4: value + date_start from April to May
+    - variable: caloric_restriction
+      time_start: "00:00"
+      time_end: "00:00"
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      label: "Caloric restriction dose + start date"
+      optimize:
+        value: [300.0, 800.0]
+        date_range: [["2026-04-01", "2026-05-31"], ["2026-12-31", "2026-12-31"]]
+  algorithm:
+    population_size: 25
+    n_generations: 40
+    seed: 19

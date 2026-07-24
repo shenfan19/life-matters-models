@@ -1,0 +1,130 @@
+metadata:
+  name: test_valid_banister_v1_step_6h
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Engine-correctness fixture for test_verification/verification_report.md §2 Protocol V2 (step-size
+      convergence grid): does the Euler forward integrator's error against the
+      Banister closed-form analytical solution shrink as step_size is refined,
+      holding the simulation span fixed? One of six sibling fixtures
+      (test_valid_banister_v1_step_{12h,6h,3h,1h,30min}.yaml plus the day-step
+      baseline test_valid_banister_v1_analytical.yaml) that differ only in
+      simulation.step_size — the date span is fixed at the largest tested
+      range (60 days, 2026-01-01 to 2026-03-02) per 2026-07-15 decision: varying
+      step_size alone (not step_size × date_range) keeps the fixture count small
+      and makes switching between them for comparison straightforward, at the
+      cost of not separately re-confirming the date_range axis.
+    problem_cn: >
+      引擎正确性测试夹具，对应 test_verification/verification_report.md §2 Protocol V2（步长收敛网格）：在仿真时间跨度
+      保持不变的前提下，Euler 前向积分器相对于 Banister 解析闭式解的误差，是否会随
+      step_size 细化而缩小？这是六个姊妹夹具之一（test_valid_banister_v1_step_{12h,6h,3h,1h,30min}.yaml，
+      加上以天为步长的基线 test_valid_banister_v1_analytical.yaml），彼此仅在
+      simulation.step_size 上不同——根据 2026-07-15 的决定，日期跨度固定为测试过的最大
+      范围（60 天，2026-01-01 至 2026-03-02）：只改变 step_size（而不是 step_size ×
+      date_range 的组合）能让夹具数量保持精简，便于相互切换比较，代价是不单独重新确认
+      date_range 这个维度。
+    result: >
+      Same physics/parameters as test_valid_banister_v1_analytical.yaml
+      (constant training_load=50 AU/day, Morton 1990 standard g/h/k1/k2/p0),
+      only simulation.step_size differs (6 hours here vs 1 day baseline).
+      Run with reference_engine/scripts/validate_banister.py by pointing
+      MODEL_PATH at this file, or via `python -m cli.main --sim-only`.
+    result_cn: >
+      physics/parameters 与 test_valid_banister_v1_analytical.yaml 完全相同（恒定
+      training_load=50 AU/day，Morton 1990 标准 g/h/k1/k2/p0 参数），仅
+      simulation.step_size 不同（本文件为 6 小时，基线为 1 天）。运行方式：将
+      MODEL_PATH 指向本文件后执行 reference_engine/scripts/validate_banister.py，
+      或使用 `python -m cli.main --sim-only`。
+    limitations: No physiological meaning beyond reproducing the closed-form solution; purely a numeric engine-correctness fixture.
+    limitations_cn: 除了重现解析闭式解之外不具有生理学意义；纯粹是一个数值引擎正确性测试夹具。
+  tags: [test, banister, numerical_precision, engine_correctness, step_convergence]
+  references: ["Morton RH, Fitz-Clarke JR, Banister EW (1990) J Appl Physiol 69(3):1171-1177"]
+
+variables:
+  fitness:
+    type: state
+    value: 0.0
+    unit: AU
+    description: Fitness compartment, analytical solution a(t)=g*w/k1*(1-e^{-k1*t}).
+
+  fatigue:
+    type: state
+    value: 0.0
+    unit: AU
+    description: Fatigue compartment, analytical solution f(t)=h*w/k2*(1-e^{-k2*t}).
+
+  performance:
+    type: state
+    value: 494.0
+    unit: AU
+    description: performance = p0 + fitness - fatigue (Morton 1990 eq.3).
+
+  training_load:
+    type: input
+    value: 0.0
+    unit: AU
+    description: Constant daily training load w, driven by regimen.
+
+  g:
+    type: parameter
+    value: 1.0
+    unit: dimensionless
+    description: Fitness gain coefficient (Morton 1990 Table 1 standard value).
+
+  h:
+    type: parameter
+    value: 2.0
+    unit: dimensionless
+    description: Fatigue gain coefficient (Morton 1990 Table 1 standard value).
+
+  k1:
+    type: parameter
+    value: 0.022222222
+    unit: 1/day
+    description: Fitness decay rate = 1/45 per day (Morton 1990).
+
+  k2:
+    type: parameter
+    value: 0.066666667
+    unit: 1/day
+    description: Fatigue decay rate = 1/15 per day (Morton 1990).
+
+  p0:
+    type: parameter
+    value: 494.0
+    unit: AU
+    description: Baseline performance (Mujika et al. 1996).
+
+formulas:
+  fitness_dynamics:
+    description: "dA/dt = g*w - k1*A (Euler); training_load is a day-rate input (ADR 0131/0132, no *step), decay term keeps *step"
+    step_unit: day
+    dynamics:
+      fitness: fitness + g * training_load - k1 * fitness * step
+    priority: 5
+
+  fatigue_dynamics:
+    description: "df/dt = h*w - k2*f (Euler); training_load is a day-rate input (ADR 0131/0132, no *step), decay term keeps *step"
+    step_unit: day
+    dynamics:
+      fatigue: fatigue + h * training_load - k2 * fatigue * step
+    priority: 5
+
+  performance_update:
+    description: "performance = p0 + fitness - fatigue (Morton 1990 eq.3, static)"
+    priority: 3
+    dynamics:
+      performance: p0 + fitness - fatigue
+
+simulation:
+  step_size:
+    value: 6
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-03-02"
+  output_variables: [fitness, fatigue, performance, training_load]
+  plans:
+    - id: "constant_w50"
+      label: "Constant training_load=50 AU/day for 60 days (Protocol V4, step_size=6h)"
+      regimens:
+        - {variable: training_load, time_start: "00:00", time_end: "24:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-02"], label: "constant load (ADR 0131/0132: value is the per-day rate, independent of step_size or how many days date_range covers)"}

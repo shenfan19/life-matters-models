@@ -1,0 +1,58 @@
+metadata:
+  todo:
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: test_valid_evidence_cohens_d
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Validates Loader handling of the `cohens_d` evidence subtype in isolation.
+      `exercise_vo2_cohens_d` must equal `d × population_sd`
+      (cohens_d: requires `population_sd`, unit matches the target variable's unit).
+    problem_cn: >
+      验证 Loader 对 `cohens_d`（Cohen's d 效应量）证据子类型的独立处理。
+      `exercise_vo2_cohens_d` 必须等于 `d × population_sd`（cohens_d 类型：需要
+      `population_sd` 字段，单位与目标变量的单位一致）。
+    result: >
+      `cohens_d_display` = exercise_vo2_cohens_d = 0.68 × 6.0 = 4.08 mL/kg/min
+      (constant, every step).
+    result_cn: >
+      `cohens_d_display` = exercise_vo2_cohens_d = 0.68 × 6.0 = 4.08 mL/kg/min
+      （每一步恒定）。
+    limitations: Values are illustrative; no clinical interpretation intended. TEST file.
+    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
+  tags: [test, evidence, cohens_d]
+  references: ["TEST: cohens_d evidence subtype isolation"]
+
+variables:
+  cohens_d_display:
+    type: state
+    value: 0.0
+    unit: mL/kg/min
+    description: Displays exercise_vo2_cohens_d each step (expected constant 4.08).
+
+evidence:
+  exercise_vo2_cohens_d:
+    type: cohens_d
+    value: 0.68
+    population_sd: 6.0
+    unit: mL/kg/min
+    description: Exercise program VO2max improvement; effective = 0.68 × 6.0 = 4.08 mL/kg/min.
+    reference: "TODO:SOURCE"
+
+formulas:
+  display_cohens:
+    description: "Shows exercise_vo2_cohens_d (cohens_d: effective = d × population_sd)."
+    dynamics:
+      cohens_d_display: "exercise_vo2_cohens_d"
+    priority: 0
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date:   "2026-01-31"
+  output_variables: [cohens_d_display]
