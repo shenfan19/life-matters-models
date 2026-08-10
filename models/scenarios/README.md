@@ -13,4 +13,8 @@ medical/   医学健康相关场景（疾病管理、营养、运动等）
 social/    社会/历史/人文相关场景（历史人物、群体事件等）
 ```
 
+## 内容可信度
+
+本目录下的场景文件由 AI 大量辅助生成，大部分尚未经过相关领域专家核实，验证程度以每个文件 `metadata.ratings.validation_confidence` 字段为准（量表 1 到 5 分，定义见 [`docs/authoring/ratings.md`](../../docs/authoring/ratings.md)），完整可信度边界见仓库根 README「内容可信度声明」一节。
+
 每个模型文件都欢迎任何用户参与编辑、补充参数来源或修复问题。

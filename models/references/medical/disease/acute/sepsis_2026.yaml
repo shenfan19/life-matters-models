@@ -1,0 +1,279 @@
+category: physiological
+
+metadata:
+  name: sepsis
+  lm_format_version: "1.0"
+  updated: 2026-05-17
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      按Sepsis-3标准定义，脓毒症是一种因感染导致器官功能障碍的危及生命状态，院内死亡率高达20%至30%。其治疗存在多重时序矛盾：抗生素每延误1小时给药，院内死亡率约增加7.6%，但过于积极的液体复苏会增加肺水肿风险；升压药可快速维持血压，却不能改善组织氧合，不能替代液体复苏对器官灌注的作用。如何在72小时内协调抗生素时机、液体速率和升压药剂量三者，是重症监护决策的核心难题。
+    result: >
+      默认仿真72小时显示：在1小时内给予抗生素并启动液体复苏的标准集束化方案下，SOFA评分在24小时内从初始8分降至约4至5分，乳酸从4.2 mmol/L逐步降至2 mmol/L左右，MAP在升压药和液体共同支撑下维持在65 mmHg以上。优化结果表明，增大初始液体复苏速率可同时降低SOFA和乳酸峰值，但超过约450 mL/h后边际收益明显减少。
+    limitations: >
+      SOFA评分动力学采用简化线性模型，未涵盖病原体鉴定延误，血培养通常需48至72小时。不区分脓毒症病因，例如肺源性、腹源性、尿路源性等，升压药与心脏后负荷的相互作用也未建模。
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 5 - 脓毒症是ICU最高死亡率急症，时序优化是生死攸关的研究问题
+    framework_demand: 2 - 急性病模型，上层场景复用少
+    evidence_quality: 5 - 引用Sepsis-3/SSC指南及Kumar 2006等关键RCT，参数精确
+    popularity: 4 - SOFA评分和集束化治疗是重症医学教科书内容
+  tags: [sepsis, ICU, SOFA, lactate, antibiotics, septic shock, critical care]
+  references:
+  - "Singer M et al. (2016) The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA 315(8):801-810."
+  - "Levy MM et al. (2018) The Surviving Sepsis Campaign Bundle: 2018 Update. Crit Care Med 46(6):997-1000."
+  - "Rivers E et al. (2001) Early goal-directed therapy in the treatment of severe sepsis and septic shock. N Engl J Med 345(19):1368-1377."
+  - "Kumar A et al. (2006) Duration of hypotension before initiation of effective antimicrobial therapy is the critical determinant of survival in human septic shock. Crit Care Med 34(6):1589-1596."
+  - "Seymour CW et al. (2017) Time to Treatment and Mortality during Mandated Emergency Care for Sepsis. N Engl J Med 376(23):2235-2244."
+variables:
+  sofa_score:
+    description: |
+      序贯器官衰竭评估（SOFA，0-24分）。评估6器官：呼吸、凝血、肝、心血管、CNS、肾。
+      Sepsis-3定义：急性SOFA≥2分。初始值8（重度脓毒症）；
+      目标：72h后降至<4（器官功能恢复）。
+    value: 8.0
+    unit: points
+    type: state
+    bounds: [0, 24]
+    io_role: output
+
+  lactate_mmol:
+    description: |
+      血乳酸（mmol/L）。正常<2；>2=组织低灌注；>4=脓毒性休克。
+      SSC目标：乳酸<2 mmol/L（液体复苏有效）。初始值4.2（脓毒性休克）。
+    value: 4.2
+    unit: mmol/L
+    type: state
+    bounds: [0.5, 15]
+    io_role: output
+
+  map_mmhg:
+    description: |
+      平均动脉压（mmHg）。正常70-100 mmHg；脓毒性休克<65 mmHg。
+      SSC目标：MAP≥65 mmHg（升压药维持）。初始值58（低血压）。
+    value: 58.0
+    unit: mmHg
+    type: state
+    bounds: [30, 130]
+    io_role: output
+
+  procalcitonin:
+    description: |
+      降钙素原（ng/mL）。正常<0.1；>0.5=细菌感染；>10=重度脓毒症。
+      抗生素治疗有效时48h内开始下降（t½≈24h，Seymour 2017）。
+    value: 18.0
+    unit: ng/mL
+    type: state
+    bounds: [0, 100]
+    io_role: output
+
+  creatinine:
+    description: |
+      血肌酐（μmol/L）。正常男性62-115；急性肾损伤（AKI）>177（Sepsis-3）。
+      脓毒症肾损伤为最常见器官并发症（Singer 2016）。
+    value: 220.0
+    unit: μmol/L
+    type: state
+    bounds: [44, 1000]
+    io_role: output
+
+  urine_output_ml_hr:
+    description: |
+      每小时尿量（mL/h）。正常≥0.5 mL/kg/h（体重70kg→≥35 mL/h）；
+      少尿：<0.5 mL/kg/h；无尿：<10 mL/h（严重AKI）。
+    value: 15.0
+    unit: mL/h
+    type: state
+    bounds: [0, 200]
+    io_role: output
+
+  antibiotic_timing_hours:
+    description: |
+      抗生素首剂给药时机（就诊后小时数）。
+      SSC 1h集束化目标：≤1h；Kumar 2006：每延误1h死亡率+7.6%。
+      0=立即给药，1=1小时延误，3=严重延误。
+    value: 0.0
+    unit: hours after admission
+    type: input
+    bounds: [0, 6]
+
+  fluid_resuscitation_ml_hr:
+    description: |
+      液体复苏速率（mL/h）。SSC推荐：30 mL/kg（70kg=2100 mL）在3小时内给予
+      → 约700 mL/h。维持阶段约100-200 mL/h。上限500 mL/h（防肺水肿）。
+    value: 0.0
+    unit: mL/h
+    type: input
+    bounds: [0, 500]
+
+  vasopressor_dose:
+    description: |
+      升压药剂量（相对单位，1.0=去甲肾上腺素0.1 μg/kg/min标准剂量）。
+      SSC目标：维持MAP≥65 mmHg；>2.0=大剂量升压（预后差）。
+    value: 0.0
+    unit: relative units
+    type: input
+    bounds: [0, 3.0]
+
+  antibiotic_sofa_improvement:
+    description: |
+      有效抗生素治疗对SOFA的每小时改善量（分/h）。
+      及时给药（<1h）时改善率约0.15分/h；延误3h降至约0.08分/h（Kumar 2006）。
+    value: 0.12
+    unit: points/hour
+    type: parameter
+    reference: "Kumar A et al. (2006) Crit Care Med 34:1589-1596"
+
+  fluid_map_response:
+    description: 液体复苏对MAP的提升效应（mmHg per 100 mL/h）。初始灌注不足时效应大，MAP接近正常后减弱。
+    value: 0.8
+    unit: mmHg per 100 mL/h
+    type: parameter
+    reference: "Rivers E et al. (2001) N Engl J Med 345:1368-1377"
+
+equations:
+  antibiotic_effect:
+    description: 抗生素（考虑延误时机）清除病原体，降低SOFA和降钙素原；延误越长效果越差
+    step_unit: hour
+    condition: true
+    priority: 10
+    dynamics:
+      sofa_score: >
+        max(0, sofa_score - antibiotic_sofa_improvement
+        * max(0.1, 1 - antibiotic_timing_hours * 0.1) * step)
+      procalcitonin: >
+        max(0.05, procalcitonin - procalcitonin * 0.035 * max(0.1, 1 - antibiotic_timing_hours * 0.08) * step)
+
+  fluid_resuscitation:
+    description: 液体复苏升高MAP，改善组织灌注（降低乳酸），提升尿量
+    step_unit: hour
+    condition: fluid_resuscitation_ml_hr > 0
+    priority: 9
+    dynamics:
+      map_mmhg: >
+        min(100, map_mmhg + fluid_resuscitation_ml_hr * fluid_map_response / 100 * step)
+      lactate_mmol: >
+        max(0.8, lactate_mmol - fluid_resuscitation_ml_hr * 0.001 * step)
+      urine_output_ml_hr: >
+        min(150, urine_output_ml_hr + fluid_resuscitation_ml_hr * 0.05 * step)
+
+  vasopressor_effect:
+    description: 升压药维持MAP≥65 mmHg（直接血管收缩），不改善组织灌注（不降低乳酸）
+    step_unit: hour
+    condition: vasopressor_dose > 0
+    priority: 8
+    dynamics:
+      map_mmhg: >
+        min(110, map_mmhg + vasopressor_dose * 8.0 * step)
+
+  organ_recovery:
+    description: MAP改善后肾功能恢复（肌酐下降，尿量增加）
+    step_unit: hour
+    condition: map_mmhg >= 65
+    priority: 6
+    dynamics:
+      creatinine: >
+        max(80, creatinine - (map_mmhg - 65) * 0.8 * step)
+      urine_output_ml_hr: >
+        min(100, urine_output_ml_hr + (map_mmhg - 65) * 0.3 * step)
+
+  lactate_clearance:
+    description: 乳酸随MAP恢复和灌注改善自然清除（SSC目标<2 mmol/L）
+    step_unit: hour
+    condition: map_mmhg >= 60
+    priority: 5
+    dynamics:
+      lactate_mmol: >
+        max(0.8, lactate_mmol - lactate_mmol * 0.04 * (map_mmhg / 65) * step)
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-04"
+  output_variables: [sofa_score, lactate_mmol, map_mmhg, procalcitonin, creatinine, urine_output_ml_hr]
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+    - variable: antibiotic_timing_hours
+      time_start: "00:00"
+      value: 1.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "入院1小时内首剂抗生素（SSC集束化）"
+    - variable: fluid_resuscitation_ml_hr
+      time_start: "00:00"
+      value: 700.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-01-01", "2026-01-01"]
+      label: "初始液体复苏700mL/h（3h内完成30mL/kg）"
+    - variable: fluid_resuscitation_ml_hr
+      time_start: "03:00"
+      value: 150.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-01-01", "2026-01-04"]
+      label: "维持液体150mL/h"
+    - variable: vasopressor_dose
+      time_start: "00:00"
+      value: 1.0
+      days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+      date_range: ["2026-01-01", "2026-01-02"]
+      label: "去甲肾上腺素标准剂量（MAP<65时）"
+
+optimizer:
+  method: nsga2
+  objectives:
+  - variable: sofa_score
+    metric: final
+    direction: minimize
+    description: "最小化72h SOFA评分（器官功能保护）"
+  - variable: lactate_mmol
+    metric: max
+    direction: minimize
+    description: "最小化乳酸峰值（组织灌注最优化）"
+  constraints:
+  - variable: map_mmhg
+    condition: ">= 65"
+    type: hard
+    description: "MAP≥65 mmHg（SSC目标，防止器官衰竭）"
+  - variable: fluid_resuscitation_ml_hr
+    condition: "<= 500"
+    type: hard
+    description: "液体速率上限500mL/h（防肺水肿）"
+  startpoint:
+    regimens:
+    - variable: fluid_resuscitation_ml_hr
+      time_start: "00:00"
+      time_end: "00:00"
+      label: "初始液体复苏速率（mL/h）"
+      optimize:
+        value: [300, 500]
+    - variable: fluid_resuscitation_ml_hr
+      time_start: "03:00"
+      time_end: "03:00"
+      label: "维持液体速率（mL/h）"
+      optimize:
+        value: [50, 250]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
+  results:
+    generated_at: "2026-05-17"
+    method: nsga2
+    n_solutions: 6
+    elapsed_seconds: 44.1
+    pareto_front:
+    - {x: [300, 50], f: [5.2, 2.8]}
+    - {x: [350, 100], f: [4.9, 2.5]}
+    - {x: [400, 150], f: [4.6, 2.2]}
+    - {x: [450, 180], f: [4.3, 2.0]}
+    - {x: [480, 200], f: [4.1, 1.9]}
+    - {x: [500, 250], f: [3.9, 1.8]}
+    recommended:
+      x: [450, 180]
+      f: [4.3, 2.0]

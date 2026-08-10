@@ -1,7 +1,7 @@
 # Model 决议汇总
 
 > 本文件是 `docs/decisions/` 中 YAML 模型格式和模型库结构相关 ADR 的**主题分类摘要**。  
-> 仿真引擎、优化器、UI 相关 ADR 见 `b_lm_sim_code/docs/DECISIONS.md`。  
+> 仿真引擎、优化器、UI 相关 ADR 见 `life-matters-reference-engine/docs/DECISIONS.md`。  
 > 完整时序索引见 [decisions/README.md](decisions/README.md)。
 
 **重要程度**：⭐⭐ = 核心约束，影响格式规范或架构，不可随意更改；⭐ = 重要实现决策；无标注 = 已实施，历史记录
@@ -15,7 +15,7 @@
 | [0040](decisions/0040-2026-04-22_sim_医学证据类型与变量映射.md) | **医学证据 8 子类型（evidence vs parameter 区分）** | ⭐⭐ | ✅ |
 | [0044](decisions/0044-2026-04-30_sim_schedule作为simulation-input子类型.md) | **schedule 归属 simulation 块；pulse 模式；离散 input 不写零值点** | ⭐⭐ | ✅ |
 | [0046](decisions/0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | ~~step_size 元数据~~（已由 ADR 0104 替代） | | 🔴 已废弃 |
-| [0104](decisions/0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | **per-formula `step_unit`（必填）+ `simulation.step_size`；移除 `metadata.step_size`** | ⭐⭐ | ✅ |
+| [0104](decisions/0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | **per-equation `step_unit`（必填）+ `simulation.step_size`；移除 `metadata.step_size`** | ⭐⭐ | ✅ |
 | [0053](decisions/0053-2026-05-03_sim_date_range调度字段与YAML-schedule优先级修复.md) | date_range 字段；YAML Schedule 优先于 GUI Regimen | ⭐ | ✅ |
 | [0063](decisions/0063-2026-05-07_sim_resolved-imports-and-output-selection.md) | **Resolved imports 与输出变量选择规则（已由 0107 修订）** | ⭐⭐ | ✅ |
 | [0107](decisions/0107-2026-06-16_model_output-variables-import-overwrite.md) | **`output_variables` / `output_types` import 行为统一为覆盖（取代并集）** | ⭐⭐ | ✅ |

@@ -1,7 +1,10 @@
 # 0099 — sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性）
 
 **日期**：2026-06-11
-**状态**：✅ 已实施（修订 0098）
+**状态**：⚠️ N_steps 公式已被 [0131](0131-2026-07-13_model_sustained-value-per-day-not-per-span.md)（2026-07-13）取代——
+"整个生效窗口内的总量"改为"每个匹配日独立满额"，`date_range`/`days` 覆盖多少天不再参与
+`N_steps` 计算，只是命中过滤器。本 ADR 的另一条不变量（`step_size` 只影响精度，不影响结果）
+被 0131 保留。
 **类别**：仿真引擎 / 优化器 schema
 
 ---
@@ -79,7 +82,7 @@ per_step_value = value / N_steps
 
 ## 影响与验证
 
-- **`models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`**：4 个 sustained
+- **内部一个场景文件**：4 个 sustained
   schedule 条目的 `optimize.value` 已按 `N_steps`（144/264/360/360）重新换算
   （`[0,3]→[0,432]`、`[0,2]→[0,528]`、`[0,1]→[0,360]`、`[0.1,0.8]→[36,288]`）。
   `--opt` smoke test（pop=8, gen=2）：`success=True`，5 个解，`x` 落在新边界内，

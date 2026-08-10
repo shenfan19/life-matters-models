@@ -1,0 +1,344 @@
+metadata:
+  name: infant_breastfeeding_sim
+  lm_format_version: "1.0"
+  updated: 2026-05-30
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      新生儿喂养时刻表如何在婴儿生长与母亲睡眠恢复之间取舍，是本模型要回答的问题，这些机制各自成立于自己的研究范围，只有放进同一份喂养时间表下同时追踪，才能显现婴儿摄入量与母亲睡眠债之间的真实权衡。
+      - 婴儿胃排空与溢奶动力学：原始研究只描述单次喂奶后胃内奶量随时间下降的过程，研究范围不涉及母亲睡眠或跨多天的生长结局。
+      - 体重增长动力学：WHO 生长曲线是群体统计基准，不针对个体胃发育速率做个体化调整，也不涉及母亲睡眠。
+      - 母亲睡眠债动力学：原始研究只追踪夜间喂奶对母亲睡眠时长的影响，不涉及婴儿胃容量或体重增长。
+      - 健康时长与产后抑郁风险积累：睡眠碎片化与产后抑郁风险的关联判据来自横断面测量，本身不提供随喂养方案变化的动态轨迹。
+      每篇来源文献具体贡献了什么机制或数据，见下方 references 各条目的 description。
+    method: |
+      胃排空与溢奶动力学、体重增长动力学、母亲睡眠债动力学、健康时长与产后抑郁风险积累这四组机制共享同一份喂养时间表，即每次喂奶的时刻与剂量。
+      - 单次剂量越大、越频繁，宝宝净吸收和体重增长越快，但胃容量有限，超量部分转化为溢奶而不是营养，构成婴儿侧内部的权衡。
+      - 夜间喂奶消耗妈妈有效睡眠，白天喂奶不产生这一代价，喂奶时刻的分布因此直接决定母亲睡眠债积累的速度。
+      - 婴儿体重达标天数与母亲睡眠债低于阈值天数分别累积为两条健康时长曲线，同一份时间表必须同时满足两条曲线，喂养时刻的安排因此在婴儿生长与母亲睡眠之间产生真实的资源竞争，而不是各自独立的目标。
+    result: |
+      本文件本身只跑仿真、不跑优化，携带完整的 variables/equations 物理机制与论文 Table 7、图 5 用的对比仿真方案 simulation.plans，可直接用 --sim 跑出全部对比方案。
+      三个优化场景建立在本文件的机制之上，并列对比才能体现单学科各自最优与联合权衡的差异。
+      - infant_breastfeeding_opt_infant.yaml：儿科/婴儿生长单目标，仅最大化 lm_baby_score。
+      - infant_breastfeeding_opt_maternal.yaml：产后/母亲健康单目标，仅最大化 lm_mother_score。
+      - infant_breastfeeding_opt_joint.yaml：联合多目标，同时优化婴儿与母亲两个目标。
+    limitations: |
+      本模型未覆盖以下机制：
+      - 母乳供需之间的反馈、婴儿饥饿信号、猛长期。
+      - 胃排空按一阶近似处理，忽略液体前段快、脂肪后段慢的双相特征。
+      - 睡眠恢复按线性近似处理。
+  ratings:
+    topic_importance: 5 - 母婴健康全球关切，WHO 方案自然校验提供可信基准
+    framework_demand: 3 - 独立展示模型，领域独特，中等被引预期
+    evidence_quality: 5 - 胃排空参数来源扎实，动态胃容量模型科学性强，WHO 自校验
+    paper_value: 5 - 传播力最强案例，向非专业读者完全可解释，旗舰展示
+    innovation: 4 - 夜间 T2 喂奶时机优化独特，动态胃容量实时更新为方法亮点
+    validation_confidence: 2 - --sim/--opt已跑通，已知问题已解决，但未与独立文献目标数值比对
+  tags: [infant, breastfeeding, newborn, sleep, nutrition, pediatrics, postnatal]
+  references:
+    - citation: "Kent JC et al. (2006) Volume and frequency of breastfeedings and fat content of breast milk throughout the day. Pediatrics 117(3):e387-e395."
+      description: "母乳喂养单次奶量与频率、脂肪含量随时间变化的实测数据，用于标定单次喂奶量的取值范围。"
+    - citation: "Scammon RE & Doyle LO (1920) Observations on the capacity of the stomach in the first ten days of postnatal life. AJDC 20:516-538."
+      description: "新生儿胃容量随体重的比例关系，约30 mL每公斤，用于计算胃容量上限。"
+    - citation: "Cavell B (1981) Gastric emptying in infants fed human milk or infant equation. Acta Paediatr Scand 70:639-641."
+      description: "一阶胃排空速率常数，用于计算胃内奶量随时间下降的动力学。"
+    - citation: "American Academy of Pediatrics (2012) Breastfeeding and the use of human milk. Pediatrics 129(3):e827-e841."
+      description: "母乳喂养与母乳使用的临床指南，用于校准体重增长系数。"
+    - citation: "WHO Child Growth Standards (2006) Weight-for-age. WHO Press, Geneva."
+      description: "婴儿体重随年龄的生长曲线基准，用于判定婴儿健康时长与体重增长系数。"
+    - citation: "Doan T et al. (2007) Breast-feeding increases sleep duration of new parents. J Perinat Neonatal Nurs 21(3):200-206."
+      description: "母乳喂养与父母睡眠时长关系的实测数据，用于标定夜间喂奶消耗母亲有效睡眠的系数。"
+    - citation: "Borbely AA (1982) A two process model of sleep regulation. Hum Neurobiol 1(3):195-204."
+      description: "睡眠调节双过程模型，用于母亲睡眠债的自然恢复动态。"
+    - citation: "Goyal D, Gay C, Lee K (2009) Fragmented maternal sleep is more strongly correlated with depressive symptoms than infant temperament at three months postpartum. Arch Womens Ment Health 12(4):229-237"
+      description: "睡眠碎片化程度与产后三个月抑郁症状关联的判据，用于标定母亲健康时长的睡眠债阈值。"
+    - citation: "Rudzik AEF, Robinson-Smith L, Tugwell F, Ball HL (2023) Relationships between postpartum depression, sleep, and infant feeding in the early postpartum: an exploratory analysis. Front Psychiatry 14:1133386"
+      description: "产后抑郁、睡眠与婴儿喂养关系的探索性分析，为产后抑郁风险天数这一互补输出提供机制支持。"
+  todo:
+    - type: quality
+      issue: "bounds修复（[10,200]→[0,200]）后 spit_up_volume 仍处于巨量级、baby_weight 仍明显落后 WHO 曲线，提示问题根源可能是 stomach_capacity_per_kg（30 mL/kg）相对单次喂奶量（60-115mL）偏小导致持续大量溢奶，以及 weight_gain_per_ml_absorbed（0.000042 kg/mL）系数偏低。"
+      evidence: |
+        --sim（bounds=[0,200]修复后）：spit_up_volume 90天末 = 19382（frequent_small）/ 33593（guideline_standard）/ 53862（clustered_daytime）/ 60130（opt_optimized）；baby_weight = 4.524（frequent_small）/ 4.524（guideline_standard）/ 4.383（clustered_daytime）/ 4.702（opt_optimized），均仍远低于WHO期望90天≈5.55kg（差距0.85-1.17kg）。
+      next: "需重新核对 stomach_capacity_per_kg 与 weight_gain_per_ml_absorbed 两个参数的取值依据，调整后再次重跑 sim/opt 并更新 description.result 与 opt_optimized plan。"
+  log:
+    "2026-06-15_10-22-31":
+      change: "breast_milk变量bounds下界从10改为0（[10,200] → [0,200]）"
+      reason: "pulse模式下非喂奶小时target_value=0被引擎clamp到bounds下界10，造成每小时虚假注入10mL奶量，导致90天累计spit_up_volume达23226-53929mL、baby_weight增长明显低于WHO期望；下界改为0消除此伪影。"
+    "2026-06-22_00-00-00":
+      change: "lm_score_accumulation 的 step_unit 从 hour 改为 day"
+      reason: "lm_baby_score/lm_mother_score 语义是天数，但方程此前按小时步长逐步累加，被放大24倍；2026-07-10 重跑确认修正后数值落在正确量级（如 90 天仿真下 lm_mother_score 封顶90），三个 opt 场景同步重跑回填。"
+    "2026-07-28_00-00-00":
+      change: "lm_mother_score 健康判定阈值 mother_sleep_debt<=15.0 改为 <=4.0，新增 postpartum_depression_risk_days 状态显式输出该判据的风险侧计数"
+      reason: "原15.0阈值下全部已测试喂养方案的稳态睡眠债都远低于该值，lm_mother_score恒为封顶天数，婴儿-母亲联合优化因此退化为单点；改用 Goyal et al. (2009) 报告的'午夜-6点连续睡眠<4小时预测产后抑郁风险升高'作为锚点，让母体目标对搜索施加真实压力。"
+    "2026-08-05_00-00-00":
+      change: "移除已解决的 todo 条目与纯历史性的文件结构迁移记录；description 补充 method 字段"
+      reason: "落实 ADR 0141，主文件只保留当前状态，调试脉络转移至 history/2026-08-05_infant_breastfeeding_sim.yaml。"
+    "2026-08-06_00-00-00":
+      change: "description 按 problem/method/result/limitations 四字段重写，problem 改为按机制分组的多级列表，每组下用子条目列出对应来源文献各自的贡献，method/result 同样改为列表结构，清理硬换行与非豁免括号"
+      reason: "落实 ADR 0142，来源文献此前散落在 method 的叙述里不够醒目，长段落也难以核对结论与支撑细节；曾尝试把来源文献单列成 citation 字段，但与 problem 里各机制的缺口说明重复，改为把每条来源文献直接挂在它所属的机制条目下面。"
+    "2026-08-06_01-00-00":
+      change: "problem 里每条来源文献的贡献说明搬进 references 对应条目的 description，references 每项从纯字符串改为 {citation, description} 对象；problem 只保留机制分组与缺口陈述，不再嵌套列出具体文献"
+      reason: "problem 加了两层嵌套列表后本身变得臃肿，来源文献的贡献说明本质是这篇文献自身的属性，挂在它所属的 reference 条目上比塞进 problem 更合适，GUI 侧边栏参考文献框同步支持两列显示。"
+
+# ── 变量 ─────────────────────────────────────────────────────────────────────────
+variables:
+
+  breast_milk:
+    type: input
+    value: 75.0
+    unit: mL
+    bounds: [0, 200]
+    optimizable: true
+    io_role: input
+    description: "每次喂奶量（pulse 模式：触发时刻写入值，其余步自动为0）。"
+    reference: "Kent et al. (2006) Pediatrics 117(3):e387."
+    locator: "TODO:LOCATE"
+
+  baby_stomach_volume:
+    type: state
+    value: 0.0
+    unit: mL
+    io_role: output
+    description: "宝宝胃内当前奶量（mL）。随喂奶脉冲升高，随胃排空指数下降。"
+    reference: "Cavell B (1981) Acta Paediatr Scand 70:639."
+    locator: "TODO:LOCATE"
+
+  baby_weight:
+    type: state
+    value: 3.3
+    unit: kg
+    io_role: output
+    description: "宝宝体重（kg）。出生均值3.3kg，随吸收奶量增长。体重同时决定胃容量上限。"
+    reference: "WHO Child Growth Standards (2006)"
+    locator: "TODO:LOCATE"
+
+  spit_up_volume:
+    type: state
+    value: 0.0
+    unit: mL
+    io_role: output
+    description: "累计溢奶量（mL）。每次喂奶量超过胃容量时溢出，代表营养损失。"
+    reference: "Scammon & Doyle (1920) AJDC 20:516."
+    locator: "TODO:LOCATE"
+
+  mother_sleep_debt:
+    type: state
+    value: 0.0
+    unit: hour
+    io_role: output
+    description: "妈妈累计睡眠债（小时）。夜间每次喂奶+0.75h，白天自然恢复。0=充分休息。"
+    reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200."
+    locator: "TODO:LOCATE"
+
+  lm_baby_score:
+    type: state
+    value: 0.0
+    unit: hour
+    io_role: output
+    description: "宝宝健康时长：体重在WHO生长曲线上方的累计小时数（可恢复模式）。"
+    reference: "WHO Child Growth Standards (2006); Life Matters Framework"
+    locator: "TODO:LOCATE"
+
+  lm_mother_score:
+    type: state
+    value: 0.0
+    unit: hour
+    io_role: output
+    description: >
+      妈妈健康时长：睡眠债低于4小时的累计小时数（可恢复模式）。阈值2026-07-28从15.0改为4.0，
+      借用 Goyal et al. (2009) 报告的"午夜-6点连续睡眠<4小时预测产后3个月抑郁风险升高"这一
+      判据的数值锚点（工程近似换算，非逐夜连续区间的精确复现，详见 metadata.todo）。
+    reference: "Life Matters Framework; Goyal D et al. (2009) Arch Womens Ment Health 12(4):229-237"
+
+  postpartum_depression_risk_days:
+    type: state
+    value: 0.0
+    unit: day
+    io_role: output
+    description: >
+      产后抑郁风险天数：睡眠债超过4小时阈值的累计天数（与lm_mother_score互补，同一判据的
+      "风险侧"显式命名输出，呼应 Goyal 2009/Rudzik 2023 对睡眠碎片化-产后抑郁关联的讨论）。
+    reference: "Goyal D et al. (2009) Arch Womens Ment Health 12(4):229-237; Rudzik AEF et al. (2023) Front Psychiatry 14:1133386"
+
+  # ── 参数 ──────────────────────────────────────────────────────────────────────
+  gastric_emptying_rate:
+    type: parameter
+    value: 0.46
+    unit: 1/hour
+    description: "胃排空一阶速率常数。母乳半衰期 = ln(2)/0.46 ≈ 1.5小时（母乳比配方奶快2-3倍）。"
+    reference: "Cavell B (1981) Acta Paediatr Scand 70:639-641."
+    locator: "TODO:LOCATE"
+
+  stomach_capacity_per_kg:
+    type: parameter
+    value: 30.0
+    unit: mL/kg
+    description: "每kg体重对应的胃容量（mL/kg）。新生儿约30mL/kg，随体重线性增长。"
+    reference: "Scammon & Doyle (1920) AJDC 20:516-538."
+    locator: "TODO:LOCATE"
+
+  weight_gain_per_ml_absorbed:
+    type: parameter
+    value: 0.000042
+    unit: kg/mL
+    description: >
+      每mL吸收奶量对应的体重增长系数。推导：期望增重25g/天 ÷ 目标日摄奶量600mL
+      （150-180mL/kg/天 × 3.3kg）= 0.042 g/mL。
+    reference: "AAP (2012) Pediatrics 129(3):e827; WHO Child Growth Standards (2006)."
+    locator: "TODO:LOCATE"
+
+  sleep_disruption_per_nightfeed:
+    type: parameter
+    value: 0.75
+    unit: hour
+    description: "每次夜间喂奶（22:00-06:00）消耗的有效睡眠时间：醒来5min+喂奶20min+安抚10min+再入睡10min≈45min。"
+    reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200-206."
+    locator: "TODO:LOCATE"
+
+  sleep_recovery_rate:
+    type: parameter
+    value: 0.083
+    unit: hour/hour
+    description: "每小时睡眠债自然恢复速率（白天小睡+昼夜节律恢复综合）。24h净恢复约2小时。"
+    reference: "Borbely AA (1982) Hum Neurobiol 1(3):195-204."
+    locator: "TODO:LOCATE"
+
+  expected_daily_gain:
+    type: parameter
+    value: 0.025
+    unit: kg/day
+    description: "健康新生儿0-3月龄期望日增重（WHO参考值：25g/天）。"
+    reference: "WHO Child Growth Standards (2006)"
+    locator: "TODO:LOCATE"
+
+# ── 动力学方程 ────────────────────────────────────────────────────────────────────
+equations:
+
+  stomach_intake_and_overflow:
+    priority: 10
+    dynamics:
+      baby_stomach_volume: "baby_stomach_volume + breast_milk - max(0.0, baby_stomach_volume + breast_milk - stomach_capacity_per_kg * baby_weight)"
+      spit_up_volume: "spit_up_volume + max(0.0, baby_stomach_volume + breast_milk - stomach_capacity_per_kg * baby_weight)"
+    description: >
+      喂奶脉冲：将奶量加入胃，超过胃容量（stomach_capacity_per_kg × baby_weight）的部分作为溢奶记录。
+      胃容量随体重实时计算，捕捉早期容量受限到后期容量宽裕的发育转变。
+    reference: "Scammon & Doyle (1920)"
+    locator: "TODO:LOCATE"
+
+  gastric_emptying_and_growth:
+    step_unit: hour
+    priority: 0
+    dynamics:
+      baby_stomach_volume: "max(0.0, baby_stomach_volume - gastric_emptying_rate * baby_stomach_volume * step)"
+      baby_weight: "baby_weight + weight_gain_per_ml_absorbed * gastric_emptying_rate * baby_stomach_volume * step"
+    description: >
+      一阶胃排空（速率0.46/h，半衰期1.5h）；同步将离开胃的奶量转化为体重增长。
+      priority 数值越大越先执行，本方程在 stomach_intake_and_overflow（priority 10）之后执行，
+      读取溢奶修正后的胃内奶量。
+    reference: "Cavell (1981); AAP (2012)"
+    locator: "TODO:LOCATE"
+
+  maternal_sleep_tracking:
+    step_unit: hour
+    priority: 20
+    dynamics:
+      mother_sleep_debt: "max(0.0, mother_sleep_debt - sleep_recovery_rate * step + sleep_disruption_per_nightfeed * (1 if breast_milk > 0 else 0) * (1 if (t % 24 >= 22 or t % 24 < 6) else 0))"
+    description: >
+      睡眠债动态：每次夜间喂奶（22:00-06:00，即 t%24>=22 或 t%24<6）+0.75h；
+      其余每小时自然恢复0.083h（约2h/天）。t 为仿真开始以来的累计小时数，仿真从午夜00:00起。
+    reference: "Doan et al. (2007)"
+    locator: "TODO:LOCATE"
+
+  lm_score_accumulation:
+    step_unit: day
+    priority: 30
+    dynamics:
+      lm_baby_score: "lm_baby_score + step * (1 if baby_weight >= (3.3 + expected_daily_gain * (t / 24.0)) * 0.97 else 0)"
+      lm_mother_score: "lm_mother_score + step * (1 if mother_sleep_debt <= 4.0 else 0)"
+      postpartum_depression_risk_days: "postpartum_depression_risk_days + step * (1 if mother_sleep_debt > 4.0 else 0)"
+    description: >
+      双健康时长累积：
+      lm_baby_score 条件：宝宝体重 ≥ WHO期望曲线的97%（3.3kg + 25g/天 × 已过天数，允许3%容差）；
+      lm_mother_score 条件：妈妈睡眠债 <= 4小时（2026-07-28从15.0改为4.0，见变量description与
+      metadata.todo）；postpartum_depression_risk_days 是同一判据的互补计数（>4小时的天数）。
+    reference: "WHO (2006); Life Matters Framework core metric; Goyal D et al. (2009)"
+    locator: "TODO:LOCATE"
+
+# ── 仿真设置（方案对比） ─────────────────────────────────────────────────────────
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-04-01"
+  output_types: [input, state]
+  plans:
+    - id: "frequent_small"
+      label: "高频小量（10次/天，60mL）"
+      regimens:
+        - {variable: breast_milk, time_start: "01:30", value: 60.0, label: "夜间 1:30"}
+        - {variable: breast_milk, time_start: "04:00", value: 60.0, label: "夜间 4:00"}
+        - {variable: breast_milk, time_start: "06:30", value: 60.0, label: "早晨 6:30"}
+        - {variable: breast_milk, time_start: "09:00", value: 60.0, label: "上午 9:00"}
+        - {variable: breast_milk, time_start: "11:00", value: 60.0, label: "上午 11:00"}
+        - {variable: breast_milk, time_start: "13:00", value: 60.0, label: "下午 13:00"}
+        - {variable: breast_milk, time_start: "15:00", value: 60.0, label: "下午 15:00"}
+        - {variable: breast_milk, time_start: "17:00", value: 60.0, label: "傍晚 17:00"}
+        - {variable: breast_milk, time_start: "19:30", value: 60.0, label: "晚间 19:30"}
+        - {variable: breast_milk, time_start: "22:30", value: 60.0, label: "夜间 22:30"}
+
+    - id: "guideline_standard"
+      label: "指南标准（8次/天，75mL，每3小时）"
+      regimens:
+        - {variable: breast_milk, time_start: "00:00", value: 75.0, label: "凌晨 0:00"}
+        - {variable: breast_milk, time_start: "03:00", value: 75.0, label: "凌晨 3:00"}
+        - {variable: breast_milk, time_start: "06:00", value: 75.0, label: "早晨 6:00"}
+        - {variable: breast_milk, time_start: "09:00", value: 75.0, label: "上午 9:00"}
+        - {variable: breast_milk, time_start: "12:00", value: 75.0, label: "中午 12:00"}
+        - {variable: breast_milk, time_start: "15:00", value: 75.0, label: "下午 15:00"}
+        - {variable: breast_milk, time_start: "18:00", value: 75.0, label: "傍晚 18:00"}
+        - {variable: breast_milk, time_start: "21:00", value: 75.0, label: "晚间 21:00"}
+
+    - id: "clustered_daytime"
+      label: "日间集中（5次/天，120mL）"
+      regimens:
+        - {variable: breast_milk, time_start: "07:00", value: 120.0, label: "早晨 7:00"}
+        - {variable: breast_milk, time_start: "11:00", value: 120.0, label: "上午 11:00"}
+        - {variable: breast_milk, time_start: "15:00", value: 120.0, label: "下午 15:00"}
+        - {variable: breast_milk, time_start: "19:00", value: 120.0, label: "傍晚 19:00"}
+        - {variable: breast_milk, time_start: "23:00", value: 120.0, label: "夜间 23:00"}
+
+    - id: "infant_optimized"
+      label: "儿科/婴儿生长单学科优化方案（仅最大化 lm_baby_score，见 infant_breastfeeding_opt_infant.yaml）——与联合优化结果几乎一致（lm_baby_score 同为9.54天，2026-07-10重跑：lm_score_accumulation改day单位后的正确量级，旧记录229是修复前的小时计数），说明当前模型参数下两学科目标未呈现权衡，需结合已知数据质量问题解读"
+      regimens:
+        - {variable: breast_milk, time_start: "07:00", value: 104.0, label: "白天 7:00"}
+        - {variable: breast_milk, time_start: "10:00", value: 92.0, label: "白天 10:00"}
+        - {variable: breast_milk, time_start: "13:00", value: 104.0, label: "白天 13:00"}
+        - {variable: breast_milk, time_start: "16:00", value: 103.0, label: "白天 16:00"}
+        - {variable: breast_milk, time_start: "19:00", value: 100.0, label: "白天 19:00"}
+        - {variable: breast_milk, time_start: "23:00", value: 103.0, label: "夜间前半夜 23:00"}
+        - {variable: breast_milk, time_start: "03:00", value: 115.0, label: "夜间后半夜 03:00"}
+
+    - id: "maternal_optimized"
+      label: "产后/母亲健康单学科优化方案（仅最大化 lm_mother_score，见 infant_breastfeeding_opt_maternal.yaml）——该目标在搜索空间内高度退化，候选解全部命中上限90天（2026-07-10重跑：day单位修复后的正确量级，旧记录2160是修复前的小时计数），本方案为其中一个代表解，非唯一最优"
+      regimens:
+        - {variable: breast_milk, time_start: "07:00", value: 85.0, label: "白天 7:00"}
+        - {variable: breast_milk, time_start: "10:00", value: 63.0, label: "白天 10:00"}
+        - {variable: breast_milk, time_start: "13:00", value: 89.0, label: "白天 13:00"}
+        - {variable: breast_milk, time_start: "16:00", value: 115.0, label: "白天 16:00"}
+        - {variable: breast_milk, time_start: "19:00", value: 66.0, label: "白天 19:00"}
+        - {variable: breast_milk, time_start: "22:00", value: 38.0, label: "夜间前半夜 22:00"}
+        - {variable: breast_milk, time_start: "04:00", value: 105.0, label: "夜间后半夜 04:00"}
+
+    - id: "joint_optimized"
+      label: "联合多学科优化方案（修复bounds伪影后重新优化：白天5次约100/99/104/104/99mL，夜间23:00喂96mL+03:00喂115mL，见 infant_breastfeeding_opt_joint.yaml）——lm_baby_score/lm_mother_score不劣于指南标准方案"
+      regimens:
+        - {variable: breast_milk, time_start: "07:00", value: 100.0, label: "白天 7:00（x0≈99.8）"}
+        - {variable: breast_milk, time_start: "10:00", value: 99.0, label: "白天 10:00（x1≈99.0）"}
+        - {variable: breast_milk, time_start: "13:00", value: 104.0, label: "白天 13:00（x2≈103.6）"}
+        - {variable: breast_milk, time_start: "16:00", value: 104.0, label: "白天 16:00（x3≈104.2）"}
+        - {variable: breast_milk, time_start: "19:00", value: 99.0, label: "白天 19:00（x4≈98.8）"}
+        - {variable: breast_milk, time_start: "23:00", value: 96.0, label: "夜间前半夜 23:00（x5≈96.5, x6≈2→23:00）"}
+        - {variable: breast_milk, time_start: "03:00", value: 115.0, label: "夜间后半夜 03:00（x7≈115.0, x8≈1→03:00）"}

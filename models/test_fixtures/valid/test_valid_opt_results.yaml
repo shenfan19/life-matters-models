@@ -86,7 +86,7 @@ variables:
     unit: kg per g
     description: Fat mass increase per g/day excess carbohydrate.
 
-formulas:
+equations:
   muscle_dynamics:
     description: Net muscle mass change from protein excess and basal catabolism (rate × step).
     step_unit: hour
@@ -109,7 +109,7 @@ formulas:
     priority: 3
 
   energy_balance_calc:
-    description: Approximate daily energy balance (formula, static indicator).
+    description: Approximate daily energy balance (equation, static indicator).
     step_unit: hour
     dynamics:
       energy_balance: "carb_load * 4.0 + protein_intake * 70.0 * 4.0 - 2000.0"

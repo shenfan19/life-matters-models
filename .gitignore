@@ -1,2 +1,6 @@
 # ignore output folder and the results of the tests
 output/
+saved/
+
+# per-model debug history (superseded YAML versions), author's own record only (ADR 0141)
+**/history/

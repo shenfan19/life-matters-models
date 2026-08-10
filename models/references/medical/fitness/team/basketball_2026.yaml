@@ -1,0 +1,173 @@
+metadata:
+  todo:
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: basketball
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      篮球是典型的间歇性高强度团队运动，48 分钟比赛中冲刺、跳跃等爆发动作与中低强度跑动交替出现。核心生理特征是乳酸的波动积累：每次冲刺和变向触发无氧代谢，乳酸在 2-8 mmol/L 区间波动，间歇期有氧代谢可部分清除但不能完全恢复。随着疲劳积累，敏捷性和投篮命中率系统性下降，形成比赛强度与运动表现维持之间的权衡。
+    result: >
+      仿真尚未运行。理论预期：RPE=6、冲刺频率 3 次/分钟的 48 分钟比赛中，疲劳在 35-45 分钟后超过 60 分，敏捷性从 90 分降至约 70-75 分，投篮命中率从 45% 降至约 35-40%；整场热量消耗约 650-800 kcal。
+    limitations: >
+      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分控卫、前锋、中锋等位置的代谢负荷差异；未建模暂停和犯规停钟期间的恢复动力学。
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 3 - 篮球是全球主流运动，间歇高强度特征有运动医学研究价值
+    framework_demand: 1 - noref，复用价值极低
+    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性描述
+    popularity: 3 - 篮球运动生理模型有一定参考价值但不属于教科书基准
+  tags: [sport, basketball, interval, explosive]
+
+variables:
+  game_intensity:
+    type: input
+    value: 6.0
+    unit: "RPE(0-10)"
+    bounds: [0.0, 10.0]
+    description: "当前比赛强度（攻防节奏；timeout=0，全场紧逼=9）"
+  sprint_frequency:
+    type: input
+    value: 3.0
+    unit: "次/分"
+    bounds: [0.0, 8.0]
+    description: "冲刺/变向频率（快攻/防守反击时增加）"
+  heart_rate:
+    type: state
+    value: 75.0
+    unit: "bpm"
+    bounds: [50.0, 200.0]
+    description: "心率（篮球平均165-180bpm）"
+  calories_burned:
+    type: state
+    value: 0.0
+    unit: "kcal"
+    bounds: [0.0, 1200.0]
+    description: "累计热量消耗（约600-900kcal/场）"
+  fatigue:
+    type: state
+    value: 0.0
+    unit: "分"
+    bounds: [0.0, 100.0]
+    description: "综合疲劳（>60影响投篮精度和防守覆盖范围）"
+  lactate:
+    type: state
+    value: 1.5
+    unit: "mmol/L"
+    bounds: [0.5, 18.0]
+    description: "血乳酸（间歇性运动区间内波动2-8mmol/L）"
+  agility:
+    type: state
+    value: 90.0
+    unit: "分"
+    bounds: [0.0, 100.0]
+    description: "敏捷性（疲劳下急停变向能力下降）"
+  shot_accuracy:
+    type: state
+    value: 45.0
+    unit: "%"
+    bounds: [0.0, 100.0]
+    description: "投篮命中率（疲劳和乳酸影响上肢控制精度）"
+  performance:
+    type: state
+    value: 100.0
+    unit: "分"
+    bounds: [0.0, 100.0]
+    description: "综合场上表现"
+
+equations:
+  heart_rate_response:
+    description: "间歇性运动心率（冲刺时飙高，间歇时部分回落）"
+    condition: true
+    priority: 10
+    dynamics:
+      heart_rate: "min(200, 80 + game_intensity * 10 + sprint_frequency * 5)"
+  calorie_burn:
+    description: "热量消耗（约10-15kcal/min，强度调整）"
+    condition: "game_intensity > 0"
+    priority: 8
+    dynamics:
+      calories_burned: "calories_burned + 7.0 + game_intensity * 0.8 + sprint_frequency * 0.5"
+  fatigue_accumulate:
+    description: "疲劳由强度和冲刺共同驱动"
+    condition: "game_intensity > 0"
+    priority: 8
+    dynamics:
+      fatigue: "min(100, fatigue + game_intensity * 0.09 + sprint_frequency * 0.05)"
+  lactate_interval:
+    description: "乳酸在冲刺时积累，低强度期缓慢清除"
+    condition: true
+    priority: 8
+    dynamics:
+      lactate: "max(0.5, min(18, lactate + sprint_frequency * 0.3 - (1 - game_intensity / 10) * 0.1))"
+  agility_decay:
+    description: "敏捷性随疲劳下降"
+    condition: true
+    priority: 7
+    dynamics:
+      agility: "max(0, 90 - fatigue * 0.5 - max(0, lactate - 5) * 2)"
+  shot_accuracy_decay:
+    description: "投篮命中率受疲劳和乳酸影响（手臂控制能力下降）"
+    condition: true
+    priority: 7
+    dynamics:
+      shot_accuracy: "max(0, 45 - fatigue * 0.25 - max(0, lactate - 6) * 2)"
+  performance_update:
+    description: "综合表现"
+    condition: true
+    priority: 6
+    dynamics:
+      performance: "max(0, (agility * 0.5 + shot_accuracy * 1.1) * (1 - fatigue * 0.004))"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [heart_rate, calories_burned, fatigue, lactate, agility, shot_accuracy, performance]
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: performance
+      metric: final
+      direction: maximize
+    - variable: shot_accuracy
+      metric: mean
+      direction: maximize
+  constraints:
+    - variable: fatigue
+      condition: "<= 9.0"
+      type: soft
+      description: "疲劳感不超过9"
+    - variable: lactate
+      condition: "<= 12.0"
+      type: hard
+      description: "血乳酸不超过12 mmol/L"
+  startpoint:
+    regimens:
+      - variable: game_intensity
+        time_start: "19:00"
+        time_end: "19:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "比赛强度（RPE 0-10）"
+        optimize:
+          value: [0.0, 10.0]
+      - variable: sprint_frequency
+        time_start: "19:00"
+        time_end: "19:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "冲刺频率（次/分）"
+        optimize:
+          value: [0.0, 8.0]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

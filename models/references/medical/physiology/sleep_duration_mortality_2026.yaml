@@ -1,0 +1,101 @@
+category: physiological
+
+metadata:
+  name: sleep_duration_mortality
+  lm_format_version: "1.0"
+  updated: 2026-07-27
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      睡眠时长与全因死亡率呈U形关联，不是"越多越好"的单调关系，过短和过长睡眠都独立于彼此对应更高的死亡风险，最低风险点在约7小时/晚附近。多个跨学科行为优化模型里，例如burnout_allostatic、infant_breastfeeding等，"睡眠"这个决策/状态变量此前都被建成了单调正效应项，即越多睡眠、恢复效果越好、无上限，与这条U形关联矛盾，是这些模型 K×4 优化结果系统性把睡眠推到搜索区间上界、丧失真实权衡的根源之一。本文件把这条U形关联单独声明为可复用的 evidence 参考，供其它模型的 equations 引用系数，避免每个模型各自重新估计或遗漏睡眠上限。
+    result: |
+      用 LM format 的 evidence 节中的 rr 子类型声明 Cappuccio et al. (2010) 剂量-反应 meta 分析的两段式效应量：睡眠时长每比7小时/晚少1小时，全因死亡相对风险(RR)在短睡眠侧升高6%；每比7小时/晚多1小时，RR在长睡眠侧升高13%，长睡眠侧斜率约为短睡眠侧的2倍。验证 Loader 能正确读取、承载并展示这一分段效应量：给定任意sleep_hours_input，静态计算出对应相对风险倍数，最低点固定在 optimal_sleep_hours=7。
+    limitations: |
+      本案例是"效应量编码正确性"展示，不是独立预测检验，两个per-hour RR系数本身就是要验证的目标，不是外推后与另一个独立来源比较。真实剂量-反应关系在两个分段间的过渡区并非严格分段线性，因为meta分析报告的是汇总斜率，不是逐小时精确曲线，供其它模型引用时应视为工程近似而非精确解析解；此外该效应量测的是"死亡率"，不是"次日工作表现"或"次日皮质醇水平"等短期结局，其它模型引用这条曲线的*方向*，即存在最优点、双侧递减，是有依据的，但如果需要短期行为结局的精确系数，应额外核实是否有更直接对应的文献，例如 Van Dongen et al. 2003 关于连续限制睡眠对认知表现累积损害的剂量-反应研究。
+  ratings:
+    topic_importance: 3 - 跨多个行为优化模型复用的基础机制系数，本身不是独立论文案例
+    framework_demand: 3 - 供 burnout_allostatic/infant_breastfeeding 等模型引用，非孤立组件
+    evidence_quality: 5 - Cappuccio et al. (2010) 是该领域被反复引用的经典 meta 分析
+    paper_value: 1 - 通用参考组件，不单独进入任何论文章节
+    innovation: 1 - 纯文献效应量复现，无原创建模贡献
+    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析共识值
+  tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family, sleep, physiology]
+  references:
+    - "Cappuccio FP, D'Elia L, Strazzullo P, Miller MA (2010) Sleep duration and all-cause mortality: a systematic review and meta-analysis of prospective studies. Sleep 33(5):585-592"
+    - "American Academy of Sleep Medicine (AASM) consensus: 7-8 hours/night appropriate for optimal adult health; ≥9-10 hours classified as long sleep duration"
+
+variables:
+  optimal_sleep_hours:
+    description: 最低全因死亡风险对应的睡眠时长（Cappuccio 2010 meta分析拐点；AASM共识7-8h区间的下端）
+    value: 7.0
+    unit: hours
+    type: parameter
+    reference: "Cappuccio FP et al. (2010)"
+
+  rr_per_hour_short:
+    type: parameter
+    evidence_type: rr
+    description: 睡眠时长每比optimal_sleep_hours少1小时，全因死亡RR的增量倍数（短睡眠侧斜率）
+    value: 1.06
+    unit: "RR/hour"
+    reference: "Cappuccio FP et al. (2010) Sleep 33(5):585-592"
+
+  rr_per_hour_long:
+    type: parameter
+    evidence_type: rr
+    description: 睡眠时长每比optimal_sleep_hours多1小时，全因死亡RR的增量倍数（长睡眠侧斜率，约为短睡眠侧的2倍）
+    value: 1.13
+    unit: "RR/hour"
+    reference: "Cappuccio FP et al. (2010) Sleep 33(5):585-592"
+
+  sleep_hours_input:
+    description: 待评估的睡眠时长（供其它模型/展示场景代入的探测值）
+    value: 7.0
+    unit: hours
+    type: input
+
+  relative_risk:
+    description: sleep_hours_input 对应的全因死亡相对风险（以optimal_sleep_hours=7为基准=1.0，双侧分段线性）
+    value: 1.0
+    unit: "RR"
+    type: state
+
+equations:
+  relative_risk_calc:
+    description: >
+      分段线性剂量-反应：短睡眠侧和长睡眠侧各自独立套用各自的per-hour RR增量，
+      在optimal_sleep_hours处两段相接、RR=1.0。这是U形关联的工程近似，不是文献给出的
+      逐小时精确曲线（见 metadata.description.limitations）。
+    condition: true
+    priority: 3
+    dynamics:
+      relative_risk: >
+        1.0
+        + max(0, optimal_sleep_hours - sleep_hours_input) * (rr_per_hour_short - 1.0)
+        + max(0, sleep_hours_input - optimal_sleep_hours) * (rr_per_hour_long - 1.0)
+    reference: "Cappuccio FP et al. (2010)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - sleep_hours_input
+    - relative_risk
+  plans:
+    - id: "short_sleep_5h"
+      label: "短睡眠展示（5小时/晚）"
+      regimens:
+        - {variable: sleep_hours_input, time_start: "00:00", value: 5.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "5h"}
+    - id: "optimal_sleep_7h"
+      label: "最优睡眠展示（7小时/晚）"
+      regimens:
+        - {variable: sleep_hours_input, time_start: "00:00", value: 7.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "7h"}
+    - id: "long_sleep_10h"
+      label: "长睡眠展示（10小时/晚）"
+      regimens:
+        - {variable: sleep_hours_input, time_start: "00:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "10h"}

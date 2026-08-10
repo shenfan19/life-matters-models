@@ -33,7 +33,7 @@ variables:
     type: input
     value: 0.0
     unit: mg
-    description: Oral daily dose (pulse; bioavailability fraction applied in formula).
+    description: Oral daily dose (pulse; bioavailability fraction applied in equation).
 
   bioavailability:
     type: parameter
@@ -53,7 +53,7 @@ variables:
     unit: 1/hour
     description: Elimination rate constant; ke = ln(2) / t½, t½ ≈ 20 h.
 
-formulas:
+equations:
   absorption:
     description: Instantaneous absorption of oral dose (pulse, no step).
     step_unit: hour

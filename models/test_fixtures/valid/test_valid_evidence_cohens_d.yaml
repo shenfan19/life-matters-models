@@ -33,16 +33,16 @@ variables:
     unit: mL/kg/min
     description: Displays exercise_vo2_cohens_d each step (expected constant 4.08).
 
-evidence:
   exercise_vo2_cohens_d:
-    type: cohens_d
+    type: parameter
+    evidence_type: cohens_d
     value: 0.68
     population_sd: 6.0
     unit: mL/kg/min
     description: Exercise program VO2max improvement; effective = 0.68 × 6.0 = 4.08 mL/kg/min.
     reference: "TODO:SOURCE"
 
-formulas:
+equations:
   display_cohens:
     description: "Shows exercise_vo2_cohens_d (cohens_d: effective = d × population_sd)."
     dynamics:

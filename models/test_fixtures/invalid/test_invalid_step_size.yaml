@@ -1,0 +1,36 @@
+metadata:
+  name: test_invalid_step_size
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). `simulation.step_size.value`
+      is 0, which `Validator.validate_model` (validator.py) requires to be a
+      positive number.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。`simulation.step_size.value` 的值为 0，
+      而 `Validator.validate_model`（validator.py）要求该值必须为正数。
+    result: >
+      Loading this model must raise ValueError containing
+      "simulation.step_size 必填且必须为正数". See test_verification/errors/test_structural_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含
+      "simulation.step_size 必填且必须为正数"。参见 test_verification/errors/test_structural_errors.py。
+    limitations: Not a real model; exists only to exercise this one validator check.
+    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
+  tags: [test, error-detection, structural, step_size]
+  references: ["TEST(error-detection): simulation.step_size must be > 0"]
+
+variables:
+  x:
+    type: state
+    value: 1.0
+    unit: unit
+    description: Placeholder state variable; irrelevant to the error under test.
+
+simulation:
+  step_size:
+    value: 0
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [x]

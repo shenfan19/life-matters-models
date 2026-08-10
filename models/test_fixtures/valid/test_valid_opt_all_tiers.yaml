@@ -69,7 +69,7 @@ variables:
     unit: mg
     description: |
       Metformin daily dose (rate; reduces basal glucose proportionally).
-      Acts continuously; formula multiplies by step.
+      Acts continuously; equation multiplies by step.
 
   background_drug:
     type: input
@@ -107,7 +107,7 @@ variables:
     unit: mg/dL per day
     description: Daily basal hepatic glucose output without insulin.
 
-formulas:
+equations:
   glucose_dynamics:
     description: |
       Net daily glucose change:

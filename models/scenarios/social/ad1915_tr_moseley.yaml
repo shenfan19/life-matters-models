@@ -1,0 +1,45 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "模型为新建 stub，variables/equations 均为空，仿真无法运行"
+      evidence: "本次新建时仅完成 problem/result/limitations 占位描述，尚未定义 variables 和 equations。"
+      next: "确定具体参数来源后补全 variables 和 equations，运行 --sim 验证。"
+    - type: noopt
+      issue: "同上，优化器同样无法运行"
+      evidence: "同上。"
+      next: "补全模型后运行 --opt 验证。"
+  name: ad1915_tr_moseley
+  lm_format_version: "1.0"
+  updated: 2026-07-24
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      物理学家 Henry Moseley 生于 1887 年，提出"莫斯利定律"，为原子序数概念和元素周期表提供了实验基础。1915 年 8 月他作为通讯军官在加里波利战役 Chunuk Bair 前线传递炮兵指令时被狙击手击中身亡。他的阵亡直接促使英国此后调整政策，限制将顶尖科学人才派往前线作战。本场景与 ad1940_fr_doeblin 同属"前线暴露强度 → 死亡概率"与"科研生产力轨迹 → 预期未来贡献"并列建模的系列，量化科学人才战场减员的机会成本，而非评判具体战役决策，具体参数化路径待确定。
+    result: >
+      仿真窗口已预置，覆盖 1915 年 8 月 6 日 Chunuk Bair 战斗至 8 月 10 日 Moseley 阵亡当日；变量和方程待参数化路径确定后填写，该场景尚未实际运行仿真。
+    limitations: >
+      "预期未来科研贡献"变量的构造方式存在方法论争议，需谨慎处理反事实推断的不确定性；通讯军官岗位的暴露强度量化尚未完成；需参考 Heilbron 1974。
+  ratings:
+    topic_importance: 4 - Moseley 之死是"科学人才战时保护政策"最常被引用的历史起点，政策与教育价值高
+    framework_demand: 1 - TODO 存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
+    innovation: 4 - 与 ad1940_fr_doeblin 构成"死亡概率 × 预期未来贡献"联合建模的第二个案例，意图明确但尚未实现
+    social_value: 4 - 触及科研人才保护政策的现实议题，教育与政策讨论价值高，不涉及军事道德评判
+  tags: [war, physicist, wwi, gallipoli, sacrifice, TODO]
+  references:
+    - "Heilbron JL (1974) H.G.J. Moseley: The Life and Letters of an English Physicist, 1887-1915. University of California Press."
+
+variables: {}
+equations: {}
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "1915-08-06"
+  end_date:   "1915-08-10"
+  output_variables: []

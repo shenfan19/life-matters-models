@@ -1,0 +1,46 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "模型为新建 stub，variables/equations 均为空，仿真无法运行"
+      evidence: "本次新建时仅完成 problem/result/limitations 占位描述，尚未定义 variables 和 equations。"
+      next: "确定具体视角/参数来源后补全 variables 和 equations，运行 --sim 验证。"
+    - type: noopt
+      issue: "同上，优化器同样无法运行"
+      evidence: "同上。"
+      next: "补全模型后运行 --opt 验证。"
+  name: ad1944_fr_normandy
+  lm_format_version: "1.0"
+  updated: 2026-07-24
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      诺曼底战役中，从 1944 年 6 月 6 日登陆日起至滩头巩固阶段，登陆士兵的生存概率由战斗暴露强度、推进节奏与急性战斗应激反应共同决定；体能消耗、创伤风险与战斗应激，即急性应激反应或战斗疲劳，是核心生理与心理变量；具体士兵视角，包括登陆波次、兵种、登陆海滩分区，待确定。
+    result: >
+      仿真窗口已预置为 1944-06-06 至 1944-06-30，覆盖登陆日至滩头巩固阶段，变量和方程有待具体视角确定后补全，仿真尚未运行；该文件目前是等待补全变量和方程的占位模型。
+    limitations: >
+      具体登陆波次时刻表、Omaha、Utah、Juno、Gold、Sword 五个海滩分区各自的伤亡率差异，以及个体急性应激生理参数化均尚未完成，需参考 Ambrose 1994 和 Beevor 2009。
+  ratings:
+    topic_importance: 4 - 诺曼底战役是二战关键战役，战斗应激与生存概率建模有重要历史与生理学价值
+    framework_demand: 1 - TODO 存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
+    innovation: 3 - 战斗应激（急性应激反应）驱动的生理-心理联合动力学建模意图存在，与已有 HPA 轴压力模型互补，但尚未实现
+    social_value: 3 - 触及战斗环境下的生理应激机制，历史与教育价值明确，不涉及族群/道德归责争议
+  tags: [war, combat, wwii, normandy, survival, TODO]
+  references:
+    - "Ambrose SE (1994) D-Day: June 6, 1944: The Climactic Battle of World War II. Simon & Schuster."
+    - "Beevor A (2009) D-Day: The Battle for Normandy. Viking."
+
+variables: {}
+equations: {}
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "1944-06-06"
+  end_date:   "1944-06-30"
+  output_variables: []

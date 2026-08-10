@@ -1,0 +1,63 @@
+category: socio_economic
+
+metadata:
+  name: mindfulness_anxiety
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      正念疗法-焦虑症状是心理治疗研究里被反复meta分析、效应量相对稳定收敛的干预效应之一。正念疗法相对对照组改善焦虑症状的效应量，治疗前后对比，meta分析综合样本
+    result: |
+      用 LM format 的 evidence 节中的 cohens_d 子类型声明该效应量，population_sd=1.0，即输出变量本身以SD为单位，验证 Loader 能正确读取、换算并展示该效应量，结果与声明值精确一致，d=0.63 SD。
+    limitations: |
+      本案例是"效应量编码正确性"展示，不是独立预测检验，0.63这个数字本身就是要验证的目标。心理治疗效应量普遍存在跨研究异质性，例如发表偏倚、对照类型差异等，本文件只承载一个综合meta分析点估计，不代表该效应量在所有情境下都精确稳定。
+  ratings:
+    topic_importance: 2 - 心理治疗效应量族案例之一，用于批量验证evidence编码
+    framework_demand: 1 - 通用参考组件，尚未被具体论文import
+    evidence_quality: 4 - 来自meta分析综合样本，但心理治疗效应量普遍存在跨研究异质性
+    paper_value: 1 - 通用参考组件
+    innovation: 1 - 纯文献效应量复现，无原创建模贡献
+    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析综合样本，但需注意心理治疗效应量的跨研究异质性
+  tags: [psychology, cohens-d, evidence, validation, literature-benchmark, cohend-family]
+  references:
+    - "Hofmann SG et al. (2010) J Consult Clin Psychol; meta-analytic review of mindfulness-based therapy, Hedges g=0.63"
+
+variables:
+  effect_size_sd:
+    description: 干预效应量（标准差单位）
+    value: 0.0
+    unit: SD
+    type: state
+
+  intervention_effect:
+    type: parameter
+    evidence_type: cohens_d
+    value: 0.63
+    population_sd: 1.0
+    unit: SD
+    description: 正念疗法相对对照组改善焦虑症状的效应量(治疗前后)，meta分析综合样本
+    reference: "Hofmann SG et al. (2010) J Consult Clin Psychol; meta-analytic review of mindfulness-based therapy, Hedges g=0.63"
+
+equations:
+  display_effect:
+    description: "静态展示：effect_size_sd = intervention_effect（cohens_d类型：有效值=value*population_sd）"
+    condition: true
+    priority: 3
+    dynamics:
+      effect_size_sd: "intervention_effect"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - effect_size_sd
+  plans:
+    - id: "intervention_vs_control"
+      label: "干预组 vs 对照组效应量展示"
+      regimens: []

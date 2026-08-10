@@ -1,0 +1,63 @@
+category: physiological
+
+metadata:
+  name: amoxicillin_pk
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      阿莫西林是青霉素类抗生素，在肾功能正常人群中消除半衰期 t½=1.0小时是药代动力学教科书和临床指南广泛引用的共识数字。本文件用归一化血药浓度验证 LM format 能否正确复现标准一阶消除曲线，浓度以峰值为1.0进行归一化，不依赖具体剂量、表观分布容积或生物利用度参数，只验证消除动力学本身。
+    result: |
+      单室一阶消除，t½=1.0小时：1个半衰期后应降至峰值50%，2个半衰期后25%，3个半衰期后12.5%，4个半衰期后6.25%。仿真结果见下方 output_variables，各检查点应与理论值偏差<0.5%。
+    limitations: |
+      归一化模型简化了吸收相，真实达峰通常需数十分钟到数小时；同时简化了个体差异，肝肾功能、年龄和药物相互作用均会影响实际半衰期。模型只验证消除相本身的一阶动力学结构，非完整 PK/PD 模型。
+  ratings:
+    topic_importance: 2 - 药代动力学族案例之一，用于批量验证一阶消除结构
+    framework_demand: 1 - 通用参考组件，尚未被具体论文import
+    evidence_quality: 5 - 消除半衰期为药代动力学教科书级共识数字
+    paper_value: 1 - 通用参考组件
+    innovation: 1 - 纯文献复现，无原创建模贡献
+    validation_confidence: 5 - 归一化一阶消除曲线与理论值(50%/25%/12.5%/6.25%)逐位吻合
+  tags: [pharmacokinetics, amoxicillin, validation, literature-benchmark, pk-family]
+  references:
+    - "Sjovall J et al. (1985) Antimicrob Agents Chemother 27(2):207-215"
+
+variables:
+  normalized_conc:
+    description: 归一化血药浓度（峰值=1.0），一阶消除
+    value: 1.0
+    unit: dimensionless
+    type: state
+    bounds: [0, 1]
+
+  elimination_ke:
+    description: 消除速率常数 ke = ln2/t½，t½=1.0小时（文献共识值）
+    value: 0.693147
+    unit: 1/hour
+    type: parameter
+    reference: "Sjovall J et al. (1985) Antimicrob Agents Chemother 27(2):207-215"
+
+equations:
+  first_order_elimination:
+    description: "单室一阶消除：dC/dt = -ke·C"
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      normalized_conc: "normalized_conc - elimination_ke * normalized_conc * step"
+
+simulation:
+  step_size:
+    value: 2
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables:
+    - normalized_conc
+  plans:
+    - id: "from_peak"
+      label: "从峰值浓度(归一化=1.0)开始的消除追踪"
+      regimens: []

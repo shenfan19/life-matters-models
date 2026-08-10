@@ -1,0 +1,217 @@
+category: social
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: fr1815_fr_fantine
+  lm_format_version: "1.0"
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      芳汀（雨果《悲惨世界》1862）被工厂因未婚母亲身份解雇后面临三重权衡：劳动强度，即能增加收入但会加剧结核病病情；自我牺牲程度，即卖头发、牙齿、身体以换取珂赛特的生活费；以及寻求援助，即可能获得支持但需暴露身份且援助并不可靠。德纳第夫妇的勒索持续上涨，系统性贫困使任何努力都面临边际递减。
+    result: >
+      仿真预期显示 36 个月内芳汀的健康状态、汇款能力和珂赛特存活概率的月动态轨迹。当前为草案状态，参数待校准。
+    limitations: 草案，参数、目标和叙事细节待校准；文学设定，19 世纪法国劳动市场参数需参考历史文献。
+  ratings:
+    topic_importance: 4 - 芳汀是贫困单亲母亲劳工剥削的经典文学形象，具有重要社会学复用价值
+    framework_demand: 1 - TODO存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
+    innovation: 2 - 将自我牺牲程度与健康损耗的动态建模意图存在，但尚未完善
+    social_value: 5 - 触及贫困、母爱与制度性压迫的普世主题，是《悲惨世界》最动人的叙事
+  tags:
+    - poverty
+    - single-mother
+    - tuberculosis
+    - exploitation
+    - sacrifice
+    - literature
+  references:
+    - 悲惨世界 (Victor Hugo, 1862)
+variables:
+  work_intensity:
+    type: input
+    value: 2.0
+    unit: intensity
+    bounds:
+      - 0
+      - 3
+    description: 劳动强度：做工努力程度：高则多挣钱，但加速肺病
+    reference: TODO:SOURCE
+  sacrifice_level:
+    type: input
+    value: 0.5
+    unit: ratio
+    bounds:
+      - 0
+      - 1
+    description: 自我牺牲程度：为寄钱给珂赛特牺牲自身生存资源（头发/牙齿/身体）
+    reference: TODO:SOURCE
+  seek_help:
+    type: input
+    value: 0.2
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 寻求援助：向教会/官员/善人求助（风险高，尊严代价大）
+    reference: TODO:SOURCE
+  cosette_wellbeing:
+    type: state
+    value: 40
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 珂赛特生存状态：女儿在客栈的生活质量（取决于汇款）
+    reference: TODO:SOURCE
+    io_role: output
+  health:
+    type: state
+    value: 75
+    unit: hp
+    bounds:
+      - 0
+      - 100
+    description: 芳汀的健康：肺结核+营养不足+过度劳动的累积损耗
+    reference: TODO:SOURCE
+    io_role: output
+  income:
+    type: state
+    value: 50
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 月收入（相对）：当前的劳动收入水平
+    reference: TODO:SOURCE
+    io_role: output
+  desperation:
+    type: state
+    value: 20
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 绝望程度：社会排斥·健康恶化·资源枯竭的综合绝望
+    reference: TODO:SOURCE
+    io_role: output
+  tb_progression:
+    type: state
+    value: 10
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 肺结核进展：结核病的不可逆进展
+    reference: TODO:SOURCE
+    io_role: output
+equations:
+  health_decay:
+    dynamics:
+      health: max(0, health - ((tb_progression / 100) * 2.5) - (work_intensity * 0.8) - (sacrifice_level * 1.5) + seek_help * 0.5)
+    description: 肺结核+劳动强度+营养不足消耗健康
+    reference: TODO:SOURCE
+  tb_growth:
+    dynamics:
+      tb_progression: min(100, tb_progression + (1.0 + sacrifice_level * 1.2) + (work_intensity * 0.4))
+    description: 结核病随营养不足和劳累而加速
+    reference: TODO:SOURCE
+  income_dynamics:
+    dynamics:
+      income: max(0, (work_intensity * 15.0) - ((desperation / 100) * 20.0) + (seek_help * 5.0))
+    description: 收入随工作强度，但社会排斥（desperation）逐渐降低就业机会
+    reference: TODO:SOURCE
+  cosette_status:
+    dynamics:
+      cosette_wellbeing: max(0, min(100, cosette_wellbeing + ((income * sacrifice_level * 0.5) * (1 - (0.4))) * 0.1 - 2.0))
+    description: 寄钱→珂赛特状态，但客栈主人会截留
+    reference: TODO:SOURCE
+  desperation_growth:
+    dynamics:
+      desperation: min(100, max(0, desperation + ((1 - health / 100) * 2.0 + (1 - income / 100) * 1.5) - (seek_help * 1.5)))
+    description: 绝望随健康下降·收入下降·无援助积累
+    reference: TODO:SOURCE
+simulation:
+  step_size:
+    value: 1
+    unit: month
+  start_date: '1815-01-01'
+  end_date: '1817-12-31'
+  output_types:
+    - input
+    - state
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: cosette_wellbeing
+      metric: final
+      direction: maximize
+    - variable: health
+      metric: final
+      direction: maximize
+  startpoint:
+    regimens:
+      - variable: work_intensity
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 劳动强度
+        optimize:
+          value:
+            - 0
+            - 3
+      - variable: sacrifice_level
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 自我牺牲程度
+        optimize:
+          value:
+            - 0
+            - 1
+      - variable: seek_help
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 寻求援助
+        optimize:
+          value:
+            - 0
+            - 1
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

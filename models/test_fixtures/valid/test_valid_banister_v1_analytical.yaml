@@ -36,8 +36,8 @@ metadata:
   todo:
     - type: bug
       severity: resolved
-      issue: "training_load 原配置为单点脉冲（time_start 无 time_end），dynamics 公式把它和状态自身衰减项一起乘了 *step；在 step_size=1天（=formula step_unit）下是 no-op，仅在更细步长下才会暴露成误差"
-      evidence: "2026-07-10 用此配置跑 validate_banister.py 得到的 FAIL（performance 误差 day14=7.08%）本身数字没错，但该配置只在 step_size=1天 下碰巧正确；2026-07-13 排查 Banister S1 步长自适应问题时定位到此 bug（详见 c:/fan/b_lm_home/tasks/2026-07-13_task_step-size-adaptive-input-rate-design.md）"
+      issue: "training_load 原配置为单点脉冲（time_start 无 time_end），dynamics 方程把它和状态自身衰减项一起乘了 *step；在 step_size=1天（=equation step_unit）下是 no-op，仅在更细步长下才会暴露成误差"
+      evidence: "2026-07-10 用此配置跑 validate_banister.py 得到的 FAIL（performance 误差 day14=7.08%）本身数字没错，但该配置只在 step_size=1天 下碰巧正确；2026-07-13 排查 Banister S1 步长自适应问题时定位到此 bug（详见 c:/fan/b_life_matters/life-matters-home/tasks/2026-07-13_task_step-size-adaptive-input-rate-design.md）"
       fix: "按 ADR 0128 改为全天 sustained 窗口（time_start=00:00, time_end=24:00），value=50.0 不变（ADR 0128 起本就是日速率语义）；dynamics 拆开括号，training_load 项不再乘 *step，衰减项保留 *step。修复后跑通 6 步长(1天/12h/6h/3h/1h/30min)×4区间(7/14/30/60天) 收敛网格，结果见 test_verification/verification_report.md §2。"
 
 variables:
@@ -95,7 +95,7 @@ variables:
     unit: AU
     description: Baseline performance (Mujika et al. 1996).
 
-formulas:
+equations:
   fitness_dynamics:
     description: "dA/dt = g*w - k1*A (Euler); training_load is a day-rate input (ADR 0128, no *step), decay term keeps *step"
     step_unit: day

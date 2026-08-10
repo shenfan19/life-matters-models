@@ -44,7 +44,7 @@ variables:
     type: input
     value: 0.0
     unit: minutes
-    description: Daily aerobic training duration (pulse; VO2max adaptation in formula).
+    description: Daily aerobic training duration (pulse; VO2max adaptation in equation).
 
   vo2max_adaptation_rate:
     type: parameter
@@ -52,7 +52,7 @@ variables:
     unit: mL/kg/min per minute of training
     description: VO2max gain per minute of training session (adapted from Bassett & Howley 2000).
 
-formulas:
+equations:
   # This model adds VO2max gain from training (pulse; no step multiplication)
   vo2max_training:
     description: VO2max improves from each training session (pulse input, no step).

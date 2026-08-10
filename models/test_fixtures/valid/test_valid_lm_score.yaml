@@ -80,7 +80,7 @@ variables:
     type: input
     value: 0.0
     unit: mg
-    description: Daily antihypertensive dose (pulse; lowers SBP per mg in formula).
+    description: Daily antihypertensive dose (pulse; lowers SBP per mg in equation).
 
   bp_effect_per_mg:
     type: parameter
@@ -120,7 +120,7 @@ variables:
       Survival flag for latch mode; 1 = alive, 0 = stroke event (irreversible).
       Once set to 0, lm_score_irreversible stops accumulating forever.
 
-formulas:
+equations:
   # --- BP dynamics ---
   bp_treatment:
     description: Antihypertensive dose reduces SBP (pulse, no step).

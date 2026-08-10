@@ -1,6 +1,6 @@
 # Contributor License Agreement
 
-**Life Matters Model Library (b_lm_model)**  
+**Life Matters Model Library (life-matters-models)**  
 Maintainer: Fan Shen &lt;shenfan19@gmail.com&gt;
 
 ---
@@ -34,7 +34,7 @@ The maintainer reserves the right to:
 - Request additional citations or clarifications
 - Decline contributions that do not meet quality standards or that conflict with repository scope
 
-Significant changes to model content (parameters, formulas) will be made in consultation with the contributing author where possible.
+Significant changes to model content (parameters, equations) will be made in consultation with the contributing author where possible.
 
 ---
 

@@ -1,0 +1,485 @@
+metadata:
+  name: ckd_protein_sim
+  lm_format_version: "1.0"
+  updated: 2026-05-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
+  description:
+    problem: |
+      CKD G3b-G4 期患者同时面临肾功能保护与肌少症预防的冲突：肾内科指南为减少含氮废物负荷推荐较低蛋白摄入，肌少症指南为维持肌肉量推荐较高蛋白摄入，两套指南推荐区间没有重叠；蛋白限制期切换至标准期的时机是另一个临床决策维度，这一时机的最优选择同时受生理阈值和患者依从性衰减两条轨迹驱动，单篇来源文献回答不了这一问题：
+      - 肾功能衰退动力学：只描述蛋白摄入超标对 GFR 的损伤过程，不涉及肌肉量或患者依从性随时间的变化。
+      - 骨骼肌合成-分解动力学：只描述 CKD 患者肌肉消耗的机制，不涉及肾功能保护或依从性。
+      - 血尿素氮动力学：产生-清除净平衡是标准生理关系，用于连接蛋白摄入与 GFR 两条轨迹的可观测约束，不单独构成一条有独立文献边界的机制。
+      - 饮食依从性动力学：只报告 CKD 低蛋白饮食患者 3 年随访时点的依从率，不涉及肾功能或肌肉结局，也未提供依从性衰减的连续轨迹。
+      每篇来源文献具体贡献了什么机制或数据，见下方 references 各条目的 description。
+    method: |
+      四组机制共享同一组决策变量，即三餐蛋白摄入配比与限制期到标准期的切换时机：
+      - 早午晚三餐蛋白摄入量同时驱动 GFR 损伤项、肌肉合成项与 BUN 产生项，早午餐蛋白量压低有利于保护 GFR，却压低肌肉合成。
+      - 依从性水平由处方蛋白量本身决定餐次类型，即限制期或标准期，衰减或恢复后又反过来通过插值改变实际摄入量；实际摄入替代处方值进入 GFR、肌肉、BUN 三条动力学，让限制期越长、依从性衰减越多、处方效果被打折这一机制真实影响生理结局，而不是停留在描述层面。
+      - 限制期到标准期的切换时机因此同时被两条轨迹约束：生理指标是否已达到阈值，以及累计依从性还能支撑处方多久。
+    result: |
+      - 本文件携带完整的 variables/equations 物理机制，与论文 Table 5/6/图 3 用的对比仿真方案 simulation.plans，可直接 `--sim` 跑出全部对比方案。
+      - 三个单/多学科优化场景见同目录 `ckd_protein_opt_renal.yaml`，肾科单目标仅最大化 GFR、`ckd_protein_opt_muscle.yaml`，康复科单目标仅最大化 muscle_mass、`ckd_protein_opt_joint.yaml`，联合多目标 GFR+muscle_mass+lm_score。三者各自算出的最优 regimen 抄成下方 plans 里的具名方案，并列对比才能体现单学科各自最优与联合权衡的差异，这是 LM format 多学科联合建模的核心价值所在，不是任一单一 opt 文件能单独说明的。
+      - 三个优化场景的非退化前沿中，muscle_mass 端点落在符合 Carrero 2013 文献方向的真实可达上限，随蛋白摄入升高而上升，与 GFR 目标构成真实权衡。
+      - 晚餐蛋白摄入时机在 gfr_decline 与 muscle_dynamics 两条 dynamics 表达式中均无时刻相关项，不构成肌肉合成的驱动机制；限制期到标准期的切换时机是本案例中唯一有真实机制支撑的时间维度贡献。
+    limitations: |
+      - 蛋白-GFR 动力学系数为文献估算值，尚待精化；52 周线性动力学假设忽略了肾纤维化的非线性加速；当前参数来源待补充，TODO:SOURCE。
+      - 晚餐蛋白摄入时机作为决策变量保留在搜索空间内，但当前 dynamics 结构下对任何生理结局都没有实际影响，是一个已知但尚未修复的机制缺口。若要让 Snijders 2015、Res 2012 报告的睡前蛋白合成效应真正起作用，需要在 muscle_dynamics 中显式加入时刻相关项，这是尚未开展的后续模型工程方向。
+  ratings:
+    topic_importance: 5 - KDIGO 指南明确空白，真实未解临床问题，患者群体庞大
+    framework_demand: 4 - 旗舰核心论文模型，被A4系列s3/s4引用
+    evidence_quality: 4 - 核心文献扎实，alpha，即蛋白-GFR 损伤系数，为估算值
+    paper_value: 5 - 临床冲突典型案例，T4 切换时机+依从性维度原创贡献，临床转化路径清晰
+    innovation: 4 - T4 切换时机与患者依从性衰减耦合为原创贡献；此前声称的睡前蛋白 T2 时间营养学机制经 2026-08-02 核查未在 dynamics 中实现，已移除该子声明，见 metadata.todo
+    validation_confidence: 4 - 2026-08-02 已修正 muscle_mass 方向与 BUN 清除系数两处方向性问题，均符合文献方向；新增依从性维度的衰减速率有真实纵向文献锚点，Rizzetto et al. 2017；晚餐时机机制缺口已如实记录，未冒充已实现，见 test_validation/validation_report.md
+  tags: [ckd, protein, muscle, GFR]
+  references:
+    - citation: "KDIGO 2020 Clinical Practice Guideline §3.1.13 Grade 2C"
+      description: "CKD 分期与蛋白限制建议区间的指南来源，GFR/BUN 的生理边界与 lm_score 安全阈值均据此设定。"
+    - citation: "Carrero JJ et al. (2013) Etiology of PEW in CKD. J Ren Nutr 23(2):77-90"
+      description: "CKD 患者蛋白能量消耗，即肌肉消耗，的机制来源，muscle_mass 基线与 52 周净损失量级的标定依据。"
+    - citation: "Kalantar-Zadeh K et al. (2017) Dietary restrictions in dialysis patients. Semin Dial 30(2):159-168"
+      description: "蛋白摄入超标对 GFR 损伤敏感性 alpha 的标定依据。"
+    - citation: "Wang XH & Mitch WE (2014) Mechanisms of muscle wasting in CKD. Nat Rev Nephrol 10(9):504-516"
+      description: "尿毒症驱动的肌肉分解增强系数 mu_u 的标定依据。"
+    - citation: "Snijders T et al. (2015) Protein ingestion before sleep increases overnight muscle protein synthesis rates. J Nutr 145(6):1178-1184"
+      description: "报告睡前蛋白摄入促进夜间肌肉合成，但本文件 muscle_dynamics 未实现时刻相关项，该效应当前未被模型验证，见 limitations。"
+    - citation: "Res PT et al. (2012) Protein ingestion before sleep improves postexercise overnight recovery. Med Sci Sports Exerc 44(8):1560-1569"
+      description: "同上，支持睡前蛋白摄入促进恢复的机制方向，同样未在当前 dynamics 中实现。"
+    - citation: "Rizzetto F et al. (2017) Chronic kidney disease progression: a retrospective analysis of 3-year adherence to a low protein diet. Ren Fail 39(1):357-362"
+      description: "报告 CKD 低蛋白饮食患者 3 年随访依从率 49.2%，是 adherence_decay_per_meal 每餐衰减量的推导锚点。"
+    - citation: "De Mauri A et al. (2022) Compliance, Adherence and Concordance Differently Predict the Improvement of Uremic and Microbial Toxins in Chronic Kidney Disease on Low Protein Diet. Nutrients 14(3):487"
+      description: "处方松紧影响依从可持续性的定性支持，用于 adherence_recovery_per_meal 与衰减速率对称假设的方向依据。"
+    - citation: "Bauer J et al. (2013) Evidence-based recommendations for optimal dietary protein intake in older people: a position paper from the PROT-AGE Study Group. J Am Med Dir Assoc 14(8):542-559"
+      description: "dietary_protein_lapse_target 的折算基准：依从性下降后患者实际摄入趋向的蛋白量参照 PROT-AGE 推荐值。"
+  todo:
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  log:
+    "2026-08-06_02-00-00":
+      change: "按 ADR 0142/0143 迁移：description 四字段改为列表结构，problem 按机制分组列出各自边界，references 全部改为 {citation, description} 对象写法；顺带清理 result/limitations 里的非豁免括号与过程叙述语言"
+      reason: "落实 ADR 0143：编辑 papers/ 模型时顺带完成 description/references 迁移，不再以任务范围小为由跳过。"
+    "2026-06-20_00-00-00":
+      change: "修正 beta0/mu_d/mu_u 三个动力学系数的 per-day→per-hour 单位换算（均÷24）"
+      reason: "三者按天速率标定却直接代入 step_unit:hour 的方程，被错误放大 24 倍，导致三个 opt 场景全部 0% feasible；换算方式见 ADR 0121。"
+    "2026-06-20_00-00-01":
+      change: "删除三个 opt 文件里 dietary_protein>=0.10 的约束"
+      reason: "该约束默认按全程逐 step 检查，但 dietary_protein 是脉冲输入，非进餐时刻恒为 0，约束在多数时间步上必然违反；三餐搜索下界 0.15 已结构性满足其原始意图，故直接删除而非加 metric 修正。"
+    "2026-06-22_00-00-00":
+      change: "lm_score_update 的 step_unit 从 hour 改为 day"
+      reason: "原声明与 simulation.step_size 换算后使 lm_score 按小时而非天数累加，被放大 24 倍。"
+    "2026-08-02_00-00-00":
+      change: "bun_clearance_coef 从 dynamics 内联的硬编码 0.003 提升为具名变量并修正为 0.000125"
+      reason: "同一类 per-day 速率误代入 step_unit:hour 方程的问题，原值使 BUN 在 1-2 天内崩溃至 0.35-0.9，远低于目标 14-20 mg/dL。"
+    "2026-08-02_00-00-01":
+      change: "下调 mu_s 均值 0.08→0.045，上调 mu_d 0.00005→0.00006"
+      reason: "原标定下三个静态基线 52 周末 muscle_mass 均呈净增长，方向与 Carrero 2013 报告的净损失相反；重标定后转为净损失，量级落入其区间。"
+    "2026-08-02_00-00-02":
+      change: "新增 dietary_adherence/adherence_decay_per_meal/adherence_recovery_per_meal/dietary_protein_lapse_target/effective_dietary_protein，GFR/肌肉/BUN 三条 dynamics 改用 effective_dietary_protein"
+      reason: "让限制期切换时机的最优选择同时受生理阈值和患者饮食依从性衰减驱动；衰减速率标定自 Rizzetto et al. 2017 的 3 年随访依从率。"
+    "2026-08-02_00-00-03":
+      change: "移除晚餐蛋白摄入时机（T2）驱动肌肉合成的表述，从 description 与 metadata.ratings 中删除该子声明"
+      reason: "文献对标复核确认 gfr_decline/muscle_dynamics 两条 dynamics 均无时刻相关项，此前的表述是对历史手工搜索解的巧合观察，不是模型验证过的因果机制。"
+    "2026-08-05_00-00-00":
+      change: "调试历史（原 metadata.todo 已解决条目、多次 rerun 记录）迁移至 history/2026-08-05_ckd_protein_sim.yaml；description 补充 method 字段，problem 字段移除调试过程叙述"
+      reason: "落实 ADR 0141：主文件只保留当前状态，调试脉络转移到 gitignored 的 history/ 供本人日后查证。"
+
+# ── 变量 ───────────────────────────────────────────────────────────────────────
+variables:
+  GFR:
+    description: 肾小球滤过率，CKD 3期起始（KDIGO分期45–59 mL/min/1.73m²）
+    value: 45.0
+    unit: mL/min/1.73m²
+    type: state
+    bounds: [0, 120]
+    reference: "KDIGO 2020"
+    locator: "TODO:LOCATE"
+
+  muscle_mass:
+    description: 骨骼肌质量（体重70kg成年男性正常值~30kg）
+    value: 28.0
+    unit: kg
+    type: state
+    bounds: [10, 50]
+    reference: "Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  BUN:
+    description: 血尿素氮（正常上限 20 mg/dL；CKD患者目标 <20）
+    value: 14.0
+    unit: mg/dL
+    type: state
+    bounds: [0, 60]
+    reference: "KDIGO 2020"
+    locator: "TODO:LOCATE"
+
+  dietary_protein:
+    description: 每次蛋白质摄入事件量（g/kg，每次进餐触发），KDIGO建议日合计范围 0.6–1.0 g/kg
+    value: 0.8
+    unit: g/kg
+    type: input
+
+  # ── 依从性维度（2026-08-02 新增）────────────────────────────────────────────
+  dietary_adherence:
+    description: >
+      当前依从性水平（1.0=完全按处方执行，越低代表实际摄入越偏离处方）。初值1.0，
+      每次限制期餐次（dietary_protein<0.30）小幅衰减，每次标准期餐次
+      （dietary_protein>=0.30）小幅恢复。衰减速率标定自 Rizzetto et al.（2017）对
+      CKD低蛋白饮食患者的3年随访真实数据：49.2%的患者在3年后仍保持依从，据此反推
+      连续衰减速率 k=-ln(0.492)/3年≈0.236/年，按每年3餐×365天折算为每餐衰减量，
+      详见 adherence_decay_per_meal 条目。恢复速率、衰减下限本身缺乏直接对应文献，
+      按 model.md 规则标注为标定选择（见对应参数条目），不是独立文献测量值。
+    value: 1.0
+    unit: dimensionless
+    type: state
+    bounds: [0.3, 1.0]
+    reference: "Rizzetto F et al. (2017) Ren Fail 39(1):357-362 (49.2%依从率锚点)；标定选择部分见各参数条目"
+
+  adherence_decay_per_meal:
+    description: >
+      每次限制期餐次（dietary_protein<0.30）对 dietary_adherence 的衰减量。
+      推导：Rizzetto et al.（2017）报告CKD低蛋白饮食患者3年随访依从率49.2%，
+      按连续衰减模型 exp(-k*3年)=0.492 反推 k≈0.236/年；本模型限制期每年3餐×365天
+      =1095次限制期餐次，衰减量=0.236/1095≈0.0002159/餐。这是把"3年后49.2%仍依从"
+      这一真实纵向测量值換算为每餐衰减增量的工程近似（假设连续指数衰减，文献本身
+      只报告3年这一个时间点的categorical依从/不依从比例，未提供轨迹数据）。
+    value: 0.0002159
+    unit: 1/meal
+    type: parameter
+    reference: "Rizzetto F et al. (2017) Chronic kidney disease progression: a retrospective analysis of 3-year adherence to a low protein diet. Ren Fail 39(1):357-362"
+
+  adherence_recovery_per_meal:
+    description: >
+      每次标准期餐次（dietary_protein>=0.30）对 dietary_adherence 的恢复量。
+      标定选择，非直接文献测量值：文献未提供"限制放宽后依从性恢复速率"的独立数据，
+      取与 adherence_decay_per_meal 相同量级（对称假设），代表"较宽松的处方更容易
+      维持依从"这一在 adherence 文献中反复出现的定性共识（如 De Mauri et al. 2022
+      比较compliance/adherence/concordance三种依从度量，均隐含处方松紧影响可持续性），
+      但对称衰减/恢复速率本身是工程简化，不是独立测量。
+    value: 0.0002159
+    unit: 1/meal
+    type: parameter
+    reference: "标定选择（对称假设，见描述）；定性支持：De Mauri A et al. (2022) Nutrients 14(3):487"
+
+  dietary_protein_lapse_target:
+    description: >
+      依从性下降时，实际摄入偏离处方后drift趋向的每餐蛋白量。标定选择：取
+      Bauer et al.（2013）PROT-AGE共识建议的≥1.0 g/kg/day（本论文§1.1/§1.2已引用
+      作为与KDIGO限制建议对立的另一套指南）三餐平均折算，≈0.34 g/kg/餐——代表
+      "依从性差的患者实际吃回接近PROT-AGE/一般人群推荐摄入量而非处方的限制量"这一
+      行为假设，不是某篇文献直接测得的drift target数值。
+    value: 0.34
+    unit: g/kg
+    type: parameter
+    reference: "标定选择（见描述）；折算基准 Bauer J et al. (2013) PROT-AGE, J Am Med Dir Assoc 14(8):542-559"
+
+  effective_dietary_protein:
+    description: >
+      实际摄入蛋白量（脉冲，语义与 dietary_protein 相同：仅在进餐时刻非零）。
+      按 dietary_adherence 在处方量 dietary_protein 与依从性下降后的drift目标
+      dietary_protein_lapse_target 之间线性插值，代表"处方是一回事，患者实际吃了
+      多少是另一回事"——GFR/肌肉/BUN 三条动力学均改用这个变量而非 dietary_protein，
+      使限制期越长、依从性衰减越多，处方的实际生理效果就越打折扣，让 T4（限制期
+      切换标准期时机）的最优选择部分由累计依从性驱动，而不仅由 GFR/muscle_mass
+      阈值触发。
+    value: 0.0
+    unit: g/kg
+    type: state
+    bounds: [0, 0.6]
+
+  body_weight:
+    description: 患者体重（固定，用于换算蛋白质绝对量）
+    value: 70.0
+    unit: kg
+    type: parameter
+    reference: "代表性患者假设"
+
+  # ── MC 概率参数 ──────────────────────────────────────────────────────────────
+  alpha:
+    description: |
+      蛋白质摄入超过安全阈值对 GFR 的损伤敏感性（Kalantar-Zadeh 2017）。
+      MC 时各条曲线采样不同值，代表个体肾功能对蛋白质负荷的耐受差异。
+    value: "normal(0.0012, 0.0003)"
+    unit: 1/(g/kg)
+    type: parameter
+    bounds: [0.0003, 0.003]
+    reference: "Kalantar-Zadeh K et al. (2017)"
+    locator: "TODO:LOCATE"
+
+  mu_s:
+    description: |
+      肌肉蛋白合成效率（每 g/kg 蛋白质事件量生成 kg 肌肉）。
+      MC 时代表个体合成代谢能力差异（Carrero 2013）。
+      取值需与基础降解速率 mu_d、尿毒症降解 mu_u 共同决定的总降解量级匹配。
+      2026-08-02 文献对标发现：均值0.08在当前方程结构下（合成项 mu_s*dietary_protein
+      不带 step 乘子，仅在三餐脉冲时刻各触发一次；降解项 (mu_d*muscle+mu_u*...)*step
+      每小时都触发，364天=8736次）导致全年累计合成量系统性超过累计降解量，三个静态
+      基线52周末muscle_mass均呈现净增长(+3.7~+10.7kg)，方向与Carrero 2013报告的
+      净损失相反。下调均值至0.045（约为原值的56%），配合不变的mu_d/mu_u，使累计
+      合成量落回累计降解量之下，52周末转为净损失，量级落入Carrero 2013区间2-5kg，
+      且蛋白摄入越高损失越小，形成有效的muscle-GFR权衡（见 metadata.todo 校准记录）。
+    value: "normal(0.045, 0.007)"
+    unit: kg/(g/kg)
+    type: parameter
+    bounds: [0.01, 0.10]
+    reference: "TODO:SOURCE 合成效率系数为估算值，待校准；Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  beta0:
+    description: |
+      非蛋白质因素导致的 GFR 基础下降速率（CKD 3期平均值，约 1.5 mL/min/1.73m² 每年）。
+      原值0.0011/day在GFR=45时对应约18 mL/min/年的下降（远超描述的1.5），
+      按"1.5 mL/min/年 @ GFR=45"换算为相对速率：1.5/45/365 ≈ 0.0000913/day，
+      已于上一次编辑改为该值——但忘记同步换算为 gfr_decline 方程实际使用的
+      step_unit（hour）：0.0000913 这个"per day"速率被直接乘以每小时的 step=1，
+      等于把衰减速率错误放大了24倍（renal/muscle/joint 三个opt场景于2026-06-20
+      全部0% feasible、GFR被压到~20的根因即此bug，而非mu_s重新标定导致的
+      约束收紧——经排查后确认是这个单位换算遗漏）。
+      2026-06-20 修正：0.0000913/day ÷ 24 = 0.000003804/hour，匹配 step_unit: hour。
+    value: 0.000003804
+    unit: 1/hour
+    type: parameter
+    bounds: [0.0000021, 0.0000125]
+    reference: "KDIGO 2020"
+    locator: "TODO:LOCATE"
+
+  mu_d:
+    description: |
+      肌肉基础降解速率（CKD 患者高于正常人，Carrero 2013）。
+      原值0.002与上调后的mu_s（见该条目说明）和mu_u共同导致52周肌肉损失
+      远超Carrero 2013文献区间(2-5kg)；下调至0.0012（仍在bounds内），
+      配合mu_s=0.08、mu_u均值下调，使损失落入2-5kg区间。
+      2026-06-20 发现并修正：上述0.0012是按"per day"速率推导的（描述中"52周"
+      "364天内"均按天计），但 muscle_dynamics 方程的 step_unit 是 hour，
+      该值被直接乘以每小时的 step=1，等于把降解速率错误放大24倍——这正是
+      muscle_mass 在所有方案（包括静态基线）下都被压到下界10kg、三个opt
+      场景0% feasible的根因之一（另一根因是同一文件beta0的相同bug，
+      已修正，见该条目说明）。修正：0.0012/day ÷ 24 = 0.00005/hour。
+      2026-08-02 进一步上调至0.00006（+20%）：0.00005配合下调后的mu_s=0.045
+      （见该条目2026-08-02说明）已让 kidney_protect/balanced 两个静态基线转为
+      净损失（-2.55/-1.24kg），但 muscle_preserve 仍净增长(+0.84kg)——用
+      --sim 迭代核实，0.00006 使三个静态基线同时转为净损失且保持"蛋白摄入越高
+      损失越小"的单调关系，损失量级落入 Carrero 2013 区间。
+    value: 0.00006
+    unit: 1/hour
+    type: parameter
+    bounds: [0.0000417, 0.0002083]
+    reference: "Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  mu_u:
+    description: |
+      尿毒症驱动的肌肉分解增强系数（GFR 每下降1单位额外增加的分解率）。
+      敏感性分析中最重要的参数（Wang & Mitch 2014）。
+      原均值0.0015在GFR下降10-15单位时使该项达0.015-0.0225/day，
+      远超mu_d*muscle量级，导致肌肉量在所有方案下单调跌至下界10kg，
+      Pareto前沿退化为单点（muscle_mass恒为bounds下限）。下调均值至接近bounds下限的0.00025，
+      配合mu_s=0.08、mu_d=0.0012，使52周末肌肉损失落入Carrero 2013区间(2-5kg)，
+      且高蛋白方案损失更小，形成muscle-GFR权衡。
+      2026-06-20 发现并修正：与 mu_d 同样的bug——0.00025是"per day"速率，
+      但方程 step_unit 是 hour，被错误放大24倍。修正：0.00025/day ÷ 24 = 0.0000104167/hour，
+      σ 同比例缩放：0.00007/24 ≈ 0.0000029167。
+    value: "normal(0.0000104167, 0.0000029167)"
+    unit: 1/(hour·mL/min/1.73m²)
+    type: parameter
+    bounds: [0.0000083333, 0.0001667]
+    reference: "Wang XH & Mitch WE (2014)"
+    locator: "TODO:LOCATE"
+
+  sigma_urea:
+    description: 蛋白质分解产生尿素的系数（BUN 变化量 per 克总蛋白）
+    value: 0.028
+    unit: mg/(dL·g)
+    type: parameter
+    reference: "TODO:SOURCE 蛋白-BUN关系文献"
+
+  bun_clearance_coef:
+    description: |
+      GFR 依赖的 BUN 清除速率系数（bun_dynamics 清除项：coef*GFR*BUN）。
+      2026-08-02 从 dynamics 表达式内联的硬编码 0.003 提升为具名变量并修正：0.003
+      与 beta0/mu_d/mu_u 是同一类"per-day 速率误代入 step_unit:hour 方程"的
+      bug——0.003*GFR*BUN 若按小时步长每小时触发，清除速率远快于蛋白分解产生
+      尿素的速率，使BUN在1-2天内即崩溃至0.35-0.9并停留在该量级，远低于目标
+      14-20 mg/dL（详见 metadata.todo 2026-07-21 发现记录）。按同一"除以24"换算
+      （清除项结构为"系数×状态变量"，按 ADR 0121 线性除法即为精确解，不需要开根）
+      修正为 0.003/24≈0.000125/hour，用 --sim 核实三个静态基线（kidney_protect/
+      balanced/muscle_preserve）52周末BUN平衡点落在约9.8-17.8 mg/dL，蛋白摄入越高
+      BUN越高，且均低于约束上限20，为高蛋白优化解保留可行域。
+    value: 0.000125
+    unit: "1/(hour·mL/min/1.73m²)"
+    type: parameter
+    reference: "TODO:SOURCE BUN-蛋白关系文献；换算方式同 beta0/mu_d/mu_u（见 ADR 0121）"
+
+  GFR_initial:
+    description: 初始 GFR（用于计算肾功能相对损失，固定为起始值）
+    value: 45.0
+    unit: mL/min/1.73m²
+    type: parameter
+
+  lm_score:
+    description: 健康时长：GFR ≥ 30 mL/min 且 muscle_mass ≥ 22 kg 且 BUN ≤ 20 mg/dL 同时满足的累计仿真天数
+    value: 0.0
+    unit: day
+    type: state
+    reference: "Life Matters Framework core metric"
+
+# ── 动力学方程 ─────────────────────────────────────────────────────────────────
+equations:
+  adherence_dynamics:
+    description: >
+      依从性维度（2026-08-02新增）：每次限制期餐次（处方 dietary_protein<0.30）小幅
+      衰减 dietary_adherence，每次标准期餐次（>=0.30）小幅恢复，衰减/恢复量见对应
+      参数条目。用处方值 dietary_protein（而非下面的 effective_dietary_protein）
+      判断餐次类型，代表"处方本身的限制程度决定患者的依从负担"，避免与
+      effective_protein_calc 形成循环依赖。
+    step_unit: hour
+    condition: true
+    priority: 7
+    dynamics:
+      dietary_adherence: >
+        dietary_adherence
+        - adherence_decay_per_meal * (1 if (dietary_protein > 0 and dietary_protein < 0.30) else 0)
+        + adherence_recovery_per_meal * (1 if dietary_protein >= 0.30 else 0)
+    reference: "Rizzetto F et al. (2017) Ren Fail 39(1):357-362"
+
+  effective_protein_calc:
+    description: >
+      实际摄入 = 处方量与依从性下降后的drift目标之间按 dietary_adherence 线性插值，
+      仅在进餐脉冲时刻（dietary_protein>0）非零，其余步为0，保持与原 dietary_protein
+      相同的脉冲语义（避免非进餐小时被错误注入非零值，此前 lm_score_update 等方程
+      已因类似的"逐小时误触发"犯过24倍放大的bug，此处刻意用 if dietary_protein>0
+      判据规避同类问题）。priority 高于 gfr_decline/muscle_dynamics/bun_dynamics，
+      三者在本 equation 之后执行，读取本步计算好的 effective_dietary_protein。
+    step_unit: hour
+    condition: true
+    priority: 8
+    dynamics:
+      effective_dietary_protein: >
+        (dietary_protein * dietary_adherence + dietary_protein_lapse_target * (1 - dietary_adherence))
+        if dietary_protein > 0 else 0
+
+  gfr_decline:
+    description: |
+      GFR 下降：蛋白质超过安全阈值的损伤 + 非蛋白质基础下降。
+      单次餐次蛋白低于 0.30 g/kg（约合三餐累计 0.9 g/kg/day）时超载项为零（不继续保护，仅不再损伤）。
+      2026-08-02：判断阈值与损伤项均改用 effective_dietary_protein（实际摄入），
+      不再用处方值 dietary_protein，使依从性下降能真实影响生理结局。
+    step_unit: hour
+    condition: true
+    priority: 6
+    dynamics:
+      GFR: GFR - alpha * max(0, effective_dietary_protein - 0.30) * GFR - beta0 * GFR * step
+    reference: "KDIGO 2020; Kalantar-Zadeh K et al. (2017)"
+    locator: "TODO:LOCATE"
+
+  muscle_dynamics:
+    description: |
+      肌肉质量：合成（蛋白质 × 肾功能相对保留度）− 基础降解 − 尿毒症驱动分解。
+      肾功能相对保留度 = min(1, GFR/GFR_initial)，反映 CKD 合成代谢抵抗。
+      2026-08-02：合成项改用 effective_dietary_protein（实际摄入）而非处方值。
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      muscle_mass: >
+        muscle_mass + mu_s * effective_dietary_protein * min(1.0, GFR / GFR_initial)
+        - (mu_d * muscle_mass + mu_u * max(0, GFR_initial - GFR) * muscle_mass) * step
+    reference: "Carrero JJ et al. (2013); Wang XH & Mitch WE (2014)"
+    locator: "TODO:LOCATE"
+
+  bun_dynamics:
+    description: |
+      血尿素氮：蛋白质分解产生 − GFR 清除。
+      BUN 是约束变量：>20 mg/dL 代表蛋白质过量。
+      2026-08-02 将清除系数从内联硬编码 0.003 改为具名变量 bun_clearance_coef
+      并修正为 0.000125（换算依据见该变量条目），修正前 0.003 使 BUN 在仿真开始
+      后1-2天内即崩溃至0.35-0.9并停留在该量级，远低于目标14-20 mg/dL。产生项改用
+      effective_dietary_protein（实际摄入）而非处方值。
+    step_unit: hour
+    condition: true
+    priority: 4
+    dynamics:
+      BUN: BUN + sigma_urea * effective_dietary_protein * body_weight - bun_clearance_coef * GFR * BUN * step
+    reference: "TODO:SOURCE BUN-蛋白关系文献"
+
+  lm_score_update:
+    description: "累加健康时长（可恢复）：GFR ≥ 30 mL/min 且 muscle_mass ≥ 22 kg 且 BUN ≤ 20 mg/dL（step_unit 2026-06-22从hour改为day，理由见metadata.todo）"
+    step_unit: day
+    condition: true
+    priority: 90
+    dynamics:
+      lm_score: "lm_score + step if (GFR >= 30 and muscle_mass >= 22 and BUN <= 20) else lm_score"
+    reference: "Life Matters Framework core metric"
+
+# ── 仿真设置（K=2 分段：限制期→标准期）────────────────────────────────────────
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"          # 52 周 = 364 天
+  output_variables:
+    - GFR
+    - muscle_mass
+    - BUN
+    - dietary_protein
+    - effective_dietary_protein
+    - dietary_adherence
+    - lm_score
+  plans:
+    - id: "kidney_protect"
+      label: "肾保护优先（GFR 端点，全程低蛋白）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time_start: "18:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白"}
+
+    - id: "balanced"
+      label: "临床平衡方案（K=2 分段，前26周限制后26周标准）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期午餐"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期晚餐（睡前）"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.29, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.27, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期午餐"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.28, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期晚餐（睡前）"}
+
+    - id: "muscle_preserve"
+      label: "肌肉保留优先（肌肉端点，全程标准蛋白）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.38, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.36, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.37, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白（睡前）"}
+
+    - id: "renal_optimized"
+      label: "肾科单学科优化方案（仅最大化 GFR，2026-08-02 加入依从性维度后用 pop=40/gen=9 重新跑出结果，见 ckd_protein_opt_renal.yaml results，GFR=43.05）——三餐压到搜索下界附近"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.170, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "早餐（贴近搜索下界）"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.201, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "午餐"}
+        - {variable: dietary_protein, time_start: "18:37", value: 0.215, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "晚餐"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.292, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-06-30", "2026-12-31"], label: "标准期启动后追加（第26周，叠加在早餐之上）"}
+
+    - id: "muscle_optimized"
+      label: "康复科单学科优化方案（仅最大化 muscle_mass，2026-08-02 加入依从性维度后用 pop=40/gen=10 重新跑出结果，见 ckd_protein_opt_muscle.yaml results，muscle_mass=28.75，全场景最优）——三餐推到中高量。注意：本次重新搜索发现晚餐时机在前沿各解间无一致规律（见该文件 metadata.todo 的新增发现），不再声称晚餐时机驱动肌肉合成"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.287, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.305, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "午餐"}
+        - {variable: dietary_protein, time_start: "18:33", value: 0.285, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "晚餐"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.417, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-06-25", "2026-12-31"], label: "标准期启动后追加（第22周，比肾科单学科早约1周，叠加在早餐之上）"}
+
+    - id: "opt_optimized"
+      label: "联合多学科优化方案（GFR+muscle_mass+lm_score，2026-08-02 加入依从性维度后用 pop=40/gen=10 重新跑出8解非退化前沿，见 ckd_protein_opt_joint.yaml results，本方案取前沿上同时逼近两个单学科最优的均衡解，muscle_mass=28.11/GFR=42.43）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.299, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.294, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "午餐"}
+        - {variable: dietary_protein, time_start: "17:25", value: 0.295, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "晚餐"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.359, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-06-29", "2026-12-31"], label: "标准期启动后追加（第26周，叠加在早餐之上）"}
+
+  mc:
+    runs: 5
+    seed: 19

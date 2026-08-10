@@ -1,0 +1,69 @@
+category: physiological
+
+metadata:
+  name: waist_circumference_lungcancer
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      腰围每增10cm-肺癌关联是流行病学里被反复独立测量、meta分析收敛的效应量。腰围每增加10cm对应的肺癌相对风险(RR)，独立于吸烟状态
+    result: |
+      用 LM format 的 evidence 节的 rr 子类型声明该效应量，代入示意性基线风险0.6%，验证 Loader 能正确读取、承载并展示这一效应量，暴露组风险等于基线风险乘以1.1，即RR为1.1。
+    limitations: |
+      本案例是"效应量编码正确性"展示，不是独立预测检验：1.1这个数字本身就是要验证的目标，不是外推后与另一个独立来源比较。基线风险0.6%为示意性设定值，非任何具体人群的实测患病率。
+  ratings:
+    topic_importance: 2 - 流行病学效应量族案例之一，用于批量验证evidence编码
+    framework_demand: 1 - 通用参考组件，尚未被具体论文import
+    evidence_quality: 5 - 来自meta分析/大型队列研究的共识效应量
+    paper_value: 1 - 通用参考组件
+    innovation: 1 - 纯文献效应量复现，无原创建模贡献
+    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析/经典队列研究共识值
+  tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family]
+  references:
+    - "Meta-analysis of prospective studies on abdominal obesity and lung cancer risk"
+
+variables:
+  baseline_risk_pct:
+    description: 示意性基线（未暴露组）风险（%）
+    value: 0.6
+    unit: "%"
+    type: parameter
+
+  exposed_risk_pct:
+    description: 暴露组预测风险（%）= 基线风险 × 相对风险
+    value: 0.0
+    unit: "%"
+    type: state
+
+  exposure_rr:
+    type: parameter
+    evidence_type: rr
+    value: 1.1
+    unit: "RR"
+    description: 腰围每增加10cm对应的肺癌相对风险(RR)，独立于吸烟状态
+    reference: "Meta-analysis of prospective studies on abdominal obesity and lung cancer risk"
+
+equations:
+  risk_calc:
+    description: "静态计算：exposed_risk_pct = baseline_risk_pct × exposure_rr"
+    condition: true
+    priority: 3
+    dynamics:
+      exposed_risk_pct: "baseline_risk_pct * exposure_rr"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - baseline_risk_pct
+    - exposed_risk_pct
+  plans:
+    - id: "exposure_scenario"
+      label: "暴露组 vs 基线风险效应量展示"
+      regimens: []

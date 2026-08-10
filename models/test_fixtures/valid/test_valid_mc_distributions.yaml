@@ -42,7 +42,7 @@ variables:
     type: input
     value: 0.0
     unit: mg
-    description: Daily oral dose (pulse; bioavailability fraction applied in formula).
+    description: Daily oral dose (pulse; bioavailability fraction applied in equation).
 
   # --- MC parameters with distribution values ---
 
@@ -60,7 +60,7 @@ variables:
     unit: fraction
     description: |
       Oral bioavailability sampled from Uniform(0.60, 0.90) per MC run.
-      Deterministic mode uses mean = 0.75. Models formulation batch variability.
+      Deterministic mode uses mean = 0.75. Models equationtion batch variability.
 
   volume_dist:
     type: parameter
@@ -71,7 +71,7 @@ variables:
       Deterministic mode uses mean = exp(3.9 + 0.2²/2) ≈ 50.6 L.
       Log-normal ensures positivity; σ=0.2 gives ≈20% CV.
 
-formulas:
+equations:
   drug_absorption:
     description: Daily dose absorption (pulse, no step; bioavailability and volume are sampled per run).
     step_unit: hour

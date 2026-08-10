@@ -2,7 +2,7 @@
 
 ## 定位
 
-`test_fixtures/valid/` 存放**结构合法、用于测试和解释仿真器各项功能的最小化示例**，每个文件聚焦 LM format 的一个特性（如 imports 组合、MC 分布、K×4 优化的各 Tier、公式条件、阶段性 schedule 等）。与故意写错、用于验证错误检测机制的 `test_fixtures/invalid/` 相对（见其 README）。
+`test_fixtures/valid/` 存放**结构合法、用于测试和解释仿真器各项功能的最小化示例**，每个文件聚焦 LM format 的一个特性（如 imports 组合、MC 分布、K×4 优化的各 Tier、方程条件、阶段性 schedule 等）。与故意写错、用于验证错误检测机制的 `test_fixtures/invalid/` 相对（见其 README）。
 
 这些文件不代表真实临床或社会场景，主要用途是：
 - 验证仿真引擎/优化器对应功能正确工作

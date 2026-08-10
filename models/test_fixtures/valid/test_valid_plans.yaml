@@ -53,7 +53,7 @@ variables:
     unit: kg per minute
     description: Weight equivalent burned per minute of moderate exercise (5 kcal/min ÷ 7750).
 
-formulas:
+equations:
   weight_dynamics:
     description: Daily weight change from caloric deficit (rate × step) + exercise burn (pulse).
     step_unit: hour

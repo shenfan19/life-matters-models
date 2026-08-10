@@ -1,0 +1,181 @@
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: physiology
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      多器官功能聚合层：通过 15 个变量将肝脏功能 liver_function、胰腺功能 pancreatic_function、胃功能 gastric_function 和小肠状态统一到同一坐标空间，并以单一方程描述器官功能系数的慢性衰竭与自然恢复动力学。依赖 insulin_system 和 glucose_regulation 的输出，作为多系统仿真的顶层生理状态汇聚节点。
+    result: >
+      仿真预期呈现各器官功能系数在慢性病进程下的缓慢下降趋势，例如糖尿病并发症，仿真尚未运行，为纯组件模型。
+    limitations: 15 个变量参数为定性近似，无文献标注；器官功能系数的实际临床测量方法不统一，建议在上层场景中替换为可测指标，例如 GFR、ALT 等。
+  conflicts: []
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 4 - 多器官功能系数聚合组件，为复杂场景提供生理基础
+    framework_demand: 2 - 顶层聚合组件，被1个上层模型import，实际引用低
+    evidence_quality: 2 - 模块为生成代码，15个变量参数无文献标注，为定性近似
+    popularity: 3 - 顶层生理聚合组件在多系统建模中有价值，但不独立引用
+  tags:
+  - organs
+  - function
+imports:
+- references/medical/physiology/insulin_system_2026_mw
+- references/medical/physiology/glucose_regulation_2026_mw
+variables:
+  liver_function:
+    description: 肝功能系数
+    value: 1.0
+    unit: 系数
+    type: parameter
+    bounds:
+    - 0.1
+    - 1.0
+  pancreatic_function:
+    description: 胰腺功能系数
+    value: 1.0
+    unit: 系数
+    type: parameter
+    bounds:
+    - 0.1
+    - 1.0
+  water:
+    description: 喝水
+    value: 1.0
+    unit: L
+    type: input
+    bounds:
+    - 0.0
+    - 1.0
+  gastric_function:
+    description: 胃功能效率
+    value: 0.9
+    unit: 系数
+    type: state
+    bounds:
+    - 0.0
+    - 1.0
+  intestinal_function:
+    description: 小肠功能效率
+    value: 0.85
+    unit: 系数
+    type: state
+    bounds:
+    - 0.0
+    - 1.0
+  kidney_function:
+    description: 肾功能系数
+    value: 0.8
+    unit: 系数
+    type: state
+    bounds:
+    - 0.0
+    - 1.0
+
+  body_water:
+    description: Placeholder for body_water
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  glucose:
+    description: Placeholder for glucose
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  malnutrition_risk:
+    description: Placeholder for malnutrition_risk
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  pepsin_level:
+    description: Placeholder for pepsin_level
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  secretin_level:
+    description: Placeholder for secretin_level
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  liver_glycogen:
+    description: Placeholder for liver_glycogen
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  carb_intake:
+    description: Placeholder for carb_intake
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  muscle_glycogen:
+    description: Placeholder for muscle_glycogen
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+  diabetes_type:
+    description: Placeholder for diabetes_type
+    value: 0.0
+    type: state
+    unit: unknown
+    bounds:
+    - 0
+    - 100
+
+equations:
+  organ_function_recovery:
+    description: 休息状态下器官功能逐渐恢复
+    condition: blood_glucose < 120 and plasma_insulin < 20 and physical_activity == 0
+    dynamics:
+      gastric_function: min(1.0, gastric_function + 0.0001)
+      pancreatic_function: min(1.0, pancreatic_function + 0.00005)
+      liver_function: min(1.0, liver_function + 0.0001)
+      intestinal_function: min(1.0, intestinal_function + 0.0001)
+      kidney_function: min(1.0, kidney_function + 0.0001)
+    priority: 2
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-08"
+  output_variables:
+  - liver_function
+  - pancreatic_function
+  - gastric_function
+  - intestinal_function
+  - kidney_function

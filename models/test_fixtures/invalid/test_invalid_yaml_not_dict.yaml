@@ -1,0 +1,13 @@
+# ERROR-DETECTION FIXTURE (intentionally invalid): top-level YAML is a list,
+# not a mapping. Loader._load_model_data (loader.py) requires yaml.safe_load()
+# to return a dict, and must reject any other top-level type (list, scalar,
+# null) rather than crashing deeper in the pipeline with an unhelpful
+# AttributeError. Loading this file must raise ValueError containing
+# "Invalid YAML file". See test_verification/errors/test_import_errors.py.
+- this
+- is
+- a
+- list
+- not
+- a
+- mapping

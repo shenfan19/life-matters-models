@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: >-
+  If you use this model library, please cite the associated paper once it is
+  published. Until then, please cite this repository directly using the
+  metadata below.
+title: "LM Model Library"
+type: dataset
+authors:
+  - family-names: Shen
+    given-names: Fan
+license: CC-BY-4.0
+# TODO: once the paper has a final title/venue/DOI, add a `preferred-citation:`
+# block here (type: article) so citing tools point readers to the paper
+# instead of this repository.

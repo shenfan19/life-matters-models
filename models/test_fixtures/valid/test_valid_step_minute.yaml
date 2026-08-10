@@ -47,7 +47,7 @@ variables:
     unit: 1/minute
     description: Fractional basal clearance rate returning glucose toward fasting level.
 
-formulas:
+equations:
   meal_rise:
     description: Instantaneous glucose rise from carb bolus (pulse, no step).
     step_unit: minute

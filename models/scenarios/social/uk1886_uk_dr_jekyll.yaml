@@ -1,0 +1,216 @@
+category: social
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: uk1886_uk_dr_jekyll
+  lm_format_version: "1.0"
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      杰基尔博士（史蒂文森《化身博士》1886）面临三重动态张力：药物使用频率，即每次使用能短期释放被压抑的冲动，但累积耐受性会使不可控变化的阈值降低；科学研究严谨度，即尝试开发解药，但研究本身需要持续暴露于药物；以及维持社会形象，即能降低外部发现风险，但压抑带来的正反馈会加速依赖。成瘾螺旋依次经历自控、习惯、耐受、睡梦中自发变化、失控，是无法逆转的相变点。
+    result: >
+      仿真预期显示 52 周内海德人格控制时间比例、身份稳定性和解药研究进度的轨迹。当前为草案状态，参数待校准。
+    limitations: 草案，参数、目标和叙事细节待校准；成瘾耐受动力学参数需参考神经科学文献。
+  ratings:
+    topic_importance: 3 - 杰基尔博士是成瘾动力学和自我实验伦理的最著名文学隐喻
+    framework_demand: 1 - TODO存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
+    innovation: 2 - 将成瘾失控过程（从自控到被控）转化为可优化动力学的意图极具创意，但尚未完善
+    social_value: 5 - 探索人格双重性、成瘾机制和科学伦理，是维多利亚时代心理学的文学先驱
+  tags:
+    - addiction
+    - self-experimentation
+    - dual-personality
+    - ethics
+    - literature
+  references:
+    - Strange Case of Dr Jekyll and Mr Hyde (R.L. Stevenson, 1886)
+variables:
+  drug_usage_frequency:
+    type: input
+    value: 1.0
+    unit: times_per_week
+    bounds:
+      - 0
+      - 5
+    description: 药物使用频率：每周使用变身药物的次数（越高→Hyde停留时间越长）
+    reference: TODO:SOURCE
+  research_rigor:
+    type: input
+    value: 0.5
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 科学研究严谨度：分析药物机制·寻找解药的努力
+    reference: TODO:SOURCE
+  social_facade:
+    type: input
+    value: 0.7
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 维持社会形象：以Jekyll身份维持绅士形象，掩盖Hyde的行为
+    reference: TODO:SOURCE
+  self_control:
+    type: state
+    value: 90
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 自我控制力：Jekyll保持主导意识的能力（降至0=完全被Hyde接管）
+    reference: TODO:SOURCE
+    io_role: output
+  hyde_dominance:
+    type: state
+    value: 5
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: Hyde人格强度：阴暗面人格对身体的控制程度
+    reference: TODO:SOURCE
+    io_role: output
+  drug_dependency:
+    type: state
+    value: 0
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 药物依赖度：需要越来越多剂量才能维持同等效果的成瘾进展
+    reference: TODO:SOURCE
+    io_role: output
+  social_exposure_risk:
+    type: state
+    value: 5
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 社会曝光风险：Hyde的行为被追查到Jekyll的风险
+    reference: TODO:SOURCE
+    io_role: output
+  antidote_progress:
+    type: state
+    value: 0
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 解药研究进度：找到永久控制Hyde的科学方案的进度
+    reference: TODO:SOURCE
+    io_role: output
+equations:
+  dependency_growth:
+    dynamics:
+      drug_dependency: min(100, drug_dependency + (drug_usage_frequency * 2.5))
+    description: 成瘾性随使用频率指数增长
+    reference: TODO:SOURCE
+  self_control_decay:
+    dynamics:
+      self_control: max(0, min(100, self_control - ((drug_dependency / 100) * 3.0) - ((hyde_dominance / 100) * 2.0) + (research_rigor * 1.5)))
+    description: 自我控制力随依赖度和Hyde强度消耗
+    reference: TODO:SOURCE
+  hyde_growth:
+    dynamics:
+      hyde_dominance: min(100, max(0, hyde_dominance + (drug_usage_frequency * 1.5 + (drug_dependency / 100) * 2.0) - (self_control / 100 * 1.0)))
+    description: Hyde人格随使用次数和依赖度增强
+    reference: TODO:SOURCE
+  exposure_risk:
+    dynamics:
+      social_exposure_risk: min(100, max(0, social_exposure_risk + ((hyde_dominance / 100) * 3.0) - (social_facade * 1.5)))
+    description: 曝光风险随Hyde强度增长，facade维持可延缓
+    reference: TODO:SOURCE
+  antidote_research:
+    dynamics:
+      antidote_progress: min(100, antidote_progress + (research_rigor * (self_control / 100)) * 3.0)
+    description: 解药研究进度随科研努力推进，但self_control降低则研究效率下降
+    reference: TODO:SOURCE
+simulation:
+  step_size:
+    value: 1
+    unit: week
+  start_date: '1886-01-01'
+  end_date: '1886-12-30'
+  output_types:
+    - input
+    - state
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: self_control
+      metric: final
+      direction: maximize
+    - variable: antidote_progress
+      metric: final
+      direction: maximize
+  startpoint:
+    regimens:
+      - variable: drug_usage_frequency
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 药物使用频率
+        optimize:
+          value:
+            - 0
+            - 5
+      - variable: research_rigor
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 科学研究严谨度
+        optimize:
+          value:
+            - 0
+            - 1
+      - variable: social_facade
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 维持社会形象
+        optimize:
+          value:
+            - 0
+            - 1
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

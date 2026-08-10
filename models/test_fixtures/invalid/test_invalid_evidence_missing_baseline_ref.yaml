@@ -1,0 +1,54 @@
+metadata:
+  name: test_invalid_evidence_missing_baseline_ref
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). The `rr` (relative
+      risk) evidence entry `smoker_cvd_rr` declares `applies_to` (auto-wiring
+      into a state's dynamics) but omits the required `baseline_ref`, which
+      must point at an `ir`/`ard` evidence entry in the same file. Per
+      `docs/model.md`, rr/or evidence types cannot compute an absolute rate
+      without a baseline. `Loader._apply_model_data` (loader.py) must reject
+      this rather than silently generating a equation with an undefined
+      baseline.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。类型为 `rr`（相对风险）的证据条目
+      `smoker_cvd_rr` 声明了 `applies_to`（自动接入某个状态的 dynamics），
+      但缺少必填的 `baseline_ref`——该字段必须指向同一文件中的一个
+      `ir`/`ard` 证据条目。根据 `docs/model.md`，rr/or 类型的证据在没有基线的情况下
+      无法计算出绝对速率。`Loader._apply_model_data`（loader.py）必须拒绝这种情况，
+      而不是悄悄生成一个引用未定义基线的方程。
+    result: >
+      Loading this model must raise ValueError containing "必须声明 baseline_ref"
+      and "ir/ard". See test_verification/errors/test_evidence_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含 "必须声明 baseline_ref"
+      和 "ir/ard"。参见 test_verification/errors/test_evidence_errors.py。
+    limitations: Not a real model; exists only to exercise this one loader check.
+    limitations_cn: 并非真实模型；仅用于验证这一项加载器检查。
+  tags: [test, error-detection, evidence, baseline_ref]
+  references: ["TEST(error-detection): rr/or applies_to requires baseline_ref"]
+
+variables:
+  smoker_cvd_risk_auto:
+    type: state
+    value: 0.0
+    unit: cumulative_prob
+    description: Target state for the auto-generated applies_to dynamics (never reached; load must fail first).
+
+  smoker_cvd_rr:
+    type: parameter
+    evidence_type: rr
+    value: 2.0
+    applies_to: smoker_cvd_risk_auto
+    step_unit: day
+    description: Relative risk of CVD for smokers; deliberately missing baseline_ref.
+    reference: "TEST fixture, no real source"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-31"
+  output_variables: [smoker_cvd_risk_auto]

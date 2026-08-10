@@ -1,0 +1,235 @@
+metadata:
+  name: ckd_protein_muscle
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      慢性肾病（CKD）患者面临一个无法回避的营养矛盾：低蛋白饮食，即0.6至0.8 g/kg/天，可减缓肾小球滤过率（GFR）的下降，但同时导致肌肉蛋白质净分解加速，引发肌少症；而肌少症又会进一步加速肾功能恶化，形成恶性循环。KDIGO 2020年指南明确指出，低蛋白饮食与肌少症风险之间的权衡目前证据不足，无法给出统一建议。最优蛋白质摄入量因个体CKD分期、透析状态和肌肉基础量而异，是真实的临床未解问题。
+    result: >
+      三方案仿真，即KDIGO低蛋白0.6、基线0.8、透析期高蛋白1.2 g/kg/day，显示一年后GFR终值与肌肉质量终值呈清晰相反趋势：0.6方案GFR约43.06，肾保护最佳，但肌肉萎缩至24.36kg；1.2方案肌肉增至35.28kg，但GFR降至42.01，低蛋白护肾、高蛋白保肌的核心权衡在方向上验证成立。采用NSGA-II算法得到的7解优化前沿与三方案仿真方向一致：基线方案0.80 g/kg/天在肌肉质量约28.0kg和GFR约42.7之间取得折中，并非临床最优，仅为Pareto前沿的一个代表解。
+    limitations: >
+      损伤与恢复机制均采用线性近似，真实CKD进展为非线性过程。未包含透析阶段，该阶段蛋白需求逆转为每天1.2 g/kg以上，也不含代谢性酸中毒对肌肉分解影响的完整机制。
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 5 - CKD 营养管理是临床核心问题，被多个 A4 系列场景复用
+    framework_demand: 4 - 被多个A4系列场景import，肾病领域核心依赖组件
+    evidence_quality: 4 - KDIGO 指南和多项 RCT 支撑，个别机制系数估算
+    popularity: 4 - 肾病领域核心场景依赖，A4 系列多次导入的基础组件
+  tags: [nephrology, ckd, protein, muscle, sarcopenia, optimization, physiological, A4]
+  references:
+  - citation: "KDIGO (2021) KDIGO 2020 CKD Clinical Practice Guideline. Kidney Int Suppl 11(1):1-169."
+    description: "第3.1.3节给出低蛋白饮食建议与肌少症风险权衡的证据。"
+  - citation: "Klahr S et al. (1994) The effects of dietary protein restriction and blood-pressure control on the progression of CKD (MDRD Study). NEJM 330(13):877-884."
+    description: "低蛋白饮食可减缓35%的GFR下降。"
+  - citation: "Kalantar-Zadeh K et al. (2017) Dietary restrictions in dialysis patients. JASN 28(8):2354-2368."
+    description: "提供透析患者高蛋白需求的依据。"
+  - citation: "Fouque D, Aparicio M (2007) Eleven reasons to control protein intake of patients with CKD. Nat Clin Pract Nephrol 3(7):383-392."
+    description: "给出CKD患者蛋白摄入控制的临床依据。"
+  - citation: "Carrero JJ et al. (2013) Etiology of the protein-energy wasting syndrome in CKD. J Ren Nutr 23(2):77-90."
+    description: "阐述CKD蛋白-能量消耗综合征的病因机制。"
+
+variables:
+  # R1: Renal Function
+  gfr:
+    description: |
+      肾小球滤过率（GFR），单位mL/min/1.73m²。
+      CKD分期：1期≥90；2期60-89；3期30-59；4期15-29；5期<15。
+      模型基线设为CKD 3b期（45 mL/min），代表中度CKD（最需要决策的阶段）。
+    value: 45.0
+    unit: "mL/min/1.73m²"
+    type: state
+    bounds: [1.0, 120.0]
+
+  bun:
+    description: |
+      血尿素氮（BUN），氮质废物积累指标，正常值7-20 mg/dL。
+      在CKD中BUN随蛋白摄入增加且随GFR下降而升高，反映尿毒症毒素负担。
+      采用稳态近似：BUN ≈ 24.1 × protein_intake × body_weight / GFR。
+      系数来源：标准尿素清除率动力学（Daugirdas et al. 2015, Handbook of Dialysis）。
+    value: 30.0
+    unit: "mg/dL"
+    type: state
+    bounds: [5.0, 150.0]
+
+  # R2: Muscle Mass
+  muscle_mass:
+    description: |
+      骨骼肌质量（瘦体重），正常成年男性约28-32kg。
+      CKD患者因蛋白质限制、代谢性酸中毒、炎症等原因加速肌肉分解（蛋白-能量消耗综合征）。
+      基线设为28kg（轻度肌少症起点，符合CKD 3期患者典型值）。
+    value: 28.0
+    unit: "kg"
+    type: state
+    bounds: [5.0, 60.0]
+
+  muscle_synthesis_rate:
+    description: |
+      净肌肉合成速率（正=合成，负=分解）。
+      由protein_intake与维持阈值（0.8 g/kg/day）之差决定，CKD晚期额外加速分解。
+      来源：Kalantar-Zadeh (2017) 肌少症进展数据。
+    value: 0.0
+    unit: "g/day"
+    type: state
+    bounds: [-100.0, 50.0]
+
+  # Parameters
+  body_weight:
+    description: "体重（kg），用于换算绝对蛋白摄入量（g/day = g/kg/day × body_weight）。"
+    value: 70.0
+    unit: "kg"
+    type: parameter
+
+  gfr_base_decline:
+    description: |
+      未干预时GFR年下降速率（mL/min/yr）。
+      CKD 3期平均值约3 mL/min/yr（来源：MDRD Study 10年随访数据）。
+      高血压/糖尿病合并时可达5-7 mL/min/yr。
+    value: 3.0
+    unit: "mL/min/yr"
+    type: parameter
+    bounds: [1.0, 10.0]
+
+  # P1: Input — Daily Protein Intake
+  protein_intake:
+    description: |
+      每日蛋白质摄入量（g/kg/day）。
+      KDIGO 2020建议（非透析CKD 3-5期）：0.6-0.8 g/kg/day。
+      低于0.6 → 氮平衡负值，肌肉净分解加速。
+      高于0.8 → 含氮废物增多，GFR下降加速。
+      透析患者需要 ≥1.2 g/kg/day（与非透析患者建议相反，核心冲突所在）。
+      最优值区间因个体CKD分期、肌肉质量、透析状态而异——KDIGO自承无统一建议。
+    value: 0.8
+    unit: "g/kg/day"
+    type: input
+    bounds: [0.3, 2.0]
+
+equations:
+  # F1: GFR Decline Dynamics
+  # MDRD研究：低蛋白（0.6 g/kg/d）vs 正常蛋白（1.2 g/kg/d）→ 35%减缓GFR下降
+  # 线性插值：protein_modifier = 0.65（0.6g/kg/d）→ 1.0（1.2g/kg/d）
+  # 完整方程：decline/day = (年速率/365) × modifier
+  gfr_decline:
+    description: |
+      GFR日下降动力学。
+      protein_modifier范围：0.6g/kg/d→0.65（35%减缓），1.2g/kg/d→1.0（无减缓），线性插值。
+      来源：MDRD Study (Klahr 1994)。
+    step_unit: day
+    condition: gfr > 2.0
+    dynamics:
+      gfr: "gfr - (gfr_base_decline / 365.0) * (0.65 + 0.35 * min(1.0, max(0.0, (protein_intake - 0.6) / 0.6))) * step"
+    priority: 7
+
+  # F2: BUN Steady-State Approximation
+  # BUN ≈ 24.1 × protein_intake × body_weight / GFR
+  # 系数推导：70kg体重，0.8g/kg/d蛋白，GFR=90 → BUN≈15 mg/dL（正常上限）
+  # 标准参考：Daugirdas JT et al. (2015) Handbook of Dialysis, 5th Ed.
+  bun_calc:
+    description: |
+      BUN稳态近似（尿素清除率动力学）。
+      系数24.1由标准参考点校准：70kg, 0.8g/kg/d, GFR=90 → BUN=15 mg/dL。
+      来源：Daugirdas et al. (2015)。
+    step_unit: day
+    condition: true
+    dynamics:
+      bun: "min(150.0, 24.1 * protein_intake * body_weight / max(5.0, gfr))"
+    priority: 5
+
+  # F3: Muscle Mass Dynamics
+  # 净合成速率 = (protein_intake - 0.8) × 合成系数 × body_weight
+  # 合成系数 0.05: 每偏离0.1 g/kg/day，净合成±0.005 kg/day（即±1.8 kg/yr，符合临床观测）
+  # CKD晚期（GFR<30）额外加速分解：代谢性酸中毒、炎症介质增加蛋白分解
+  # 来源：Carrero et al. (2013) 蛋白-能量消耗综合征数据
+  muscle_dynamics:
+    description: |
+      骨骼肌净合成动力学。
+      net_rate = (protein_intake - 0.8) × 0.05 - CKD晚期额外分解因子。
+      晚期CKD（GFR<30）因代谢性酸中毒额外增加分解：+0.003 kg/day。
+      来源：Carrero et al. (2013)。
+    step_unit: day
+    condition: true
+    dynamics:
+      muscle_mass: "muscle_mass + ((protein_intake - 0.8) * 0.05 - max(0.0, (30.0 - gfr) / 30.0) * 0.003) * step"
+      muscle_synthesis_rate: "(protein_intake - 0.8) * 0.05 * body_weight - max(0.0, (30.0 - gfr) / 30.0) * 0.3"
+    priority: 5
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+    - variable: protein_intake
+      time_start: "08:00"
+      value: 0.8
+      label: "Daily protein intake (g/kg/day)"
+
+  - id: kdigo_low_protein
+    label: "KDIGO低蛋白方案（0.6 g/kg/day，肾保护优先）"
+    regimens:
+    - variable: protein_intake
+      time_start: "08:00"
+      value: 0.6
+      label: "Daily protein intake (g/kg/day)"
+
+  - id: dialysis_high_protein
+    label: "透析期高蛋白方案（1.2 g/kg/day，肌肉保留优先）"
+    regimens:
+    - variable: protein_intake
+      time_start: "08:00"
+      value: 1.2
+      label: "Daily protein intake (g/kg/day)"
+  output_variables: [gfr, muscle_mass, bun, protein_intake, muscle_synthesis_rate]
+optimizer:
+  # 双目标 Pareto：寻找每日蛋白摄入量使 muscle_mass 与 gfr 同时尽可能大。
+  # 核心冲突：高蛋白保肌肉，低蛋白护肾——KDIGO 2020 指南自承无统一建议。
+  method: nsga2
+
+  objectives:
+  - variable: muscle_mass
+    metric: final         # 仿真结束时的肌肉质量（kg）
+    direction: maximize
+  - variable: gfr
+    metric: final         # 仿真结束时的 GFR（mL/min/1.73m²）
+    direction: maximize
+
+  constraints:
+  - variable: bun
+    condition: "<= 80"    # BUN 全程不超 80 mg/dL（避免尿毒症）
+
+  startpoint:
+    regimens:
+    - variable: protein_intake
+      time_start: "08:00"
+      time_end: "08:00"
+      label: "Daily protein intake (g/kg/day)"
+      optimize:
+        value: [0.3, 2.0]
+
+  algorithm:
+    population_size: 60
+    n_generations: 120
+    seed: 19
+
+  results:
+    generated_at: "2026-07-06"
+    method: nsga2
+    n_solutions: 7
+    elapsed_seconds: 38.6
+    pareto_front:
+    - {x: [0.60], f: [-24.36, -43.06]}
+    - {x: [0.68], f: [-25.87, -42.91]}
+    - {x: [0.80], f: [-28.02, -42.70]}
+    - {x: [0.91], f: [-30.00, -42.51]}
+    - {x: [1.03], f: [-32.12, -42.31]}
+    - {x: [1.10], f: [-33.53, -42.18]}
+    - {x: [1.99], f: [-49.69, -42.01]}
+    recommended:
+      x: [0.80]
+      f: [-28.02, -42.70]

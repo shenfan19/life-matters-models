@@ -1,0 +1,93 @@
+category: socio_economic
+
+metadata:
+  name: tobacco_elasticity
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      验证目的：跨学科拓展到公共卫生经济学。香烟价格弹性是被独立重复测量次数最多的经济学效应量之一，Gallet & List (2003) 对 523 项研究的 meta 分析、IARC (2011)、Chaloupka & Warner (2000) 等多个独立 meta 分析均收敛到短期约 -0.4 的共识值，且短期弹性系统性小于长期弹性，长期约为 -0.44，是一个被多次独立复现的稳定结构性事实，不是单一研究的孤立数字。
+    result: |
+      用 LM format 的 evidence 节以 beta 子类型分别声明短期与长期弹性系数，代入同一价格涨幅，展示两者预测的消费量下降幅度差异，验证 Loader 能正确承载并区分这两个同一现象的不同时间尺度效应量。
+    limitations: |
+      本案例同 education_classsize，是效应量编码正确性展示，不是独立预测检验，-0.4 和 -0.44 本身就是要验证的目标数字，不是外推后与另一个独立来源比较。短期与长期之间的具体调整速度，即多久从短期弹性过渡到长期弹性，文献未给出可直接复用的单一数字，本文件不建模这一过渡过程，只展示两个端点弹性各自的静态预测。
+  ratings:
+    topic_importance: 1 - 方法论验证展示，非独立研究案例
+    framework_demand: 1 - 纯验证用途，不被其他论文import
+    evidence_quality: 5 - 多个独立meta分析收敛到同一共识值，证据质量在本报告所有案例中最高
+    paper_value: 2 - 一般性参考组件，可作为公共卫生政策/税收类场景的需求响应子模型
+    innovation: 1 - 纯文献效应量复现，无原创建模贡献
+    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，-0.4/-0.44为多个独立meta分析收敛的共识值，evidence换算结果精确一致
+  tags: [economics, public-health, tobacco, elasticity, evidence, validation, literature-benchmark, cross-domain]
+  references:
+    - "Gallet CA, List JA (2003) Cigarette demand: a meta-analysis of elasticities. Health Econ 12(10):821-835"
+    - "Chaloupka FJ, Warner KE (2000) The economics of smoking. Handbook of Health Economics 1B:1539-1627"
+    - "IARC (2011) Effectiveness of Tax and Price Policies for Tobacco Control. IARC Handbooks of Cancer Prevention, Vol 14"
+
+variables:
+  price_increase_pct:
+    description: 香烟价格涨幅（%），示意性场景值
+    value: 20.0
+    unit: "%"
+    type: parameter
+
+  consumption_change_shortrun_pct:
+    description: 短期（约1年内）预测的消费量变化（%）
+    value: 0.0
+    unit: "%"
+    type: state
+
+  consumption_change_longrun_pct:
+    description: 长期预测的消费量变化（%）
+    value: 0.0
+    unit: "%"
+    type: state
+
+  elasticity_shortrun:
+    type: parameter
+    evidence_type: beta
+    value: -0.40
+    unit: "% quantity change per % price change"
+    description: 香烟需求短期价格弹性共识值（多个独立meta分析收敛，约-0.4）
+    reference: "Gallet & List (2003); Chaloupka & Warner (2000); IARC (2011)"
+
+  elasticity_longrun:
+    type: parameter
+    evidence_type: beta
+    value: -0.44
+    unit: "% quantity change per % price change"
+    description: 香烟需求长期价格弹性共识值（略高于短期，Gallet & List 2003 报告-0.44）
+    reference: "Gallet & List (2003)"
+
+equations:
+  shortrun_calc:
+    description: "静态计算：短期消费量变化 = 短期弹性 × 价格涨幅"
+    condition: true
+    priority: 4
+    dynamics:
+      consumption_change_shortrun_pct: "elasticity_shortrun * price_increase_pct"
+
+  longrun_calc:
+    description: "静态计算：长期消费量变化 = 长期弹性 × 价格涨幅"
+    condition: true
+    priority: 3
+    dynamics:
+      consumption_change_longrun_pct: "elasticity_longrun * price_increase_pct"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - price_increase_pct
+    - consumption_change_shortrun_pct
+    - consumption_change_longrun_pct
+  plans:
+    - id: "price_increase_20pct"
+      label: "香烟价格上涨20%的短期/长期消费量响应展示"
+      regimens: []

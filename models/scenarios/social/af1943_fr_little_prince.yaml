@@ -1,0 +1,202 @@
+category: social
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: af1943_fr_little_prince
+  lm_format_version: "1.0"
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      飞行员在撒哈拉沙漠与小王子相遇的 8 天里，修飞机作为维系自身生存的行动、真正聆听体现与小王子连接的深度、以及说服小王子留下，三者互相竞争，花越多时间修飞机则与小王子的连接越浅，而不修飞机则自身生存受到威胁。核心问题是，飞行员能否在 8 天内给小王子另一种选择（Saint-Exupéry, 1943）。
+    result: >
+      仿真预期比较修飞机为主、深度聆听为主、两者均衡分配三种策略下，小王子留下概率与飞行员存活概率的轨迹。当前为草案状态，参数待校准。
+    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+  ratings:
+    topic_importance: 4 - 小王子是最广泛阅读的文学作品之一，沙漠生存+哲学对话有独特展示价值
+    framework_demand: 1 - TODO存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO草案，参数未实现，且为文学设定
+    innovation: 2 - 将叙事选择（聆听vs修飞机）转化为可优化动力学意图存在，但尚未实现
+    social_value: 5 - 触及人与人之间联系、意义和告别的普世主题，文学价值极高
+  tags:
+    - desert
+    - meaning
+    - connection
+    - loss
+    - philosophy
+    - literature
+  references:
+    - Le Petit Prince (Antoine de Saint-Exupéry, 1943)
+variables:
+  repair_effort:
+    type: input
+    value: 1.5
+    unit: intensity
+    bounds:
+      - 0
+      - 3
+    description: 修飞机努力：飞行员修复发动机的专注程度（关系到他自己的生存）
+    reference: TODO:SOURCE
+  listening_depth:
+    type: input
+    value: 0.5
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 真正聆听小王子：放下大人视角，真正理解小王子说的话
+    reference: TODO:SOURCE
+  persuasion_attempt:
+    type: input
+    value: 0.3
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 说服小王子留下：尝试说服小王子不要回去（留在地球）
+    reference: TODO:SOURCE
+  pilot_survival:
+    type: state
+    value: 40
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 飞行员生存概率：在沙漠中的水和飞机修复进度（低=必死）
+    reference: TODO:SOURCE
+    io_role: output
+  understanding:
+    type: state
+    value: 10
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 真正理解：飞行员对小王子所说重要之物的真实理解程度
+    reference: TODO:SOURCE
+    io_role: output
+  prince_resolve:
+    type: state
+    value: 70
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 小王子的回家意志：小王子对回到玫瑰身边的决心（高=不可动摇）
+    reference: TODO:SOURCE
+    io_role: output
+  connection_depth:
+    type: state
+    value: 5
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 连接的深度：两人之间真实的理解与连接（这才是故事真正的遗产）
+    reference: TODO:SOURCE
+    io_role: output
+equations:
+  survival_progress:
+    dynamics:
+      pilot_survival: min(100, max(0, pilot_survival + repair_effort * 8.0 - 5.0))
+    description: 修复飞机+减少水消耗
+    reference: TODO:SOURCE
+  understanding_growth:
+    dynamics:
+      understanding: min(100, max(0, understanding + (listening_depth * 12.0) - (persuasion_attempt * 4.0)))
+    description: 真正聆听带来理解；急于说服反而阻断理解
+    reference: TODO:SOURCE
+  prince_resolve_change:
+    dynamics:
+      prince_resolve: min(100, max(0, prince_resolve + (persuasion_attempt * 3.0) - ((understanding / 100) * 2.0)))
+    description: 说服尝试反而强化他的意志（越被阻止越坚定）
+    reference: TODO:SOURCE
+  connection_growth:
+    dynamics:
+      connection_depth: min(100, connection_depth + listening_depth * 10.0 + (1 - persuasion_attempt) * 3.0)
+    description: 连接随聆听和共同时间积累；是故事留下的唯一真实
+    reference: TODO:SOURCE
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: '1943-05-01'
+  end_date: '1943-05-08'
+  output_types:
+    - input
+    - state
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: connection_depth
+      metric: final
+      direction: maximize
+    - variable: understanding
+      metric: final
+      direction: maximize
+  startpoint:
+    regimens:
+      - variable: repair_effort
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 修飞机努力
+        optimize:
+          value:
+            - 0
+            - 3
+      - variable: listening_depth
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 真正聆听小王子
+        optimize:
+          value:
+            - 0
+            - 1
+      - variable: persuasion_attempt
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 说服小王子留下
+        optimize:
+          value:
+            - 0
+            - 1
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

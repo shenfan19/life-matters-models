@@ -55,7 +55,7 @@ variables:
     unit: 1/day
     description: First-order elimination rate constant.
 
-formulas:
+equations:
   drug_pk:
     description: Dose pulse absorbed at absorption_rate, then first-order elimination.
     step_unit: day

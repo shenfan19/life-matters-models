@@ -15,10 +15,10 @@ metadata:
     result: >
       When imported by an hourly model, body_mass at 24-hour marks should match the daily
       ground truth exactly. Any deviation indicates the engine is applying the wrong step size
-      to this formula.
+      to this equation.
     result_cn: >
       当被小时级模型 import 时，body_mass 在每个 24 小时节点上应与逐日真值完全一致。任何偏差
-      都表明引擎对该公式使用了错误的步长。
+      都表明引擎对该方程使用了错误的步长。
     limitations: No physiological meaning; purely a numeric correctness fixture.
     limitations_cn: 不具有生理学意义，纯粹是数值正确性测试用例。
   tags: [test, step_size, cross_import, day, multi_scale]
@@ -31,7 +31,7 @@ variables:
     description: Body mass; decays 1% per day (Euler). Known analytical trajectory.
     reference: "TEST synthetic"
 
-formulas:
+equations:
   mass_decay:
     description: 1% daily decay; step=1 day so coefficient is exactly 0.01 per day.
     step_unit: day

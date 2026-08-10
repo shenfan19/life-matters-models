@@ -1,0 +1,86 @@
+category: risk
+
+metadata:
+  name: gompertz_mortality
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      验证目的：跨学科拓展到精算/风险学，这是risk分类下首个案例。Gompertz (1825) 观察到成年期后死亡风险随年龄呈指数上升，"每隔约8年翻一倍"是被广泛引用的经验规律，对应Gompertz系数b≈0.0866/年，现代人口统计数据反复确认这一规律在中年后段拟合极好。
+    result: |
+      用58岁对应1%年死亡风险这一锚点和8年倍增经验规律推算系数，预测66岁和74岁的年死亡风险，分别约为2.0%和4.0%，与常被引用的美国白人男性2000年数据一致，该数据显示58岁1%、66岁2%、74岁4%。
+    limitations: |
+      本案例的"验证"性质与其他留一法预测案例不同：58/66/74三个锚点本身就是每8年翻倍这一规律的教科书式illustration，该数据来源本身很可能已经是按Gompertz规律计算或高度平滑过的，不是独立测量的原始队列数据，所以预测与目标高度吻合更多反映的是模型正确实现了Gompertz指数结构，而不是一次真正独立、无自由度的外推检验。若要做更严格的检验，需要找到未经平滑的原始队列死亡率数据重新核对，例如具体年份的完整生命表。
+  ratings:
+    topic_importance: 3 - 精算/保险/老年医学的基础规律，risk 分类首个案例
+    framework_demand: 1 - 纯参考组件，尚未被具体论文import
+    evidence_quality: 4 - Gompertz-Makeham模型是人口统计学两百年验证的经典规律，但本文件用的三点锚点可能是平滑后的教学示例
+    paper_value: 1 - 通用参考组件
+    innovation: 1 - 纯文献复现，无原创建模贡献
+    validation_confidence: 4 - 正确复现Gompertz指数结构的教科书性质，但三个锚点本身可能已是同一规律的平滑illustration，非独立队列数据外推检验
+  tags: [risk, actuarial, mortality, gompertz, demography, validation, literature-benchmark, cross-domain]
+  references:
+    - "Gompertz B (1825) On the nature of the function expressive of the law of human mortality. Phil Trans R Soc 115:513-583"
+    - "个人化老年预期寿命估计相关综述 (PLOS ONE 2014, PMC4180452)"
+
+variables:
+  age_years:
+    description: 年龄（年），仿真时钟直接累加
+    value: 58.0
+    unit: year
+    type: state
+
+  annual_mortality_risk:
+    description: 预测的年死亡风险（概率），用 Gompertz 指数模型计算，静态代数方程
+    value: 0.0
+    unit: probability
+    type: state
+
+  r0_baseline:
+    description: >
+      Gompertz模型基础系数，由58岁锚点(1%年死亡风险)与8年倍增经验规律反推：
+      r0 = 0.01 * exp(-b*58)。
+    value: 0.0000658
+    unit: dimensionless
+    type: parameter
+    reference: "作者反推，基于Gompertz(1825)倍增经验规律"
+
+  gompertz_b:
+    description: Gompertz系数，对应"每8年死亡风险翻倍"经验规律：b=ln(2)/8
+    value: 0.0866
+    unit: 1/year
+    type: parameter
+    reference: "Gompertz (1825); 现代人口统计学广泛确认的8年倍增经验规律"
+
+equations:
+  clock_tick:
+    description: "时钟累加：age_years 逐步跟踪年龄"
+    step_unit: day
+    condition: true
+    priority: 5
+    dynamics:
+      age_years: "age_years + step / 365.25"
+
+  mortality_calc:
+    description: "静态Gompertz计算：annual_mortality_risk = r0·exp(b·age)，不随时间积分"
+    condition: true
+    priority: 3
+    dynamics:
+      annual_mortality_risk: "r0_baseline * exp(gompertz_b * age_years)"
+
+simulation:
+  step_size:
+    value: 30
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2042-01-01"
+  output_variables:
+    - age_years
+    - annual_mortality_risk
+  plans:
+    - id: "aging_58_to_74"
+      label: "58岁到74岁年死亡风险演化（无输入事件，纯时钟驱动的静态曲线评估）"
+      regimens: []

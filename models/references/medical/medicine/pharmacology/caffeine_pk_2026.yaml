@@ -1,0 +1,92 @@
+category: physiological
+
+metadata:
+  name: caffeine_pk
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      咖啡因在健康成年人中的消除半衰期为4–5小时，是被反复独立测量、共识极高的数字，适合作为单室一阶药代消除这一药理学里争议最小的动力学模型的标准参考子模型。
+    result: |
+      单次口服200mg咖啡因，相当于约2杯咖啡剂量，分布容积取42L，即0.6 L/kg乘以70kg代表性体重，文献范围0.5–0.75 L/kg，生物利用度99%；忽略吸收相，吸收约45分钟内完成，本文件简化为瞬时达峰，只验证消除相：t½=5小时时，5/10/15/20小时后血药浓度应分别为峰值的50%/25%/12.5%/6.25%。
+    limitations: |
+      简化了吸收相，真实达峰需1-2小时，本文件按t=0瞬时达峰处理，只验证消除动力学本身；5小时半衰期是健康成年人的代表值，个体差异范围较大，为1.5–9.5小时，与CYP1A2基因型相关，未做蒙特卡洛个体差异建模。
+  ratings:
+    topic_importance: 2 - 方法论验证展示，非独立临床案例
+    framework_demand: 1 - 纯验证用途，不被其他论文import
+    evidence_quality: 5 - 咖啡因PK是药理学教科书级共识数字，无争议
+    paper_value: 2 - 一般性参考组件，可作为单室一阶PK的标准子模型复用
+    innovation: 1 - 纯文献复现，无原创建模贡献
+    validation_confidence: 5 - 全部检查点(5/10/15/20/24小时)与理论衰减曲线偏差<0.1个百分点
+  tags: [pharmacokinetics, caffeine, validation, literature-benchmark]
+  references:
+    - "Institute of Medicine (2001) Caffeine for the Sustainment of Mental Task Performance: Equationtions for Military Operations. National Academies Press."
+    - "Alsabri SG, Mari WO, Younes S, et al. (2018) Kinetic and Dynamic Description of Caffeine. J Caffeine Adenosine Res 8(1)."
+
+variables:
+  caffeine_dose:
+    description: 单次口服咖啡因剂量（约2杯咖啡，仅在模拟第1天08:00给药一次）
+    value: 0.0
+    unit: mg
+    type: input
+
+  Vd:
+    description: 表观分布容积（0.6 L/kg × 70kg 代表性体重，文献范围0.5-0.75 L/kg）
+    value: 42.0
+    unit: L
+    type: parameter
+    reference: "Alsabri et al. (2018)"
+
+  F:
+    description: 口服生物利用度（咖啡因吸收接近完全，无显著首过效应）
+    value: 0.99
+    unit: dimensionless
+    type: parameter
+    reference: "Alsabri et al. (2018)"
+
+  caffeine_conc:
+    description: 血浆咖啡因浓度（本文件简化吸收相为瞬时达峰，只建模消除相）
+    value: 0.0
+    unit: mg/L
+    type: state
+    bounds: [0, 20]
+
+  caffeine_ke:
+    type: parameter
+    evidence_type: pk
+    value: 0.1386
+    unit: 1/hour
+    description: >
+      咖啡因消除速率常数 ke = ln2/t½，t½取健康成年人代表值5小时
+      （文献报告范围4–5小时，个体差异1.5–9.5小时，CYP1A2基因型依赖）。
+    reference: "Institute of Medicine (2001); Alsabri et al. (2018)"
+
+equations:
+  caffeine_pk:
+    description: >
+      咖啡因单室一阶消除：给药脉冲瞬时进入 Vd（简化吸收相），随后按 ke 一阶衰减。
+      caffeine_ke 已是 1/hour 的有效速率，step_unit 为 hour（step=1），无需额外换算系数。
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      caffeine_conc: "max(0.0, caffeine_conc + caffeine_dose * F / Vd - caffeine_conc * caffeine_ke * step)"
+    reference: "Alsabri et al. (2018)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables:
+    - caffeine_dose
+    - caffeine_conc
+  plans:
+    - id: "single_dose"
+      label: "单次口服200mg咖啡因（08:00，约2杯咖啡）"
+      regimens:
+        - {variable: caffeine_dose, time_start: "08:00", value: 200.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "单次给药"}

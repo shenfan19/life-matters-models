@@ -1,0 +1,202 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: "simple_nutrition"
+  lm_format_version: "1.0"
+  updated: 2026-05-17
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      游戏专用简化营养摄入组件：三餐触发时将碳水化合物、蛋白质、脂肪和水分按固定比例注入胃部缓冲区，为香蕉模型等上层场景提供对照基线组件，用于基础校验。
+    result: >
+      三餐 schedule 触发后，对应营养素蓄积进胃部。仿真尚未运行，为组件模型。
+    limitations: 极简转换组件，不包含消化速率、食物组成差异或个体代谢动力学；参数应在上层场景中校准。
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 1 - 游戏专用简化营养模型，仅为演示/校验用途，无研究需求
+    framework_demand: 1 - _ag游戏专用模型，框架内复用价值极低
+    evidence_quality: 2 - 基本营养成分数值合理，但模型极简，缺少生理动力学
+    popularity: 1 - 游戏（_ag）专用演示组件，无通用性
+  tags: [nutrition, simple, demo]
+
+variables:
+  food_carbohydrate:
+    type: input
+    value: 60.0
+    unit: "g"
+    bounds: [0.0, 200.0]
+    description: "单次餐食碳水化合物摄入量"
+
+  food_protein:
+    type: input
+    value: 20.0
+    unit: "g"
+    bounds: [0.0, 100.0]
+    description: "单次餐食蛋白质摄入量"
+
+  food_fat:
+    type: input
+    value: 15.0
+    unit: "g"
+    bounds: [0.0, 80.0]
+    description: "单次餐食脂肪摄入量"
+
+  water_intake:
+    type: input
+    value: 300.0
+    unit: "ml"
+    bounds: [0.0, 1000.0]
+    description: "单次饮水量"
+
+  gastric_carbohydrate:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+    description: "胃部碳水化合物含量"
+
+  gastric_protein:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+    description: "胃部蛋白质含量"
+
+  gastric_fat:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+    description: "胃部脂肪含量"
+
+  body_water:
+    type: state
+    value: 42000
+    unit: "ml"
+    io_role: output
+    description: "身体总水分"
+
+equations:
+  ingestion_transfer:
+    condition: "food_carbohydrate > 0 or food_protein > 0 or food_fat > 0 or water_intake > 0"
+    priority: 1
+    dynamics:
+      gastric_carbohydrate: "gastric_carbohydrate + food_carbohydrate"
+      gastric_protein: "gastric_protein + food_protein"
+      gastric_fat: "gastric_fat + food_fat"
+      body_water: "body_water + water_intake"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+      - variable: food_carbohydrate
+        time_start: "07:30"
+        value: 60.0
+        label: 早餐碳水
+      - variable: food_protein
+        time_start: "07:30"
+        value: 15.0
+        label: 早餐蛋白质
+      - variable: food_fat
+        time_start: "07:30"
+        value: 10.0
+        label: 早餐脂肪
+      - variable: water_intake
+        time_start: "07:30"
+        value: 300.0
+        label: 早餐饮水
+      - variable: food_carbohydrate
+        time_start: "12:00"
+        value: 80.0
+        label: 午餐碳水
+      - variable: food_protein
+        time_start: "12:00"
+        value: 25.0
+        label: 午餐蛋白质
+      - variable: food_fat
+        time_start: "12:00"
+        value: 20.0
+        label: 午餐脂肪
+      - variable: water_intake
+        time_start: "12:00"
+        value: 400.0
+        label: 午餐饮水
+      - variable: food_carbohydrate
+        time_start: "18:30"
+        value: 70.0
+        label: 晚餐碳水
+      - variable: food_protein
+        time_start: "18:30"
+        value: 20.0
+        label: 晚餐蛋白质
+      - variable: food_fat
+        time_start: "18:30"
+        value: 18.0
+        label: 晚餐脂肪
+      - variable: water_intake
+        time_start: "18:30"
+        value: 350.0
+        label: 晚餐饮水
+  output_variables: [gastric_carbohydrate, gastric_protein, gastric_fat, body_water]
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: gastric_protein
+      metric: final
+      direction: maximize
+    - variable: gastric_fat
+      metric: final
+      direction: minimize
+  startpoint:
+    regimens:
+      - variable: food_carbohydrate
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "碳水化合物摄入（g）"
+        optimize:
+          value: [0.0, 200.0]
+      - variable: food_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "蛋白质摄入（g）"
+        optimize:
+          value: [0.0, 100.0]
+      - variable: food_fat
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "脂肪摄入（g）"
+        optimize:
+          value: [0.0, 80.0]
+      - variable: water_intake
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "水分摄入（ml）"
+        optimize:
+          value: [0.0, 1000.0]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

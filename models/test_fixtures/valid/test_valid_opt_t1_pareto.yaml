@@ -65,7 +65,7 @@ variables:
     unit: per_day
     description: Daily drug clearance fraction; half-life ≈ 2.3 days.
 
-formulas:
+equations:
   total_dose_calc:
     description: Sum of all daily doses (static indicator, no step).
     step_unit: hour

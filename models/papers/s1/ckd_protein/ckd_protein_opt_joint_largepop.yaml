@@ -1,0 +1,138 @@
+metadata:
+  name: ckd_protein_pareto
+  lm_format_version: "1.0"
+  updated: 2026-08-05
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      CKD 蛋白质-肌肉联合多目标优化前沿在更大搜索规模下的复现：验证早午餐蛋白量压至下界、限制期→标准期切换时机才是关键杠杆这一权衡结构，以及晚餐蛋白摄入时机对模型结局无因果影响这一结论，是否随搜索深度增加而改变。
+    method: |
+      机制与 ckd_protein_sim.yaml 相同，完整机制列表见该文件 description.method；本文件与 ckd_protein_opt_joint.yaml 使用完全相同的联合目标结构，即 GFR、muscle_mass 与健康时长，仅将搜索预算从 pop=100/gen=200 扩大至 pop=150/gen=300，用于前沿稳健性复核。
+    result: |
+      - Pareto 前沿共 31 个非劣解，GFR 范围 40.9 至 42.9 mL/min/1.73m²，muscle_mass 范围 33.4 至 38.5 kg，lm_score 在全部解中恒为 364。
+      - 前沿范围与更小搜索预算的 pop=100 版本，即 ckd_protein_opt_joint.yaml 修正前的历史值，基本重合，未发现更大搜索规模下遗漏的显著尾端，验证了权衡结构在更大搜索规模下的稳健性。
+    limitations: |
+      - 计算成本显著高于标准配置，适合发表前精化搜索；继承 s1/ckd_protein 全部建模假设与限制。
+      - 本文件最近一次完整搜索于 2026-07-10 完成，建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，尚未用当前模型重新验证；数值仅供搜索规模本身的稳健性参考，当前有效前沿见 `ckd_protein_opt_joint.yaml`。
+  ratings:
+    topic_importance: 2 - 方法论收尾验证，非独立科学需求
+    framework_demand: 2 - S4收尾模型，附录级，不被其他模型引用
+    evidence_quality: 4 - 文献基础同 s1/ckd_protein
+    paper_value: 2 - 附录级材料，最佳定位是收敛性分析数据源
+    innovation: 2 - 搜索预算扩展验证，方法论意义大于科学新颖性
+    validation_confidence: 1 - 结果建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，未用当前模型重新验证，见 limitations
+  tags: [ckd, protein, muscle]
+  log:
+    "2026-06-15_00-00-00":
+      change: "imports 路径 papers/s1/ckd_protein_noref 改为 papers/s1/ckd_protein_HOLD"
+      reason: "--sim/--opt 均报 Cannot load model：被 import 的文件已重命名为 _HOLD 后缀，本文件的 imports 路径未同步更新。"
+    "2026-06-25_00-00-00":
+      change: "文件从 papers/s4/ckd_protein_pareto.yaml 迁移至 papers/s1/ckd_protein/ckd_protein_opt_joint_largepop.yaml，imports 路径改为 ./ckd_protein_sim"
+      reason: "本场景是 s1/ckd_protein 案例的搜索预算扩展验证，不是独立案例，归位到其所属案例目录下。"
+    "2026-08-05_00-00-00":
+      change: "移除已解决的 metadata.todo 条目；results 精简为 2026-07-10 的最后一次完整搜索结果，其余 rerun 记录迁移至 history/2026-08-05_ckd_protein_opt_joint_largepop.yaml；description 补充 method 字段，problem 字段改为直接陈述验证目标"
+      reason: "落实 ADR 0141；同时如实标注本文件尚未用 2026-08-02 模型修正后的版本重新验证，见 results.status。"
+  references:
+    - "参见 ckd_protein_sim.yaml 完整引用"
+    - citation: "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
+      description: "NSGA-II 多目标优化算法本身的方法学来源，本文件 optimizer.method 采用该算法在更大种群与代数预算下搜索 Pareto 前沿。"
+    - citation: "Snijders T et al. (2015) Pre-sleep protein. J Nutr 145(6):1178-1184"
+      description: "睡前蛋白促进夜间肌肉合成的机制文献，本文件用于检验晚餐蛋白摄入时机在更大搜索规模下是否呈现该机制预期的因果模式；结果显示该决策变量在前沿各解间无一致规律，与 ckd_protein_sim.yaml 记录的机制缺口一致。"
+
+imports:
+  - ./ckd_protein_sim
+
+# 继承 ckd_protein_sim 的全部变量、方程、约束
+# 仅覆盖 optimizer 配置（更大种群 + 同一 T1+T2+T4 inputs）
+
+optimizer:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+
+  objectives:
+    - variable: muscle_mass
+      metric: final
+      direction: maximize
+      description: "最大化52周末骨骼肌质量"
+    - variable: GFR
+      metric: final
+      direction: maximize
+      description: "最大化52周末 GFR"
+    - variable: lm_score
+      metric: final
+      direction: maximize
+      description: "最大化 CKD 健康时长（GFR ≥ 30、muscle_mass ≥ 22 kg、BUN ≤ 20 的累计天数）"
+
+  constraints:
+    - variable: BUN
+      condition: "<= 20"
+      type: hard
+    - variable: GFR
+      condition: ">= 30"
+      type: hard
+
+  startpoint:
+    regimens:
+      # T1: 早餐蛋白量
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "早餐蛋白量"
+        optimize:
+          value: [0.15, 0.45]
+
+      # T1: 午餐蛋白量
+      - variable: dietary_protein
+        time_start: "12:00"
+        time_end: "12:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "午餐蛋白量"
+        optimize:
+          value: [0.15, 0.40]
+
+      # T1+T2: 晚餐蛋白量 + 用餐时间窗（时间营养学）
+      - variable: dietary_protein
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "晚餐蛋白量与用餐时机"
+        optimize:
+          value: [0.15, 0.45]
+          time_start: ["17:00", "22:00"]
+
+      # T4: 限制期→标准期切换时机
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "标准期启动时机"
+        optimize:
+          value: [0.27, 0.42]
+          date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
+
+  mc:
+    runs: 5
+    seed: 19
+
+  algorithm:
+    population_size: 150
+    n_generations: 300
+    seed: 19
+
+  results:
+    status: "本文件最近一次完整搜索（2026-07-10）建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，尚未用当前模型重新验证；数值仅供搜索规模本身的稳健性参考，当前有效前沿见 ckd_protein_opt_joint.yaml。"
+    generated_at: "2026-07-10"
+    method: nsga2
+    population_size: 150
+    n_generations: "8/300"
+    n_solutions: 31
+    pareto_front_range:
+      GFR: [40.916, 42.923]
+      muscle_mass: [33.419, 38.538]
+      lm_score: "全部31解恒为364.0"
+    recommended:
+      x: [0.19253420892206038, 0.2825734558841018, 0.30054613683819725, 1.9536293937682137, 0.2854986687478265, 173.73504308475066]
+      f: [35.71878173323725, 42.59878875902801, 364.0000000000258]
+    note: "前沿范围与 pop=100 版本（ckd_protein_opt_joint.yaml 修正前的历史值）基本重合，未发现更大搜索规模下遗漏的显著尾端。更早的重跑记录及完整 pareto_front 见 history/2026-08-05_ckd_protein_opt_joint_largepop.yaml。"

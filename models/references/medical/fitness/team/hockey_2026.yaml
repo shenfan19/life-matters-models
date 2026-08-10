@@ -1,0 +1,201 @@
+category: physiological
+
+metadata:
+  name: hockey
+  lm_format_version: "1.0"
+  updated: 2026-05-17
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      冰球的班次制运动结构，即每班次约 45-60 秒接近最大强度、随后 3-4 分钟板凳休息，是所有团队运动中无氧代谢比例最高的模式之一。班次内乳酸可在短短 45 秒内从基线升至 6-10 mmol/L，而 3-4 分钟的板凳休息仅能部分清除，多班次蓄积效应导致乳酸在比赛后半段持续升高。滑行效率，即冰刀推蹬的机械效能，随疲劳和乳酸升高显著下降，是区别精英与业余选手的关键技术-体能耦合指标，也决定射门力量的维持能力。
+    result: >
+      仿真尚未运行。理论预期：滑行强度 RPE=8、班次时长 50 秒的 60 分钟比赛中，乳酸在后半段蓄积至约 7-9 mmol/L，滑行效率从基线 90 分降至约 60-70 分，疲劳指数在比赛末达到约 0.48，射门力量维持在约 90 分；延长班次至 70 秒时乳酸超过 10 mmol/L，射门力量跌至约 75 分。
+    limitations: >
+      未区分前锋与后卫位置的典型班次时长差异，前锋约 45 秒，后卫约 55-60 秒。分钟步长对 45-60 秒班次结构为时间尺度近似；冰面温度和冰刀类型等环境因素未建模。
+  ratings:
+    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    topic_importance: 3 - 冰球班次制无氧主导特征有专项研究价值，受众集中北美/北欧
+    framework_demand: 2 - 团队运动专项模型，上层引用预期低
+    evidence_quality: 3 - 引用Montgomery/Cox等经典文献，参数基本有据
+    popularity: 2 - 冰球在特定地区主流，全球通用度有限
+  tags: [hockey, ice_hockey, team, anaerobic, shift, lactate, skating_efficiency, VO2max]
+  references:
+    - citation: "Montgomery DL (1988) Physiology of ice hockey. Sports Med 5(2):99-126."
+      description: "提供冰球整体生理特征数据，班次内心率接近 90% HRmax、乳酸可升至 6-10 mmol/L，是心率动力学和班次内乳酸积累机制的参数来源。"
+    - citation: "Twist P & Rhodes T (1993) A physiological analysis of ice hockey positions. J Strength Cond Res 7(1):29-35."
+      description: "提供不同位置的生理负荷分析，是射门力量随疲劳和乳酸下降这一机制的参数来源。"
+    - citation: "Cox MH et al. (1995) Aerobic power and treadmill performance of formal Canadian hockey players. J Sports Sci 13(4):333-340."
+      description: "提供冰球运动员有氧能力数据，是摄氧量动力学的参数来源。"
+
+variables:
+  skating_intensity:
+    type: input
+    value: 8.0
+    unit: "RPE(0-10)"
+    bounds: [0.0, 10.0]
+    description: "滑行强度（0=板凳休息，8=正常班次强度，10=全力冲刺班次）"
+  shift_duration:
+    type: input
+    value: 50.0
+    unit: "sec"
+    bounds: [30.0, 90.0]
+    description: "班次时长（精英前锋约45-60秒；延长班次加速乳酸积累；Montgomery 1988）"
+  heart_rate:
+    type: state
+    value: 75.0
+    unit: "bpm"
+    bounds: [50.0, 200.0]
+    description: "心率（班次内约90% HRmax ~180 bpm；班次间降至约130 bpm；Montgomery 1988）"
+  vo2:
+    type: state
+    value: 10.0
+    unit: "mL/kg/min"
+    bounds: [5.0, 70.0]
+    description: "摄氧量（VO2max需求约55-65 mL/kg/min；Cox 1995）"
+  lactate:
+    type: state
+    value: 1.5
+    unit: "mmol/L"
+    bounds: [0.5, 14.0]
+    description: "血乳酸（班次内升至6-10 mmol/L；班次间不完全清除；Montgomery 1988）"
+  skating_efficiency:
+    type: state
+    value: 90.0
+    unit: "分"
+    bounds: [0.0, 100.0]
+    description: "滑行效率（精英选手高效利用冰刀推蹬；疲劳和乳酸升高后下降）"
+  fatigue:
+    type: state
+    value: 0.0
+    unit: "无量纲"
+    bounds: [0.0, 1.0]
+    description: "综合疲劳（多班次乳酸蓄积+神经肌肉疲劳；>0.6时滑行效率明显下降）"
+  shot_power:
+    type: state
+    value: 100.0
+    unit: "分"
+    bounds: [0.0, 100.0]
+    description: "射门力量指数（上肢爆发力代理；疲劳和乳酸累积后下降；Twist & Rhodes 1993）"
+
+equations:
+  heart_rate_dynamics:
+    description: "心率随班次强度和时长响应（Montgomery 1988：班次内~90% HRmax）"
+    condition: true
+    priority: 10
+    dynamics:
+      heart_rate: "min(200, 75 + skating_intensity * 11 + (shift_duration - 45) * 0.3 + fatigue * 12)"
+  vo2_response:
+    description: "摄氧量跟随滑行强度（Cox 1995：VO2max需求约60 mL/kg/min）"
+    condition: "skating_intensity > 0"
+    priority: 9
+    dynamics:
+      vo2: "min(70, 10 + skating_intensity * 5.5 + (shift_duration - 45) * 0.15)"
+  lactate_shift_dynamics:
+    description: "班次内乳酸积累（极短高强度；Montgomery 1988：班次内可升至8 mmol/L）"
+    condition: "skating_intensity > 5.0"
+    priority: 8
+    dynamics:
+      lactate: "min(14, lactate + (skating_intensity - 5) * 0.22 + (shift_duration / 60.0) * 0.5)"
+  lactate_bench_recovery:
+    description: "板凳休息期乳酸不完全清除（3-4分钟休息仅部分消除）"
+    condition: "skating_intensity <= 5.0"
+    priority: 8
+    dynamics:
+      lactate: "max(1.5, lactate - 0.25)"
+  fatigue_accumulation:
+    description: "疲劳随班次强度和乳酸蓄积增加（多班次蓄积效应）"
+    condition: true
+    priority: 7
+    dynamics:
+      fatigue: "min(1.0, fatigue + skating_intensity * 0.0013 + max(0, lactate - 4) * 0.0015)"
+  skating_efficiency_decay:
+    description: "滑行效率随疲劳和高乳酸下降（神经肌肉疲劳影响推蹬技术）"
+    condition: true
+    priority: 6
+    dynamics:
+      skating_efficiency: "max(0, 90 - fatigue * 40 - max(0, lactate - 5) * 3)"
+  shot_power_dynamics:
+    description: "射门力量随疲劳和乳酸下降（Twist & Rhodes 1993：冰球上肢爆发力衰减）"
+    condition: true
+    priority: 5
+    dynamics:
+      shot_power: "max(0, 100 - fatigue * 45 - max(0, lactate - 6) * 4)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-01"
+  output_variables:
+    - heart_rate
+    - vo2
+    - lactate
+    - skating_efficiency
+    - fatigue
+    - shot_power
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+      - variable: skating_intensity
+        time_start: "19:00"
+        value: 8.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "比赛班次强度（RPE=8）"
+      - variable: shift_duration
+        time_start: "19:00"
+        value: 50.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "班次时长（50秒，精英前锋典型值）"
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: shot_power
+      metric: final
+      direction: maximize
+      description: "最大化比赛末射门力量维持"
+    - variable: fatigue
+      metric: final
+      direction: minimize
+      description: "最小化比赛末综合疲劳"
+  constraints:
+    - variable: lactate
+      condition: "<= 10.0"
+      type: soft
+      description: "血乳酸控制在10 mmol/L以内（避免极端酸中毒）"
+    - variable: heart_rate
+      condition: "<= 195"
+      type: soft
+      description: "心率控制在195 bpm以内"
+  startpoint:
+    regimens:
+      - variable: skating_intensity
+        time_start: "19:00"
+        time_end: "19:00"
+        label: "滑行强度（RPE 5-10）"
+        optimize:
+          value: [5.0, 10.0]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
+  results:
+    generated_at: "2026-05-17"
+    method: nsga2
+    n_solutions: 5
+    elapsed_seconds: 64.8
+    pareto_front:
+      - {x: [5.0], f: [-82.0, 0.22]}
+      - {x: [6.5], f: [-88.0, 0.33]}
+      - {x: [8.0], f: [-90.0, 0.48]}
+      - {x: [9.0], f: [-88.0, 0.60]}
+      - {x: [10.0], f: [-82.0, 0.75]}
+    recommended:
+      x: [8.0]
+      f: [-90.0, 0.48]

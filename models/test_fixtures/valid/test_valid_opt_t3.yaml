@@ -65,7 +65,7 @@ variables:
     unit: 1/day
     description: Daily fatigue recovery fraction (on rest days fatigue decays).
 
-formulas:
+equations:
   training_gain:
     description: Fitness rises with each aerobic and strength session (pulse, no step).
     step_unit: hour

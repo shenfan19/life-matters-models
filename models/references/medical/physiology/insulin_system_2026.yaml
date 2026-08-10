@@ -1,0 +1,109 @@
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: insulin_system
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      胰岛素系统通过 5 个变量，即 plasma_insulin、insulin_secretion_rate、beta_cell_function、beta_cell_mass 等，和 3 个方程刻画 β 细胞对血糖刺激的分泌响应及胰岛素的周质清除动力学。β 细胞质量的慢性衰竭，对应 2 型糖尿病进程，与胰岛素分泌率的急性餐后峰值共存于同一组件，是 glucose_regulation 和 endocrine_system 之间的关键中间层，被 4 个上层模型 import。
+    result: >
+      仿真预期呈现 plasma_insulin 在餐后的双相分泌峰和胰岛素抵抗场景下的慢性高浓度平台，仿真尚未运行，为纯组件模型。
+    limitations: β 细胞质量衰竭速率参数无文献标注；未区分 1 型自身免疫与 2 型脂毒性损伤机制，需上层场景明确病理背景。
+  conflicts: []
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 5 - 胰岛素系统是糖尿病建模最核心组件，与血糖调节不可分割
+    framework_demand: 5 - 被4个上层模型import，与glucose_regulation并列核心
+    evidence_quality: 3 - 变量范围符合临床标准，但方程参数（β细胞质量等）无文献标注
+    popularity: 5 - 胰岛素分泌/β细胞功能是内分泌学教科书最重要内容之一
+  tags:
+  - insulin
+  - beta_cell
+imports:
+- references/medical/physiology/glucose_regulation_2026_mw
+variables:
+  plasma_insulin:
+    description: 血浆胰岛素浓度
+    value: 8
+    unit: μU/mL
+    type: state
+    bounds:
+    - 1
+    - 300
+  insulin_secretion_rate:
+    description: 胰岛素分泌速率
+    value: 1.0
+    unit: μU/mL/min
+    type: state
+    bounds:
+    - 0
+    - 20
+  beta_cell_function:
+    description: 胰岛β细胞功能，0-1之间，1为完全正常
+    value: 0.8
+    unit: 功能系数
+    type: state
+    bounds:
+    - 0
+    - 1.0
+  beta_cell_mass:
+    description: 胰岛β细胞数量/质量
+    value: 100
+    unit: 相对单位
+    type: state
+    bounds:
+    - 10
+    - 120
+  insulin_sensitivity:
+    description: 胰岛素敏感性，影响葡萄糖摄取效率
+    value: 0.75
+    unit: 敏感性指数
+    type: state
+    bounds:
+    - 0.1
+    - 1.0
+equations:
+  insulin_secretion:
+    description: 胰岛素分泌响应血糖
+    step_unit: minute
+    condition: blood_glucose > 100 and beta_cell_function > 0.1
+    dynamics:
+      insulin_secretion_rate: min(20, insulin_secretion_rate + (blood_glucose - 100) * beta_cell_function * 0.005 * step)
+      plasma_insulin: plasma_insulin + insulin_secretion_rate * step - plasma_insulin * 0.05 * step
+    priority: 5
+  type1_autoimmune_destruction:
+    description: 1型糖尿病的自身免疫性β细胞破坏
+    condition: diabetes_type == 1 and beta_cell_mass > 15
+    dynamics:
+      beta_cell_mass: beta_cell_mass - 0.01
+      beta_cell_function: max(0, beta_cell_function - 0.001)
+    priority: 3
+  insulin_sensitivity_recovery:
+    description: 运动改善胰岛素敏感性
+    condition: blood_glucose < 100 and physical_activity > 100
+    dynamics:
+      insulin_sensitivity: min(1.0, insulin_sensitivity + 0.0005)
+    priority: 2
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables:
+  - plasma_insulin
+  - insulin_secretion_rate
+  - beta_cell_function
+  - beta_cell_mass
+  - insulin_sensitivity

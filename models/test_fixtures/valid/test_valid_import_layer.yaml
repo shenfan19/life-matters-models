@@ -54,7 +54,7 @@ variables:
     unit: 1/day
     description: Daily VO2max detraining rate when no exercise stimulus is present.
 
-formulas:
+equations:
   vo2max_baseline_decay:
     description: VO2max decays slightly at rest (detraining effect, rate × step).
     step_unit: day

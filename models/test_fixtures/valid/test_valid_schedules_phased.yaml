@@ -67,7 +67,7 @@ variables:
     unit: 1/day
     description: Daily fatigue recovery rate (exponential decay).
 
-formulas:
+equations:
   fitness_update:
     description: Fitness rises with each training session (pulse inputs, no step).
     step_unit: hour

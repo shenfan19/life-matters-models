@@ -1,0 +1,67 @@
+category: socio_economic
+
+metadata:
+  name: class_size
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      验证目的：跨学科拓展到教育学。Tennessee STAR（Student Teacher Achievement Ratio）实验是教育经济学里最常被引用的随机对照实验之一：幼儿园学生被随机分配到约 15 人的小班与约 22 人的常规班，检验班级规模对标准化测试成绩的因果效应。
+    result: |
+      班级缩减 7 到 8 人，约 32%，对应标准化测试成绩提升约 0.22 个标准差的 Cohen's d 效应量，由 Krueger 1999 分析得出。本文件用 LM format 的 evidence 节以 cohens_d 子类型直接声明这一效应量，验证 Loader 能正确承载并展示这一教育经济学地标实验的效应量。
+    limitations: |
+      本案例是效应量编码正确性展示，不是独立预测检验，不像 statin_ldl 或 epoc_recovery 那样有一个未参与拟合的独立数据点做对照，0.22 这个数字本身就是要验证的目标，不是外推出来和另一个独立来源比较。population_sd 按输出变量本身即以标准差为单位的约定取 1.0，不换算为具体测试量表的原始分数单位。
+  ratings:
+    topic_importance: 1 - 方法论验证展示，非独立研究案例
+    framework_demand: 1 - 纯验证用途，不被其他论文import
+    evidence_quality: 5 - Tennessee STAR 是教育经济学地标级随机对照实验
+    paper_value: 2 - 一般性参考组件，social/education 分类下首个案例
+    innovation: 1 - 纯文献效应量复现，无原创建模贡献
+    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为Tennessee STAR地标级RCT，evidence换算结果与声明值精确一致
+  tags: [education, class-size, evidence, validation, literature-benchmark, cross-domain]
+  references:
+    - "Krueger AB (1999) Experimental Estimates of Education Production Functions. Q J Econ 114(2):497-532"
+    - "Finn JD, Achilles CM (1990) Answers and Questions About Class Size: A Statewide Experiment. Am Educ Res J 27(3):557-577"
+
+variables:
+  test_score_gain_sd:
+    description: 班级缩减7-8人对应的标准化测试成绩提升（标准差单位）
+    value: 0.0
+    unit: SD
+    type: state
+
+  class_size_effect:
+    type: parameter
+    evidence_type: cohens_d
+    value: 0.22
+    population_sd: 1.0
+    unit: SD
+    description: >
+      Tennessee STAR 实验：小班（~15人）vs 常规班（~22人）幼儿园学生标准化测试成绩差异
+      的效应量（Krueger 1999 分析）。population_sd=1.0 是"输出变量本身即以SD为单位"
+      这一约定的直接体现。
+    reference: "Krueger AB (1999) Q J Econ 114(2):497-532"
+
+equations:
+  display_effect:
+    description: "静态展示：test_score_gain_sd = class_size_effect（cohens_d 类型：有效值=value*population_sd）"
+    condition: true
+    priority: 3
+    dynamics:
+      test_score_gain_sd: "class_size_effect"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - test_score_gain_sd
+  plans:
+    - id: "small_class_vs_regular"
+      label: "小班（~15人）vs 常规班（~22人）效应量展示"
+      regimens: []

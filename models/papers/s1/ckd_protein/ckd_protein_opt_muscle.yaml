@@ -1,0 +1,99 @@
+metadata:
+  name: ckd_protein_opt_muscle
+  lm_format_version: "1.0"
+  description:
+    problem: "康复科/肌少症单学科视角优化：仅最大化 52 周末 muscle_mass，不考虑 GFR。代表'如果只听肌少症指南、不管肾内科诉求，单学科最优会推到什么程度'，与肾科单学科的 ckd_protein_opt_renal.yaml、联合多学科的 ckd_protein_opt_joint.yaml 并列对比，才能体现联合优化揭示的权衡区间。完整物理机制与对比仿真见 imports 的 ckd_protein_sim。"
+    method: "机制与 ckd_protein_sim.yaml 相同，完整机制列表见该文件 description.method；本文件只把优化目标收窄为单一学科视角，即仅最大化 muscle_mass，决策变量与搜索空间与 ckd_protein_opt_renal.yaml/ckd_protein_opt_joint.yaml 完全一致，便于三者并列比较。"
+  references:
+    - "见 ./ckd_protein_sim.yaml"
+  log:
+    "2026-08-05_00-00-00":
+      change: "results 精简为 2026-08-02（依从性维度加入后）的最终收敛结果；此前多次 rerun 记录迁移至 history/2026-08-05_ckd_protein_opt_muscle.yaml"
+      reason: "落实 ADR 0141，主文件只保留当前有效结果。"
+
+imports:
+  - ./ckd_protein_sim
+
+optimizer:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  step_size:
+    value: 1
+    unit: hour
+
+  objectives:
+    - variable: muscle_mass
+      metric: final
+      direction: maximize
+      description: "康复科单学科目标：仅最大化52周末骨骼肌质量，不权衡 GFR"
+
+  constraints:
+    - variable: BUN
+      condition: "<= 20"
+      type: hard
+      description: "血尿素氮约束：BUN ≤ 20 mg/dL"
+    - variable: GFR
+      condition: ">= 30"
+      type: hard
+      description: "GFR 下限：不得进入 CKD 4 期（即使单学科只看肌肉，仍保留这条安全底线，否则不是临床上可讨论的方案）"
+    # 2026-06-20 删除：dietary_protein>=0.10 这条约束默认按"全程每个时间步"检查（无 metric 字段），
+    # 但 dietary_protein 是脉冲输入，非进餐时刻恒为0，导致约束在8736步轨迹上几乎处处违反，
+    # 是三个opt场景持续0% feasible的第二个根因（第一个是beta0/mu_d/mu_u单位bug，已修复）。
+    # 该约束本身也冗余：三餐搜索下界 0.15（见 startpoint）已经满足"单次进餐>=0.10"的原始意图，
+    # 故直接删除而非加 metric 修正。详见 ckd_protein_sim.yaml metadata.todo 的 resolved 条目。
+
+  startpoint:
+    regimens:
+      # 与 ckd_protein_opt_joint.yaml 完全相同的决策变量结构，只换目标函数，
+      # 这样三个场景的搜索空间一致，结果才可比。
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "早餐蛋白量"
+        optimize:
+          value: [0.15, 0.45]
+
+      - variable: dietary_protein
+        time_start: "12:00"
+        time_end: "12:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "午餐蛋白量"
+        optimize:
+          value: [0.15, 0.40]
+
+      - variable: dietary_protein
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "晚餐蛋白量与用餐时机（时间营养学优化）"
+        optimize:
+          value: [0.15, 0.45]
+          time_start: ["17:00", "22:00"]
+
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "标准期启动时机（限制→标准切换日）"
+        optimize:
+          value: [0.27, 0.42]
+          date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
+
+  mc:
+    runs: 5
+    seed: 19
+
+  algorithm:
+    population_size: 100
+    n_generations: 200
+    seed: 19
+
+  results:
+    generated_at: "2026-08-02"
+    method: nsga2
+    population_size: 40
+    n_generations: 10
+    recommended:
+      x: [0.2869988536400357, 0.3047614654631764, 0.28523921870774793, 1.5474693677198084, 0.4172706688680123, 175.69480210891052]
+      f: [28.754094840384546]
+    note: "解码：早餐0.287g/kg（08:00）、午餐0.305g/kg（12:00）、晚餐0.285g/kg（18:33）、标准期追加0.417g/kg（08:00起2026-06-25/第22周，比肾科单学科早约1周）。晚餐时机18:33在前沿各解间无一致规律，核查 muscle_dynamics/gfr_decline 两条 dynamics 表达式确认二者均无时刻相关项，晚餐时机这一决策变量对本模型任何生理结局都没有实际影响。已更新 ckd_protein_sim.yaml 的 muscle_optimized plan为本次解码结果，label 中移除晚餐时机相关表述。更早的多次 rerun 记录见 history/2026-08-05_ckd_protein_opt_muscle.yaml。"

@@ -1,0 +1,201 @@
+category: social
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: es1600_es_don_quixote
+  lm_format_version: "1.0"
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      堂吉诃德（塞万提斯《堂吉诃德》1605/1615）的核心问题是：坚守理想，代价是什么？骑士行动强度，即积累骑士荣耀满足感但身体损伤也随之累积；维持信念，即维持行动动力但与现实的裂缝随之加深；以及听从桑丘的现实建议，即能降低失败代价但与理想逻辑相冲突。每次败仗都被堂吉诃德纳入骑士叙事，把风车当作巨人，但身体和社会声誉的真实代价无法被叙事消解。
+    result: >
+      仿真预期比较三种策略下 36 个月内骑士满足感、身体状态和社会尊严的轨迹。当前为草案状态，参数待校准。
+    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+  ratings:
+    topic_importance: 4 - 《堂吉诃德》是欧洲小说开山之作，理想主义代价的量化建模有独特意义
+    framework_demand: 1 - TODO存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
+    innovation: 2 - 将理想-现实冲突和身体衰退转化为可优化动力学意图有创意，但尚未完善
+    social_value: 4 - 探索理想主义与现实的永恒张力，具有重要人文价值
+  tags:
+    - idealism
+    - delusion
+    - physical-decline
+    - social-ridicule
+    - literature
+  references:
+    - Don Quixote (Cervantes, 1605)
+variables:
+  quest_intensity:
+    type: input
+    value: 2.0
+    unit: intensity
+    bounds:
+      - 0
+      - 3
+    description: 骑士行动强度：出发挑战、攻击风车、解救公主等冒险行动的频率
+    reference: TODO:SOURCE
+  delusion_maintenance:
+    type: input
+    value: 0.8
+    unit: ratio
+    bounds:
+      - 0
+      - 1
+    description: 维持信念：在现实打击后仍坚持骑士世界观的执着程度
+    reference: TODO:SOURCE
+  sancho_listening:
+    type: input
+    value: 0.2
+    unit: intensity
+    bounds:
+      - 0
+      - 1
+    description: 听从桑丘的现实建议：接受随从桑丘的实际建议（减少无谓伤害）
+    reference: TODO:SOURCE
+  physical_health:
+    type: state
+    value: 65
+    unit: hp
+    bounds:
+      - 0
+      - 100
+    description: 身体状态：年迈身体承受冒险伤害的状态
+    reference: TODO:SOURCE
+    io_role: output
+  ideal_strength:
+    type: state
+    value: 95
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 理想主义强度：对骑士世界的信念完整度
+    reference: TODO:SOURCE
+    io_role: output
+  social_ridicule:
+    type: state
+    value: 20
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 社会嘲弄程度：被周围人当成疯子的程度
+    reference: TODO:SOURCE
+    io_role: output
+  actual_good_done:
+    type: state
+    value: 0
+    unit: score
+    bounds:
+      - 0
+      - 100
+    description: 真实善行：在错误的方式中偶然做成的真实好事
+    reference: TODO:SOURCE
+    io_role: output
+equations:
+  health_from_quests:
+    dynamics:
+      physical_health: max(0, physical_health - (quest_intensity * 2.5) + (sancho_listening * 1.0))
+    description: 冒险直接带来伤害，年迈身体无法承受
+    reference: TODO:SOURCE
+  ideal_dynamics:
+    dynamics:
+      ideal_strength: max(0, min(100, ideal_strength - (quest_intensity * 0.5 * (social_ridicule / 100)) + (delusion_maintenance * 1.0)))
+    description: 信念在现实打击下缓慢瓦解；刻意维持可延缓
+    reference: TODO:SOURCE
+  ridicule_growth:
+    dynamics:
+      social_ridicule: min(100, social_ridicule + quest_intensity * 1.5)
+    description: 冒险越多，被嘲笑的故事越多
+    reference: TODO:SOURCE
+  accidental_good:
+    dynamics:
+      actual_good_done: min(100, actual_good_done + quest_intensity * 0.8 * (1 - delusion_maintenance * 0.5))
+    description: 在执行骑士任务时偶然帮助到真实的人
+    reference: TODO:SOURCE
+simulation:
+  step_size:
+    value: 1
+    unit: month
+  start_date: '1600-01-01'
+  end_date: '1602-12-31'
+  output_types:
+    - input
+    - state
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: ideal_strength
+      metric: final
+      direction: maximize
+    - variable: actual_good_done
+      metric: final
+      direction: maximize
+  startpoint:
+    regimens:
+      - variable: quest_intensity
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 骑士行动强度
+        optimize:
+          value:
+            - 0
+            - 3
+      - variable: delusion_maintenance
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 维持信念
+        optimize:
+          value:
+            - 0
+            - 1
+      - variable: sancho_listening
+        time_start: "09:00"
+        time_end: "09:00"
+        days:
+          - Mon
+          - Tue
+          - Wed
+          - Thu
+          - Fri
+          - Sat
+          - Sun
+        label: 听从桑丘的现实建议
+        optimize:
+          value:
+            - 0
+            - 1
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
