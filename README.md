@@ -7,6 +7,12 @@
 
 ---
 
+## 免责声明
+
+本项目中的历史与医学场景基于公开学术文献，仅用于健康决策教育目的。所有模拟内容不代表对历史人物的道德评判；历史数据经简化处理，不构成医学建议；仿真结果为模型推演，非历史事实重现。
+
+---
+
 ## 这是什么
 
 本仓库是 Life Matters 项目的根基仓库，收录 LM format 格式规范本身，以及基于公开文献的生理、营养、疾病和社会动力学模型。  
@@ -16,6 +22,13 @@ LM format 是一种开放的 YAML 格式标准，类似 SBML / CellML，但专�
 - **个体尺度**的健康与行为动力学（分钟～年）
 - **行为干预调度**（饮食、运动、用药时序）
 - **多目标 Pareto 优化**（搜索最优干预方案）
+
+核心能力：
+
+1. 把医学/社会学文献里的统计结论（OR、HR、Cohen's d 等）转化为可运行的 YAML 动力学模型
+2. 在统一框架内同时运行异尺度模型（分钟–小时–天–年）
+3. 对行为干预方案（Regimen）做多目标 Pareto 优化
+4. 把多篇文献的参数装进同一框架，检验它们是否互相自洽（Simulation-as-Validation）
 
 一个 LM file 由四个顶层机制组成，合起来读作 V.E.S.O.：`variables`（可迁移的数值证据）、`equations`（把证据接成随时间演化的动力学）、`simulation`（跑出轨迹）、`optimizer`（在决策空间里搜索权衡）。四问判断一个候选话题是否落在这个范围内，详见 [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md) Scope 一节的 Inclusion Test。
 
@@ -58,7 +71,7 @@ docs/
 
 ## 状态标记
 
-模型是否"可发布"只看 `metadata.todo` 字段，与文件名无关（ADR 0120；旧版 `_nosim`/`_noopt`/`_noref` 文件名后缀约定已废除）：
+模型是否"可发布"只看 `metadata.todo` 字段，与文件名无关：
 
 - **无 `metadata.todo`（或为空）= 已确认通过、可发布**：sim ✓、opt ✓（或无 `optimizer` 块）、所有参数有文献来源。
 - **有 `metadata.todo`** = 存在待处理事项，详情见 [docs/authoring/bookkeeping.md](docs/authoring/bookkeeping.md)「状态标记」一节（`type: nosim/noopt/noref/quality/other` + 诊断证据）。
