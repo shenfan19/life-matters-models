@@ -1,0 +1,283 @@
+metadata:
+  name: homair_ogtt
+  lm_format_version: "1.0"
+  updated: 2026-06-26
+  log:
+    "2026-08-06_05-00-00":
+      change: "按 ADR 0142/0143 迁移：problem 改为主题句加边界列表，result/limitations 改为列表结构，references 全部改为 {citation, description} 对象写法；清理破折号、句首叙述式引用与数值+引用混排括号"
+      reason: "落实 ADR 0143：编辑 papers/ 模型时顺带完成 description/references 迁移，不再以任务范围小为由跳过。"
+    "2026-06-26_18-00-00":
+      change: "首版完成校准：肝脏/肌肉双通路分离系数（HGO_const/HGO_ir 与 k_disp_basal/k_disp_ins），加入8小时空腹前置稳定期（00:00起跑，08:00才触发OGTT糖负荷），S_muscle采样下界从0.25放宽到0.18。"
+      reason: "首版（单一k_disposal、无前置稳定期、t=1min即采集'空腹'值）未给系统足够时间收敛到S_hepatic/S_muscle各自决定的个体化稳态——300次MC结果显示HOMA-IR几乎不随参数变化（全部集中在3.2-4.0），300/300个体被判定为'HOMA异常但OGTT正常'，无法展示真实的四象限分布。用独立Python原型（脚本见对话记录）数值验证：(a) 系统在~200分钟内即收敛，8小时前置期足够；(b) 拆分胰岛素非依赖性（k_disp_basal）和胰岛素依赖性（k_disp_ins）外周处置后，S_muscle对空腹血糖的影响显著弱于对负荷后2h血糖的影响（因为后者发生在胰岛素浓度更高时），才能复现Abdul-Ghani 2006报告的孤立性IFG（HOMA异常/OGTT正常）和孤立性IGT（HOMA正常/OGTT异常）两类不一致模式同时存在。"
+    "2026-06-26_18-30-00":
+      change: "S_muscle 采样下界从0.18放宽到0.10，MC runs从300/1000提高到最终1000（seed=19）。"
+      reason: "[0.18,1.3]范围下n=1000仅出现2例孤立性IGT（0.2%），不足以构成稳健演示；网格扫描（620点）估算[0.10,1.3]范围下孤立性IGT象限占比约3%，与该范围下n=1000实测2.9%吻合。最终四象限分布：一致正常53.6%、一致异常29.1%、孤立性IFG样14.4%、孤立性IGT样2.9%（不一致合计17.3%），写入description.result。"
+  description:
+    problem: |
+      胰岛素抵抗没有单一金标准指标：HOMA-IR，即空腹血糖乘空腹胰岛素，只需一次空腹采血；口服葡萄糖耐量试验，OGTT，2 小时血糖则需要负荷后追踪。两者在人群中并不总是给出相同的判断，单篇来源文献回答不了这一问题：
+      - HOMA-IR 的判定阈值本身因人群、检测方法而异，文献报告范围约 1.7 至 3.5，不存在普适常数（Wallace 2004）。
+      - Abdul-Ghani et al.（2006）证明孤立性空腹血糖受损，以肝脏胰岛素抵抗为主、肌肉胰岛素敏感性接近正常，与孤立性糖耐量受损，以肌肉胰岛素抵抗为主、肝脏受累较轻，是同一代谢综合征的不同侧面，但该证据本身不涉及如何在同一虚拟人群里联合仿真两套诊断标准。
+      本案例演示 LM format 的仿真即校验用法：把 HOMA-IR，阈值 2.7（Yeni-Komshian 2000），和 OGTT 2 小时血糖，阈值 7.8 mmol/L 即 140 mg/dL（ADA 2024），两条独立诊断标准装入同一个生理框架，检验联合判定的可行域，不是检验某篇文献对错，而是检验同一虚拟人群在两套标准下的分类是否重叠。
+    method: |
+      本文件融合以下机制：
+      - 肝糖输出通路：基础肝糖输出加上肝脏胰岛素敏感性 S_hepatic 驱动的超额输出，主导空腹血糖与 HOMA-IR（Abdul-Ghani 2006）
+      - 外周葡萄糖处置通路：胰岛素非依赖性处置与胰岛素依赖性处置，后者由肌肉胰岛素敏感性 S_muscle 和当前胰岛素浓度共同决定，量级参考 Bergman 1981
+      - 肠道吸收动力学：OGTT 75g 糖负荷按一阶动力学吸收进入血液
+      - β细胞分泌-清除动力学：胰岛素基础分泌加血糖刺激分泌，按一阶速率清除
+      这些通路共享同一套血糖-胰岛素状态：S_hepatic 和 S_muscle 是两个独立采样、代表人群异质性的参数，但它们各自的效应都要经过同一个 glucose/insulin 动力学系统才能显现，外周处置项随胰岛素浓度放大，使 S_muscle 对空腹血糖的影响远小于对负荷后 2 小时血糖的影响，这正是 HOMA-IR 和 OGTT 两套独立诊断标准能够对同一虚拟人群给出不同分类的机制来源。
+    result: |
+      用蒙特卡洛仿真生成 1000 例虚拟人群，肝脏敏感性 S_hepatic 与肌肉敏感性 S_muscle 独立均匀采样，代表人群异质性，每个体先经 8 小时空腹前置期收敛到个体化稳态，再模拟标准 75g OGTT，空腹采血加负荷后 2 小时采血，分别按 HOMA-IR 大于 2.7（Yeni-Komshian 2000）和 OGTT 2 小时血糖大于 140 mg/dL 即 7.8 mmol/L（ADA 2024）两套标准分类。
+      - 联合可行域非空但显著小于全人群：两套标准一致判定为正常 53.6%、一致判定为异常 29.1%，合计一致率 82.7%。
+      - 不一致 17.3% 中，HOMA-IR 异常但 OGTT 正常，肝脏胰岛素抵抗为主、孤立性 IFG 样，占 14.4%；HOMA-IR 正常但 OGTT 异常，肌肉胰岛素抵抗为主、孤立性 IGT 样，占 2.9%。两个方向的不一致均非零，与 Abdul-Ghani 2006 报告的孤立性 IFG/IGT 现象方向一致，本模型参数下二者比例不对称，肝脏轴不一致更常见，不代表真实人群的精确比例，仅说明两套指标确实测量不同的生理通路。
+    limitations: |
+      - 本模型是简化的双通路现象学模型，不是 Bergman 1981 完整最小模型或 DeFronzo 钳夹研究的直接复现：肝脏通路和肌肉通路用两个独立的胰岛素敏感性参数代表，而非真实的肝脏葡萄糖输出与外周葡萄糖处置分腔机制；β细胞分泌动力学为线性近似，未建模第一相和第二相分泌差异。
+      - 吸收动力学、分泌速率等系数为同量级估算值，标记为 TODO:SOURCE，已通过 --sim 校准使参照个体，即 S_hepatic 与 S_muscle 均为 1.0，的空腹血糖约 90 mg/dL、HOMA-IR 约 1.8、OGTT 2 小时血糖约 105 mg/dL 落在文献报告的正常范围内，但未逐项匹配某一具体人群队列的精确数值。
+  ratings:
+    topic_importance: 4 - 胰岛素抵抗诊断标准不一致是真实存在的临床问题，但本案例定位为方法论演示而非新指南提案
+    framework_demand: 2 - 反向验证演示模型，未被其他模型 import 引用
+    evidence_quality: 2 - S_hepatic/S_muscle 采样范围与四象限分类阈值有文献锚点（Matthews 1985/Abdul-Ghani 2006/ADA 2024），但吸收/分泌/清除等多数动力学系数为 TODO:SOURCE 校准值而非直接文献测量
+    paper_value: 3 - 与 diuretic_tradeoff 并列展示 Simulation-as-Validation 两种模式（受限可行域 vs 权衡而非矛盾），非旗舰案例
+    innovation: 3 - 肝脏/肌肉双通路分离机制本身具有方法论新意，用以复现 Abdul-Ghani 2006 报告的孤立性 IFG/IGT 现象
+    validation_confidence: 3 - Simulation-as-Validation类案例(联合可行域形态检验)，与literature-target-matching类验证性质不同；本次未重新核对两篇来源文献参数是否仍与当前联合可行域结论一致
+  tags: [insulin_resistance, HOMA-IR, OGTT, simulation_as_validation, cross_literature]
+  references:
+    - citation: "Matthews DR et al. (1985) Homeostasis model assessment: insulin resistance and beta-cell function from fasting plasma glucose and insulin concentrations in man. Diabetologia 28(7):412-419"
+      description: "HOMA-IR 指标本身的原始定义来源，空腹血糖乘空腹胰岛素。"
+    - citation: "Yeni-Komshian H et al. (2000) Relationship between several surrogate estimates of insulin resistance and quantification of insulin-mediated glucose disposal in 490 healthy nondiabetic volunteers. Diabetes Care 23(2):171-175"
+      description: "HOMA-IR 异常判定阈值 2.7 的来源。"
+    - citation: "Wallace TM, Levy JC, Matthews DR (2004) Use and abuse of HOMA modeling. Diabetes Care 27(6):1487-1495"
+      description: "HOMA-IR 判定阈值因人群和检测方法而异、不存在普适常数这一局限的来源。"
+    - citation: "Abdul-Ghani MA et al. (2006) Contributions of beta-cell dysfunction and insulin resistance to the pathogenesis of impaired glucose tolerance and impaired fasting glucose. Diabetes Care 29(5):1130-1139"
+      description: "孤立性 IFG 以肝脏抵抗为主、孤立性 IGT 以肌肉抵抗为主这一机制划分的证据来源，也是肝糖输出通路 S_hepatic 主导空腹血糖与 HOMA-IR 这一设计的依据。"
+    - citation: "Bergman RN et al. (1981) Quantitative estimation of insulin sensitivity. Am J Physiol 236(6):E667-E677"
+      description: "外周葡萄糖处置通路的量级参考，本文件是简化的双通路现象学模型，不是该文完整最小模型的直接复现，见 limitations。"
+    - citation: "American Diabetes Association (2024) Standards of Care: Classification and Diagnosis of Diabetes. Diabetes Care 47(Suppl 1):S20-S42"
+      description: "OGTT 2 小时血糖异常判定阈值 7.8 mmol/L 的指南来源。"
+
+# ── 变量 ────────────────────────────────────────────────────────────────────────
+variables:
+  glucose:
+    description: 血浆葡萄糖浓度（mg/dL）；起始值代表未个体化的通用初值，仿真前8小时空腹期会收敛到各个体真实稳态
+    value: 90.0
+    unit: mg/dL
+    type: state
+    bounds: [40, 400]
+    reference: "ADA (2024)"
+    locator: "TODO:LOCATE"
+
+  insulin:
+    description: 血浆胰岛素浓度（μU/mL）；起始值同上，随空腹前置期收敛到个体化稳态
+    value: 8.0
+    unit: μU/mL
+    type: state
+    bounds: [1, 300]
+    reference: "Matthews DR et al. (1985)"
+    locator: "TODO:LOCATE"
+
+  gut_glucose:
+    description: 肠道未吸收葡萄糖（g）；OGTT 75g负荷后按一阶吸收动力学进入血液
+    value: 0.0
+    unit: g
+    type: state
+    bounds: [0, 100]
+    reference: "TODO:SOURCE 标准OGTT吸收动力学估算"
+
+  HOMA_IR:
+    description: HOMA-IR = (血糖[mmol/L] × 胰岛素[μU/mL]) / 22.5；逐步计算，仅08:00（空腹采血时刻）的值具有诊断意义
+    value: 0.0
+    unit: AU
+    type: state
+    reference: "Matthews DR et al. (1985)"
+
+  glucose_load:
+    description: OGTT 标准糖负荷（一次性事件量，08:00触发后进入 gut_glucose）
+    value: 0.0
+    unit: g
+    type: input
+
+  # ── 个体差异参数（MC 采样，代表虚拟人群）────────────────────────────────────────
+  S_hepatic:
+    description: |
+      肝脏胰岛素敏感性（相对单位，1.0=参照正常）。决定空腹状态下肝糖输出未被抑制的程度，
+      因此主要驱动空腹血糖/HOMA-IR这一轴——对应Abdul-Ghani 2006报告的"孤立性IFG=肝脏胰岛素抵抗为主"。
+      population 采样范围 [0.35, 1.3] 覆盖正常到明显肝脏胰岛素抵抗。与S_muscle独立采样。
+    value: "uniform(0.35, 1.3)"
+    unit: AU
+    type: parameter
+    bounds: [0.35, 1.3]
+    reference: "Abdul-Ghani MA et al. (2006)"
+    locator: "TODO:LOCATE"
+
+  S_muscle:
+    description: |
+      肌肉/外周胰岛素敏感性（相对单位，1.0=参照正常）。胰岛素依赖性外周葡萄糖处置速率与该参数
+      和当前胰岛素浓度的乘积成正比；负荷后胰岛素浓度远高于空腹，该参数对OGTT 2h血糖的影响
+      远大于对空腹血糖的影响——对应Abdul-Ghani 2006报告的"孤立性IGT=肌肉胰岛素抵抗为主"。
+      采样范围[0.10,1.3]下界比S_hepatic更低：需要更severe的外周抵抗才能在保持空腹血糖/HOMA-IR
+      正常的同时把2h血糖推过140 mg/dL阈值（校准时数值验证，见metadata.log；网格扫描显示
+      "孤立性肌肉抵抗"象限在[0.10,1.3]范围下占比约3%，[0.18,1.3]范围下占比<0.2%——
+      过窄的下界会让该象限在有限MC样本下几乎采不到，故扩大下界至0.10）。
+    value: "uniform(0.10, 1.3)"
+    unit: AU
+    type: parameter
+    bounds: [0.10, 1.3]
+    reference: "Abdul-Ghani MA et al. (2006)"
+    locator: "TODO:LOCATE"
+
+  HGO_const:
+    description: |
+      基础肝糖输出速率（与胰岛素敏感性无关的部分，对应脑/红细胞等胰岛素非依赖组织的葡萄糖消耗
+      在空腹稳态下必须由肝糖输出匹配）。数值通过--sim校准：使S_hepatic=S_muscle=1.0时空腹血糖
+      稳态落在90 mg/dL。
+    value: 1.2
+    unit: mg/dL/min
+    type: parameter
+    bounds: [0.5, 2.5]
+    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) 肝糖输出速率范围"
+
+  HGO_ir:
+    description: |
+      肝脏胰岛素抵抗驱动的超额肝糖输出系数：S_hepatic=1时无超额输出；S_hepatic<1时产生持续正向通量
+      HGO_ir*(1/S_hepatic-1)，代表未被胰岛素充分抑制的肝糖输出。数值通过--sim校准：使
+      S_hepatic=0.5（中度肝脏IR，S_muscle=1.0不变）时空腹血糖落在IFG诊断区间(100-125 mg/dL)。
+    value: 3.0
+    unit: mg/dL/min
+    type: parameter
+    bounds: [1.0, 6.0]
+    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) 肝糖输出速率范围"
+
+  k_disp_basal:
+    description: |
+      胰岛素非依赖性葡萄糖处置速率系数（与S_muscle、insulin均无关，代表脑/红细胞等组织的固定消耗）。
+      清除项之一 = k_disp_basal*(glucose-70)，70 mg/dL为生理处置下限。与k_disp_ins共同校准：
+      使参照个体(S_hepatic=S_muscle=1.0)空腹血糖稳态=90、OGTT 2h血糖回落至~105 mg/dL。
+    value: 0.024
+    unit: 1/min
+    type: parameter
+    bounds: [0.005, 0.05]
+    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) Sg 范围"
+
+  k_disp_ins:
+    description: |
+      胰岛素依赖性葡萄糖处置速率系数。清除项之二 = k_disp_ins*S_muscle*insulin*(glucose-70)——
+      该项随胰岛素浓度放大，使S_muscle对空腹血糖（低胰岛素）的影响远小于对负荷后2h血糖
+      （高胰岛素）的影响，是本模型实现HOMA-IR/OGTT判定分离的关键机制。
+      数值通过--sim校准，理由同k_disp_basal。
+    value: 0.0045
+    unit: 1/(min·μU/mL)
+    type: parameter
+    bounds: [0.001, 0.02]
+    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) Si 范围"
+
+  k_absorb:
+    description: 肠道葡萄糖吸收速率常数 = ln2/t_half，t_half取30分钟（标准OGTT葡萄糖吸收半衰期量级）
+    value: 0.0231
+    unit: 1/minute
+    type: parameter
+    reference: "TODO:SOURCE 标准OGTT胃排空+小肠吸收动力学量级估算"
+
+  c_abs:
+    description: 每克吸收葡萄糖对血糖浓度的提升（近似葡萄糖分布容积换算，~12L成人细胞外液葡萄糖池）
+    value: 8.3
+    unit: (mg/dL)/g
+    type: parameter
+    reference: "TODO:SOURCE 葡萄糖分布容积量级估算（Bergman RN et al. 1981 Vg范围）"
+
+  k_secrete:
+    description: |
+      β细胞葡萄糖刺激胰岛素分泌速率系数：分泌项 = basal_secrete + k_secrete*max(0, glucose-g_thresh)。
+      数值通过--sim校准：使参照个体空腹胰岛素稳态=8 μU/mL、且随空腹血糖升高呈现合理的代偿性高胰岛素血症
+      （肝脏IR个体空腹血糖与胰岛素同步升高，HOMA-IR被双重放大）。
+    value: 0.015
+    unit: (μU/mL)/(min·mg/dL)
+    type: parameter
+    bounds: [0.005, 0.05]
+    reference: "TODO:SOURCE 校准值，量级参考 Matthews DR et al. (1985) 正常人胰岛素分泌范围"
+
+  basal_secrete:
+    description: β细胞基础分泌速率（与血糖偏离阈值无关的部分），与k_secrete共同决定空腹胰岛素稳态
+    value: 0.6
+    unit: μU/mL/min
+    type: parameter
+    reference: "TODO:SOURCE 校准值"
+
+  g_thresh:
+    description: 血糖刺激分泌的参考阈值（模型设计参数，非真实β细胞葡萄糖感受阈值）
+    value: 50.0
+    unit: mg/dL
+    type: parameter
+
+  k_clear:
+    description: 胰岛素肝脏/肾脏清除速率常数（血浆胰岛素半衰期约4-6分钟，取中值~4.6分钟对应的速率常数）
+    value: 0.15
+    unit: 1/minute
+    type: parameter
+    reference: "TODO:SOURCE 胰岛素血浆半衰期量级估算"
+
+# ── 动力学方程 ─────────────────────────────────────────────────────────────────
+equations:
+  gut_absorption:
+    description: "肠道葡萄糖按一阶动力学吸收并清空（OGTT负荷的唯一来源是 glucose_load 脉冲）"
+    step_unit: minute
+    priority: 10
+    dynamics:
+      gut_glucose: "max(0, gut_glucose + glucose_load - k_absorb * gut_glucose * step)"
+    reference: "TODO:SOURCE 标准OGTT吸收动力学估算"
+
+  glucose_dynamics:
+    description: |
+      血糖：肠道吸收输入 + 基础肝糖输出 + 肝脏胰岛素抵抗驱动的超额输出（S_hepatic主导）
+      − 胰岛素非依赖处置 − 胰岛素依赖处置（S_muscle主导，效果随胰岛素浓度放大，因此在
+      负荷后远强于空腹，是HOMA-IR/OGTT判定分离的关键）。
+    step_unit: minute
+    condition: true
+    priority: 6
+    dynamics:
+      glucose: >
+        glucose
+        + (k_absorb * gut_glucose * c_abs
+           + HGO_const + HGO_ir * (1.0 / S_hepatic - 1.0)
+           - (k_disp_basal + k_disp_ins * S_muscle * insulin) * (glucose - 70.0)) * step
+    reference: "Bergman RN et al. (1981); Abdul-Ghani MA et al. (2006)"
+    locator: "TODO:LOCATE"
+
+  insulin_dynamics:
+    description: "胰岛素：基础分泌 + β细胞对血糖刺激的分泌响应 − 肝肾清除"
+    step_unit: minute
+    condition: true
+    priority: 5
+    dynamics:
+      insulin: "insulin + (basal_secrete + k_secrete * max(0, glucose - g_thresh) - k_clear * insulin) * step"
+    reference: "Matthews DR et al. (1985)"
+    locator: "TODO:LOCATE"
+
+  homa_ir_calc:
+    description: "HOMA-IR逐步计算（代数关系，无step；仅08:00空腹采血时刻的值用于诊断分类）"
+    condition: true
+    priority: 1
+    dynamics:
+      HOMA_IR: "(glucose / 18.0) * insulin / 22.5"
+    reference: "Matthews DR et al. (1985)"
+
+# ── 仿真设置（单日：00:00起8小时空腹前置期收敛到个体化稳态 → 08:00 OGTT采血+75g糖负荷 → 10:00 2h采血）──
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables:
+    - glucose
+    - insulin
+    - HOMA_IR
+    - gut_glucose
+    - S_hepatic
+    - S_muscle
+  plans:
+    - id: "default"
+      label: "标准OGTT方案（8h空腹前置 → 08:00空腹采血+75g糖负荷 → 10:00 2h采血）"
+      regimens:
+        - {variable: glucose_load, time_start: "08:00", value: 75.0, label: "75g 口服糖负荷（OGTT标准方案，08:00空腹采血后即刻给药）"}
+  mc:
+    runs: 1000
+    seed: 19

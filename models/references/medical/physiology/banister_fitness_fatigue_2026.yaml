@@ -1,0 +1,237 @@
+metadata:
+  name: banister_fitness_fatigue
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      Banister 双分量模型描述运动训练对运动表现的动态影响：适应分量与疲劳分量均由训练负荷驱动，但以不同时间常数衰减，适应慢衰减、疲劳快衰减，运动表现 = 基线 + k₁·适应 − k₂·疲劳。核心张力在于高训练负荷能快速积累适应，但同步积累的疲劳会暂时掩盖表现提升，甚至引发过度训练，最优的强度、频率、恢复分配无法凭直觉给出。
+    result: >
+      三种方案的仿真结果呈现清晰对比。轻量维持方案在TRIMP等于15时，约在第10到30天出现疲劳主导的表现低谷，降至约40分，随后适应分量逐步超过疲劳分量，第90天回升至约199分；标准方案在TRIMP等于60到80时因负荷更高，同样的疲劳低谷更早触底，第10天已到0分，但也更早回升，约第60天封顶200分；无休息日高负荷方案在TRIMP等于120时将低谷显著拉长，第30天仍为0分，直到第60天左右才追上前两者，体现负荷越高、表现受抑制期越长的过度训练风险，三方案共同验证了适应与疲劳双时间常数机制的方向性正确。基于NSGA-II的优化给出末期表现与疲劳积累的权衡前沿，含7个解：从零训练时的100分、0疲劳，到工作日加周六合计约15 TRIMP时的193分、96疲劳，后者已逼近硬约束上限。
+    limitations: 参数仍需补充正式文献来源，此为noref标记的已知缺口；未区分有氧与力量训练的分量差异。
+  ratings:
+    topic_importance: 5 - Banister模型是运动科学最核心的训练负荷-表现模型，极高复用价值
+    framework_demand: 4 - 已知被多个fitness论文模型import，运动科学核心基础组件
+    evidence_quality: 4 - 引用Banister 1975原始论文及Morton/Busso等后续验证文献
+    popularity: 5 - Banister适应-疲劳模型是运动科学教科书经典，被广泛引用和验证
+    validation_confidence: 2 - --sim/--opt已跑通且方向自洽，但未与独立文献目标数值比对；同结构在papers/s1/banister_validation.yaml对标Morton 1990时发现比赛日performance偏离目标2.4倍，本文件未做同等对标，见 test_validation/validation_report.md
+  tags: [sports_science, training, optimization, physiological, banister, B3]
+  references:
+    - "Banister EW, Calvert TW, Savage MV, Bach TM (1975) A systems model of training for athletic performance. Aust J Sports Med 7(3):57-61."
+    - "Morton RH, Fitz-Clarke JR, Banister EW (1990) Modeling human performance in running. J Appl Physiol 69(3):1171-1177."
+    - "Busso T (2003) Variable dose-response relationship between exercise training and performance. Med Sci Sports Exerc 35(7):1188-1195."
+
+variables:
+  # R1: Fitness Component (Positive Training Effect, PTE)
+  # 适应分量：训练驱动增加，τ₁=45天缓慢衰减（Banister 1975, Table 1）
+  fitness_component:
+    description: >
+      训练适应分量（正向效应），τ₁=45天指数衰减。代表有氧能力、肌肉适应等长期生理适应。
+      上界按 training_load 最大值150 TRIMP/day 的稳态（load×τ₁≈6750）留出余量设置，
+      避免早于疲劳分量触顶、抹平二者的τ差异（此前 600 的上界导致两分量几周内一起顶到同一天花板，
+      抹去了适应/疲劳的时间常数差异，使 performance 恒为0，无法复现减量期表现反弹）。
+    value: 0.0
+    unit: "au"
+    type: state
+    bounds: [0.0, 7000.0]
+
+  # R2: Fatigue Component (Negative Training Effect, NTE)
+  # 疲劳分量：训练驱动增加，τ₂=15天快速衰减（Banister 1975, Table 1）
+  fatigue_component:
+    description: >
+      训练疲劳分量（负向效应），τ₂=15天指数衰减。代表代谢疲劳、中枢疲劳等短期抑制效应。
+      上界同理按 training_load 最大值150 TRIMP/day 的稳态（load×τ₂≈2250）留出余量设置。
+    value: 0.0
+    unit: "au"
+    type: state
+    bounds: [0.0, 2500.0]
+
+  # R3: Performance
+  performance:
+    description: "运动表现指数。基线100分，训练后在适应积累与疲劳消退之间取得平衡时达到峰值。"
+    value: 100.0
+    unit: "分"
+    type: state
+    bounds: [0.0, 200.0]
+
+  # Parameters (Banister 1975 / Morton 1990 推荐值)
+  tau_fitness:
+    description: "适应分量衰减时间常数τ₁（推荐值45天）。来源：Morton 1990, Table 1。"
+    value: 45.0
+    unit: "day"
+    type: parameter
+    bounds: [20.0, 80.0]
+
+  tau_fatigue:
+    description: "疲劳分量衰减时间常数τ₂（推荐值15天）。来源：Morton 1990, Table 1。"
+    value: 15.0
+    unit: "day"
+    type: parameter
+    bounds: [5.0, 30.0]
+
+  k1:
+    description: "适应分量权重系数k₁（推荐值1.0）。来源：Morton 1990。"
+    value: 1.0
+    unit: "系数"
+    type: parameter
+    bounds: [0.3, 3.0]
+
+  k2:
+    description: "疲劳分量权重系数k₂（推荐值2.0，约为k₁的2倍）。来源：Morton 1990。"
+    value: 2.0
+    unit: "系数"
+    type: parameter
+    bounds: [0.5, 5.0]
+
+  baseline_performance:
+    description: "未训练时的基线运动表现p₀（设为100分）。"
+    value: 100.0
+    unit: "分"
+    type: parameter
+    bounds: [50.0, 200.0]
+
+  # P1: Input — Daily Training Load (TRIMP)
+  # TRIMP（训练冲量）= 训练时长(min) × 心率加权系数
+  # 参考值：休息日=0，轻松有氧=30-40，中等强度=60-80，高强度/比赛=100-120，极限训练=150
+  # 来源：Banister & Hamilton (1985) 运动冲量计算方法
+  training_load:
+    description: |
+      每日训练负荷（TRIMP，Training Impulse）。
+      典型值：休息日=0；轻松慢跑=30-40；中等有氧=60-80；高强度间歇=100-120；极限训练=150。
+      来源：Banister EW & Hamilton CL (1985) Variations in iron status with fatigue modelled from training in female distance runners.
+    value: 0.0
+    unit: "TRIMP"
+    type: input
+    bounds: [0.0, 150.0]
+
+equations:
+  # F1: Fitness Dynamics（一阶线性系统，训练输入驱动，τ₁衰减）
+  # dFitness/dt = -Fitness/τ₁ + w(t)
+  # 来源：Banister 1975, Eq.(2)
+  fitness_dynamics:
+    description: "适应分量一阶动力学：dFitness/dt = -Fitness/τ₁ + training_load（Banister 1975, Eq.2）"
+    step_unit: day
+    condition: true
+    dynamics:
+      fitness_component: "fitness_component + (-fitness_component / tau_fitness + training_load) * step"
+    priority: 5
+
+  # F2: Fatigue Dynamics（一阶线性系统，训练输入驱动，τ₂衰减，比适应快3倍）
+  # dFatigue/dt = -Fatigue/τ₂ + w(t)
+  # 来源：Banister 1975, Eq.(3)
+  fatigue_dynamics:
+    description: "疲劳分量一阶动力学：dFatigue/dt = -Fatigue/τ₂ + training_load（Banister 1975, Eq.3）"
+    step_unit: day
+    condition: true
+    dynamics:
+      fatigue_component: "fatigue_component + (-fatigue_component / tau_fatigue + training_load) * step"
+    priority: 5
+
+  # F3: Performance Calculation
+  # p(t) = p₀ + k₁·Fitness(t) - k₂·Fatigue(t)
+  # 来源：Morton 1990, Eq.(1)
+  performance_calc:
+    description: "运动表现方程：p = p₀ + k₁·Fitness - k₂·Fatigue（Morton 1990, Eq.1）"
+    condition: true
+    dynamics:
+      performance: "max(0, baseline_performance + k1 * fitness_component - k2 * fatigue_component)"
+    priority: 1
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-07-01"
+  output_variables: [fitness_component, fatigue_component, performance, training_load]
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+      - variable: training_load
+        time_start: "09:00"
+        value: 60.0
+        days: [Mon, Tue, Wed, Thu, Fri]
+        date_range: ["2026-01-01", "2026-07-01"]
+        label: "工作日训练负荷（TRIMP）"
+      - variable: training_load
+        time_start: "09:00"
+        value: 80.0
+        days: [Sat]
+        date_range: ["2026-01-01", "2026-07-01"]
+        label: "周六长训练"
+
+  - id: light_maintenance
+    label: "维持性轻量训练（低刺激对照）"
+    regimens:
+      - variable: training_load
+        time_start: "09:00"
+        value: 15.0
+        days: [Mon, Tue, Wed, Thu, Fri]
+        date_range: ["2026-01-01", "2026-07-01"]
+        label: "工作日轻量训练负荷（TRIMP=15）"
+
+  - id: overtraining_no_rest
+    label: "无休息日高负荷（过度训练风险）"
+    regimens:
+      - variable: training_load
+        time_start: "09:00"
+        value: 120.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-07-01"]
+        label: "每日高负荷训练（TRIMP=120，无休息日）"
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: performance
+      metric: final
+      direction: maximize
+      description: "最大化180天末运动表现"
+    - variable: fatigue_component
+      metric: final
+      direction: minimize
+      description: "最小化180天末疲劳积累（过度训练风险）"
+  constraints:
+    - variable: fatigue_component
+      condition: "<= 100"
+      type: hard
+      description: "避免过度训练：疲劳分量不超100（Morton 1990推荐阈值）"
+  startpoint:
+    regimens:
+      - variable: training_load
+        time_start: "09:00"
+        time_end: "09:00"
+        days: [Mon, Tue, Wed, Thu, Fri]
+        label: "工作日训练负荷（TRIMP）"
+        optimize:
+          value: [0, 150]
+      - variable: training_load
+        time_start: "09:00"
+        time_end: "09:00"
+        days: [Sat]
+        label: "周六训练负荷（TRIMP）"
+        optimize:
+          value: [0, 150]
+  algorithm:
+    population_size: 80
+    n_generations: 150
+    seed: 19
+  results:
+    generated_at: "2026-07-06"
+    method: nsga2
+    n_solutions: 7
+    elapsed_seconds: 92.1
+    pareto_front:
+      - {x: [0.00, 0.00], f: [-100.00, 0.00]}
+      - {x: [0.71, 3.64], f: [-114.81, 15.26]}
+      - {x: [2.59, 1.38], f: [-129.39, 30.37]}
+      - {x: [1.60, 14.30], f: [-145.98, 47.31]}
+      - {x: [1.57, 23.03], f: [-163.79, 65.57]}
+      - {x: [4.00, 17.22], f: [-176.65, 78.98]}
+      - {x: [7.62, 7.20], f: [-192.96, 96.02]}
+    recommended:
+      x: [1.60, 14.30]
+      f: [-145.98, 47.31]

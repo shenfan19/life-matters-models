@@ -2,6 +2,12 @@
 
 每个文件记录一个设计决策，格式参考 [ADR](https://adr.github.io/)。
 
+> **编号规则（2026-07-15 起）**：本仓库与 `life-matters-reference-engine` 仓库（`docs/reference_engine/decisions/`）
+> 共用同一个全局编号序列，不再各自独立计数——新建 ADR 前先看两个仓库各自最新编号，取
+> 两者最大值 + 1。2026-07-15 之前两边各自独立计数，曾出现 0128/0129/0130 同号但内容不同
+> 的历史遗留（本仓库原 0128/0129 已改名为 0131/0132，`life-matters-reference-engine` 的 0128/0129/0130
+> 维持不变，未追溯改动）。
+
 ## 索引
 
 | # | 标题 | 状态 | 日期 |
@@ -45,7 +51,7 @@
 | [0043](0043-2026-04-25_game_battlefield-tension-framework.md) | 战场张力框架：battle_progress/danger_accumulation 归 Game-native；origin 字段；命运牌模式 | ✅ 已实施 | 2026-04-25 |
 | [0044](0044-2026-04-30_sim_schedule作为simulation-input子类型.md) | `simulation.schedules`：时间驱动输入归属 `simulation` 块；pulse 模式；离散 input 不写零值点规则 | ✅ 已实施 | 2026-04-30 |
 | [0045](0045-2026-04-30_sim_MC概率仿真与随机参数架构.md) | MC 概率仿真架构：parameter 分布表达式、多 run 引擎、半透明曲线渲染、Opt 内环均值评估、种子管理 | ✅ 已实施 | 2026-04-30 |
-| [0046](0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | 步长最终方案：`metadata.step_size.{value,unit}`；公式用 `step`；simulation 去掉 step/step_unit | ✅ 已实施 | 2026-04-30 |
+| [0046](0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | 步长最终方案：`metadata.step_size.{value,unit}`；方程用 `step`；simulation 去掉 step/step_unit | ✅ 已实施 | 2026-04-30 |
 | [0049](0049-2026-05-02_sim_Optimizer异步Job系统设计.md) | Optimizer 异步 Job 系统设计 | ✅ 已实施 | 2026-05-02 |
 | [0050](0050-2026-05-04_sim_InputEvent扁平化与交互状态颜色规则.md) | InputEvent 扁平化与交互状态颜色规则 | ✅ 已实施 | 2026-05-04 |
 | [0052](0052-2026-05-04_sim_schedule格式统一与opt-regimen支持.md) | Schedule 格式统一（扁平列表）& optimizer.regimen 支持 | ✅ 已实施 | 2026-05-04 |
@@ -60,9 +66,9 @@
 | [0065](0065-2026-05-08_sim_structured-description.md) | metadata.description 支持结构化与自由文本 | ✅ 已实施 | 2026-05-08 |
 | [0066](0066-2026-05-08_sim-simulator-decomposition-and-result-workspaces.md) | Simulator 拆分与 Sim/Opt 结果工作区 | ✅ 已实施；OPT/SIM 分离重构待续 | 2026-05-08 |
 | [0067](0067-2026-05-15_sim_optimizer-algo-preset-slider-ui.md) | 优化算法参数预设（快速/标准/精细）与滑动条联动 UI | ✅ 已实施 | 2026-05-15 |
-| [0068](0068-2026-05-15_sim_formula-precompile-to-python-function.md) | 公式预编译：asteval 运行时解析 → 加载时生成 Python 函数 | ✅ 已实施 | 2026-05-15 |
+| [0068](0068-2026-05-15_sim_formula-precompile-to-python-function.md) | 方程预编译：asteval 运行时解析 → 加载时生成 Python 函数 | ✅ 已实施 | 2026-05-15 |
 | [0069](0069-2026-05-15_sim_run-history-auto-archive.md) | 运行历史自动存档：sim/opt 完成后自动存档，历史抽屉加载/删除 | ✅ 已实施 | 2026-05-15 |
-| [0070](0070-2026-05-15_sim_asteval-as-safety-sandbox-constraint.md) | asteval 作为公式安全沙箱：禁止用 Python eval() 直接替代（补录核心约束） | ⭐⭐ 核心约束 | 2026-05-15 |
+| [0070](0070-2026-05-15_sim_asteval-as-safety-sandbox-constraint.md) | asteval 作为方程安全沙箱：禁止用 Python eval() 直接替代（补录核心约束） | ⭐⭐ 核心约束 | 2026-05-15 |
 | [0071](0071-2026-05-15_sim_ui-rounded-cards-settings-gear-drag-sort.md) | 全局圆角卡片面板 + 设置齿轮 Popover（字号/语言）+ 区块拖拽排序 | ✅ 已实施 | 2026-05-15 |
 | [0072](0072-2026-05-15_project_gui-only-no-cli.md) | GUI-only：放弃 CLI 作为正式接口（补录核心约束） | ⭐⭐ 核心约束 | 2026-05-15 |
 | [0073](0073-2026-05-16_sim_multi-plan-simulation.md) | 多方案仿真：Plan 术语、数据模型、MC 逐方案独立运行 | 待实现 | 2026-05-16 |
@@ -93,10 +99,29 @@
 | [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 部分实施（papers 术语已补充说明，未做全文改写） | 2026-06-11 |
 | [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | ⚪ 文件名部分被 0120 取代 | 2026-06-14 |
-| [0102](0102-2026-06-14_model_formula-priority-execution-order.md) | 澄清 formula `priority` 执行顺序（数值越大越先执行）与同 step 内顺序写入语义 | ✅ 已实施 | 2026-06-14 |
+| [0102](0102-2026-06-14_model_formula-priority-execution-order.md) | 澄清 equation `priority` 执行顺序（数值越大越先执行）与同 step 内顺序写入语义 | ✅ 已实施 | 2026-06-14 |
 | [0103](0103-2026-06-14_model_metadata-log-field.md) | 新增 `metadata.log`：模型内改进历史记录 | ✅ 已实施 | 2026-06-14 |
-| [0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | 步长设计重构：per-formula `step_unit` + `simulation.step_size`（取代 `metadata.step_size`） | ✅ 已实施 | 2026-06-16 |
+| [0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) | 步长设计重构：per-equation `step_unit` + `simulation.step_size`（取代 `metadata.step_size`） | ✅ 已实施 | 2026-06-16 |
 | [0105](0105-2026-06-16_model_step-unit-conditional-and-deprecate-dt.md) | `step_unit` 改为条件必填 + 废弃 `dt`/`step_size` 动力学符号 | ✅ 已实施 | 2026-06-16 |
 | [0107](0107-2026-06-16_model_output-variables-import-overwrite.md) | `output_variables` / `output_types` import 行为统一为覆盖（取代并集） | ✅ 已实施 | 2026-06-16 |
 | [0108](0108-2026-06-21_project_lm-icon-design.md) | LM 品牌图标：黑白对半心形，无边框；sim 端配色为品牌绿 | ✅ 已实施 | 2026-06-21 |
 | [0120](0120-2026-06-23_model_drop-hold-filename-suffix.md) | 废除 `_HOLD` 文件名后缀，状态判定仅看 `metadata.todo`（部分取代 0101） | 🟢 已实施 | 2026-06-23 |
+| [0121](0121-2026-06-25_model_step-unit-parameter-conversion-linear-vs-root.md) | 跨 step_unit 参数换算：线性除法（状态无关通量项）vs 开根（自指数衰减项） | ✅ 已采纳 | 2026-06-25 |
+| [0125](0125-2026-07-05_model_test-valid-invalid-split.md) | `models/test/` 拆分为 `valid/`+`invalid/`：新增 11 个错误检测 fixture，覆盖循环 import/evidence 冲突/方程未声明变量等校验 | ✅ 已接受 | 2026-07-05 |
+| [0126](0126-2026-07-09_model_regimen-semantics-scope-decision.md) | regimen 语义完备性讨论范围拍板：pulse-decay 是模型完备性非引擎问题；覆盖/累加不改引擎，只用 baseline+增量惯例改具体文件；sustained 判断规则文档收尾 | ✅ 已接受 | 2026-07-09 |
+| [0127](0127-2026-07-09_model_input-unified-sustained-window-defaults.md) | input 变量统一为 sustained，不再有独立 pulse 模式；窗宽默认规则：都不写=全天，只写起点=单step，都写=显式区间 | ✅ 已实施 | 2026-07-09 |
+| _（0128–0130 保留给 life-matters-reference-engine 仓库 `docs/reference_engine/decisions/` 的引擎侧 ADR，见下方说明——两仓库自 2026-07-15 起共用一个编号序列）_ | | | |
+| [0131](0131-2026-07-13_model_sustained-value-per-day-not-per-span.md) | sustained value 语义修正：每个匹配日独立满额，取代 0099 的"整跨度总量"（同批取代 0126 第3条） | ✅ 已实施 | 2026-07-13 |
+| [0132](0132-2026-07-14_model_sustained-delivery-total-vs-level.md) | sustained regimen 新增 `delivery: total\|level`，区分"总量摊分"（训练负荷类）与"恒定水平"（睡眠时长类） | ✅ 已实施 | 2026-07-14 |
+| [0133](0133-2026-07-15_model_delivery-judgment-principle-and-day-lumped-map.md) | `delivery` 判断规则（系数/瞬时读取 vs 累加）+ "day-lumped map" 反模式识别：sleep_hours 类变量靠 `step_unit:day`+`delivery:level` 打补丁，非真正逐步可积，修复留给独立 task | ✅ 判断原则已定；反模式修复未实施 | 2026-07-15 |
+| [0134](0134-2026-07-15_model_test-renamed-to-test_validation-and-valid-prefix.md) | `models/test/` 改名为 `models/test_validation/`（与 life-matters-reference-engine `tests/`→`test_verify/` 对称）；`valid/` 下 35 个文件加 `test_valid_` 前缀，`invalid/` 保持既有 `test_invalid_*` 命名 | ✅ 已接受 | 2026-07-15 |
+| [0135](0135-2026-07-21_model_test-validation-split-into-test_fixtures-and-validation.md) | 0134 的"validation"命名名实不符（`valid`/`invalid` fixture 实际测的是 verify）：`models/test_validation/` 拆分为 `models/test_fixtures/`（引擎 fixture，`valid`/`invalid` 不变）+ 新建 `models/validation/`（真正的文献对标结果，与 fixture 无关） | ✅ 已接受 | 2026-07-21 |
+| [0136](0136-2026-07-21_model_test-verify-to-test_verification-and-validation-to-test_validation.md) | life-matters-reference-engine `test_verify/` 改名 `test_verification/`（呼应内含的 `verification_report.md`）；`models/validation/` 因此改回 `models/test_validation/`（0135 否决该名字是因为当时名实不符，现内容已纯净、否决理由不再成立，与 `test_verification/` 对称配对） | ✅ 已接受 | 2026-07-21 |
+| [0137](0137-2026-07-24_model_evidence-merged-into-variables.md) | 顶层 `evidence:` 节并入 `variables:`：`type` 保持 3 值不变，新增正交字段 `evidence_type` 表达 8 种文献效应量子类型（否决把子类型编码进 `type` 本身导致 3→11 值膨胀的方案），取代 ADR 0040 的顶层节设计 | ✅ 已接受 | 2026-07-24 |
+| [0138](0138-2026-07-30_project_model-inclusion-criteria-and-coverage-inventory.md) | 模型纳入标准（var/equ/sim/opt 四问粗筛）与学科覆盖盘点表；顺带修复 `docs/LM_format_1.0.md` 多处滞后于当前实现的内容 | ✅ 已接受 | 2026-07-30 |
+| [0139](0139-2026-07-30_project_ai-generated-content-and-author-responsibility-boundary.md) | AI 生成内容声明与作者/模型库责任边界：作者负责格式规范/引擎/S1 精选案例，模型库其余内容为 AI 辅助生成、邀请专家核对的开放资源 | ✅ 已接受 | 2026-07-30 |
+| _（0140 保留给 life-matters-reference-engine 仓库）_ | | | |
+| [0141](0141-2026-08-05_model_method-field-restored-and-debug-history-folder.md) | `papers/` description 恢复 `method` 字段（说明模型融合了哪些机制，体现耦合而非堆叠）；反复调试产生的历史版本移入同目录 `history/`（gitignored），主文件只留最终版本 | ✅ 已实施 | 2026-08-05 |
+| [0142](0142-2026-08-06_model_description-list-structure-and-references-annotations.md) | `papers/` description 的 `problem`/`method`/`result` 并列事实改用列表；来源文献的具体贡献从 `problem` 搬进 `metadata.references` 的可选 `{citation, description}` 对象；引用统一句末作者年份夹注，不用数字编号 | ✅ 已实施 | 2026-08-06 |
+| [0143](0143-2026-08-06_model_description-migration-no-longer-deferred.md) | 废止 0142"非目标"里"不追溯批量重写"的表述：此后任何原因编辑 `papers/` 模型都应顺带迁移 description/references 到 0142 定义的格式；references 的 `{citation, description}` 写法从"可选"升级为推荐默认 | ✅ 已实施 | 2026-08-06 |
+| [0144](0144-2026-08-08_project_formulas-renamed-to-equations-and-veso-mnemonic.md) | LM format 顶层 `formulas:` 字段更名为 `equations:`，与规范正文已在用的 differential/dynamic equation 表述对齐；四要素简写 var/for/sim/opt 改为 var/equ/sim/opt，助记符 V.F.S.O. 改为可连读的 V.E.S.O.；规范仍处 Draft 未冻结发布，不构成破坏性变更，`LM_format_1.0.md` 保持 v1.0 | ✅ 已实施 | 2026-08-08 |

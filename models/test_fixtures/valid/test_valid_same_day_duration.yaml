@@ -44,7 +44,7 @@ variables:
     bounds: [0.0, 100.0]
     description: Accumulates every dose pulse seen; nonzero only if the 18:00 event fired.
 
-formulas:
+equations:
   accumulate_dose:
     description: Accumulates dose into dose_total so the pulse's occurrence is inspectable at run end.
     condition: true

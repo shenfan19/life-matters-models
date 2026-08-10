@@ -1,0 +1,252 @@
+metadata:
+  todo:
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  conflicts: []
+  description:
+    problem: >
+      乒乓球是以神经认知负荷为主的球拍运动，球速可超过 100 km/h，运动员需要在约 200-300 ms 内完成判断旋转方向、预判落点和组织击球的全流程。与体能消耗较大的球类运动不同，乒乓球的核心性能限制来自神经疲劳：随着比赛时间延长，反应时间延长、对旋转球的判断准确度下降、击球精准度衰减，而身体疲劳，即心肺和肌肉的疲劳，对表现的影响相对次要。神经疲劳与身体疲劳的分离建模是乒乓球生理模型的科学特征。
+    result: >
+      仿真尚未运行。理论预期：以 RPE=7、旋转强度=5 的中高节奏进行的 60 分钟比赛中，神经疲劳在 40-50 分钟后超过 0.3 阈值，反应时间从基线 220 ms 延长至约 250-280 ms，击球精准度下降约 10-15 分，综合表现评分从 80 分降至约 65-70 分；身体疲劳上升较缓慢，心率维持在约 130-160 bpm。
+    limitations: >
+      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分弧圈型、快攻型等不同打法和优势手的代谢差异；分钟步长对 3-5 秒回合结构为时间尺度近似。
+  name: tabletennis
+  lm_format_version: "1.0"
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 3 - 乒乓球在亚洲普及但反应速度-神经疲劳模型复用场景有限
+    framework_demand: 1 - noref，复用价值极低
+    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
+    popularity: 2 - 乒乓球生理模型较小众，不属于运动科学主流基准
+  tags:
+    - fitness
+    - tabletennis
+    - ping-pong
+    - reaction
+    - skill
+  updated: 2026-04-23
+variables:
+  rally_pace:
+    bounds:
+      - 1.0
+      - 10.0
+    description: 回合节奏（1=慢速练习，10=高速比赛对决）
+    type: input
+    unit: RPE
+    value: 7.0
+  spin_intensity:
+    bounds:
+      - 0.0
+      - 10.0
+    description: 旋转/变化球强度（影响神经负荷）
+    type: input
+    unit: 强度
+    value: 5.0
+  heart_rate:
+    bounds:
+      - 60.0
+      - 180.0
+    description: 心率（乒乓球相比其他运动偏低）
+    type: state
+    unit: 次/分
+    value: 70.0
+  calories_burned:
+    bounds:
+      - 0.0
+      - 500.0
+    description: 消耗热量
+    type: state
+    unit: kcal
+    value: 0.0
+  physical_fatigue:
+    bounds:
+      - 0.0
+      - 1.0
+    description: 身体疲劳（肌肉、心肺）
+    type: state
+    unit: 无量纲
+    value: 0.0
+  neural_fatigue:
+    bounds:
+      - 0.0
+      - 1.0
+    description: 神经疲劳（反应速度、注意力衰减）
+    type: state
+    unit: 无量纲
+    value: 0.0
+  reaction_time:
+    bounds:
+      - 150.0
+      - 400.0
+    description: 反应时间（神经疲劳增加时上升）
+    type: state
+    unit: 毫秒
+    value: 220.0
+  spin_reading:
+    bounds:
+      - 0.0
+      - 100.0
+    description: 判断旋转球能力（疲劳和专注度影响）
+    type: state
+    unit: 分
+    value: 80.0
+  stroke_precision:
+    bounds:
+      - 0.0
+      - 100.0
+    description: 击球精准度（受神经疲劳影响）
+    type: state
+    unit: 分
+    value: 82.0
+  footwork_speed:
+    bounds:
+      - 0.0
+      - 100.0
+    description: 步法移动速度（受身体疲劳影响）
+    type: state
+    unit: 分
+    value: 80.0
+  concentration:
+    bounds:
+      - 0.0
+      - 100.0
+    description: 专注度（双重疲劳共同影响）
+    type: state
+    unit: 分
+    value: 90.0
+  performance:
+    bounds:
+      - 0.0
+      - 100.0
+    description: 综合比赛表现评分
+    type: state
+    unit: 分
+    value: 80.0
+equations:
+  heart_rate_dynamics:
+    condition: true
+    description: 心率随节奏变化（乒乓球心率区间较窄）
+    dynamics:
+      heart_rate: 65 + rally_pace * 9 + physical_fatigue * 12
+    priority: 1
+  calories_accumulation:
+    condition: true
+    description: 热量消耗（较其他运动低）
+    dynamics:
+      calories_burned: calories_burned + rally_pace * 0.55 * (1 - physical_fatigue * 0.1)
+    priority: 2
+  physical_fatigue_accumulation:
+    condition: true
+    description: 身体疲劳积累
+    dynamics:
+      physical_fatigue: min(1.0, physical_fatigue + rally_pace * 0.0008 + 0.0002)
+    priority: 3
+  neural_fatigue_accumulation:
+    condition: true
+    description: 神经疲劳积累，旋转球强度加速积累
+    dynamics:
+      neural_fatigue: min(1.0, neural_fatigue + rally_pace * 0.0006 + spin_intensity * 0.0005)
+    priority: 4
+  reaction_time_degradation:
+    condition: neural_fatigue > 0.2
+    description: 神经疲劳增加反应时间
+    dynamics:
+      reaction_time: min(400, 220 + neural_fatigue * 120 + physical_fatigue * 40)
+    priority: 5
+  spin_reading_decay:
+    condition: neural_fatigue > 0.3
+    description: 神经疲劳影响判断旋转球能力
+    dynamics:
+      spin_reading: max(30, 85 - neural_fatigue * 40 - (reaction_time - 220) * 0.1)
+    priority: 6
+  stroke_precision_decay:
+    condition: true
+    description: 击球精准度受神经疲劳和反应时间影响
+    dynamics:
+      stroke_precision: max(30, 85 - neural_fatigue * 35 - physical_fatigue * 15)
+    priority: 7
+  footwork_speed_decay:
+    condition: physical_fatigue > 0.3
+    description: 步法受身体疲劳影响
+    dynamics:
+      footwork_speed: max(40, 85 - physical_fatigue * 35)
+    priority: 8
+  concentration_dynamics:
+    condition: true
+    description: 专注度随双重疲劳下降
+    dynamics:
+      concentration: max(30, 95 - neural_fatigue * 40 - physical_fatigue * 20)
+    priority: 9
+  performance_score:
+    condition: true
+    description: 综合表现评分
+    dynamics:
+      performance: max(0, min(100, stroke_precision * 0.35 + spin_reading * 0.25 + footwork_speed * 0.2 + concentration * 0.2))
+    priority: 10
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+      - variable: rally_pace
+        time_start: "09:00"
+        value: 7.0
+        label: 回合节奏
+      - variable: spin_intensity
+        time_start: "09:00"
+        value: 5.0
+        label: 旋转强度
+  output_variables:
+    - heart_rate
+    - calories_burned
+    - physical_fatigue
+    - neural_fatigue
+    - reaction_time
+    - spin_reading
+    - stroke_precision
+    - footwork_speed
+    - concentration
+    - performance
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: performance
+      direction: maximize
+      metric: final
+      description: 最大化综合比赛表现
+    - variable: neural_fatigue
+      direction: minimize
+      metric: final
+      description: 最小化神经疲劳（保护反应速度）
+  constraints:
+    - variable: heart_rate
+      condition: <= 180
+      type: hard
+      description: 心率不超过上限
+    - variable: reaction_time
+      condition: <= 350
+      type: soft
+      description: 反应时间控制在 350ms 以内
+  startpoint:
+    regimens:
+      - variable: rally_pace
+        time_start: "09:00"
+        time_end: "09:00"
+        label: 回合节奏（RPE 3-9）
+        optimize:
+          value: [3.0, 9.0]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

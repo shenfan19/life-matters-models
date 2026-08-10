@@ -1,0 +1,45 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "模型为新建 stub，variables/equations 均为空，仿真无法运行"
+      evidence: "本次新建时仅完成 problem/result/limitations 占位描述，尚未定义 variables 和 equations。"
+      next: "确定具体参数来源后补全 variables 和 equations，运行 --sim 验证。"
+    - type: noopt
+      issue: "同上，优化器同样无法运行"
+      evidence: "同上。"
+      next: "补全模型后运行 --opt 验证。"
+  name: ad1940_fr_doeblin
+  lm_format_version: "1.0"
+  updated: 2026-07-24
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      概率论学家 Wolfgang Döblin 生于 1915 年，1940 年在法军服役期间持续数学研究，并将一份密封手稿（pli cacheté）寄往法国科学院，这份手稿于 2000 年拆封后证实他已提前预见了后来的伊藤随机积分理论核心结果。1940 年 6 月德军突破防线时，Döblin 在孚日省 Housseras 的通讯岗位上烧毁手稿后自杀殉国，以避免被俘。本场景的建模目标是把"前线暴露强度 → 死亡概率"与"科研生产力轨迹 → 预期未来贡献"两条独立动力学并列，量化战场减员对科学产出的机会成本，而非评判具体军事决策，具体参数化路径待确定。
+    result: >
+      仿真窗口已预置，覆盖 1940 年 5 月 10 日德军西线攻势至 6 月 21 日 Döblin 阵亡当日；变量和方程待参数化路径确定后填写，该场景尚未实际运行仿真。
+    limitations: >
+      "预期未来科研贡献"作为可量化变量的构造方式，例如以其已发表工作的产出速率外推，存在方法论争议，需谨慎处理反事实推断的不确定性；战场暴露强度的量化尚未完成；需参考 Bru 与 Yor（2002）。
+  ratings:
+    topic_importance: 4 - 科学家战时减员的机会成本量化是科研政策讨论的重要历史案例
+    framework_demand: 1 - TODO 存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
+    innovation: 4 - "死亡概率 × 预期未来贡献"联合建模在已有场景库中尚无先例，意图明确但尚未实现
+    social_value: 4 - 触及科研人才保护与战时政策的现实议题，教育与政策讨论价值高，不涉及军事道德评判
+  tags: [war, mathematician, probability-theory, wwii, sacrifice, TODO]
+  references:
+    - "Bru B, Yor M (2002) Comments on the life and mathematical legacy of Wolfgang Doeblin. Finance and Stochastics 6(1), 3-47."
+
+variables: {}
+equations: {}
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "1940-05-10"
+  end_date:   "1940-06-21"
+  output_variables: []

@@ -58,7 +58,7 @@ metadata:
 
 ## 试点（2026-06-14）
 
-对 `models/papers/s3_HOLD/burnout_allostatic_noopt.yaml` 应用新约定：重命名为 `burnout_allostatic_HOLD.yaml`，添加 `metadata.todo`，记录本次用新版 `sim_cli` 跑 `--opt` 时发现的"联合可行域为空集"诊断结论（约束 `cortisol_chronic <= 1.8` 与当前动力学不匹配，模型自带的"结构化恢复方案"示例 84 天内 cortisol_chronic 从 1.14 升至 3.27）。
+对一个 `models/papers/` 下的 `_noopt` 文件应用新约定：重命名为 `_HOLD.yaml`，添加 `metadata.todo`，记录本次用新版 `sim_cli` 跑 `--opt` 时发现的"联合可行域为空集"诊断结论（一处硬约束与当前动力学不匹配，模型自带的示例方案在仿真窗口内使受约束状态量偏离约束范围）。
 
 ## 全量迁移（2026-06-14）
 

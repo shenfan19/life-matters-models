@@ -39,7 +39,7 @@ variables:
     type: input
     value: 0.8
     unit: g/kg/day
-    description: Daily protein intake rate (speed rate, not per-event; formula multiplies by step).
+    description: Daily protein intake rate (speed rate, not per-event; equation multiplies by step).
 
   synthesis_rate:
     type: parameter
@@ -53,7 +53,7 @@ variables:
     unit: kg/day
     description: Basal daily muscle catabolism rate.
 
-formulas:
+equations:
   muscle_dynamics:
     description: Net muscle mass change; synthesis above threshold minus basal catabolism.
     step_unit: hour

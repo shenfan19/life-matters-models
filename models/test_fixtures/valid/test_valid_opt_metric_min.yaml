@@ -61,7 +61,7 @@ variables:
     unit: currency
     description: Total cost of the up-front order (order_qty * unit_cost), static.
 
-formulas:
+equations:
   receive_order:
     description: Order pulse adds to stock once at the start of the horizon.
     step_unit: day

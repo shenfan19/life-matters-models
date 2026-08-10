@@ -1,0 +1,234 @@
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: adherence_decay
+  lm_format_version: "1.0"
+  updated: 2026-06-09
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    brief: "医嘱依从性衰减动力学：依从率随时间自然下降，由方案复杂度、副作用负担、生活压力调制，提醒干预可部分逆转。"
+    need: >
+      WHO估计慢性病患者中约50%未能持续遵医嘱（WHO 2003）。绝大多数 LM format 慢病模型假定完全依从，即 adherence=1.0，这是系统性高估治疗效果的结构性缺陷。依从性衰减是一个可建模的状态变量，引入后可将"在真实依从性条件下的最优方案"与"假定完全依从的最优方案"做对比，生成对脱落鲁棒的干预方案。
+    problem: >
+      两个核心建模挑战：
+      ① 依从性不是0/1二元变量，而是随时间连续衰减的动力学过程，初始即处方后1到4周通常较高、约0.85，随后指数衰减，6个月时平均约0.50，方案复杂度、副作用体验、生活压力是三类独立的衰减加速因子。
+      ② 依从性的效应是非线性的：部分依从，0.5到0.8区间，对治疗结局的影响远大于线性插值所预测的，因为大多数药物有最低有效浓度阈值，本模型用线性近似作为保守基础，建模者可在引入后根据具体药物特性调整。
+    method: >
+      日步长ODE，依从率 adherence_rate 作为主状态变量，取值范围0到1。衰减由基础速率、方案复杂度参数、副作用负担参数、生活压力输入三类调制，其中生活压力可由宿主模型设置。提醒干预作为输入变量，可部分逆转衰减，基于Haynes 2008 Cochrane效应量。本文件设计为被其他模型通过imports引用，不独立使用。
+    simulation: >
+      无内置仿真配置，为纯组件模型。引用方在宿主模型的simulation.schedules中设置life_stress和reminder_intervention，典型对比为无干预基线、每周提醒一次、每日数字提醒三种方案。
+    result: >
+      典型12个月轨迹，中等复杂方案、无提醒：第1月~0.80 → 第3月~0.65 → 第6月~0.52 → 第12月~0.40，据DiMatteo 2004均值校准。每周提醒可将6个月依从率提升约+0.12，据Haynes 2008的提醒有效性上限估算。
+    limitations: >
+      单一依从性变量代替"哪些剂次被跳过"的具体行为；
+      副作用与依从性耦合为线性近似，真实关系为非线性；
+      未区分信念驱动的有意不依从与遗忘驱动的无意不依从；
+      超过2年的长期行为改变的衰减参数不确定性高。
+  integration_candidates:
+    description: >
+      以下 papers/ 模型可以考虑通过 imports 引入本组件，将依从性从隐含假设变为
+      显式状态变量，并在"真实依从条件"下重新运行优化。引入后需在宿主模型的
+      方程中将关键干预效应量乘以 adherence_rate（或其非线性变换）。
+    models:
+      - path: "papers/s1/ckd_protein_noref"
+        reason: >
+          CKD低蛋白饮食方案持续时间长（数月到数年），依从率衰减对GFR保护效果
+          有累积性影响。引入后可优化方案复杂度（几段式K×4 vs 复杂个性化）以
+          提高对脱落的鲁棒性。
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+  tags: [adherence, non-adherence, medication_compliance, chronic_disease, behavioral_dynamics, reference_component]
+  references:
+    - "WHO (2003) Adherence to Long-Term Therapies: Evidence for Action. World Health Organization, Geneva."
+    - "Osterberg L & Blaschke T (2005) Adherence to medication. N Engl J Med 353(5):487-497."
+    - "DiMatteo MR (2004) Variations in patients' adherence to medical recommendations: a quantitative review of 50 years of research. Medical Care 42(3):200-209."
+    - "Haynes RB et al. (2008) Interventions for enhancing medication adherence. Cochrane Database Syst Rev (2):CD000011."
+    - "Horne R & Weinman J (1999) Patients' beliefs about prescribed medicines and their role in adherence. J Psychosom Res 47(6):555-567."
+    - "Jimmy B & Jose J (2011) Patient medication adherence: measures in daily practice. Oman Med J 26(3):155-159."
+    - "Vrijens B et al. (2012) A new taxonomy for describing and defining adherence to medications. Br J Clin Pharmacol 73(5):691-705."
+
+# ── 变量 ─────────────────────────────────────────────────────────────────────────
+variables:
+
+  # ── 核心状态 ─────────────────────────────────────────────────────────────────────
+
+  adherence_rate:
+    type: state
+    value: 0.85
+    unit: AU
+    bounds: [0, 1]
+    io_role: output
+    description: >
+      医嘱依从率（0-1）。处方初期约0.85（DiMatteo 2004 初始依从均值）。
+      随时间自然衰减；受方案复杂度、副作用负担、生活压力三类因子加速；
+      提醒干预可部分逆转。
+      宿主模型中，将关键干预效应量乘以 adherence_rate 以获得真实依从条件下的实际效果。
+    reference: "DiMatteo MR (2004) Medical Care 42(3):200."
+
+  cumulative_nonadherence:
+    type: state
+    value: 0.0
+    unit: day
+    io_role: output
+    description: >
+      累计不依从暴露量（天数×失依从幅度积分，0=完全依从全程）。
+      用于报告和作为宿主模型的惩罚项输入。
+    reference: "Vrijens B et al. (2012) Br J Clin Pharmacol 73(5):691."
+
+  # ── 可外部设置的干预变量（inputs） ─────────────────────────────────────────────────
+
+  life_stress:
+    type: input
+    value: 0.3
+    unit: AU
+    bounds: [0, 1]
+    optimizable: false
+    io_role: input
+    description: >
+      生活压力指数（0-1）。由宿主模型设置（如burnout模型的work_pressure，
+      或产后恢复模型的night_feed_count作为代理）。
+      0=低压，0.5=中等，0.8=高压（裁员/重病/丧亲等）。
+      高压环境是不依从的最强预测因子之一（Horne & Weinman 1999）。
+    reference: "Horne R & Weinman J (1999) J Psychosom Res 47(6):555."
+
+  reminder_intervention:
+    type: input
+    value: 0.0
+    unit: AU
+    bounds: [0, 1]
+    optimizable: true
+    io_role: input
+    description: >
+      提醒干预强度（0=无提醒，0.5=每周短信提醒，1.0=每日数字健康APP提醒）。
+      Haynes 2008 Cochrane：提醒干预提升依从率6-21%，效应随干预强度线性近似。
+      K×4 T3优化目标：优化提醒频率（每日/隔日/每周）以最大化依从率。
+    reference: "Haynes RB et al. (2008) Cochrane Database Syst Rev (2):CD000011."
+
+  # ── 个体/方案特征参数 ────────────────────────────────────────────────────────────
+
+  regimen_complexity:
+    type: parameter
+    value: 0.4
+    unit: AU
+    bounds: [0, 1]
+    description: >
+      方案复杂度（0=极简单/单药每日一次，0.5=2-3种药不同时间，1.0=多药多次+饮食限制）。
+      Osterberg 2005：≥3种药物方案的依从率比单药低约26%；
+      CKD低蛋白+运动+生活方式联合方案复杂度约0.7。
+    reference: "Osterberg L & Blaschke T (2005) N Engl J Med 353(5):487."
+
+  side_effect_burden:
+    type: parameter
+    value: 0.2
+    unit: AU
+    bounds: [0, 1]
+    description: >
+      副作用负担（0=无明显副作用，0.5=轻度但可接受，1.0=严重影响生活质量）。
+      Horne 1999：副作用体验是不依从的第二大原因（约30%的患者因此停药）。
+      具体值由宿主模型根据药物类型设置（如HCTZ的尿频/低钾约0.3-0.5）。
+    reference: "Horne R & Weinman J (1999) J Psychosom Res 47(6):555."
+
+  base_decay_rate:
+    type: parameter
+    value: 0.0012
+    unit: 1/day
+    bounds: [0.0005, 0.003]
+    description: >
+      依从率基础日衰减速率（无额外压力、简单方案、无副作用时的自然遗忘率）。
+      校准：DiMatteo 2004 中6个月平均依从率约0.50 → 从0.85衰减至0.50，
+      纯指数 k ≈ ln(0.85/0.50)/180 ≈ 0.003/day；
+      有提醒补偿时基础率降低，此处取0.0012作为有基础依从动机时的保守值。
+    reference: "DiMatteo MR (2004) Medical Care 42(3):200."
+
+  reminder_recovery_strength:
+    type: parameter
+    value: 0.015
+    unit: 1/(AU·day)
+    description: >
+      每单位提醒强度对依从率的每日恢复系数。
+      Haynes 2008：每周短信提醒效应约+12%（6个月），折算为0.00067/day；
+      每日APP提醒约+21%，折算为0.0012/day。此处以单位强度计，线性放大。
+    reference: "Haynes RB et al. (2008) Cochrane Database Syst Rev CD000011."
+
+# ── 动力学方程 ────────────────────────────────────────────────────────────────────
+equations:
+
+  adherence_decay_dynamics:
+    step_unit: day
+    priority: 0
+    dynamics:
+      adherence_rate: >
+        max(0.05, min(1.0,
+          adherence_rate
+          - base_decay_rate
+            * (1 + 1.5 * regimen_complexity + 1.2 * side_effect_burden + 0.8 * life_stress)
+            * adherence_rate * step
+          + reminder_recovery_strength * reminder_intervention
+            * (1 - adherence_rate) * step))
+    description: >
+      依从率衰减（一阶）×调制因子（方案复杂度、副作用、生活压力）；
+      提醒干预以 (1-adherence_rate) 为空间的恢复驱动（越低越容易提升）。
+      最低值0.05（总有人完全不依从但不归零，避免数值奇点）。
+    reference: "DiMatteo (2004); Haynes et al. (2008); Osterberg & Blaschke (2005)"
+
+  nonadherence_accumulation:
+    priority: 10
+    dynamics:
+      cumulative_nonadherence: "cumulative_nonadherence + (1.0 - adherence_rate) * step"
+    description: "累计不依从暴露量：每天将失依从幅度（1-rate）积分累加。"
+    step_unit: day
+    reference: "Vrijens B et al. (2012)"
+
+# ── 仿真配置（示例，供引用方参考） ──────────────────────────────────────────────────
+# 本模型设计为纯组件（references/），通常不独立运行。
+# 以下仅为在 GUI 中预览组件行为的最小仿真配置。
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date:   "2026-12-31"
+  output_variables:
+    - adherence_rate
+    - cumulative_nonadherence
+    - life_stress
+    - reminder_intervention
+  plans:
+    - id: "no_intervention"
+      label: "无干预基线（中等复杂方案，生活压力0.4）"
+      regimens:
+        - {variable: life_stress, time_start: "00:00", value: 0.4,
+           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
+           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+        - {variable: reminder_intervention, time_start: "00:00", value: 0.0,
+           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
+           date_range: ["2026-01-01", "2026-12-31"], label: "无提醒"}
+
+    - id: "weekly_reminder"
+      label: "每周SMS提醒（强度0.5）"
+      regimens:
+        - {variable: life_stress, time_start: "00:00", value: 0.4,
+           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
+           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+        - {variable: reminder_intervention, time_start: "09:00", value: 0.5,
+           days: [Mon],
+           date_range: ["2026-01-01", "2026-12-31"], label: "每周一SMS"}
+
+    - id: "daily_app_reminder"
+      label: "每日APP提醒（强度1.0）"
+      regimens:
+        - {variable: life_stress, time_start: "00:00", value: 0.4,
+           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
+           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+        - {variable: reminder_intervention, time_start: "08:00", value: 1.0,
+           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
+           date_range: ["2026-01-01", "2026-12-31"], label: "每日APP提醒"}

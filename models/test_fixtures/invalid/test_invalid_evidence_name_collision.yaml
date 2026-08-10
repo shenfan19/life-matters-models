@@ -1,0 +1,56 @@
+metadata:
+  name: test_invalid_evidence_name_collision
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). Formerly exercised the
+      now-removed `evidence:` top-level section colliding with a `variables:`
+      name (ADR: evidence merged into `variables:`, see docs/model.md — a
+      variable's literature-effect-size role is now expressed as
+      `evidence_type` on a `variables:` entry instead of a separate section,
+      so that specific collision is structurally impossible: there is only
+      one namespace left to collide with itself). Repurposed to exercise the
+      companion invariant introduced by that merge: a `variables:` entry that
+      declares `evidence_type` (marking its `value` as a raw literature
+      effect size Loader must convert) but declares a `type` other than
+      `parameter`. `Loader._apply_model_data` (loader.py) must reject this
+      rather than silently converting a `state`/`input` variable as if it
+      were a `parameter`.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。原本用于验证已废弃的顶层 `evidence:`
+      节与 `variables:` 变量名冲突（ADR：evidence 已并入 `variables:`，见
+      docs/model.md——变量的文献效应量角色现在通过 `variables:` 条目上的
+      `evidence_type` 字段表达，不再是独立的顶层节，因此这个具体的冲突场景
+      已经结构性地不可能发生：只剩一个命名空间，无法与自身冲突）。现改为
+      验证该合并引入的配套不变量：`variables:` 条目声明了 `evidence_type`
+      （标记其 `value` 是需要 Loader 换算的原始文献效应量），但 `type` 声明
+      的不是 `parameter`。`Loader._apply_model_data`（loader.py）必须拒绝
+      这种情况，而不是悄悄把一个 `state`/`input` 变量当 `parameter` 换算。
+    result: >
+      Loading this model must raise ValueError containing "evidence 换算结果只能是 parameter 角色".
+      See test_verification/errors/test_evidence_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含
+      "evidence 换算结果只能是 parameter 角色"。参见 test_verification/errors/test_evidence_errors.py。
+    limitations: Not a real model; exists only to exercise this one loader check.
+    limitations_cn: 并非真实模型；仅用于验证这一项加载器检查。
+  tags: [test, error-detection, evidence, evidence-type-role-mismatch]
+  references: ["TEST(error-detection): evidence_type requires type: parameter"]
+
+variables:
+  baseline_rate:
+    type: state
+    evidence_type: ir
+    value: 0.01
+    unit: prob/year
+    rate_unit: year
+    description: Declares evidence_type on a state variable instead of parameter; must be rejected.
+    reference: "TEST fixture, no real source"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-31"
+  output_variables: [baseline_rate]

@@ -1,0 +1,82 @@
+metadata:
+  todo:
+    - type: noref
+      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
+      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
+      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: obesity
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      肥胖与2型糖尿病之间存在剂量依赖性的双向强化关系：脂肪组织过多通过多种机制，例如胰岛素抵抗、慢性炎症、脂毒性，加速糖尿病风险的累积，而糖尿病导致的高胰岛素血症反过来促进脂肪储存，形成恶性循环。这一循环中，暴露时间是一个独立放大因子：相同肥胖程度的个体，长期暴露者发生糖尿病的概率显著高于短期暴露者。本模块描述肥胖指数的动态演变及其对糖尿病风险的时间依赖性累积效应。
+    result: >
+      本模块仅作为组件被上层代谢综合模型导入，仿真尚未独立运行。理论预期：持续高血糖，超过120 mg/dL，或高胰岛素血症，超过20 μU/mL，会缓慢推高肥胖指数，肥胖指数越高且暴露时间越长，糖尿病风险累积越快；恢复正常体重后风险以较慢速率衰减。
+    limitations: >
+      参数尚无正式文献来源，obesity_index为定性级别分类而非定量体脂率，精度有限。时间步长为分钟级，随导入模块继承，与肥胖演变的月至年时间尺度不匹配，建议在日步长场景中使用。
+  conflicts: []
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 5 - 肥胖是全球最重大代谢流行病之一，与糖尿病高度耦合
+    framework_demand: 2 - 被2个上层模型import但noref，参数质量低限制复用
+    evidence_quality: 2 - noref标记，参数无文献来源，obesity_index为定性级别
+    popularity: 4 - 肥胖-糖尿病风险模型是代谢建模基础组件
+  tags:
+  - obesity
+  - diabetes
+  - risk_model
+imports:
+- references/medical/physiology/glucose_regulation_2026_mw
+- references/medical/physiology/insulin_system_2026_mw
+variables:
+  obesity_index:
+    description: 肥胖指数 (0=正常, 1=轻度肥胖, 2=中度, 3=重度)
+    value: 0.0
+    unit: 指数级别
+    type: state
+    bounds:
+    - 0.0
+    - 3.0
+  exposure_duration:
+    description: 暴露持续时间（分钟），用于时间依赖计算
+    value: 0.0
+    unit: 分钟
+    type: state
+    bounds:
+    - 0.0
+    - 100000.0
+equations:
+  obesity_increase:
+    description: 高血糖和胰岛素促进脂肪储存
+    step_unit: minute
+    condition: blood_glucose > 120 or plasma_insulin > 20
+    dynamics:
+      obesity_index: min(1.0, obesity_index + 0.0003 * step)
+    priority: 3
+  risk_accumulation:
+    description: 肥胖指数导致糖尿病风险累积增加，受时间影响
+    step_unit: minute
+    condition: obesity_index > 0
+    dynamics:
+      diabetes_risk: min(1.0, diabetes_risk + (0.0002 * obesity_index * exposure_duration / 1000) * step)
+      exposure_duration: exposure_duration + step
+    priority: 100
+  risk_decay:
+    description: 正常体重时风险缓慢衰减（模拟减肥效果）
+    step_unit: minute
+    condition: obesity_index == 0 and diabetes_risk > 0
+    dynamics:
+      diabetes_risk: max(0.01, diabetes_risk - 0.0001 * step)
+    priority: 90
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-06-30"
+  output_variables:
+  - obesity_index
+  - exposure_duration

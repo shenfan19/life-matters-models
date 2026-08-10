@@ -1,0 +1,109 @@
+category: intervention
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: "cooked_meat"
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      游戏专用烤肉食物组件：将以克为单位的烤肉摄入量转换为蛋白质和脂肪营养素。
+      每 100g 含蛋白质 26g、脂肪 15g、碳水化合物 0g、水分 58g，数值来自食品成分表。
+    result: >
+      摄入触发时，对应营养素按比例注入上层场景的胃缓冲区。仿真尚未运行，为组件模型。
+    limitations: 极简食物转换组件，不包含消化动力学；参数应在上层场景中结合具体上下文校准。
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 1 - 游戏专用食物组件，仅提供基本营养成分转换，无研究复用价值
+    framework_demand: 1 - _ag游戏专用模型，框架内复用价值极低
+    evidence_quality: 3 - 烤肉营养成分数值来自食品成分表，数据本身可靠
+    popularity: 1 - 游戏（_ag）专用食物模块，通用度极低
+  tags: [food, diet, meat]
+
+variables:
+  # ========== 输入变量 ==========
+  meat_intake:
+    type: input
+    value: 0
+    unit: "g"
+    bounds: [0, 1000]
+    io_role: input
+    description: "摄入烤肉的重量"
+
+  # ========== 输出指标 (供 nutrition_intake 使用) ==========
+  food_carbohydrate:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+
+  food_protein:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+
+  food_fat:
+    type: state
+    value: 0
+    unit: "g"
+    io_role: output
+
+  water_intake:
+    type: state
+    value: 0
+    unit: "ml"
+    io_role: output
+
+equations:
+  calculate_nutrition_impact:
+    condition: meat_intake > 0
+    priority: 1
+    dynamics:
+      food_carbohydrate: 0
+      food_protein: "meat_intake * 0.26"
+      food_fat: "meat_intake * 0.15"
+      water_intake: "meat_intake * 0.58"
+      meat_intake: 0
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [food_carbohydrate, food_protein, food_fat, water_intake]
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: food_protein
+      metric: final
+      direction: maximize
+    - variable: food_fat
+      metric: final
+      direction: minimize
+  startpoint:
+    regimens:
+      - variable: meat_intake
+        time_start: "12:00"
+        time_end: "12:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "熟肉摄入量（g）"
+        optimize:
+          value: [0, 1000]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19

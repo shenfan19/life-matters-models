@@ -12,12 +12,12 @@ metadata:
       systemic_resistance）及动力学，仅供其他测试模型导入使用。测试 import 链的基础层
       以及菱形依赖去重——test_valid_import_layer 和 test_valid_import_top 均导入本文件。
     result: >
-      The Loader should include this file's variables and formulas exactly once in any
+      The Loader should include this file's variables and equations exactly once in any
       composite model, regardless of how many importers reference it. No standalone
       simulation or optimisation is expected.
     result_cn: >
       无论有多少个导入方引用本文件，Loader 在任何组合模型中都应恰好包含一次本文件的
-      变量与公式。不需要独立运行仿真或优化。
+      变量与方程。不需要独立运行仿真或优化。
     limitations: Purely structural; parameters are not clinically calibrated.
     limitations_cn: 纯结构性测试；参数未经过临床校准。
   tags: [test, import, base, component, no-input]
@@ -60,7 +60,7 @@ variables:
     unit: L/beat
     description: Stroke volume (fixed parameter); cardiac_output = HR × SV × 60.
 
-formulas:
+equations:
   heart_rate_recovery:
     description: HR relaxes exponentially toward set-point (rate × step).
     step_unit: day
@@ -69,7 +69,7 @@ formulas:
     priority: 5
 
   cardiac_output_update:
-    description: Cardiac output computed from HR and stroke volume (formula, no step needed).
+    description: Cardiac output computed from HR and stroke volume (equation, no step needed).
     step_unit: day
     dynamics:
       cardiac_output: "heart_rate * stroke_volume * 60.0 / 1000.0"

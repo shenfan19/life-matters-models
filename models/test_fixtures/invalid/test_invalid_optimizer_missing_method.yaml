@@ -1,0 +1,61 @@
+metadata:
+  name: test_invalid_optimizer_missing_method
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). The `optimizer:` block
+      declares objectives/startpoint/algorithm but omits the required
+      `method` field, which `Validator.validate_model` (validator.py) requires.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。`optimizer:` 块声明了
+      objectives/startpoint/algorithm，但缺少必填的 `method` 字段，
+      而 `Validator.validate_model`（validator.py）要求必须提供该字段。
+    result: >
+      Loading this model must raise ValueError containing
+      "optimizer 缺少 method". See test_verification/errors/test_structural_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含
+      "optimizer 缺少 method"。参见 test_verification/errors/test_structural_errors.py。
+    limitations: Not a real model; exists only to exercise this one validator check.
+    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
+  tags: [test, error-detection, structural, optimizer]
+  references: ["TEST(error-detection): optimizer.method is required"]
+
+variables:
+  x:
+    type: input
+    value: 0.0
+    unit: unit
+    description: Placeholder input variable; irrelevant to the error under test.
+
+  y:
+    type: state
+    value: 1.0
+    unit: unit
+    description: Placeholder state variable; irrelevant to the error under test.
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [y]
+
+optimizer:
+  objectives:
+  - variable: y
+    metric: final
+    direction: minimize
+  startpoint:
+    regimens:
+    - variable: x
+      time_start: "00:00"
+      time_end: "00:00"
+      label: "Placeholder decision variable"
+      optimize:
+        value: [0.0, 10.0]
+  algorithm:
+    population_size: 10
+    n_generations: 5
+    seed: 19

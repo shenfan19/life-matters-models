@@ -15,9 +15,9 @@
 该机制等价于"每天都生效"，可以表示日级持续输入。
 
 但对于 `step_size: hour`/`minute` 的模型，单条 `time: "HH:MM"` 调度只在每天某一个小时/分钟生效，
-其余 23+ 小时该变量被清零为 0。这使得"持续救治强度"、"持续防护水平"、"持续休息比例"等
-在多个连续 step 上应保持恒定的决策变量无法表达——在迁移 `models/scenarios/social/ad1945_jp_hiroshima_nurse`
-（`step_size: hour`，360 步）的废弃 `variables_to_optimize`/`maps_to` schema 时发现此限制。
+其余 23+ 小时该变量被清零为 0。这使得"持续强度"、"持续防护水平"、"持续休息比例"等
+在多个连续 step 上应保持恒定的决策变量无法表达——在迁移一个 `step_size: hour`（360 步）
+场景文件的废弃 `variables_to_optimize`/`maps_to` schema 时发现此限制。
 
 ## 决策
 
@@ -35,9 +35,9 @@
 
 ## 验证
 
-`ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`：将 `care_intensity`（按 `date_range` 拆两段）、
-`self_protection`、`rest_hours` 三个决策变量改为 `mode: sustained` 后，`--opt` 运行
-`feasible: 100%`（gen3 起），帕累托前沿呈现真实的"救治人数 vs. 护士存活时间"双目标权衡。
+内部一个场景文件：将三个决策变量（按 `date_range` 拆两段的一个 + 另两个）改为
+`mode: sustained` 后，`--opt` 运行 `feasible: 100%`（gen3 起），帕累托前沿呈现真实的
+双目标权衡。
 
 ## 适用范围 / 后续
 

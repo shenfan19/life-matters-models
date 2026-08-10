@@ -10,12 +10,12 @@ metadata:
     problem: >
       Validates Loader handling of the `rr` (relative risk) evidence subtype in isolation.
       `smoking_cvd_rr` must equal `value` (rr: effective = value, no auxiliary
-      fields), and the effective value must be usable in a formula multiplying a baseline
+      fields), and the effective value must be usable in a equation multiplying a baseline
       daily risk parameter.
     problem_cn: >
       验证 Loader 对 `rr`（相对风险，relative risk）证据子类型的独立处理。
       `smoking_cvd_rr` 必须等于 `value`（rr 类型：有效值 = value，无需辅助字段），
-      且该有效值必须能够在公式中与基线每日风险参数相乘使用。
+      且该有效值必须能够在方程中与基线每日风险参数相乘使用。
     result: >
       `rr_display` = smoking_cvd_rr = 2.5 (constant, every step).
       `smoker_cvd_risk` accumulates at baseline_cvd_daily_risk × 2.5 = 0.0000825/day,
@@ -62,16 +62,17 @@ variables:
     unit: prob/day
     description: Illustrative baseline daily CVD risk for a non-smoker (parameter, not evidence).
 
-evidence:
   baseline_cvd_ir:
-    type: ir
+    type: parameter
+    evidence_type: ir
     value: 0.012
     unit: prob/year
     rate_unit: year
     description: Baseline annual CVD incidence, used as baseline_ref for the applies_to demo below.
 
   smoking_cvd_rr:
-    type: rr
+    type: parameter
+    evidence_type: rr
     value: 2.5
     baseline_ref: baseline_cvd_ir
     applies_to: smoker_cvd_risk_auto
@@ -79,7 +80,7 @@ evidence:
     description: Relative risk of CVD for active smokers vs non-smokers.
     reference: "TODO:SOURCE"
 
-formulas:
+equations:
   display_rr:
     description: "Shows smoking_cvd_rr (rr: effective = value)."
     dynamics:

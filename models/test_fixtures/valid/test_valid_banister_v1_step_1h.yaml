@@ -95,7 +95,7 @@ variables:
     unit: AU
     description: Baseline performance (Mujika et al. 1996).
 
-formulas:
+equations:
   fitness_dynamics:
     description: "dA/dt = g*w - k1*A (Euler); training_load is a day-rate input (ADR 0131/0132, no *step), decay term keeps *step"
     step_unit: day

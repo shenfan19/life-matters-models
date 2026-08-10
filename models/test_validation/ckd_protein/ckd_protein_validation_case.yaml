@@ -1,0 +1,55 @@
+metadata:
+  name: ckd_protein_validation_case
+  lm_format_version: "1.0"
+  updated: 2026-07-21
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
+  description:
+    problem: |
+      CKD 蛋白质-肌肉权衡模型的文献对标验证入口：import 论文 `papers/s1/ckd_protein/ckd_protein_sim.yaml`
+      的完整物理机制，只保留三个手工设计的指南/临床方案（肾保护优先 kidney_protect / 临床平衡
+      balanced / 肌肉保留优先 muscle_preserve），不包含 renal_optimized/muscle_optimized/
+      opt_optimized 三个 opt 结果回填方案——那些属于 `ckd_protein_opt_*.yaml` 的优化合理性验证
+      范围（见 `../validation_report.md` 第2节），不在本文件的文献对标验证范围内。
+    result: |
+      本文件保留 kidney_protect/balanced/muscle_preserve 三个方案，对应
+      `../validation_report.md` 第1节"CKD 蛋白质-肌肉"验证点（以 kidney_protect 蛋白摄入量
+      最接近 KDIGO 0.6–0.8 g/kg/day 推荐区间，作为主要对照方案）。
+    limitations: 参数、bounds 与已知未解决问题（BUN 清除系数、muscle_mass 净变化方向等，详见
+      `papers/s1/ckd_protein/ckd_protein_sim.yaml` metadata.todo）与被 import 文件完全一致，
+      本文件不重复记录，只收窄 plans 范围。
+  tags: [ckd, protein, muscle, validation, literature-benchmark]
+  references:
+    - "完整引用列表见 papers/s1/ckd_protein/ckd_protein_sim.yaml"
+
+imports:
+  - papers/s1/ckd_protein/ckd_protein_sim
+
+simulation:
+  plans:
+    - id: "kidney_protect"
+      label: "肾保护优先（GFR 端点，全程低蛋白）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time_start: "18:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白"}
+
+    - id: "balanced"
+      label: "临床平衡方案（K=2 分段，前26周限制后26周标准）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期午餐"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "限制期晚餐（睡前）"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.29, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期早餐"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.27, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期午餐"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.28, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "标准期晚餐（睡前）"}
+
+    - id: "muscle_preserve"
+      label: "肌肉保留优先（肌肉端点，全程标准蛋白）"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.38, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "早餐蛋白"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.36, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "午餐蛋白"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.37, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "晚餐蛋白（睡前）"}

@@ -1,0 +1,115 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: "nutrition_intake"
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      营养摄入层通过 6 个变量，即 food_carbohydrate、food_protein、food_fat 及运动强度等，和 4 个方程将外部饮食 schedule 转化为胃部底物浓度，作为 digestive_system 和 energy_balance 的最上游输入层。运动强度同时影响底物利用率，使同一饮食在不同运动状态下的代谢效果不同。
+    result: >
+      仿真预期呈现三餐触发后各营养素在胃部缓冲区的累积与消耗波形，仿真尚未运行，为纯组件模型。
+    limitations: 极简转移层，未建模食物消化速率差异，例如液体与固体的区别、胃排空个体变异或饥饿信号；参数应在上层场景中校准。
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 4 - 营养摄入转移是代谢建模基础组件，供消化系统等多模型调用
+    framework_demand: 4 - 被3个上层模型import，代谢链路的基础组件
+    evidence_quality: 2 - 模块为生成代码，参数无文献标注，仅提供基本转移逻辑
+    popularity: 3 - 营养摄入组件在代谢/糖尿病建模中有复用价值但不独立使用
+  tags: [nutrition, intake]
+
+variables:
+  exercise_intensity:
+    type: input
+    value: 0.0
+    unit: "强度级别"
+    bounds: [0.0, 3.0]
+    io_role: input
+    description: "运动强度，0-无运动，1-轻度，2-中度，3-高强度"
+  food_carbohydrate:
+    type: input
+    value: 0
+    unit: "克"
+    bounds: [0, 500]
+    io_role: input
+    description: "当前摄入的碳水化合物"
+  food_fat:
+    type: input
+    value: 0
+    unit: "克"
+    bounds: [0, 200]
+    io_role: input
+    description: "当前摄入的脂肪"
+  food_protein:
+    type: input
+    value: 0
+    unit: "克"
+    bounds: [0, 300]
+    io_role: input
+    description: "当前摄入的蛋白质"
+  physical_activity:
+    type: input
+    value: 0
+    unit: "METs"
+    bounds: [0, 300]
+    io_role: input
+    description: "体力活动水平"
+  water_intake:
+    type: input
+    value: 0
+    unit: "毫升"
+    bounds: [0, 2000]
+    io_role: input
+    description: "当前摄入的水分"
+
+equations:
+  carbohydrate_ingestion:
+    condition: food_carbohydrate > 0
+    description: "碳水化合物转移至胃"
+    priority: 1
+    dynamics:
+      gastric_carbohydrate: "gastric_carbohydrate + food_carbohydrate"
+      food_carbohydrate: 0
+
+  fat_ingestion:
+    condition: food_fat > 0
+    description: "脂肪转移至胃"
+    priority: 1
+    dynamics:
+      gastric_fat: "gastric_fat + food_fat"
+      food_fat: 0
+
+  protein_ingestion:
+    condition: food_protein > 0
+    description: "蛋白质转移至胃"
+    priority: 1
+    dynamics:
+      gastric_protein: "gastric_protein + food_protein"
+      food_protein: 0
+
+  water_ingestion:
+    condition: water_intake > 0
+    description: "水分转移"
+    priority: 1
+    dynamics:
+      body_water: "body_water + water_intake"
+      water_intake: 0
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [gastric_carbohydrate, gastric_protein, gastric_fat, body_water]

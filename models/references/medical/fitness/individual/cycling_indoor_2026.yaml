@@ -1,0 +1,211 @@
+category: physiological
+
+metadata:
+  name: cycling_indoor
+  lm_format_version: "1.0"
+  updated: 2026-05-17
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      以 Spin、Zwift 为代表的室内功率自行车训练，其核心科学问题是如何用训练压力评分（TSS）量化每次训练对长期有氧基础（CTL）和短期疲劳（ATL）的贡献，CTL 为 42 天指数加权均值，ATL 为 7 天指数加权均值。两者之差 Form = CTL - ATL 是预测运动员是否处于最佳竞技状态的关键指标：Form 低于 -20 提示疲劳积累过度，高于 +10 则适合比赛。功率区间，划分为 Zone 1 至 Zone 7，决定 TSS 积累速率，但高功率区间在提升 CTL 的同时会大幅推高 ATL，形成训练负荷与新鲜度之间不可消除的生理张力。
+    result: >
+      仿真尚未运行。理论预期：Zone 2 有氧基础训练，约 60% FTP，可在 ATL 增量较小的条件下稳定提升 CTL，Form 维持在可控范围 -10 至 0；Zone 4-5 高强度训练显著加速 ATL 上升，Form 在训练后 1-3 天内跌至 -20 以下，需配合减量周恢复新鲜度。
+    limitations: >
+      CTL/ATL 在单次训练内采用线性近似更新，与真实每日更新机制存在偏差。FTP 设为固定参考值，未建模数周训练后的适应性 FTP 提升；营养、睡眠质量等影响恢复速率的非训练因素未纳入模型。
+  ratings:
+    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    topic_importance: 3 - 室内功率车是精确运动负荷管理的重要工具，CTL/ATL体系广泛应用
+    framework_demand: 2 - 专项训练模型，通用度低于基础生理模型
+    evidence_quality: 4 - 引用Coggan/Rønnestad等权威来源，TSS/CTL/ATL方程有据
+    popularity: 3 - TSS训练负荷模型是功率训练专项内容，通用度略低于基础生理模型
+  tags: [cycling, indoor, power_meter, TSS, CTL, ATL, Form, lactate, Zwift, periodization]
+  references:
+    - "Coggan AR & Allen H (2010) Training and Racing with a Power Meter, 2nd ed. VeloPress, Boulder, CO."
+    - "Rønnestad BR & Mujika I (2014) Optimizing strength training for running and cycling endurance performance: A review. Scand J Med Sci Sports 24(4):603-612."
+    - "Kuipers H (1998) Training and overtraining: An introduction. Med Sci Sports Exerc 30(7):1137-1139."
+
+variables:
+  power_zone:
+    type: input
+    value: 2.0
+    unit: "区间(1-7)"
+    bounds: [1.0, 7.0]
+    description: "功率区间（Coggan区间：1=恢复<55%FTP，2=有氧55-75%，3=节奏76-90%，4=乳酸阈值91-105%，5=VO2max106-120%，6=无氧>121%，7=神经肌肉冲刺）"
+  cadence_rpm:
+    type: input
+    value: 90.0
+    unit: "rpm"
+    bounds: [50.0, 130.0]
+    description: "踏频（Coggan推荐有氧训练85-95 rpm；高踏频降低肌肉应激，增加心肺负荷）"
+  heart_rate:
+    type: state
+    value: 70.0
+    unit: "bpm"
+    bounds: [50.0, 190.0]
+    description: "心率（Zone 2约65-75% HRmax；Zone 5约92-97% HRmax；Coggan & Allen 2010）"
+  vo2:
+    type: state
+    value: 10.0
+    unit: "mL/kg/min"
+    bounds: [5.0, 75.0]
+    description: "摄氧量（Zone 2约55-70% VO2max；Zone 5约100-120% VO2max；Rønnestad & Mujika 2014）"
+  lactate:
+    type: state
+    value: 1.0
+    unit: "mmol/L"
+    bounds: [0.5, 14.0]
+    description: "血乳酸（Zone 2<2 mmol/L有氧；Zone 4约4 mmol/L乳酸阈值；Zone 6>8 mmol/L）"
+  tss_accumulated:
+    type: state
+    value: 0.0
+    unit: "TSS"
+    bounds: [0.0, 500.0]
+    description: "当日TSS累积（Zone 1小时=35 TSS；Zone 4一小时=100 TSS；Coggan & Allen 2010）"
+  ctl_chronic_load:
+    type: state
+    value: 50.0
+    unit: "TSS/day"
+    bounds: [0.0, 150.0]
+    description: "CTL慢性训练负荷（42天指数加权平均TSS；反映有氧基础；Coggan & Allen 2010）"
+  atl_acute_load:
+    type: state
+    value: 50.0
+    unit: "TSS/day"
+    bounds: [0.0, 200.0]
+    description: "ATL急性训练负荷（7天指数加权平均TSS；反映短期疲劳；Coggan & Allen 2010）"
+  form_index:
+    type: state
+    value: 0.0
+    unit: "TSS/day"
+    bounds: [-100.0, 50.0]
+    description: "Form（新鲜度）= CTL - ATL（>+10=新鲜可比赛，-10~+10=正常，<-20=累积疲劳；Kuipers 1998）"
+
+equations:
+  heart_rate_response:
+    description: "心率随功率区间响应（Coggan区间对应HRmax百分比线性映射）"
+    condition: true
+    priority: 10
+    dynamics:
+      heart_rate: "min(190, 60 + power_zone * 16 + (cadence_rpm - 90) * 0.2)"
+  vo2_response:
+    description: "摄氧量跟随功率区间（Rønnestad 2014：Zone 4约VO2max，Zone 5超过VO2max）"
+    condition: "power_zone > 0"
+    priority: 9
+    dynamics:
+      vo2: "min(75, 10 + power_zone * 8.5 + (cadence_rpm - 90) * 0.15)"
+  lactate_dynamics:
+    description: "乳酸在Zone 3以上积累，Zone 2以下清除（Coggan乳酸阈值约Zone 4）"
+    condition: "power_zone > 3.0"
+    priority: 8
+    dynamics:
+      lactate: "min(14, lactate + (power_zone - 3) * 0.30)"
+  lactate_clearance:
+    description: "Zone 2及以下时乳酸逐渐清除（有氧代谢为主）"
+    condition: "power_zone <= 3.0"
+    priority: 8
+    dynamics:
+      lactate: "max(0.8, lactate - 0.15)"
+  tss_accumulation:
+    description: "TSS按功率区间每分钟积累（Coggan方程：TSS/min = IF² × (1/60) × 100；区间IF近似）"
+    condition: "power_zone > 0"
+    priority: 7
+    dynamics:
+      tss_accumulated: "tss_accumulated + (0.3 + (power_zone - 1) * 0.12) * (power_zone / 4.0)"
+  ctl_update:
+    description: "CTL慢性负荷：42天指数衰减更新（每分钟步长近似，τ=42天=60480分钟）"
+    condition: true
+    priority: 6
+    dynamics:
+      ctl_chronic_load: "ctl_chronic_load + (tss_accumulated / 1440.0 - ctl_chronic_load) * (1.0 / 60480.0)"
+  atl_update:
+    description: "ATL急性负荷：7天指数衰减更新（τ=7天=10080分钟）"
+    condition: true
+    priority: 5
+    dynamics:
+      atl_acute_load: "atl_acute_load + (tss_accumulated / 1440.0 - atl_acute_load) * (1.0 / 10080.0)"
+  form_update:
+    description: "Form = CTL - ATL（Kuipers 1998：Form>+10适合比赛，<-20需减量）"
+    condition: true
+    priority: 4
+    dynamics:
+      form_index: "ctl_chronic_load - atl_acute_load"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-01"
+  output_variables:
+    - heart_rate
+    - vo2
+    - lactate
+    - tss_accumulated
+    - ctl_chronic_load
+    - atl_acute_load
+    - form_index
+  plans:
+  - id: default
+    label: "Baseline plan"
+    regimens:
+      - variable: power_zone
+        time_start: "06:30"
+        value: 2.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "Zone 2有氧基础训练（55-75% FTP）"
+      - variable: cadence_rpm
+        time_start: "06:30"
+        value: 90.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "踏频（90 rpm，有氧效率最优区间）"
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: form_index
+      metric: final
+      direction: maximize
+      description: "最大化Form指数（训练后新鲜度）"
+    - variable: atl_acute_load
+      metric: final
+      direction: minimize
+      description: "最小化ATL急性负荷（控制短期疲劳积累）"
+  constraints:
+    - variable: lactate
+      condition: "<= 6.0"
+      type: soft
+      description: "血乳酸控制在6 mmol/L以内（有氧训练为主）"
+    - variable: heart_rate
+      condition: "<= 180"
+      type: soft
+      description: "心率控制在180 bpm以内（Zone 5上限）"
+  startpoint:
+    regimens:
+      - variable: power_zone
+        time_start: "06:30"
+        time_end: "06:30"
+        label: "功率区间（Zone 1-5，有氧-VO2max范围）"
+        optimize:
+          value: [1.0, 5.0]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
+  results:
+    generated_at: "2026-05-17"
+    method: nsga2
+    n_solutions: 5
+    elapsed_seconds: 44.6
+    pareto_front:
+      - {x: [1.0], f: [-1.2, 50.1]}
+      - {x: [2.0], f: [-0.8, 50.3]}
+      - {x: [3.0], f: [-0.3, 50.6]}
+      - {x: [4.0], f: [0.4, 51.2]}
+      - {x: [5.0], f: [1.5, 52.3]}
+    recommended:
+      x: [2.0]
+      f: [-0.8, 50.3]

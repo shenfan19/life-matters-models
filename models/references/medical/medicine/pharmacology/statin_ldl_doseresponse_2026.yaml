@@ -1,0 +1,116 @@
+category: physiological
+
+metadata:
+  name: statin_ldl_doseresponse
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      他汀类药物剂量与LDL降幅之间的关系是心血管临床里数值最稳定、共识最一致的剂量反应关系之一，即所谓"rule of 6"：剂量每翻倍，LDL 额外多降约6个百分点，与具体他汀种类或起始剂量基本无关。这个关系自由度极少，只有一个斜率系数和一个起始锚点，文献数字本身有独立RCT可核对，适合作为 evidence 类型换算机制的干净示范。
+    result: |
+      以 rosuvastatin 10mg对应46% LDL降幅为锚点，该数值来自 STELLAR trial（Jones et al. 2003）的独立RCT实测，与 Law、Wald 和 Rudnicka 2003 meta-analysis 给出的"rule of 6"斜率无关；用"每翻倍加6个百分点"外推20mg和40mg的预测降幅，并与 STELLAR trial 独立报告的20mg、40mg实测降幅对比：20mg预测52%与实测52%精确吻合，40mg预测58%与实测55%相比偏差3个百分点，偏差方向与"rule of 6 在更高剂量端存在边际效益递减"这一已知文献局限一致。
+    limitations: |
+      "rule of 6"斜率本身在原始 meta-analysis 中标注标准误约1个百分点每次翻倍，40mg是从10mg锚点跨越2次翻倍外推，累积不确定性和实测的3个百分点偏差量级相符，不代表模型有误；ldl_baseline 取值190 mg/dL，为示意性代表患者值，非任何具体试验人群均值。
+  ratings:
+    topic_importance: 2 - 方法论验证展示，非独立临床案例
+    framework_demand: 1 - 纯验证用途，不被其他论文import
+    evidence_quality: 5 - STELLAR trial（独立RCT）与 Law 2003 meta-analysis 均为高质量、广泛引用来源
+    paper_value: 2 - 一般性参考组件，可作为心血管药理学案例的剂量-反应子模型
+    innovation: 1 - 纯文献复现，无原创建模贡献
+    validation_confidence: 5 - 20mg预测52%=STELLAR实测52%精确吻合，40mg偏差3个百分点在可接受范围，独立预测检验通过
+  tags: [statin, ldl, evidence, dose-response, validation, literature-benchmark]
+  references:
+    - "Law MR, Wald NJ, Rudnicka AR (2003) Quantifying effect of statins on low density lipoprotein cholesterol, ischaemic heart disease, and stroke: systematic review and meta-analysis. BMJ 326:1423"
+    - "Jones PH, Davidson MH, Stein EA, et al. (2003) Comparison of the efficacy and safety of rosuvastatin versus atorvastatin, simvastatin, and pravastatin across doses (STELLAR Trial). Am J Cardiol 92(2):152-160"
+
+variables:
+  statin_dose:
+    description: rosuvastatin 每日剂量（mg），按方案固定，全程每日给药
+    value: 0.0
+    unit: mg
+    type: input
+
+  reference_dose:
+    description: "rule of 6 外推的锚点剂量（STELLAR trial 独立实测：10mg→46%降幅）"
+    value: 10.0
+    unit: mg
+    type: parameter
+    reference: "Jones PH et al. (2003) STELLAR Trial"
+
+  reference_reduction_pct:
+    description: "锚点剂量（10mg）对应的 LDL 降幅（STELLAR trial 独立实测值，%）"
+    value: 46.0
+    unit: "%"
+    type: parameter
+    reference: "Jones PH et al. (2003) STELLAR Trial"
+
+  ldl_baseline:
+    description: 示意性代表患者的未治疗 LDL 基线（原发性高脂血症常见范围）
+    value: 190.0
+    unit: mg/dL
+    type: parameter
+
+  ldl_reduction_pct:
+    description: 预测的 LDL 降幅百分比（由 reference_reduction_pct + rule-of-6 外推计算）
+    value: 0.0
+    unit: "%"
+    type: state
+
+  ldl_level:
+    description: 预测的治疗后 LDL 水平
+    value: 190.0
+    unit: mg/dL
+    type: state
+
+  dose_doubling_effect:
+    type: parameter
+    evidence_type: beta
+    value: 6.0
+    unit: "percentage points per doubling"
+    description: >
+      "Rule of 6"：他汀剂量每翻倍，LDL 额外多降约6个百分点（标准误约1个百分点），
+      与具体他汀种类、起始剂量基本无关。
+    reference: "Law MR, Wald NJ, Rudnicka AR (2003) BMJ 326:1423"
+
+equations:
+  reduction_calc:
+    description: "ldl_reduction_pct = reference_reduction_pct + dose_doubling_effect * log2(statin_dose/reference_dose)（静态代数计算，不随时间积分）"
+    condition: true
+    priority: 5
+    dynamics:
+      ldl_reduction_pct: "reference_reduction_pct + dose_doubling_effect * (log(statin_dose / reference_dose) / log(2.0))"
+    reference: "Law MR, Wald NJ, Rudnicka AR (2003) BMJ 326:1423"
+
+  ldl_calc:
+    description: "ldl_level = ldl_baseline * (1 - ldl_reduction_pct/100)（静态代数计算）"
+    condition: true
+    priority: 3
+    dynamics:
+      ldl_level: "ldl_baseline * (1.0 - ldl_reduction_pct / 100.0)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-01-30"
+  output_variables:
+    - statin_dose
+    - ldl_reduction_pct
+    - ldl_level
+  plans:
+    - id: "dose_10mg"
+      label: "rosuvastatin 10mg/天（STELLAR trial 锚点剂量）"
+      regimens:
+        - {variable: statin_dose, time_start: "00:00", time_end: "23:00", value: 10.0, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-30"], label: "10mg/天恒定"}
+    - id: "dose_20mg"
+      label: "rosuvastatin 20mg/天（1次翻倍，STELLAR trial 实测52%对照）"
+      regimens:
+        - {variable: statin_dose, time_start: "00:00", time_end: "23:00", value: 20.0, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-30"], label: "20mg/天恒定"}
+    - id: "dose_40mg"
+      label: "rosuvastatin 40mg/天（2次翻倍，STELLAR trial 实测55%对照）"
+      regimens:
+        - {variable: statin_dose, time_start: "00:00", time_end: "23:00", value: 40.0, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-30"], label: "40mg/天恒定"}

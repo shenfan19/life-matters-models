@@ -1,0 +1,48 @@
+metadata:
+  name: test_invalid_equation_undefined_var
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). Equation `bad_dynamics`
+      references `undeclared_var` on the right-hand side of its `dynamics`
+      expression, but no such variable or equation exists anywhere in this
+      file — `Validator.validate_equations` (validator.py) does AST-based
+      undefined-variable detection and must catch this.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。方程 `bad_dynamics` 在其 `dynamics` 表达式的
+      右侧引用了 `undeclared_var`，但该文件中并不存在这个变量或方程——
+      `Validator.validate_equations`（validator.py）会基于 AST 做未定义变量检测，
+      必须能捕获这种情况。
+    result: >
+      Loading this model must raise ValueError containing "Missing variables"
+      and "undeclared_var". See test_verification/errors/test_structural_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含 "Missing variables"
+      和 "undeclared_var"。参见 test_verification/errors/test_structural_errors.py。
+    limitations: Not a real model; exists only to exercise this one validator check.
+    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
+  tags: [test, error-detection, structural, equation]
+  references: ["TEST(error-detection): dynamics must only reference declared variables"]
+
+variables:
+  x:
+    type: state
+    value: 1.0
+    unit: unit
+    description: Placeholder state variable; irrelevant to the error under test.
+
+equations:
+  bad_dynamics:
+    description: References an undeclared variable on purpose.
+    step_unit: hour
+    dynamics:
+      x: "x + undeclared_var * step"
+    priority: 0
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [x]

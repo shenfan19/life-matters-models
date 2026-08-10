@@ -12,4 +12,4 @@
 
 ## 验证要求
 
-每个场景须通过对应层级的验证协议，详见 [`docs/validation.md`](../../docs/validation.md)（层1解析解、层2文献效应量、层3可行域/Pareto结构）。
+每个场景须通过对应层级的验证协议，详见 [`test/test_plan.md`](../test/test_plan.md)（层1解析解、层2文献效应量、层3可行域/Pareto结构），执行记录见 [`test/test_report.md`](../test/test_report.md)。

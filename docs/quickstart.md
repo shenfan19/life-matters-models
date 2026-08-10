@@ -15,7 +15,7 @@ LM format 模型只有三种积木：
 | `input` | 干预行为（药物、饮食、运动） | 医嘱 |
 | `parameter` | 固定的机制系数 | 文献里的回归系数 |
 
-公式（`formulas`）描述这些变量如何相互影响。仅此而已。
+方程（`equations`）描述这些变量如何相互影响。仅此而已。
 
 ---
 
@@ -51,10 +51,10 @@ variables:
     description: "每 mg 剂量每天的平均降压幅度"
     reference: "Law et al. (2009) BMJ 338:b1665"
 
-formulas:
+equations:
   bp_daily_change:
     description: "降压药线性效应（简化模型）"
-    step_unit: day          # 公式中 step 的时间单位（必填）
+    step_unit: day          # 方程中 step 的时间单位（必填）
     dynamics:
       SBP: SBP - bp_sensitivity * med_dose * step
 
@@ -64,11 +64,13 @@ simulation:
     unit: day
   start_date: "2026-01-01"
   end_date:   "2026-06-30"
-  schedules:
-    - variable: med_dose
-      time: "08:00"
-      value: 5.0
-      label: "晨服 5mg"
+  plans:
+    - id: default
+      regimens:
+        - variable: med_dose
+          time_start: "08:00"
+          value: 5.0
+          label: "晨服 5mg"
 ```
 
 把这段 YAML 保存为任意 `.yaml` 文件，在 Life Matters 界面加载即可运行。输出：SBP 随时间的变化曲线。
@@ -77,10 +79,10 @@ simulation:
 
 ### 2. 加一条约束：如果 SBP 过低就停药
 
-在 `formulas` 里加条件：
+在 `equations` 里加条件：
 
 ```yaml
-formulas:
+equations:
   bp_daily_change:
     condition: "SBP > 90"          # 收缩压高于 90 mmHg 才生效
     dynamics:
@@ -100,12 +102,13 @@ optimizer:
     - variable: SBP
       metric: final
       direction: minimize
-  inputs:
-    - variable: med_dose
-      time: "08:00"
-      optimize:
-        value: [2.5, 10.0]          # 搜索范围：2.5–10 mg
-      label: "晨服剂量"
+  startpoint:
+    regimens:
+      - variable: med_dose
+        time_start: "08:00"
+        label: "晨服剂量"
+        optimize:
+          value: [2.5, 10.0]          # 搜索范围：2.5–10 mg
 ```
 
 运行后得到 Pareto 前沿：不同剂量下 SBP 最终值的权衡曲线。
@@ -159,8 +162,9 @@ dynamics:
 
 | 目标 | 去哪里找 |
 |------|---------|
-| 完整字段规范 | `docs/model.md` |
-| 多模型组合（import） | `docs/model.md` → Imports 章节 |
-| 优化器全部参数 | `docs/model.md` → optimizer 章节 |
+| 完整字段规范 | `docs/LM_format_1.0.md` |
+| 建模实践指南 | `docs/authoring/README.md` |
+| 多模型组合（import） | `docs/authoring/imports_and_organization.md` |
+| 优化器全部参数 | `docs/authoring/regimens_and_optimizer.md` |
 | 已有可运行模型参考 | `models/papers/` 目录 |
 | 架构决策背景 | `docs/decisions/` 目录 |

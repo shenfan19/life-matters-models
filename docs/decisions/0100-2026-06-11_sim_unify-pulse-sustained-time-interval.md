@@ -108,9 +108,8 @@
 - `docs/model.md`：新增"统一区间表示：time_start / time_end"小节（含等价表、
   向后兼容映射），`mode: sustained` 小节标注为旧格式但仍受支持，x 向量编码
   小节注明 T2 多维重设计未实施。
-- 验证：`models/test/test_sustained_mode.yaml`（`--sim`/`--opt`）、
-  `models/scenarios/social/ad1945_jp_hiroshima_nurse_nosim_noopt.yaml`（`--opt`）
-  数值结果与改动前一致；旧 YAML 无需修改。
+- 验证：`models/test/test_sustained_mode.yaml`（`--sim`/`--opt`）、内部另一个场景文件
+  （`--opt`）数值结果与改动前一致；旧 YAML 无需修改。
 
 ## 实施记录（GUI 部分）
 

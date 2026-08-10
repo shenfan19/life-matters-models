@@ -42,15 +42,15 @@ variables:
     unit: mmHg
     description: Systolic BP rising with age (beta evidence, per year → per day).
 
-evidence:
   age_sbp_beta:
-    type: beta
+    type: parameter
+    evidence_type: beta
     value: 0.45
     unit: mmHg/year
     description: SBP rises 0.45 mmHg per year of age.
     reference: "TODO:SOURCE"
 
-formulas:
+equations:
   display_beta:
     description: "Shows age_sbp_beta (beta: effective = value)."
     dynamics:

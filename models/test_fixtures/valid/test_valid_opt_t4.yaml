@@ -47,7 +47,7 @@ variables:
     unit: kg per kcal
     description: Weight lost per kcal deficit; 1 kg ≈ 7700 kcal → 1/7700 ≈ 0.000130.
 
-formulas:
+equations:
   weight_loss:
     description: Body weight decreases proportionally to daily caloric deficit (rate × step).
     step_unit: day

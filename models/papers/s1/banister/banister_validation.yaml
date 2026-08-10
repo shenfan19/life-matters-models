@@ -1,0 +1,216 @@
+metadata:
+  name: banister_validation
+  lm_format_version: "1.0"
+  updated: 2026-05-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      运动员备赛训练计划优化：16 周备赛中，每周练几天、各阶段负荷多大、何时开始赛前减量，才能使比赛日体能最佳、疲劳最低？
+      基于 Banister（1975）适应-疲劳双室模型，训练同时带来体能提升和疲劳积累，两者消散速率不同；赛前减量的关键是让疲劳消散、超量恢复释放，但减量过早体能也会随之下降。
+      训练频率和减量时机与负荷大小同等重要，固定方案无法揭示这一结构性规律。
+    method: |
+      本文件实现 Banister 适应-疲劳双室模型：体能 fitness 与疲劳 fatigue 是共享同一决策变量 training_load 驱动的两条独立动力学轨迹，各自以不同时间常数衰减，体能45天、疲劳15天（Morton 1990）。performance 由二者相减得到，因此每一次训练负荷的调整都同时改变两条轨迹，而不是只影响单一结局：加大负荷短期内疲劳上升快于体能，减量后疲劳消散也快于体能衰减，比赛日表现取决于这两条不同速率轨迹在具体时间点上的相对位置，这正是训练频率与减量时机成为独立于负荷大小之外的决策维度的原因。
+    result: |
+      - 本文件携带完整的 variables/equations 物理机制，与论文 §6 Verify 数值验证用的对比仿真方案 simulation.plans，即16 周渐进训练加4 周减量/维持、对照 Morton 1990 Figure 3 复现，可直接 `--sim` 跑出全部对比方案。
+      - K×4 行为优化扩展见同目录 `banister_opt.yaml`，属论文后续工作范围，§6 Verify 不报告其结果。
+    limitations: 参数采用 Morton 1990 文献标准值，未针对具体运动员个体校准；适用于周期性竞技项目，不适用于新手起始负荷评估。
+  ratings:
+    topic_importance: 3 - 方法论验证展示，无独立临床需求，以框架能力证明为主
+    framework_demand: 2 - 框架验证用途，未被其他论文import或引用
+    evidence_quality: 5 - Morton 1990 原始数据可对照，参数来源最扎实
+    paper_value: 3 - 定位为框架验证，不宜作为论文主线案例
+    innovation: 3 - Banister 模型已知，T3+T4 联合优化是增量贡献
+    validation_confidence: 2 - 比赛日performance超出Morton 1990目标区间约2.4倍，改回文献原始w=50/10协议后偏差比例不变，疑似增益系数与目标数字不同源，见 test_validation/validation_report.md
+  tags: [banister, validation, fitness, fatigue]
+  references:
+    - citation: "Morton RH, Fitz-Clarke JR, Banister EW (1990) Modeling human performance in running. J Appl Physiol 69(3):1171-1177"
+      description: "这篇文献是体能与疲劳时间常数、增益系数 g/h 与表现方程的标定来源：体能时间常数45天，疲劳时间常数15天，增益系数取自 Table 1，表现方程取自 eq.3；Figure 3 的16周渐进加4周减量协议是本文件 simulation.plans 的复现目标。"
+    - citation: "Banister EW, Calvert TW, Savage MV, Bach TM (1975) A systems model of training for athletic performance. Aust J Sports Med 7(3):57-61"
+      description: "适应-疲劳双室模型的原始提出者，本文件的整体结构直接采用该文的双室框架。"
+    - citation: "Mujika I et al. (1996) Effects of training on performance in competitive swimming. Can J Appl Physiol 21(5):395-406"
+      description: "基础表现 p0 的标定来源。"
+    - citation: "Halson SL (2014) Monitoring training load to understand fatigue in athletes. Sports Med 44(Suppl 2):139-147"
+      description: "训练频率，即每周训练天数，改变疲劳积累节奏这一定性机制的文献依据，用于 banister_opt.yaml 的训练频率决策维度设计。"
+  todo:
+    - type: quality
+      issue: "five_day_training 与 daily_training 的头对头对比数字引用的是 daily_training 修改前的负荷协议，与当前文件不一致，重新核对前不能写入论文正文"
+      evidence: "opt_optimized 方案（渐进期约 97 AU/天，第 10 周起完全停训）经一次 --opt（pop=60, gen=120）与 --sim 交叉验证，对 performance 与 fatigue 两个目标同时优于 daily_training/five_day_training/early_taper 三个固定协议（performance=1700.5 对三者的 1246.7/1071.4/1036.6；fatigue=170.5 对三者均 ~1700+），这一结论不涉及 daily_training 的具体负荷取值，仍然成立。但同一次记录里 five_day_training 与 daily_training 的头对头对比（five_day performance=1071.4 < daily=1246.7）是在 daily_training 使用 75/30/60 AU 三段式协议时跑出的；2026-07-21 daily_training 已改回 Morton 1990 原始 w=50/10 两段式协议（见下方 log），这组对比数字未随之重新验证，不能直接推断当前参数下训练频率本身的效应方向。"
+      next: "重新用当前 daily_training（w=50/10）与 five_day_training 跑一次 --sim，确认头对头对比结论在新协议下是否仍然成立，再决定是否把训练频率效应写进论文正文；opt_optimized 与三个固定协议的比较不受此影响，可以直接使用。"
+  log:
+    "2026-06-25_00-00-00":
+      change: "k1/k2 从按天标定的速率改为按 ADR 0121 开根方程换算的小时等效值，与 simulation/equations 统一使用的 step_unit: hour 匹配"
+      reason: "原值按天标定却被逐小时全额触发，衰减速率相当于放大约24倍，导致 fitness/fatigue 提前饱和，无法复现 Morton 1990 的16周增长曲线。"
+    "2026-07-21_00-00-00":
+      change: "daily_training 方案训练负荷从 75/30/60 AU 三段式改回 Morton 1990 原始文献两段式协议（w=50 AU/天×16周 + w=10 AU/天×4周锥形减量），仿真区间同步延长至20周"
+      reason: "validation 场景应严格复现原始文献协议本身，不夹带偏离文献的负荷设计。"
+    "2026-08-05_00-00-00":
+      change: "移除已解决的 todo 条目与纯历史性的文件结构迁移记录；description 补充 method 字段"
+      reason: "落实 ADR 0141，主文件只保留当前状态，调试脉络转移至 history/2026-08-05_banister_validation.yaml。"
+    "2026-08-06_10-00-00":
+      change: "重写 metadata.todo，标注 five_day/daily 头对头对比数字引用了 2026-07-21 已废弃的 daily_training 75 AU 三段式协议；description.result 改为 bullet-list 格式"
+      reason: "S1 论文 §6→§7 拆分改写前核对模型文档一致性，发现 todo 引用的对比数据已经过期于同一文件的 2026-07-21 参数变更之后，标注清楚后才能被论文正文安全引用。"
+
+# ── 变量 ───────────────────────────────────────────────────────────────────────
+variables:
+  fitness:
+    description: 体能分量（运动适应积累，时间常数45天，Morton 1990）
+    value: 0.0
+    unit: AU
+    type: state
+    bounds: [0, 6000]
+    reference: "Morton RH et al. (1990)"
+    locator: "TODO:LOCATE"
+
+  fatigue:
+    description: 疲劳分量（训练负荷累积，时间常数15天，Morton 1990）
+    value: 0.0
+    unit: AU
+    type: state
+    bounds: [0, 3000]
+    reference: "Morton RH et al. (1990)"
+    locator: "TODO:LOCATE"
+
+  performance:
+    description: 综合表现 = 基础 + fitness - fatigue（Morton 1990 eq.3）
+    value: 494.0
+    unit: AU
+    type: state
+    bounds: [0, 2000]
+    reference: "Morton RH et al. (1990)"
+    locator: "eq.3"
+
+  training_load:
+    description: 当日训练负荷（任意单位，由 schedule 驱动；休息日为0）
+    value: 0.0
+    unit: AU
+    type: input
+
+  g:
+    description: 体能增益系数（Morton 1990 Table 1，标准值 1.0）
+    value: 1.0
+    unit: dimensionless
+    type: parameter
+    bounds: [0.4, 2.0]
+    reference: "Morton RH et al. (1990)"
+    locator: "Table 1"
+
+  h:
+    description: 疲劳增益系数（Morton 1990 Table 1，标准值 2.0）
+    value: 2.0
+    unit: dimensionless
+    type: parameter
+    bounds: [0.8, 4.0]
+    reference: "Morton RH et al. (1990)"
+    locator: "Table 1"
+
+  k1:
+    description: >
+      体能衰减速率 = 1/45 per day（Morton 1990）。原值0.02222按day标定，但所在
+      方程fitness_dynamics的step_unit是hour，2026-06-25发现未做单位换算即被
+      每小时全额触发，相当于放大约24倍（实测fitness在约10天内即饱和至128.44，
+      应持续增长到第16周末956.2附近）。该项"-k1*fitness*step"是自指数衰减
+      （ADR 0121 类型B，target=0），用开根方程精确换算：
+      k1_hour = 1-(1-1/45)^(1/24) ≈ 0.00093676。bounds按相同方程对原[0.01,0.05]
+      区间端点分别换算。
+    value: 0.00093676
+    unit: 1/hour
+    bounds: [0.0004187, 0.0021349]
+    type: parameter
+    reference: "Morton RH et al. (1990); 换算方法见 life-matters-models ADR 0121"
+    locator: "TODO:LOCATE"
+
+  k2:
+    description: >
+      疲劳衰减速率 = 1/15 per day（Morton 1990）。原值0.06667按day标定，
+      与k1同一bug（step_unit是hour，未换算即放大约24倍）。该项
+      "-k2*fatigue*step"同样是自指数衰减（ADR 0121 类型B），用开根方程：
+      k2_hour = 1-(1-1/15)^(1/24) ≈ 0.00287058。bounds同比例换算。
+    value: 0.00287058
+    unit: 1/hour
+    bounds: [0.0012683, 0.0067487]
+    type: parameter
+    reference: "Morton RH et al. (1990); 换算方法见 life-matters-models ADR 0121"
+    locator: "TODO:LOCATE"
+
+  p0:
+    description: 基础表现（无训练基准，Mujika 1996）
+    value: 494.0
+    unit: AU
+    type: parameter
+    reference: "Mujika I et al. (1996)"
+    locator: "TODO:LOCATE"
+
+# ── 动力学方程 ─────────────────────────────────────────────────────────────────
+equations:
+  fitness_dynamics:
+    description: "体能 Euler 更新：dA/dt = g·w - k1·A"
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      fitness: fitness + (g * training_load - k1 * fitness) * step
+    reference: "Morton RH et al. (1990)"
+    locator: "TODO:LOCATE"
+
+  fatigue_dynamics:
+    description: "疲劳 Euler 更新：df/dt = h·w - k2·f"
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      fatigue: fatigue + (h * training_load - k2 * fatigue) * step
+    reference: "Morton RH et al. (1990)"
+    locator: "TODO:LOCATE"
+
+  performance_update:
+    description: "瞬时表现 = p0 + fitness - fatigue（Morton 1990 eq.3，静态计算无step）"
+    condition: true
+    priority: 3
+    dynamics:
+      performance: p0 + fitness - fatigue
+    reference: "Morton RH et al. (1990)"
+    locator: "eq.3"
+
+# ── 仿真设置（V2 协议：Morton 1990 Figure 3 复现）──────────────────────────────
+# 20 周 = 140 天：16周渐进(w=50 AU/天) + 4周锥形减量(w=10 AU/天)——Morton 1990 原始文献协议，
+# 2026-07-21 由 75/30/60 三段式（此前与论文文字描述长期不一致，见下方 metadata.todo 已解决记录）改回文献原始两段式。
+# 验证目标：
+#   V2 通过标准：第 20 周末（比赛日，2026-05-20）performance 在 520–560 AU 范围内
+#   V3 通过标准：减量开始（第17周，2026-04-23）后 5–10 天内出现 performance 峰值
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-05-20"
+  output_variables:
+    - fitness
+    - fatigue
+    - performance
+    - training_load
+  plans:
+    - id: "daily_training"
+      label: "每日训练（7天/周，Morton 1990 原始文献协议 w=50/10）"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-04-22"], label: "渐进期 w=50 AU/天（第1–16周，Morton 1990原始值）"}
+        - {variable: training_load, time_start: "09:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-04-23", "2026-05-20"], label: "锥形减量 w=10 AU/天（第17–20周，Morton 1990原始值）"}
+    - id: "five_day_training"
+      label: "5天/周训练（有节奏休息日）"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 85.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-03-11"], label: "渐进期（周末休息）"}
+        - {variable: training_load, time_start: "09:00", value: 30.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-12", "2026-03-25"], label: "减量期"}
+        - {variable: training_load, time_start: "09:00", value: 60.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-26", "2026-04-22"], label: "维持期"}
+    - id: "early_taper"
+      label: "提前减量（第9周开始，48天渐进+2周减量+6周维持）"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 80.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-02-26"], label: "渐进期"}
+        - {variable: training_load, time_start: "09:00", value: 28.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-27", "2026-03-12"], label: "减量期（提前）"}
+        - {variable: training_load, time_start: "09:00", value: 58.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-13", "2026-04-22"], label: "维持期（更长）"}
+
+    - id: "opt_optimized"
+      label: "Opt优化方案（渐进期约97 AU/天 7天/周，第10周起完全停训）——按 banister_opt.yaml 的 optimizer.results.reference，performance/fatigue均优于其余三个方案"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 97.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-11"], label: "渐进期（参考 pareto_front x0+x1≈97 的解）"}
+        - {variable: training_load, time_start: "09:00", value: 0.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-12", "2026-04-22"], label: "减量期+维持期完全停训（x3≈0, x5≈0）"}

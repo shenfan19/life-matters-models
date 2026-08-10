@@ -1,0 +1,46 @@
+category: dynamics
+
+metadata:
+  todo:
+    - type: nosim
+      issue: "模型为新建 stub，variables/equations 均为空，仿真无法运行"
+      evidence: "本次新建时仅完成 problem/result/limitations 占位描述，尚未定义 variables 和 equations。"
+      next: "确定具体参数来源后补全 variables 和 equations，运行 --sim 验证。"
+    - type: noopt
+      issue: "同上，优化器同样无法运行"
+      evidence: "同上。"
+      next: "补全模型后运行 --opt 验证。"
+  name: ad1832_fr_galois
+  lm_format_version: "1.0"
+  updated: 2026-07-24
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      数学家 Évariste Galois 生于 1811 年，1832 年 5 月 30 日决斗中腹部中弹，次日身亡，年仅 20 岁，群论的奠基工作因此戛然而止。流传甚广的说法是他决斗前夜彻夜整理手稿、批注"我没有时间了"，但这一细节的真实程度在史学界存在争议，Rothman（1982）认为后世传记存在一定程度的文学化加工。决斗动机本身，无论是私人恩怨还是政治因素，也无定论，本场景不对此作定性判断。建模目标与 ad1940_fr_doeblin、ad1915_tr_moseley 同属一系列，将"英年早逝概率"与"已展现天赋外推的预期未来贡献"并列建模，量化天才早逝对科学史的机会成本，具体参数化路径待确定。
+    result: >
+      仿真窗口已预置，覆盖 1832 年 5 月 29 日决斗前夜至 5 月 31 日 Galois 去世当日；变量和方程待参数化路径确定后填写，该场景尚未实际运行仿真。
+    limitations: >
+      "预期未来科研贡献"变量的构造方式存在方法论争议，决斗前夜手稿写作强度与史实细节的可信度需进一步核实。参考文献方面，Rothman（1982）提供史学考据，Bell（1937）是经典但存在文学化倾向的传记来源，仅作对照引用。
+  ratings:
+    topic_importance: 4 - Galois 是"天才早逝机会成本"最经典的历史案例，教育与科学史价值高
+    framework_demand: 1 - TODO 存根，尚未被其他模型引用
+    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
+    innovation: 4 - 与 ad1940_fr_doeblin、ad1915_tr_moseley 构成同一系列的第三个案例，非战争情境下的对照，意图明确但尚未实现
+    social_value: 4 - 触及天才保护与早逝机会成本的普遍议题，不涉及战争或族群道德评判
+  tags: [mathematician, duel, group-theory, 19th-century, sacrifice, TODO]
+  references:
+    - "Rothman T (1982) Genius and Biographers: The Fictionalization of Evariste Galois. American Mathematical Monthly 89(2), 84-106."
+    - "Bell ET (1937) Men of Mathematics. Simon & Schuster. [经典传记来源，部分细节存在文学化加工，仅作对照引用]"
+
+variables: {}
+equations: {}
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "1832-05-29"
+  end_date:   "1832-05-31"
+  output_variables: []

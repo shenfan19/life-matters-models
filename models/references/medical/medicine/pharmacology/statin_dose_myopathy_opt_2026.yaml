@@ -1,0 +1,92 @@
+category: physiological
+
+metadata:
+  name: statin_dose_myopathy_opt
+  lm_format_version: "1.0"
+  updated: 2026-07-25
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      他汀剂量选择是效益递减、风险加速结构的经典案例：剂量每翻倍，LDL 只额外多降约6个百分点，参见 imports 中的 statin_ldl_doseresponse；但肌病风险随剂量呈超线性增长，SEARCH trial（Lancet 2010）直接对比 simvastatin 80mg 与20mg，肌病发生率为52/6031例即0.9%，对照组为1/6033例即0.02%，相差超过20倍。两条曲线增长速率不同，使得剂量选择成为一个双目标权衡问题，不存在越高越好的单一最优解。
+    result: |
+      两个目标函数即LDL降幅和肌病风险均已独立文献验证：LDL部分复用已验证的 statin_ldl_doseresponse，20mg预测降幅52%与STELLAR实测52%精确吻合；肌病风险部分用 SEARCH trial 的20mg/80mg两点拟合超线性幂律，risk等于A乘以dose的2.746次方，10-80mg范围内不需要外推到试验范围之外。K×4 框架下以T1决策变量即剂量做单变量优化，在10-80mg范围内跑出真实、非退化的Pareto前沿：剂量越高，LDL降幅和肌病风险同时上升，前沿本身就是效益递减、风险加速结构的直接呈现，无需额外叙事。
+    limitations: |
+      SEARCH trial数据针对simvastatin，肌病风险幂律拟合的具体系数(A,B)不直接适用于其他他汀，本文件LDL部分用的锚点是rosuvastatin的STELLAR trial数据，这是用两个不同他汀的独立数据分别代表效益和风险两条曲线的简化。两条曲线各自的文献来源都可靠，但同一个患者服用同一种他汀会精确复现这两条曲线这一假设本身未经验证，需要在论文中明确注明为方法论简化演示，不是单一药物的完整PK/PD模型。
+  ratings:
+    topic_importance: 3 - 剂量选择的效益-风险权衡是他汀临床决策的核心问题
+    framework_demand: 2 - 展示K×4单变量优化+Pareto前沿能力的候选案例
+    evidence_quality: 5 - LDL部分(STELLAR)与肌病风险部分(SEARCH trial)均为高质量RCT数据
+    paper_value: 3 - 候选案例：文献双清洁 + 真实非退化Pareto前沿，但两条曲线来自不同药物需要论文中说明简化
+    innovation: 2 - 剂量-效益-风险权衡结构本身文献已知，用LM format K×4机制形式化是增量贡献
+    validation_confidence: 4 - 两个目标函数各自独立验证通过(见imports文件与本文件limitations)，组合使用为方法论简化
+  tags: [statin, ldl, myopathy, dose-optimization, k4, pareto, validation, literature-benchmark]
+  references:
+    - "LDL 部分完整引用见 statin_ldl_doseresponse_2026.yaml"
+    - "SEARCH Collaborative Group (2010) Intensive lowering of LDL cholesterol with 80mg vs 20mg simvastatin daily in 12064 survivors of myocardial infarction. Lancet 376(9753):1658-1669"
+
+imports:
+  - ./statin_ldl_doseresponse_2026
+
+variables:
+  myopathy_risk_pct:
+    description: 预测的肌病发生率(%)，SEARCH trial两点(20mg→0.02%, 80mg→0.9%)拟合的超线性幂律
+    value: 0.0
+    unit: "%"
+    type: state
+
+  myopathy_coef_a:
+    description: 幂律拟合系数A（作者对SEARCH trial两点数据的拟合，非文献直接给出）
+    value: 0.000005349
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 SEARCH Collaborative Group (2010) 两点数据的幂律拟合"
+
+  myopathy_coef_b:
+    description: 幂律拟合指数≈2.746，反映"剂量翻倍4倍(20→80mg)、风险升高45倍"的超线性关系
+    value: 2.746
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 SEARCH Collaborative Group (2010) 两点数据的幂律拟合"
+
+equations:
+  myopathy_calc:
+    description: "静态幂律计算：myopathy_risk_pct = myopathy_coef_a · dose^myopathy_coef_b（不随时间积分）"
+    condition: true
+    priority: 4
+    dynamics:
+      myopathy_risk_pct: "myopathy_coef_a * (statin_dose ** myopathy_coef_b)"
+
+optimizer:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-01-30"
+  step_size:
+    value: 1
+    unit: day
+
+  objectives:
+    - variable: ldl_reduction_pct
+      metric: final
+      direction: maximize
+      description: "最大化LDL降幅（STELLAR trial验证的rule-of-6外推）"
+    - variable: myopathy_risk_pct
+      metric: final
+      direction: minimize
+      description: "最小化肌病风险（SEARCH trial两点幂律拟合）"
+
+  startpoint:
+    regimens:
+      - variable: statin_dose
+        time_start: "00:00"
+        time_end: "23:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "他汀日剂量（T1决策变量，真实临床剂量范围10-80mg）"
+        optimize:
+          value: [10.0, 80.0]
+
+  algorithm:
+    population_size: 60
+    n_generations: 80
+    seed: 19

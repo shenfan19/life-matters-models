@@ -1,0 +1,87 @@
+category: socio_economic
+
+metadata:
+  name: ebbinghaus_forgetting
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      验证目的：跨学科拓展到心理学。Ebbinghaus (1885) 用"节省法"（savings method）测量了自己记忆无意义音节列表后，在20分钟、1小时、9小时、1天、2天、6天、31天七个时间点的记忆节省率，是心理学史上最早的定量记忆遗忘曲线。Murre & Dros (2015, PLOS ONE) 用现代被试独立重复了这套实验流程，130年后的复现数据为检验"用历史数据拟合的遗忘曲线能否预测独立现代样本"提供了罕见的跨时间尺度检验机会。
+    result: |
+      用 Ebbinghaus 1885 原始七个数据点拟合幂律遗忘曲线 retention=A·(1+t/20min)^(-beta)，代入 Murre & Dros 2015 复现实验的时间点，预测值与 2015 独立测量值相比，1 天检验点吻合最好，预测 32.2% 对实测 31.7%，误差 1.5%，其余检验点偏差在 15% 到 48% 区间，31 天检验点偏差最大，Murre & Dros 论文自己也指出这是该复现实验中最异常的一个数据点。完整逐时间点对比表见同目录 `ebbinghaus_forgetting_2026.md`。
+    limitations: |
+      Ebbinghaus 1885 原始数据来自他本人一位被试的自我实验，样本量为 1，历史上从未有大规模跨个体重复，直至 2015 年才有这次复现，这是本案例被归入"跨样本/跨个体变异性"而非"模型结构错误"的直接原因：单一个体的记忆曲线本身就不足以代表群体，130 年后另一组被试出现系统性偏离是符合预期的，不是拟合曲线的问题。
+  ratings:
+    topic_importance: 2 - 心理学基础模型，可作为跨学科组合案例的记忆/学习子模型
+    framework_demand: 2 - 尚未被具体论文import，但结构通用（可迁移到教育/培训场景）
+    evidence_quality: 4 - Ebbinghaus 1885 是心理学奠基性历史数据，Murre & Dros 2015 是同行评审的独立复现
+    paper_value: 2 - 一般性参考组件，非旗舰案例
+    innovation: 1 - 纯文献复现（含作者自行的幂律拟合），无原创建模贡献
+    validation_confidence: 3 - 1天检验点吻合(偏差1.5%)，其余多数检验点偏差15-48%，源于1885原始数据样本量为1，代表性有限
+  tags: [psychology, memory, forgetting-curve, validation, literature-benchmark, cross-domain]
+  references:
+    - "Ebbinghaus H (1885) Über das Gedächtnis. Duncker & Humblot, Leipzig."
+    - "Murre JMJ, Dros J (2015) Replication and Analysis of Ebbinghaus' Forgetting Curve. PLOS ONE 10(7):e0120644"
+
+variables:
+  time_since_learning:
+    description: 学习后经过的时间（分钟），仿真时钟的直接累加
+    value: 0.0
+    unit: minute
+    type: state
+
+  retention_pct:
+    description: >
+      预测的记忆节省率（%），用 Ebbinghaus 1885 原始七点数据拟合的幂律曲线
+      retention = retention_A·(1+t/20min)^(-retention_beta) 计算，静态代数方程，
+      不是独立的动力学积分。
+    value: 0.0
+    unit: "%"
+    type: state
+
+  retention_A:
+    description: 幂律拟合系数（作者对 Ebbinghaus 1885 七点数据的最小二乘拟合，非文献直接给出）
+    value: 0.5975
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 Ebbinghaus (1885) 数据的幂律拟合"
+
+  retention_beta:
+    description: 幂律拟合指数，拟合方式同 retention_A
+    value: 0.1442
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 Ebbinghaus (1885) 数据的幂律拟合"
+
+equations:
+  clock_tick:
+    description: "时钟累加：time_since_learning 逐步跟踪学习后经过的分钟数"
+    step_unit: minute
+    condition: true
+    priority: 5
+    dynamics:
+      time_since_learning: "time_since_learning + step"
+
+  retention_calc:
+    description: "静态幂律计算：retention_pct = A·(1+t/20)^(-beta)，不随时间积分，只读当前 time_since_learning"
+    condition: true
+    priority: 3
+    dynamics:
+      retention_pct: "retention_A * (1.0 + time_since_learning / 20.0) ** (-retention_beta) * 100.0"
+
+simulation:
+  step_size:
+    value: 10
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-02-02"
+  output_variables:
+    - time_since_learning
+    - retention_pct
+  plans:
+    - id: "single_study_session"
+      label: "单次学习后遗忘曲线追踪（无输入事件，纯时钟驱动的静态曲线评估）"
+      regimens: []

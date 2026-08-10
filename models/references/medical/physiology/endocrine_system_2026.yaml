@@ -1,0 +1,86 @@
+metadata:
+  todo:
+    - type: nosim
+      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
+      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+    - type: noopt
+      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
+      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+  name: endocrine_system
+  lm_format_version: "1.0"
+  updated: 2026-04-23
+  authors:
+  - name: Fan Shen
+    email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      胰高血糖素、皮质醇和生长激素共同参与血糖升调和应激响应，三者在禁食/运动/压力状态下相互协同，是 glucose_regulation 组件中胰岛素拮抗信号的来源。该组件提供 3 个状态变量和 2 个方程作为内分泌调控的可复用基础层。
+    result: >
+      仿真预期呈现三种激素在进食/禁食循环中的日节律波动，仿真尚未运行，为纯组件模型。
+    limitations: 参数无正式文献标注，昼夜节律相位和应激幅值应在上层场景中校准。
+  conflicts: []
+  ratings:
+    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    topic_importance: 4 - 内分泌系统（胰高血糖素/皮质醇/生长激素）是代谢调控核心组件
+    framework_demand: 3 - 被2个上层模型import，中频调用的代谢调控组件
+    evidence_quality: 2 - 模块为生成代码，变量描述简略，参数缺少文献来源
+    popularity: 3 - 内分泌组件在代谢建模中有复用价值，但不独立使用
+  tags:
+  - hormones
+  - glucagon
+imports:
+- references/medical/physiology/glucose_regulation_2026_mw
+variables:
+  glucagon_level:
+    description: 胰高血糖素水平
+    value: 50
+    unit: pg/mL
+    type: state
+    bounds:
+    - 20
+    - 250
+  cortisol_level:
+    description: 皮质醇水平
+    value: 15
+    unit: μg/dL
+    type: state
+    bounds:
+    - 5
+    - 40
+  growth_hormone:
+    description: 生长激素水平
+    value: 5
+    unit: ng/mL
+    type: state
+    bounds:
+    - 1
+    - 15
+equations:
+  glucagon_response:
+    description: 低血糖时胰高血糖素分泌
+    step_unit: minute
+    condition: blood_glucose < 70
+    dynamics:
+      glucagon_level: min(250, glucagon_level + (70 - blood_glucose) * 2 * step)
+      blood_glucose: blood_glucose + glucagon_level * 0.01 * step
+    priority: 6
+  hypoglycemia_counter_regulation:
+    description: 低血糖时的反调节激素反应
+    condition: blood_glucose < 60
+    dynamics:
+      glucagon_level: min(250, glucagon_level + (60 - blood_glucose) * 2)
+      growth_hormone: min(15, growth_hormone + (60 - blood_glucose) * 0.1)
+      cortisol_level: min(40, cortisol_level + (60 - blood_glucose) * 0.2)
+    priority: 9
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables:
+  - glucagon_level
+  - cortisol_level
+  - growth_hormone

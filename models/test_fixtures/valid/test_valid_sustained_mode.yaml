@@ -67,7 +67,7 @@ variables:
     unit: score per unit
     description: Fatigue accrued per unit of work output.
 
-formulas:
+equations:
   output_accum:
     description: Cumulative output rises by work_rate on each firing hour (pulse, no step).
     step_unit: hour

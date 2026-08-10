@@ -1,0 +1,46 @@
+metadata:
+  name: test_invalid_equation_deprecated_dt
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      ERROR-DETECTION FIXTURE (intentionally invalid). Equation `bad_dynamics`
+      uses the deprecated symbol `dt` instead of `step` in its dynamics
+      expression — `Validator.validate_equations` (validator.py) must reject
+      this rather than silently accepting the old symbol.
+    problem_cn: >
+      错误检测夹具（故意设计成非法）。方程 `bad_dynamics` 的 dynamics 表达式中
+      使用了已废弃的符号 `dt`，而不是 `step`——`Validator.validate_equations`（validator.py）
+      必须拒绝这种写法，而不是悄悄接受这个旧符号。
+    result: >
+      Loading this model must raise ValueError containing
+      "使用了废弃符号 dt/step_size，请改用 step". See test_verification/errors/test_structural_errors.py.
+    result_cn: >
+      加载该模型时必须抛出 ValueError，错误信息须包含
+      "使用了废弃符号 dt/step_size，请改用 step"。参见 test_verification/errors/test_structural_errors.py。
+    limitations: Not a real model; exists only to exercise this one validator check.
+    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
+  tags: [test, error-detection, structural, equation]
+  references: ["TEST(error-detection): dynamics must use `step`, not deprecated `dt`/`step_size`"]
+
+variables:
+  x:
+    type: state
+    value: 1.0
+    unit: unit
+    description: Placeholder state variable; irrelevant to the error under test.
+
+equations:
+  bad_dynamics:
+    description: Uses the deprecated `dt` symbol on purpose.
+    step_unit: hour
+    dynamics:
+      x: "x + 1.0 * dt"
+    priority: 0
+
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-01-02"
+  output_variables: [x]

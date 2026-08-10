@@ -41,7 +41,7 @@ variables:
     bounds: [0.0, 10.0]
     description: Copies dose each step so its trajectory is inspectable via output_variables.
 
-formulas:
+equations:
   echo_dose:
     description: Mirrors dose into a state variable for CSV inspection.
     condition: true

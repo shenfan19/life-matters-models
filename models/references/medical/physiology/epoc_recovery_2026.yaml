@@ -1,0 +1,175 @@
+category: physiological
+
+metadata:
+  name: epoc_recovery
+  lm_format_version: "1.0"
+  updated: 2026-07-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      EPOC（运动后过量氧耗，excess post-exercise oxygen consumption）经典数据来自 Bahr & Sejersted (1991)：6名健康男性分别以29%/50%/75% VO2max骑行80分钟，测得的以L为单位的EPOC总量和以小时为单位的持续时间随强度递增，论文本身报告"运动强度与EPOC总量之间存在指数关系"。本文件同时演示"强度-总量"指数外推关系与"脉冲注入+一阶衰减"时间动力学结构。
+    result: |
+      用29%和75%两个强度下的EPOC总量数据，1.3L和30.1L，拟合指数模型 magnitude=A·exp(B·intensity)，对50%强度做留一法预测，即不使用50%强度自身的实测数据参与拟合：预测5.46L，实际报告5.7±1.71L，预测值落在实测95%区间内，验证通过。对持续时间做同样的留一法预测：预测50%强度持续时间1.52h，实际报告3.3±0.7h，预测值远低于实测下限。总量和持续时间是两类不同性质的产出指标，不该默认用同一个简单指数模型同等外推。完整对比表与讨论见同目录 `epoc_recovery_2026.md`。
+    limitations: |
+      time_course_75pct 方案里 epoc_rate 初值和衰减时间常数由 magnitude/duration 反推，假设 duration≈5×时间常数，是本文件作者自行采用的简化换算，不是 Bahr & Sejersted (1991) 论文直接报告的一阶衰减参数，只演示引擎能正确对给定ODE做数值积分，还原到已知总量，不构成对该强度下真实衰减形状的独立验证。predict_50pct 方案的留一法预测才是本文件真正的独立验证。
+  ratings:
+    topic_importance: 3 - 运动生理学经典强度-恢复关系，可作为训练负荷类案例的补充子模型
+    framework_demand: 2 - 尚未被具体论文import，结构可迁移到训练恢复相关场景
+    evidence_quality: 4 - Bahr & Sejersted (1991) 是EPOC强度依赖关系的经典实测数据
+    paper_value: 2 - 一般性参考组件，非旗舰案例
+    innovation: 1 - 纯文献复现（含作者自行的指数外推拟合），无原创建模贡献
+    validation_confidence: 4 - 强度-总量关系留一法预测通过(50%强度5.46L vs 实测5.7±1.71L)，持续时间外推未通过，两类指标测量稳健性不同
+  tags: [epoc, exercise, validation, literature-benchmark, exponential-fit]
+  references:
+    - "Bahr R, Sejersted OM (1991) Effect of intensity of exercise on excess postexercise O2 consumption. Metabolism 40(8):836-841"
+
+variables:
+  exercise_intensity:
+    description: 运动强度（占 VO2max 的比例），按方案固定，全程恒定
+    value: 0.0
+    unit: dimensionless
+    type: input
+    bounds: [0, 1]
+
+  epoc_rate0_input:
+    description: >
+      time_course_75pct 方案专用：t=0 时刻的初始 EPOC 超额耗氧速率脉冲（L/hr），
+      由 magnitude/duration 反推（见 metadata.limitations），predict_50pct 方案设为0
+      （该方案不使用时间动力学，只用静态外推方程）。
+    value: 0.0
+    unit: L/hour
+    type: input
+
+  epoc_tau_input:
+    description: >
+      time_course_75pct 方案专用：指数衰减时间常数（小时），由 duration/5 反推
+      （见 metadata.limitations）。predict_50pct 方案取任意非零值（epoc_rate0_input=0
+      时该参数不产生实际影响）。
+    value: 1.0
+    unit: hour
+    type: input
+
+  epoc_rate:
+    description: 瞬时 EPOC 超额耗氧速率（L/hr），t=0 脉冲注入后一阶衰减
+    value: 0.0
+    unit: L/hour
+    type: state
+    bounds: [0, 100]
+
+  epoc_cumulative:
+    description: 累积 EPOC 总量（L），time_course_75pct 方案末值应约等于 30.1L（Bahr 1991 实测）
+    value: 0.0
+    unit: L
+    type: state
+
+  epoc_predicted_magnitude:
+    description: >
+      留一法预测的 EPOC 总量（L）：用29%/75%强度数据拟合 A·exp(B·intensity)，
+      代入本方案的 exercise_intensity 算出。predict_50pct 方案（intensity=0.50）
+      是真正的独立预测检验点；time_course_75pct 方案（intensity=0.75）代入后应
+      精确回到拟合锚点 30.1（一致性自检，非独立检验）。
+    value: 0.0
+    unit: L
+    type: state
+
+  epoc_predicted_duration:
+    description: 留一法预测的 EPOC 持续时间（小时），拟合方式同上，用于 predict_50pct 方案检验
+    value: 0.0
+    unit: hour
+    type: state
+
+  epoc_fit_A:
+    description: >
+      作者自行拟合的指数模型系数（非文献直接给出）：用 Bahr & Sejersted (1991) 报告的
+      29%强度EPOC总量1.3L 和 75%强度30.1L 两点拟合 magnitude=A·exp(B·intensity)。
+    value: 0.179282
+    unit: L
+    type: parameter
+    reference: "本文件作者对 Bahr & Sejersted (1991) 数据的二点指数拟合"
+
+  epoc_fit_B:
+    description: 指数模型斜率系数，拟合方式同 epoc_fit_A
+    value: 6.830785
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 Bahr & Sejersted (1991) 数据的二点指数拟合"
+
+  epoc_duration_fit_C:
+    description: >
+      持续时间指数模型系数（同一拟合方法，用29%强度0.3h和75%强度10.5h两点拟合）。
+    value: 0.031857
+    unit: hour
+    type: parameter
+    reference: "本文件作者对 Bahr & Sejersted (1991) 数据的二点指数拟合"
+
+  epoc_duration_fit_D:
+    description: 持续时间指数模型斜率系数，拟合方式同 epoc_duration_fit_C
+    value: 7.729017
+    unit: dimensionless
+    type: parameter
+    reference: "本文件作者对 Bahr & Sejersted (1991) 数据的二点指数拟合"
+
+equations:
+  epoc_injection:
+    description: "t=0 脉冲：epoc_rate0_input 一次性注入 epoc_rate（仅 time_course_75pct 方案非零）"
+    condition: true
+    priority: 6
+    dynamics:
+      epoc_rate: "epoc_rate + epoc_rate0_input"
+
+  epoc_decay:
+    description: "一阶衰减：depoc_rate/dt = -epoc_rate/epoc_tau_input"
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      epoc_rate: "epoc_rate - (epoc_rate / epoc_tau_input) * step"
+
+  epoc_integration:
+    description: "累积 EPOC 总量：dcumulative/dt = epoc_rate"
+    step_unit: hour
+    condition: true
+    priority: 4
+    dynamics:
+      epoc_cumulative: "epoc_cumulative + epoc_rate * step"
+
+  predict_magnitude:
+    description: "静态外推：epoc_predicted_magnitude = A·exp(B·exercise_intensity)，不随时间积分"
+    condition: true
+    priority: 3
+    dynamics:
+      epoc_predicted_magnitude: "epoc_fit_A * exp(epoc_fit_B * exercise_intensity)"
+
+  predict_duration:
+    description: "静态外推：epoc_predicted_duration = C·exp(D·exercise_intensity)，不随时间积分"
+    condition: true
+    priority: 2
+    dynamics:
+      epoc_predicted_duration: "epoc_duration_fit_C * exp(epoc_duration_fit_D * exercise_intensity)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: minute
+  start_date: "2026-01-01"
+  end_date: "2026-01-03"
+  output_variables:
+    - exercise_intensity
+    - epoc_rate
+    - epoc_cumulative
+    - epoc_predicted_magnitude
+    - epoc_predicted_duration
+  plans:
+    - id: "time_course_75pct"
+      label: "75% VO2max 强度运动后 EPOC 时间进程（引擎积分一致性演示）"
+      regimens:
+        - {variable: exercise_intensity, time_start: "00:00", time_end: "23:00", value: 0.75, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-03"], label: "强度=0.75恒定"}
+        - {variable: epoc_rate0_input, time_start: "00:00", value: 14.333, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "t=0脉冲注入（由30.1L/2.1h反推）"}
+        - {variable: epoc_tau_input, time_start: "00:00", time_end: "23:00", value: 2.1, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-03"], label: "时间常数=2.1h恒定（由10.5h/5反推）"}
+
+    - id: "predict_50pct"
+      label: "50% VO2max 强度——留一法预测检验（不使用时间动力学，只用静态外推方程）"
+      regimens:
+        - {variable: exercise_intensity, time_start: "00:00", time_end: "23:00", value: 0.50, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-03"], label: "强度=0.50恒定"}

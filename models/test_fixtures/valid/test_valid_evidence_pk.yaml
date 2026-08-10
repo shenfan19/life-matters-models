@@ -11,11 +11,11 @@ metadata:
       Validates Loader handling of the `pk` (PK/PD parameter) evidence subtype in isolation.
       `drug_ke` must equal `value` (pk: effective = value, no auxiliary fields),
       and the effective value (in 1/hour) must be usable directly in an hour-step elimination
-      formula (step_unit: hour, sim step_size: 1 hour → step=1, no extra conversion factor).
+      equation (step_unit: hour, sim step_size: 1 hour → step=1, no extra conversion factor).
     problem_cn: >
       验证 Loader 对 `pk`（PK/PD 参数）证据子类型的独立处理。`drug_ke` 必须等于
       `value`（pk 类型：有效值 = value，无需辅助字段），且该有效值（单位 1/hour）
-      必须能够直接用于以小时为步长的消除公式（step_unit: hour，仿真 step_size:
+      必须能够直接用于以小时为步长的消除方程（step_unit: hour，仿真 step_size:
       1 小时 → step=1，无需额外换算系数）。
     result: >
       `pk_display` = drug_ke = 0.0347 (constant, every step, 1/hour;
@@ -51,17 +51,17 @@ variables:
     type: input
     value: 0.0
     unit: mg
-    description: Daily oral drug dose (pulse; 80% bioavailability, Vd = 10 L in formula).
+    description: Daily oral drug dose (pulse; 80% bioavailability, Vd = 10 L in equation).
 
-evidence:
   drug_ke:
-    type: pk
+    type: parameter
+    evidence_type: pk
     value: 0.0347
     unit: 1/hour
     description: Drug elimination rate constant; ke = ln2/t½, t½ ≈ 20 h.
     reference: "TODO:SOURCE"
 
-formulas:
+equations:
   display_pk:
     description: "Shows drug_ke (pk: effective = value)."
     dynamics:

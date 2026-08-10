@@ -1,0 +1,270 @@
+metadata:
+  todo:
+    - type: quality
+      issue: "默认 optimizer 场景（tension 初值10、无历史输入轨迹）下 --opt 收敛到平凡解 best_f=[100,0]（social_stability=100满分、conflict_intensity=0），未展现真实权衡"
+      evidence: "2026-07-06 --opt-only 实测：50代全程 feasible=100%，best_f 从Gen1起即为[100,0]不再变化。原因：tension初值10远低于escalation_dynamics的触发阈值50，即使diplomatic_talks=0、defense_spending=0全程也不会升温，'不采取任何行动'即为平凡最优解，本参考组件默认配置未内置任何冲突压力来源。"
+      next: "这是诚实的'无权衡'发现，非bug——真实的历史压力（军备竞赛轨迹、外生资源冲击）需要显式的输入轨迹才能体现，具体历史校准场景见内部记录（不在本参考组件公开范围）。本参考组件保持通用/无场景状态，不在此处编造压力输入。"
+  log:
+    "2026-07-06_01-33-00":
+      change: "新增institutional_reversibility状态、k_reversibility_defense/k_reversibility_scarcity参数、resource_shock输入、reversibility_decay/resource_shock_dynamics方程；de_escalation效果改为受institutional_reversibility调制；所有equations.step_unit从非法的'month'改为'day'，字面系数除以30换算（type A状态无关通量项，精确线性）；simulation.step_size同步改为day。"
+      reason: "新增'制度可逆度侵蚀'机制，使模型能表达'为什么理性行为体无法及时刹车'而非仅有经典Richardson军备竞赛升级。step_unit='month'此前从未通过schema校验（--sim报错'必须为minute|hour|day'），是本文件长期nosim/noopt的真实根因，本次一并修复。--sim（默认无输入场景，全程持平）与--opt（50代/pop50，收敛[100,0]，见上方todo）均已实测通过。"
+  name: war
+  lm_format_version: "1.0"
+  updated: 2026-07-06
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      Richardson 军备竞赛框架（1960）描述地缘政治紧张度的动态：安全恐惧和军事扩张驱动紧张度上升，外交努力和用 α 表示的疲劳衰减系数使其下降，冲突烈度通过阈值触发函数从紧张度派生。核心张力在于每一方的防御性扩军在对方看来都是进攻性威胁，构成安全困境的正反馈循环。模型还包含状态变量制度可逆度，对应字段 institutional_reversibility，刻画为什么理性行为体明知悬崖在前却难以刹车：外交谈判能把紧张度拉回多少，取决于以累计国防投入衡量的沉没成本，以及资源匮乏带来的倒计时压力已经侵蚀掉多少政治可逆空间，而非只取决于当期外交投入的名义强度。
+    result: >
+      仿真预期显示中等紧张度基线在不同外交强度和军事支出下的一年演化路径，以及临界点跨越后冲突烈度的非线性跃升，制度可逆度侵蚀后同等外交投入的降温效果显著衰减，具体历史校准场景见内部记录，不在本参考组件公开范围内。
+    limitations: >
+      高度简化模型，未区分核威慑与常规战争；未显式建模"下克上"式军部擅权等具体国内政治博弈机制，仅用制度可逆度这一聚合状态代理；Richardson 框架原为双边对立，多边冲突需要网络扩展；k_reversibility_defense 和 k_reversibility_scarcity 为标定选择而非直接文献测量值，具体见对应变量的 TODO:SOURCE 标注。
+  ratings:
+    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
+    topic_importance: 5 - 战争冲突是全球最重要社会风险，Richardson军备竞赛模型是经典基准
+    framework_demand: 3 - 战争是多个历史场景的基础背景组件，中等引用预期
+    evidence_quality: 4 - 引用Richardson经典著作、Wallace/Diehl军备竞赛-升级实证辩论、Sleesman升级承诺元分析及SIPRI/COW等权威数据来源
+    popularity: 3 - Richardson军备竞赛模型在国际关系学有经典地位，但使用较专项
+  tags: [war, conflict, geopolitics, Richardson, arms-race, escalation-of-commitment, social]
+  references:
+    - "Richardson LF (1960) Arms and Insecurity. Boxwood Press & Quadrangle Books, Pittsburgh."
+    - "Goldstein JS (1992) A conflict-cooperation scale for WEIS events data. J Confl Resolut 36(2):369-385."
+    - "Collier P & Hoeffler A (2004) Greed and grievance in civil war. Oxford Econ Pap 56(4):563-595."
+    - "Fearon JD & Laitin DD (2003) Ethnicity, insurgency, and civil war. Am Polit Sci Rev 97(1):75-90."
+    - "Stockholm International Peace Research Institute (SIPRI) Yearbook 2023. SIPRI, Stockholm."
+    - "Wallace MD (1979) Arms races and escalation: some new evidence. J Confl Resolut 23(1):3-23."
+    - "Diehl PF (1983) Arms races and escalation: a closer look. J Peace Res 20(3):205-212."
+    - "Sleesman DJ, Conlon DE, McNamara G, Miles JE (2012) Cleaning up the big muddy: a meta-analytic review of the determinants of escalation of commitment. Acad Manag J 55(3):541-562."
+    - "Singer JD, Bremer S, Stuckey J (1972) Capability Distribution, Uncertainty, and Major Power War, 1820-1965. Correlates of War Project, National Material Capabilities (NMC) dataset v6.0, correlatesofwar.org."
+
+variables:
+  # R1: Tension
+  geopolitical_tension: {description: "地缘政治紧张度", value: 10, unit: "分", type: state, bounds: [0, 100]}
+  # R2: Conflict
+  conflict_intensity: {description: "冲突烈度", value: 0, unit: "级", type: state, bounds: [0, 10]}
+  # R3: Consequence
+  social_stability: {description: "社会稳定性", value: 100, unit: "分", type: state, bounds: [0, 100]}
+  resource_scarcity: {description: "资源匮乏程度", value: 0, unit: "分", type: state, bounds: [0, 100]}
+
+  # R4: Institutional brake（2026-07-06 新增）
+  institutional_reversibility:
+    type: state
+    value: 100
+    unit: "分"
+    bounds: [0, 100]
+    description: >
+      制度可逆度：外交努力能把紧张度拉回多少的乘数状态。100=外交努力全额生效，0=外交努力
+      完全无法降低紧张度（"刹车片"已耗尽）。由累计国防投入（沉没成本/既得利益集团）与
+      资源匮乏（倒计时压力）共同侵蚀，外交谈判仅有微弱恢复效应。
+    reference: "机制受 Sleesman et al. (2012) 升级承诺元分析启发（原文聚合多类前因的相关系数，未给出可直接迁移的动力学系数）"
+
+  # P1: Inputs (Card Inputs)
+  diplomatic_talks: {description: "外交谈判投入", value: 0, unit: "级", type: input}
+  defense_spending: {description: "国防支出增量", value: 0, unit: "级", type: input}
+  propaganda_campaign: {description: "宣传攻势强度", value: 0, unit: "级", type: input}
+
+  resource_shock:
+    type: input
+    value: 0
+    unit: "分"
+    description: >
+      外生资源冲击（如禁运/断供事件）：脉冲式直接推高资源匮乏度，独立于冲突烈度导致的资源消耗，
+      用于表达"资源存量骤降"而非"打仗打没了"这两种不同成因。
+    reference: "标定选择，具体历史锚点见内部记录（不在本参考组件公开范围）"
+
+  k_reversibility_defense:
+    type: parameter
+    value: 0.15
+    unit: "分 per 级国防支出"
+    description: >
+      国防支出增量对制度可逆度的侵蚀速率：标定选择，非直接文献测量值。机制依据 Sleesman et al.
+      (2012) 元分析——沉没成本与既定投入程度是升级承诺持续性的稳健、可重复的预测因子，但原文
+      聚合多类前因的相关系数，未给出可直接映射为该动力学系数的数值。
+    reference: "TODO:SOURCE 标定选择；机制依据 Sleesman et al. (2012) Acad Manag J 55(3):541-562"
+
+  k_tension_buildup:
+    type: parameter
+    value: 2.4
+    unit: "分 per 级国防支出 per 月"
+    description: >
+      国防支出强度对地缘政治紧张度的月度推高速率：标定选择，非直接文献测量值。用于修复
+      此前版本"国防支出从不推高紧张度"的机制缺口。量级选择目标：持续的高强度国防支出
+      能在数年尺度内推动紧张度达到escalation_dynamics的触发阈值（50分）附近，具体历史
+      校准场景见内部记录（不在本参考组件公开范围）——此为定性时间尺度校准，非逐年
+      精确复现。
+    reference: "TODO:SOURCE 标定选择；机制依据 Richardson LF (1960) Arms and Insecurity"
+
+  k_desperation:
+    type: parameter
+    value: 0.02
+    unit: "级冲突烈度 per 分资源匮乏超额 per 月"
+    description: >
+      资源匮乏度超过阈值(50分)后对冲突烈度的直接推高速率：标定选择，非直接文献测量值。
+      量级选择目标：resource_scarcity维持在较高水平时，约1-2年尺度内冲突烈度显著上升，
+      具体历史校准场景见内部记录（不在本参考组件公开范围）——定性时间尺度校准，非精确复现。
+    reference: "TODO:SOURCE 标定选择"
+
+  k_reversibility_scarcity:
+    type: parameter
+    value: 0.3
+    unit: "分 per 分资源匮乏"
+    description: >
+      资源匮乏度对制度可逆度的侵蚀速率：标定选择，代表资源存量见底前的"倒计时"压力比常规
+      军费投入更快地侵蚀可逆度。具体历史锚点见内部记录（不在本参考组件公开范围）。
+    reference: "TODO:SOURCE 标定选择"
+
+equations:
+  # F0: Reactive tension buildup（2026-07-06 新增，修复关键缺失机制）
+  tension_buildup:
+    description: >
+      国防支出（军备竞赛烈度）推高地缘政治紧张度——Richardson框架的核心反应机制：一方备战被
+      另一方感知为威胁（安全困境）。此前版本只有de_escalation（外交降温）和escalation_dynamics
+      （紧张度>50才转化为冲突），完全没有任何机制会提升紧张度，导致默认场景下tension单调
+      衰减至0——本次新增修复该缺口。k_tension_buildup为标定选择（非直接文献测量值）：
+      Richardson(1960)原始方程dx/dt=ky-ax+g针对双边独立军费变量，本模型用单一聚合
+      defense_spending代理双边烈度，系数需重新标定而非直接复用文献系数。
+    step_unit: day
+    dynamics:
+      geopolitical_tension: "min(100, geopolitical_tension + k_tension_buildup * defense_spending / 30 * step)"
+    priority: 6
+    reference: "机制依据 Richardson LF (1960) Arms and Insecurity；系数为标定选择，见 k_tension_buildup 变量 TODO:SOURCE"
+
+  # F0b: Resource-desperation escalation path（2026-07-06 新增，与tension_buildup平行的
+  # 第二条升级路径：捕捉"资源冲击型"危机——2026-07-06 --sim 实测发现，仅靠 tension_buildup/
+  # de_escalation 无法重现资源冲击型危机的升级（净效应反而降温至0，禁运/断供后
+  # resource_scarcity跳升但从不转化为冲突）——资源冲击型危机的真实逻辑不是"安全困境式
+  # 紧张度互相试探"，而是"资源存量逼近枯竭前的倒计时绝境逻辑"，需要独立于
+  # geopolitical_tension 的第二条通路。
+  desperation_pressure:
+    description: >
+      资源匮乏度直接推高冲突烈度：当资源存量逼近枯竭，"不打就等死"
+      的绝境逻辑独立于常规安全困境式紧张度驱动冲突升级——这是与tension_buildup/
+      escalation_dynamics（安全困境路径）平行的第二条升级路径，用于捕捉资源冲击型危机
+      区别于渐进军备竞赛型危机的机制差异，具体历史案例见内部记录（不在本参考组件公开范围）。
+    step_unit: day
+    condition: resource_scarcity > 50
+    dynamics:
+      conflict_intensity: "min(10, conflict_intensity + k_desperation * (resource_scarcity - 50) / 30 * step)"
+    priority: 4
+    reference: "标定选择，具体历史锚点见内部记录（不在本参考组件公开范围）"
+
+  # F1: Escalation
+  escalation_dynamics:
+    description: >
+      紧张度转化为冲突（安全困境路径）。系数按月标定（原始 Richardson 框架的自然时间尺度），
+      2026-07-06 因 step_unit 仅支持 minute|hour|day（"month" 不合法，是此前 nosim 的
+      根因之一）改为 day 级步长，字面系数除以 30 换算为日速率（type A 状态无关通量项，
+      精确线性换算，见 model.md ADR 0121）。2026-07-06 second pass：social_stability 的
+      损耗改移到独立的 conflict_toll 方程（不再依附 geopolitical_tension>50 条件），因为
+      desperation_pressure（资源绝境路径）驱动的冲突同样应造成社会稳定性损耗，原写法下
+      资源冲击型场景冲突烈度升至满值全程 social_stability 却纹丝不动——见 conflict_toll 说明。
+    step_unit: day
+    condition: geopolitical_tension > 50
+    dynamics:
+      conflict_intensity: "min(10, conflict_intensity + (geopolitical_tension - 50) * 0.1 / 30 * step)"
+    priority: 5
+
+  # F1b: Conflict toll（2026-07-06 新增，修复"资源绝境路径升级到满冲突烈度却不损耗
+  # 社会稳定性"的不一致——见 escalation_dynamics 说明中的实测发现）
+  conflict_toll:
+    description: "冲突烈度对社会稳定性的损耗，与冲突烈度的成因（安全困境路径或资源绝境路径）无关，只要冲突烈度>0即生效"
+    step_unit: day
+    condition: conflict_intensity > 0
+    dynamics:
+      social_stability: "max(0, social_stability - conflict_intensity * 2 / 30 * step)"
+    priority: 5
+
+  # F2: De-escalation
+  de_escalation:
+    description: >
+      外交手段降低紧张度，效果由制度可逆度调制：可逆度侵蚀后，同等外交投入的降温效果衰减。
+      2026-07-06 由月级改为日级步长，字面系数除以30（见 escalation_dynamics 说明）。
+    step_unit: day
+    condition: diplomatic_talks > 0
+    dynamics:
+      geopolitical_tension: "max(0, geopolitical_tension - diplomatic_talks * 5 / 30 * (institutional_reversibility / 100) * step)"
+    priority: 5
+
+  # F3: War Economy
+  resource_drain:
+    description: "冲突导致的资源损耗。2026-07-06 由月级改为日级步长，字面系数除以30。"
+    step_unit: day
+    condition: conflict_intensity > 2
+    dynamics:
+      resource_scarcity: "min(100, resource_scarcity + conflict_intensity * 3 / 30 * step)"
+    priority: 3
+
+  # F4: External shock（2026-07-06 新增）
+  resource_shock_dynamics:
+    description: "外生资源冲击（禁运/断供）直接推高资源匮乏度，先于制度可逆度侵蚀方程执行；不含 step，无需声明 step_unit。"
+    dynamics:
+      resource_scarcity: "min(100, resource_scarcity + resource_shock)"
+    priority: 9
+    reference: "标定选择，具体历史锚点见内部记录（不在本参考组件公开范围）"
+
+  # F5: Institutional brake erosion（2026-07-06 新增）
+  reversibility_decay:
+    description: >
+      制度可逆度侵蚀：国防支出（沉没成本）与资源匮乏（倒计时压力）共同侵蚀可逆度，
+      外交谈判仅有微弱恢复效应（代表政治空间的部分修复，而非瞬间清零重来）。日级步长，
+      字面系数除以30（type A 状态无关通量项）。
+    step_unit: day
+    dynamics:
+      institutional_reversibility: >
+        max(0, min(100, institutional_reversibility
+          - (k_reversibility_defense * defense_spending + k_reversibility_scarcity * resource_scarcity * 0.01) / 30 * step
+          + 0.02 * diplomatic_talks / 30 * step))
+    priority: 8
+    reference: "机制依据 Sleesman et al. (2012) Acad Manag J 55(3):541-562；系数为标定选择，见变量 TODO:SOURCE"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  output_variables: [geopolitical_tension, conflict_intensity, social_stability, resource_scarcity, institutional_reversibility]
+
+optimizer:
+  method: nsga2
+  objectives:
+    - variable: social_stability
+      metric: final
+      direction: maximize
+    - variable: conflict_intensity
+      metric: final
+      direction: minimize
+  constraints:
+    - variable: resource_scarcity
+      condition: "<= 80"
+      type: soft
+      description: "资源稀缺度不超过80（防止社会崩溃）"
+  startpoint:
+    regimens:
+      - variable: diplomatic_talks
+        time_start: "09:00"
+        time_end: "09:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "外交谈判强度（0=无，1=全力推进）"
+        optimize:
+          value: [0, 1]
+      - variable: defense_spending
+        time_start: "09:00"
+        time_end: "09:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "国防开支（0=削减，1=大幅增加）"
+        optimize:
+          value: [0, 1]
+      - variable: propaganda_campaign
+        time_start: "09:00"
+        time_end: "09:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "宣传活动强度（0=无，1=高强度）"
+        optimize:
+          value: [0, 1]
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
