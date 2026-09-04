@@ -4,3 +4,8 @@ saved/
 
 # per-model debug history (superseded YAML versions), author's own record only (ADR 0141)
 **/history/
+
+# source-paper PDFs kept locally for authoring reference only — the published
+# Version of Record is copyrighted expression, unlike the facts/equations
+# extracted from it into the YAML; never redistribute the PDF itself
+**/reference/*.pdf
