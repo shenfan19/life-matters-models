@@ -3,13 +3,13 @@ metadata:
   lm_format_version: "1.0"
   description:
     problem: >
-      Validates `optimizer.objectives[].metric: min` (the only metric value among
+      Validates `optimization.objectives[].metric: min` (the only metric value among
       final|max|min|mean not covered by other test models). A warehouse stocks
       `stock` with a single up-front order, then depletes at a fixed daily demand.
       The objective is to maximize the worst-case (minimum) inventory level over the
       planning horizon, subject to a hard cost cap on the order.
     problem_cn: >
-      验证 `optimizer.objectives[].metric: min`（final|max|min|mean 四种 metric 取值
+      验证 `optimization.objectives[].metric: min`（final|max|min|mean 四种 metric 取值
       中唯一未被其他测试模型覆盖的一种）。一个仓库通过一次性订货补充库存 `stock`，
       此后按固定的每日需求持续消耗。优化目标是在订货成本硬约束上限下，最大化整个
       计划周期内的最差（最小）库存水平。
@@ -28,8 +28,7 @@ metadata:
       最优解处 `min(stock) = -5`（best_f ≈ -5）。
     limitations: Linear toy inventory dynamics; for engine validation only, not a real supply-chain model.
     limitations_cn: 线性玩具级库存动力学；仅用于引擎验证，非真实供应链模型。
-  tags: [test, optimizer, metric_min]
-  references: ["TEST: optimizer.objectives metric: min"]
+  tags: [test, optimization, metric_min]
 variables:
   stock:
     type: state
@@ -116,7 +115,7 @@ simulation:
       date_range: ["2026-01-01", "2026-01-01"]
       label: "Up-front order (units)"
 
-optimizer:
+optimization:
   method: nelder-mead
   objectives:
   - variable: stock
@@ -141,3 +140,5 @@ optimizer:
     population_size: 1
     n_generations: 60
     seed: 19
+
+references: ["TEST: optimization.objectives metric: min"]

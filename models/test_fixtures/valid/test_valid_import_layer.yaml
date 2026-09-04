@@ -23,9 +23,10 @@ metadata:
     limitations: Aerobic fitness model is simplified; not clinically calibrated.
     limitations_cn: 有氧适能模型经过简化，未经临床校准。
   tags: [test, import, layer, aerobic-fitness, override]
-  references: ["TEST: layer model in import chain — extends base component"]
 imports:
 - test_fixtures/valid/test_valid_import_base
+
+references: ["TEST: layer model in import chain — extends base component"]
 
 variables:
   # Override base parameter: trained athlete has lower resting HR

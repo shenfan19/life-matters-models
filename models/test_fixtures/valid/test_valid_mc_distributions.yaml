@@ -24,7 +24,6 @@ metadata:
     limitations: Drug PK parameters are synthetic; not physiologically calibrated.
     limitations_cn: 药代动力学（PK）参数为合成数据，未经生理学校准。
   tags: [test, mc, distributions, normal, uniform, lognormal, nsga2]
-  references: ["TEST: Monte Carlo parameter distributions — normal/uniform/lognormal"]
 variables:
   plasma_conc:
     type: state
@@ -127,7 +126,7 @@ simulation:
     seed: 19
 
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: plasma_conc
@@ -151,3 +150,5 @@ optimizer:
     population_size: 20
     n_generations: 25
     seed: 19
+
+references: ["TEST: Monte Carlo parameter distributions — normal/uniform/lognormal"]

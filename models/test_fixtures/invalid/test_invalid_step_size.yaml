@@ -18,7 +18,6 @@ metadata:
     limitations: Not a real model; exists only to exercise this one validator check.
     limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
   tags: [test, error-detection, structural, step_size]
-  references: ["TEST(error-detection): simulation.step_size must be > 0"]
 
 variables:
   x:
@@ -34,3 +33,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-02"
   output_variables: [x]
+
+references: ["TEST(error-detection): simulation.step_size must be > 0"]

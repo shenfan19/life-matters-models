@@ -1,6 +1,6 @@
 # test_fixtures Fixture 全览
 
-> 本文件是 `models/test_fixtures/valid/` 与 `models/test_fixtures/invalid/` 下每一个 YAML fixture 的导览：按 LM format 的功能领域（evidence、import、mc、optimizer、lm_score、schedule/plan、equation、step_size、回归锁定、结构校验）分组，说明每个文件具体测的是什么、为什么要单独测、以及它和相邻文件的关系。目的是替代"文件名 + 一行简介"式的浅层索引，把设计意图讲清楚，读者不需要逐个打开 YAML 也能理解这套 fixture 集合的完整逻辑。
+> 本文件是 `models/test_fixtures/valid/` 与 `models/test_fixtures/invalid/` 下每一个 YAML fixture 的导览：按 LM format 的功能领域（evidence、import、mc、optimization、lm_score、schedule/plan、equation、step_size、回归锁定、结构校验）分组，说明每个文件具体测的是什么、为什么要单独测、以及它和相邻文件的关系。目的是替代"文件名 + 一行简介"式的浅层索引，把设计意图讲清楚，读者不需要逐个打开 YAML 也能理解这套 fixture 集合的完整逻辑。
 >
 > 这些文件不代表真实临床或社会场景（`valid/README.md`、`invalid/README.md` 已说明），也不是本文档要验证的对象——本文档只解释"每个 fixture 在测什么、为什么这么设计"，实际的加载/运行断言由 `test_verification/` 下的 pytest 用例负责（角色划分见 `models/test_fixtures/README.md`）。引擎级 pytest 套件本身的作用范围、数值精度验证，见 life-matters-reference-engine 仓库的 `test_verification/verification_report.md`；文献对标/优化合理性验证是完全不同的另一件事，见 [`models/test_validation/validation_report.md`](../test_validation/validation_report.md)。
 
@@ -54,7 +54,7 @@ LM 模型可以通过 `imports` 组合多个子模型文件，典型场景是"�
 LM 的概率建模分两个独立的层次：仿真侧的参数不确定性（同一个 `parameter` 声明成分布，多次采样得到一族轨迹）和优化器侧的鲁棒优化（每个候选解在不确定性下被多次评估、取聚合目标函数）。两者用的是同一套分布语法，但作用对象不同，因此分两个文件分别验证：
 
 - **`test_valid_mc_distributions.yaml`**：验证 `normal()`、`uniform()`、`lognormal()` 三种分布形式在"确定性模式"（取分布均值，得到单一轨迹）和"MC 模式"（`runs=5`，独立重采样三个参数各 5 次，轨迹应可见地发散）下都能正确工作，同时确认优化器在 MC 模式下的 Pareto 前沿会因为参数不确定性而比非 MC 版本更宽——这是"分布语法本身"能否被仿真器和优化器同时正确消费的验证。
-- **`test_valid_opt_inner_mc.yaml`**：专门验证 `optimizer.mc.runs`（内层鲁棒优化）——每个候选剂量在多个 `absorption_rate` 采样下被重复评估，优化器应该使用跨次运行的平均目标函数，而不是被某一次随机采样的噪声牵着走。区分"仿真侧 MC"和"优化器侧 MC"是必要的，因为二者面对的是不同问题：前者回答"这个方案在不确定性下的轨迹分布是什么样"，后者回答"哪个方案在不确定性下平均表现最好"。
+- **`test_valid_opt_inner_mc.yaml`**：专门验证 `optimization.mc.runs`（内层鲁棒优化）——每个候选剂量在多个 `absorption_rate` 采样下被重复评估，优化器应该使用跨次运行的平均目标函数，而不是被某一次随机采样的噪声牵着走。区分"仿真侧 MC"和"优化器侧 MC"是必要的，因为二者面对的是不同问题：前者回答"这个方案在不确定性下的轨迹分布是什么样"，后者回答"哪个方案在不确定性下平均表现最好"。
 
 ## 4. Optimizer 优化器四层级与附加机制
 
@@ -67,10 +67,10 @@ LM 的优化器决策变量按复杂度分为四个层级（Tier），从"只搜
 - **`test_valid_opt_t4.yaml`**（T4，起始日期窗口）：数值和"干预从哪天开始"同时作为决策变量，验证日期偏移量能正确解码回具体的日历日期，且优化器能在"更早开始+更温和剂量"与"更晚开始+更激进剂量"之间找到正确的权衡。
 - **`test_valid_opt_all_tiers.yaml`**：四个层级同时出现在同一个 7 维混合决策向量里（外加一个不参与优化的固定背景变量），是验证各层级解码逻辑不会互相踩到对方维度索引的收尾测试——这类"维度错位"问题只有在多个层级混合时才会暴露，单独测每个层级测不出来。
 - **`test_valid_opt_metric_min.yaml`**：验证 `objectives[].metric: min`（`final`/`max`/`min`/`mean` 四种聚合方式里唯一没被其他文件覆盖的一种）——用一个单调递减的库存曲线，让"最大化历史最低库存"这个目标必须取轨迹最小值而非终值，专门排除聚合方式选错导致优化目标名不副实的情况。
-- **`test_valid_opt_results.yaml`**：验证三个機制的组合：优化评估窗口比可视化仿真窗口短；`optimizer.results` 里预置的历史 Pareto 解在加载时被前端识别并可用于热启动；硬约束和软约束同时存在时都能正确显示和生效。这三者组合在一起是因为它们都属于"结果不是从头算出来的，而是要正确处理已有状态"这一类问题。
+- **`test_valid_opt_results.yaml`**：验证三个機制的组合：优化评估窗口比可视化仿真窗口短；`optimization.results` 里预置的历史 Pareto 解在加载时被前端识别并可用于热启动；硬约束和软约束同时存在时都能正确显示和生效。这三者组合在一起是因为它们都属于"结果不是从头算出来的，而是要正确处理已有状态"这一类问题。
 
 对应的错误检测：
-- **`test_invalid_optimizer_missing_method.yaml`**：`optimizer` 块声明了目标/初始点/算法却漏填必需的 `method` 字段，验证这个必填校验能在加载阶段就拦下，而不是等到真正求解时才因为找不到方法而报出无关的错误。
+- **`test_invalid_optimization_missing_method.yaml`**：`optimization` 块声明了目标/初始点/算法却漏填必需的 `method` 字段，验证这个必填校验能在加载阶段就拦下，而不是等到真正求解时才因为找不到方法而报出无关的错误。
 
 ## 5. lm_score 累积/闭锁语义
 

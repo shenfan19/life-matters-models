@@ -21,7 +21,6 @@ metadata:
     limitations: Not physiologically calibrated; values chosen for numeric clarity only.
     limitations_cn: 未经生理学标定；参数取值仅为使数值结果清晰易辨而选定。
   tags: [test, step_size, hour, pharmacokinetics, nelder-mead, single-objective]
-  references: ["TEST: hour-level step size with Nelder-Mead single-objective optimizer"]
 variables:
   plasma_conc:
     type: state
@@ -98,7 +97,7 @@ simulation:
       label: "Daily morning dose 400 mg"
   output_variables: [plasma_conc, oral_dose]
 
-optimizer:
+optimization:
   method: nelder-mead
   objectives:
   - variable: plasma_conc
@@ -120,3 +119,5 @@ optimizer:
     population_size: 20
     n_generations: 50
     seed: 19
+
+references: ["TEST: hour-level step size with Nelder-Mead single-objective optimization"]

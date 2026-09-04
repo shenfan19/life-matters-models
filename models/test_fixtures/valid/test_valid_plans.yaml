@@ -21,7 +21,6 @@ metadata:
     limitations: Simplified linear weight model; no metabolic adaptation or plateau.
     limitations_cn: 采用简化的线性体重模型，未建模代谢适应或平台期。
   tags: [test, plans, multi-plan, f-mplan, no-schedules]
-  references: ["TEST: simulation.plans without schedules block"]
 variables:
   body_weight:
     type: state
@@ -108,7 +107,7 @@ simulation:
       days: [Mon, Tue, Wed, Thu, Fri]
       label: "45 min aerobic Mon–Fri"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: body_weight
@@ -134,3 +133,5 @@ optimizer:
     population_size: 25
     n_generations: 40
     seed: 19
+
+references: ["TEST: simulation.plans without schedules block"]

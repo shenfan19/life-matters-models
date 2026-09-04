@@ -23,10 +23,11 @@ metadata:
     limitations: Simplified adaptation kinetics; not validated against training science.
     limitations_cn: 适应性动力学经过简化，未针对训练科学做过验证。
   tags: [test, import, diamond, composite, override-chain]
-  references: ["TEST: diamond import deduplication and override chain"]
 imports:
 - test_fixtures/valid/test_valid_import_base
 - test_fixtures/valid/test_valid_import_layer
+
+references: ["TEST: diamond import deduplication and override chain"]
 
 variables:
   # Override from layer (58) and base (65): top-level can further override or accept layer's
@@ -86,7 +87,7 @@ simulation:
       label: "Training 45 min Mon–Fri"
   output_variables: [heart_rate, cardiac_output, vo2max, aerobic_fitness_index, training_load]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: vo2max

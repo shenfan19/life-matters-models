@@ -25,7 +25,8 @@ metadata:
     limitations: Not a real model; exists only to exercise circular-import detection.
     limitations_cn: 并非真实模型；仅用于验证循环导入检测。
   tags: [test, error-detection, import, circular]
-  references: ["TEST(error-detection): circular import must raise ValueError"]
 
 imports:
 - test_fixtures/invalid/test_invalid_import_circular_b
+
+references: ["TEST(error-detection): circular import must raise ValueError"]

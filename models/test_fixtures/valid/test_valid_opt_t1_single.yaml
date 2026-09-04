@@ -20,8 +20,7 @@ metadata:
       最优点处，该约束应处于紧约束（binding）状态。
     limitations: L-BFGS-B supports continuous variables only; discrete tiers cannot be tested here.
     limitations_cn: L-BFGS-B 仅支持连续变量；此处无法测试离散档位。
-  tags: [test, optimizer, t1, single-objective, l-bfgs-b]
-  references: ["TEST: T1 optimizer, single objective, L-BFGS-B"]
+  tags: [test, optimization, t1, single-objective, l-bfgs-b]
 variables:
   muscle_mass:
     type: state
@@ -98,7 +97,7 @@ simulation:
       label: "Daily protein intake (g/kg/day)"
   output_variables: [muscle_mass, nitrogen_waste, protein_intake]
 
-optimizer:
+optimization:
   method: l-bfgs-b
   objectives:
   - variable: muscle_mass
@@ -120,3 +119,5 @@ optimizer:
     population_size: 1
     n_generations: 100
     seed: 19
+
+references: ["TEST: T1 optimization, single objective, L-BFGS-B"]

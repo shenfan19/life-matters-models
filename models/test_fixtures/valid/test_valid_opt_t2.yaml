@@ -20,8 +20,7 @@ metadata:
       实际时刻。进餐时间应在 Pareto 前沿中体现为有意义的一个维度，而不只是剂量大小在起作用。
     limitations: Glucose dynamics are simplified; not physiologically calibrated.
     limitations_cn: 血糖动力学经过简化，未经生理学标定。
-  tags: [test, optimizer, t2, time-window, opt_step, chronobiology]
-  references: ["TEST: T2 time-window optimization with 1h and 15min opt_step"]
+  tags: [test, optimization, t2, time-window, opt_step, chronobiology]
 variables:
   blood_glucose:
     type: state
@@ -123,7 +122,7 @@ simulation:
       label: "Lunch 70 g carbs at 13:00"
   output_variables: [blood_glucose, glucose_peak, breakfast_carbs, lunch_carbs]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: blood_glucose
@@ -151,3 +150,5 @@ optimizer:
     population_size: 20
     n_generations: 30
     seed: 19
+
+references: ["TEST: T2 time-window optimization with 1h and 15min opt_step"]
