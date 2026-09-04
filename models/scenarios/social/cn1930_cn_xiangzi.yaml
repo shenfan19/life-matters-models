@@ -1,14 +1,6 @@
 category: social
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
     - type: noref
       issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
       evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
@@ -27,11 +19,11 @@ metadata:
   ratings:
     variable: 0.0 - 全部7个变量均标注TODO:SOURCE，历史劳动市场参数未锚定经济史文献
     equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
-    optimization: 0.5 - work_intensity/risk_tolerance对savings与morale方向性权衡由方程内生，未数值验证
+    simulation: 0.75 - 2026-09-04验证，--sim正常产出60个月合理轨迹，未与独立数据逐点比对
+    optimization: 0.5 - 2026-09-04验证，--opt收敛出49个非平凡Pareto解(savings 82.4-100, morale 99-100)，work_intensity/risk_tolerance对savings与morale方向性权衡数值上确认成立
     importance: 0.5 - 《骆驼祥子》是中国近现代文学经典，但为文学设定，非框架依赖模块
     innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
+    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
   tags:
     - labor
     - class

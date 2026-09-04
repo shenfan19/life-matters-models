@@ -2,11 +2,11 @@ metadata:
   todo:
     - type: nosim
       issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 实测：--sim 可运行完成（exit 0），但输出退化——study_intensity/candle_study 等行为类输入全程恒为 0（如 09:00/16:00/20:00 等 regimens 声明的非零时段实测仍为 0），insight 全天恒为 5.0、fatigue 恒为 25.0，未见预期的研究节律动态。根因：文件顶层直接声明 `regimens:`（第210行），但当前 LM_format_1.0.md §5 要求 regimens 嵌套在 `simulation.plans[].regimens` 内，不存在裸顶层 schedule 列表，故引擎未应用这些时间驱动输入。"
       next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 实测：--opt 报错 'Optimizer failed: No optimization.startpoint.regimens defined'。optimization 块仍为旧格式（method/algorithm/variables_to_optimize/maps_to，文件内第496行已有 TODO 注明需重写），未提供当前规范要求的 optimization.startpoint.regimens。"
       next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: ad1666_uk_issac_newton
   lm_format_version: "1.0"
@@ -18,17 +18,17 @@ metadata:
     problem: >
       牛顿瘟疫年，即 1666 年他在伍尔斯索普庄园度过的时期，核心权衡是洞见积累 = 研究强度 × (1−疲劳/120) × (营养/80)，高研究强度与忽视饮食的历史记录产生认知收益与健康损耗的同步积累。在 1665 年英国封锁约束下，模型涵盖 22 个食物与行为输入变量，最优的研究、饮食与户外活动分配方案无法凭直觉确定，"苹果树下的灵感"背后是系统性的作息选择。
     result: >
-      仿真预期显示 1440 分钟，即 24 小时内，洞见积累、营养状态和疲劳的分钟级动态；面向最大化洞见、维持健康、保持精力的三目标优化预期给出最优作息分配路径；该场景尚未实际运行仿真。
+      仿真配置预期显示 1440 分钟，即 24 小时内，洞见积累、营养状态和疲劳的分钟级动态；面向最大化洞见、维持健康、保持精力的三目标优化预期给出最优作息分配路径；2026-09-04 验证发现 regimens/optimization 均为旧格式，--sim 输出退化、--opt 报错，均未跑通（见 metadata.todo）。
     limitations: 17 世纪营养参数，如黑麦面包、麦芽酒的热量换算，为历史估算；认知负荷系数（Sweller 1988）来自当代实验室研究，时代适用性需审慎。
 
   ratings:
     variable: 0.5 - 认知负荷据Sweller(1988)，17世纪营养/作息参数多为历史估算
     equation: 0.5 - 洞见积累方程为自建复合形式，锚定认知负荷与营养生理概念
-    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
-    optimization: 0.25 - optimizer为旧格式(TODO注明需重写)，权衡方向未经当前引擎验证
+    simulation: 0.25 - 2026-09-04验证：--sim可运行但输出退化，顶层regimens未按当前simulation.plans规范嵌套，行为类输入全程无效，仅能定性判断预期机制
+    optimization: 0.25 - optimizer为旧格式；2026-09-04验证--opt报错'No optimization.startpoint.regimens defined'，权衡方向未经当前引擎验证
     importance: 0.5 - 牛顿瘟疫年是科学史最传奇的创造力爆发案例之一，但为历史叙事场景，非框架依赖模块
     innovation: 0.5 - 洞见积累×营养×疲劳三维建模应用于历史人物研究节律是新颖组合，核心认知负荷机制沿用已知理论
-    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
+    confidence: 0.0 - 2026-09-04验证：--sim/--opt均未跑通（sim输出退化，opt报错），已知阻断性结构问题
   tags: [historical, newton, cognition, nutrition, 17th-century, england]
   period: "1665-1667"
   location: "Woolsthorpe Manor, Lincolnshire, England"
