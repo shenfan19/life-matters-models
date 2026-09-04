@@ -1,11 +1,14 @@
 # ignore output folder and the results of the tests
 output/
-saved/
+_saved_/
 
 # per-model debug history (superseded YAML versions), author's own record only (ADR 0141)
 **/history/
 
-# source-paper PDFs kept locally for authoring reference only — the published
-# Version of Record is copyrighted expression, unlike the facts/equations
-# extracted from it into the YAML; never redistribute the PDF itself
+# ad-hoc draft/probe directories created next to a model file (lm-modeling-diagnosis,
+# lm-modeling-advisor agents/), any depth, any suffix after temp_
+**/temp_*/
+
+# per-model literature cache: reference/ 下的 .bib 与 cite_review.md 随仓库发布，
+# 但 PDF 原文（多为付费墙文献）不发布，仅本地保留供人工/AI 核对引用位置用
 **/reference/*.pdf
