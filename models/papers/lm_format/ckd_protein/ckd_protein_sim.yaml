@@ -1,0 +1,439 @@
+metadata:
+  name: ckd_protein_sim
+  lm_format_version: "1.0"
+  updated: 2026-05-22
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+    - name: Minghui Wu
+      email: wuminghui@gzucm.edu.cn
+  description:
+    problem: |
+      Patients with CKD stages G3a-G3b, GFR 30-59 mL/min/1.73m², model initial GFR=45, six scenarios ending between 39.9 and 43.5, none entering G4, face a conflict between kidney-function preservation and sarcopenia prevention: nephrology guidelines recommend lower protein intake to reduce nitrogenous waste load, while sarcopenia guidelines recommend higher protein intake to maintain muscle mass, and the two recommended ranges do not overlap. The timing of switching from a restricted to a standard protein diet is another clinical decision dimension, one whose optimal choice is driven jointly by physiological thresholds and by the patient's declining dietary adherence over time, a question no single source in the literature answers on its own:
+      - Renal decline dynamics: describes only how excess protein intake damages GFR, not muscle mass or adherence over time.
+      - Skeletal muscle synthesis and breakdown dynamics: describes only the mechanism of muscle wasting in CKD patients, not kidney protection or adherence.
+      - Blood urea nitrogen dynamics: production-clearance balance is a standard physiological relationship linking protein intake and GFR as an observable constraint, not a mechanism with its own independent literature boundary.
+      - Dietary adherence dynamics: reports only the adherence rate at a 3-year follow-up point for CKD patients on a low-protein diet, not kidney or muscle outcomes, and does not provide a continuous adherence-decay trajectory.
+      What each source contributes specifically is described in each entry under references below.
+    method: |
+      Four mechanisms share the same decision variables, the protein intake at each of three meals and the timing of the switch from a restricted to a standard diet.
+      - Protein intake at breakfast, lunch, and dinner simultaneously drives the GFR-damage term, the muscle-synthesis term, and the BUN-production term; keeping breakfast and lunch protein low protects GFR but also suppresses muscle synthesis.
+      - Adherence level is determined by the prescribed protein amount itself, which sets whether a meal counts as restricted or standard; the resulting decay or recovery then feeds back through interpolation to change the actual intake, and actual intake, not the prescribed value, enters the GFR, muscle, and BUN dynamics, so a longer restriction period with more adherence decay genuinely discounts the prescription's real physiological effect rather than remaining a descriptive footnote.
+      - The timing of the switch from restricted to standard diet is therefore constrained by two trajectories at once: whether physiological indicators have reached their threshold, and how much longer cumulative adherence can sustain the prescription.
+    result: |
+      - This file corresponds to §7.2 of paper `paper/c_paper_s1_cn.md`, carrying the complete variables and equations physical mechanism together with the comparison simulation scenarios in simulation.plans used for the paper's Tables 5 and 6 and Figure 3; running `--sim` reproduces all comparison scenarios directly.
+      - The three single- and multi-discipline optimization scenarios are in the same directory: `ckd_protein_opt_renal.yaml`, the nephrology single objective maximizing only GFR; `ckd_protein_opt_muscle.yaml`, the rehabilitation single objective maximizing only muscle_mass; and `ckd_protein_opt_joint.yaml`, the joint multi-objective maximizing GFR, muscle_mass, and lm_score together. The optimal regimen from each of the three is copied into the named scenarios in the plans section below; comparing them side by side is what shows the difference between each discipline's own optimum and the joint trade-off, the core value of LM format multidisciplinary joint modeling that no single opt file can demonstrate on its own.
+      - Across the non-degenerate fronts of all three optimization scenarios, the muscle_mass endpoint lands within a genuinely achievable upper limit consistent with the direction reported by Carrero 2013, rising as protein intake rises and forming a real trade-off against the GFR objective.
+      - Dinner protein-intake timing carries no time-of-day term in either the gfr_decline or muscle_dynamics dynamics expressions and does not drive muscle synthesis; the timing of the switch from restricted to standard diet is this case's only time dimension with genuine mechanistic support.
+    limitations: |
+      - The protein-GFR dynamics coefficients are literature estimates that remain to be refined; the 52-week linear dynamics assumption ignores the nonlinear acceleration of renal fibrosis; the source for the current parameters remains to be added, TODO:SOURCE.
+      - Dinner protein-intake timing is kept in the search space as a decision variable, but under the current dynamics structure it has no actual effect on any physiological outcome, a known but not yet fixed mechanism gap. Making the pre-sleep protein synthesis effect reported by Kouw 2017 and Res 2012 actually operate would require adding an explicit time-of-day term to muscle_dynamics, a modeling extension not yet undertaken.
+      - The synthesis term in muscle_dynamics driven by protein intake was previously linear and unbounded in intake; a saturation ceiling, protein_synthesis_saturation, was added on 2026-08-23, see that variable's entry for the calibration basis, fixing an earlier issue in which simply raising dietary protein alone let patients gain net muscle within a year, conflicting with the BMC Geriatrics (2025) meta-analysis. Adding a ceiling is still not the same as a true resistance-training gating mechanism; this model still does not incorporate whether resistance training accompanies the diet as an independent variable, an item not yet addressed.
+      - The model does not include a mortality endpoint. Multiple cohort studies, Seniors-ENRICA and SNAC-K, 8539 older adults combined, report lower all-cause mortality with higher protein intake in CKD patients, HR 0.75-0.90, while long-term MDRD follow-up shows a mortality HR of 1.92 in the very-low-protein group; including a mortality endpoint could change both the shape of the joint optimization front and the current conclusion of a moderate trade-off, whose scope is currently limited to the GFR and muscle-mass endpoints. Adding a mortality endpoint would require an entirely separate set of dynamics independently calibrated and validated against these cohort studies, judged to be beyond this file's current scope and left to nephrology and geriatrics collaborators.
+      - Rizzetto et al. (2017) reports a single data point, a 49.2 percent adherence rate at the 3-year follow-up; adherence_decay_per_meal uses it as an anchor for a continuous decay curve, an extrapolated reinterpretation rather than a decay function the literature directly gives. Whether this can be replaced with a genuinely continuous trajectory depends on finding a longitudinal study reporting a complete adherence trajectory, a literature-search question.
+  ratings:
+    importance: 1.0 - a clear gap in the KDIGO guidelines affecting a large patient population, the paper's flagship core case, relied on by multiple scenarios in the A4 series s3/s4
+    variable: 0.75 - supported by core literature including KDIGO, Carrero 2013, Wang & Mitch 2014, and Rizzetto 2017, with the protein-GFR damage coefficient alpha and muscle-synthesis efficiency as estimated or iteratively calibrated values
+    equation: 0.75 - the GFR-decline, muscle-dynamics, and adherence mechanisms each follow a standard structure supported by literature reviews, not a single widely and independently reproduced named model
+    simulation: 0.6 - produces trajectories consistent with the BUN safety constraint; after adding the per-meal synthesis saturation ceiling calibrated from Moore et al. (2015) on 2026-08-23, the muscle side no longer gains net mass without bound, no longer conflicting in direction with the BMC Geriatrics (2025) meta-analysis, but the resistance-training gating mechanism is still not incorporated and a full independent data comparison has not been performed
+    optimization: 0.75 - the KDIGO versus PROT-AGE conflict has consensus-level evidence; after adding the saturation ceiling, a re-search found 9 non-dominated solutions, reconfirmed on 2026-09-02 using the archived results, the earlier recorded 12 solutions being an old result that could not be reproduced under the same seed and budget, see the metadata.log in ckd_protein_opt_joint.yaml; the front remains non-degenerate with a moderate trade-off
+    innovation: 0.75 - coupling the T4 switch-timing decision with patient adherence decay is an original contribution; an earlier claim of a pre-sleep protein T2 chrononutrition mechanism was checked on 2026-08-02, found not implemented in the dynamics, and removed, see metadata.todo
+    confidence: 0.55 - two directional errors, the muscle_mass direction and the BUN clearance coefficient, were corrected on 2026-08-02; external literature verification on 2026-08-20 found the GFR-side magnitude sound, while the earlier unbounded net-muscle-gain issue on the muscle side was corrected with a literature-calibrated saturation ceiling on 2026-08-23, raising the rating slightly from 0.5; the model still lacks a mortality endpoint, whose relationship to protein intake could run in the opposite direction, and still lacks a resistance-training gating mechanism, both recorded in limitations and todo; the paper accordingly repositions this case from validation to a feasibility demonstration, see c_paper_s1_cn.md §7.1
+  tags: [ckd, protein, muscle, GFR]
+  todo:
+    - type: noref
+      issue: "Lacks sufficient supporting citations (carried over from the old file's _noref suffix)"
+      evidence: "Carried over from the earlier _noref suffix marking; the specific missing items in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and add the missing citations, or confirm the existing citations are sufficient and remove this todo item."
+    - type: external_validation
+      issue: "External literature verification on 2026-08-20 found no directly corresponding study of the same kind, that is, joint optimization of CKD protein intake against GFR and muscle mass. Four categories of adjacent literature were found, a Nutrients 2021 staging-threshold paper, cost-effectiveness Markov models in Mennini 2014 and NDT 2025, Piccoli's stepwise graded prescription, and a JPM 2022 review, none of which qualify as the same kind of study. The GFR-side magnitude broadly agrees with the MDRD secondary analysis and meta-analyses, this model's slope being about 1.4 to 2 times steeper but still within the literature's reported spread. The muscle side showed a genuine conflict, now recorded in limitations: the synthesis term lacked a saturation or resistance-training gating mechanism, and the model does not include a mortality endpoint, while multiple cohort studies show an inverse relationship between protein intake and mortality in older CKD patients."
+      evidence: "Search sources include Nutrients 2021 (PMC8067427), the MDRD secondary analysis (PMID 8989740), BMC Geriatrics 2025, the multi-cohort mortality study (PMC11690241), and the original PROT-AGE paper."
+      next: "Completed on 2026-08-23: the synthesis term now has a saturation ceiling calibrated from Moore et al. (2015), see the protein_synthesis_saturation variable entry and log. The resistance-training gating term and the mortality endpoint remain unaddressed, judged to be beyond this file's current scope and left to collaborators in exercise physiology and nephrology rather than pursued within this file."
+  log:
+    "2026-09-01_00-00-00":
+      change: "The qualitative support citation for adherence_recovery_per_meal changed from De Mauri A et al. (2022) to Westenhoefer J et al. (1999); the reference field for both the beta0 and BUN variables dropped the incorrectly labeled KDIGO 2020 citation and now reads calibration choice"
+      reason: "A citation-tracing check that read De Mauri (2022) in full found that its 57 CKD patients were all prescribed the same fixed regimen with no looser-versus-stricter comparison group, so it does not support the qualitative point that a looser prescription is easier to sustain; the citation was switched to Westenhoefer et al. (1999), a general-population dietary-restraint study contrasting flexible and rigid control, whose direction does support that qualitative point. The same check confirmed that KDIGO 2020 in full contains no data on the natural annual decline rate of CKD or on BUN and urea-nitrogen thresholds, so the citations previously attached to beta0 and BUN did not match the claims they supported; the exact matching citation remains to be found. The check is recorded in reference/ckd.bib and paper §6.2 Table 5."
+    "2026-08-31_00-00-00":
+      change: "dietary_protein_lapse_target changed from 0.34 to 0.27 g/kg/meal, with the conversion basis switched from the general-older-adult recommendation of ≥1.0 g/kg/day in the Bauer et al. (2013) abstract to the same paper's Table 6 on page 549, which gives a CKD-specific recommendation of >0.8 g/kg BW/d for patients with GFR 30-60"
+      reason: "A citation-tracing check found this parameter's original conversion basis targeted the general population rather than CKD patients; the user confirmed switching to the CKD-specific Table 6 value from the same source, making the drift target's behavioral assumption better match this model's CKD scenario."
+    "2026-08-23_00-00-00":
+      change: "Added protein_synthesis_saturation, 0.40 g/kg, calibrated from Moore et al. 2015; the synthesis term in muscle_dynamics now uses min(effective_dietary_protein, protein_synthesis_saturation); renal_optimized was unaffected and not re-run, while muscle_optimized and opt_optimized were updated with the newly reconverged optimal solutions; ratings.simulation, optimization, and confidence were updated accordingly"
+      reason: "A codex review on 2026-08-22 pointed out that the synthesis term was linear and unbounded in intake, and the joint optimization front pushed muscle_mass above its initial value, conflicting with the BMC Geriatrics (2025) meta-analysis. Checking the literature found a calibratable per-meal MPS saturation point, and a ceiling was added; on the paper side, the same decision repositioned this case from validation to a feasibility demonstration, see c_paper_s1_cn.md §7.1 and the 2026-08-23 warning note there."
+    "2026-08-06_02-00-00":
+      change: "Migrated per ADR 0142/0143: the four description fields changed to a list structure, with problem listing each mechanism's boundary by group, and all references changed to the {citation, description} object form; result and limitations were cleaned up of non-exempt parentheses and process-narrative language along the way"
+      reason: "Implementing ADR 0143: complete the description/references migration while editing models under papers/, rather than skipping it on the grounds that the task scope is small."
+    "2026-06-20_00-00-00":
+      change: "Corrected the per-day-to-per-hour unit conversion, dividing by 24, for the three dynamics coefficients beta0, mu_d, and mu_u"
+      reason: "All three were calibrated as daily rates but plugged directly into equations with step_unit hour, so they were being erroneously scaled up by 24, driving all three opt scenarios to 0 percent feasible; the conversion approach is described in ADR 0121."
+    "2026-06-20_00-00-01":
+      change: "Removed the dietary_protein>=0.10 constraint from the three opt files"
+      reason: "This constraint was checked by default at every time step, but dietary_protein is a pulse input that is zero except at meal times, so the constraint was necessarily violated at most time steps; the three-meal search lower bound of 0.15 already satisfies its original intent structurally, so it was removed outright rather than fixed with a metric setting."
+    "2026-06-22_00-00-00":
+      change: "Changed the step_unit for lm_score_update from hour to day"
+      reason: "The original declaration, combined with simulation.step_size, caused lm_score to accumulate by hour rather than by day, scaling it up by 24."
+    "2026-08-02_00-00-00":
+      change: "Promoted bun_clearance_coef from an inline hardcoded value of 0.003 in the dynamics to a named variable and corrected it to 0.000125"
+      reason: "The same class of bug, a per-day rate plugged into an equation with step_unit hour; the original value caused BUN to collapse to 0.35-0.9 within 1-2 days, far below the target of 14-20 mg/dL."
+    "2026-08-02_00-00-01":
+      change: "Lowered the mean of mu_s from 0.08 to 0.045 and raised mu_d from 0.00005 to 0.00006"
+      reason: "Under the original calibration, all three static baselines showed net muscle_mass growth by week 52, the opposite direction from the net loss Carrero 2013 reports; after recalibration the trajectories turned to net loss, at a magnitude within its reported range."
+    "2026-08-02_00-00-02":
+      change: "Added dietary_adherence, adherence_decay_per_meal, adherence_recovery_per_meal, dietary_protein_lapse_target, and effective_dietary_protein; the GFR, muscle, and BUN dynamics now use effective_dietary_protein"
+      reason: "To let the optimal choice of the restriction-to-standard switch timing be driven jointly by physiological thresholds and by the patient's declining dietary adherence over time; the decay rate is calibrated from the 3-year follow-up adherence rate in Rizzetto et al. 2017."
+    "2026-08-02_00-00-03":
+      change: "Removed the claim that dinner protein-intake timing, T2, drives muscle synthesis, deleting this sub-claim from description and metadata.ratings"
+      reason: "A citation cross-check confirmed that neither the gfr_decline nor muscle_dynamics dynamics contains any time-of-day term; the earlier statement was a coincidental observation from a historical manual search solution, not a causal mechanism the model had validated."
+    "2026-08-05_00-00-00":
+      change: "Migrated the debugging history, previously resolved metadata.todo items and repeated rerun records, to history/2026-08-05_ckd_protein_sim.yaml; added a method field to description, and removed process-narrative language from the problem field"
+      reason: "Implementing ADR 0141: the main file retains only current state, with the debugging trail moved to gitignored history/ for future personal reference."
+
+# ── Variables ───────────────────────────────────────────────────────────────────
+variables:
+  GFR:
+    description: Glomerular filtration rate, at the start of CKD stage 3, KDIGO staging 45-59 mL/min/1.73m²
+    value: 45.0
+    unit: mL/min/1.73m²
+    type: state
+    bounds: [0, 120]
+    reference: "KDIGO 2020"
+    locator: "Current CKD Nomenclature table, p. S8 (transcribed from KDIGO 2012)"
+
+  muscle_mass:
+    description: Skeletal muscle mass, normal value about 30 kg for a 70 kg adult male
+    value: 28.0
+    unit: kg
+    type: state
+    bounds: [10, 50]
+    reference: "Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  BUN:
+    description: Blood urea nitrogen, normal upper limit 20 mg/dL, target for CKD patients <20
+    value: 14.0
+    unit: mg/dL
+    type: state
+    bounds: [0, 60]
+    reference: "Calibration choice: the standard clinical-reference upper limit, not a CKD-specific protein-restriction threshold from KDIGO 2020; citation tracing in reference/ckd.bib"
+    locator: "TODO:SOURCE the specific literature for a BUN safety threshold under CKD protein restriction"
+
+  dietary_protein:
+    description: Protein intake per meal event, g/kg, triggered at each meal; KDIGO's recommended daily total falls in the 0.6-1.0 g/kg range
+    value: 0.8
+    unit: g/kg
+    type: input
+
+  # ── Adherence dimension, added 2026-08-02 ───────────────────────────────────
+  dietary_adherence:
+    description: >
+      The current adherence level, 1.0 meaning full compliance with the prescription and lower values meaning actual intake deviates further from it. It starts at 1.0, decaying slightly at each restricted-period meal, dietary_protein below 0.30, and recovering slightly at each standard-period meal, dietary_protein at or above 0.30. The decay rate is calibrated from Rizzetto et al.'s (2017) 3-year follow-up data on CKD patients on a low-protein diet, 49.2 percent still adherent after 3 years, back-calculating a continuous decay rate k = -ln(0.492)/3 years ≈ 0.236/year, converted to a per-meal decay amount assuming 3 meals a day over 365 days a year, see the adherence_decay_per_meal entry for the derivation. The recovery rate and the decay floor themselves have no directly corresponding literature and, per the model.md convention, are marked as calibration choices, see the respective parameter entries, not independent literature measurements.
+    value: 1.0
+    unit: dimensionless
+    type: state
+    bounds: [0.3, 1.0]
+    reference: "Rizzetto F et al. (2017) Ren Fail 39(1):357-362 (the 49.2 percent adherence anchor); calibration choices are noted in each parameter entry"
+
+  adherence_decay_per_meal:
+    description: >
+      The amount dietary_adherence decays at each restricted-period meal, dietary_protein below 0.30. Derivation: Rizzetto et al. (2017) report a 3-year adherence rate of 49.2 percent for CKD patients on a low-protein diet; back-calculating from the continuous-decay model exp(-k times 3 years) = 0.492 gives k ≈ 0.236/year. This model has 1095 restricted-period meals per year of restriction, 3 meals times 365 days, giving a decay of 0.236/1095 ≈ 0.0002159 per meal. This is an engineering approximation converting the single real longitudinal measurement, 49.2 percent still adherent after 3 years, into a per-meal decay increment, assuming continuous exponential decay, since the source reports only this one categorical adherent-versus-nonadherent proportion at the 3-year mark with no trajectory data.
+    value: 0.0002159
+    unit: 1/meal
+    type: parameter
+    reference: "Rizzetto F et al. (2017) Chronic kidney disease progression: a retrospective analysis of 3-year adherence to a low protein diet. Ren Fail 39(1):357-362"
+
+  adherence_recovery_per_meal:
+    description: >
+      The amount dietary_adherence recovers at each standard-period meal, dietary_protein at or above 0.30. This is a calibration choice, not a direct literature measurement: the CKD low-protein-diet adherence literature provides no independent data on how quickly adherence recovers once restriction is relaxed, so it takes the same magnitude as adherence_decay_per_meal, a symmetry assumption, representing the qualitative point that a looser prescription is easier to sustain. Qualitative support comes from a general-population dietary-restraint study, Westenhoefer et al. (1999), contrasting flexible and rigid control: the rigid-control group scored higher on disinhibited eating and BMI and had more frequent and severe binge episodes, while the flexible-control group scored lower on all three, a direction that supports this entry's point; that study's subjects were general-population dietary-restraint behavior, not CKD low-protein-diet patients, and it does not directly measure the rate at which adherence recovers over time. The symmetric decay-recovery rate itself is an engineering simplification, not an independent measurement.
+    value: 0.0002159
+    unit: 1/meal
+    type: parameter
+    reference: "Calibration choice (symmetry assumption, see description); qualitative support: Westenhoefer J et al. (1999) Int J Eat Disord 26(1):53-64"
+
+  dietary_protein_lapse_target:
+    description: >
+      The per-meal protein amount that actual intake drifts toward once adherence declines and deviates from the prescription. A calibration choice: taken from the CKD-specific recommendation of >0.8 g/kg BW/d for patients with GFR 30-60, given in Table 6 on page 549 of the PROT-AGE consensus, Bauer et al. (2013), averaged across three meals to about 0.27 g/kg/meal. It represents the behavioral assumption that a poorly adherent patient reverts to the lower end of intake typical for the CKD population itself rather than to a general-population recommendation that does not account for kidney function, not a drift-target value directly measured in any single source.
+    value: 0.27
+    unit: g/kg
+    type: parameter
+    reference: "Calibration choice (see description); conversion basis Bauer J et al. (2013) PROT-AGE, J Am Med Dir Assoc 14(8):542-559, Table 6, page 549"
+
+  effective_dietary_protein:
+    description: >
+      The actual protein amount ingested, a pulse with the same semantics as dietary_protein, nonzero only at meal events. It linearly interpolates, according to dietary_adherence, between the prescribed amount dietary_protein and the post-decay drift target dietary_protein_lapse_target, representing that the prescription and what the patient actually eats are two different things. The GFR, muscle, and BUN dynamics all use this variable rather than dietary_protein, so a longer restriction period with more adherence decay genuinely discounts the prescription's real physiological effect, making the optimal choice of T4, the restriction-to-standard switch timing, partly driven by cumulative adherence rather than triggered solely by GFR or muscle_mass thresholds.
+    value: 0.0
+    unit: g/kg
+    type: state
+    bounds: [0, 0.6]
+
+  body_weight:
+    description: Patient body weight, fixed, used to convert protein to absolute amounts
+    value: 70.0
+    unit: kg
+    type: parameter
+    reference: "Representative patient assumption"
+
+  protein_synthesis_saturation:
+    description: >
+      Once protein intake at a single meal exceeds this threshold, the muscle-synthesis term mu_s times effective_dietary_protein no longer continues to grow linearly with intake. Calibrated from the dose-response curve for muscle protein synthesis in older men measured by Moore et al. (2015) using stable-isotope tracing, which reports 0.40 ± 0.19 g/kg body mass per meal as the saturation point beyond which synthesis rate stops rising with intake, higher than the roughly 0.24-0.25 g/kg saturation point in younger adults, reflecting that older adults' anabolic resistance requires a higher per-meal dose to reach the same saturation. That study measured resting-state synthesis rate without resistance training, matching this model's scenario; this model introduces only the saturation point itself as a ceiling on the synthesis term, not a resistance-training gating mechanism, which remains an unaddressed gap, see metadata.description.limitations.
+    value: 0.40
+    unit: g/kg
+    type: parameter
+    reference: "Moore DR et al. (2015) Protein Ingestion to Stimulate Myofibrillar Protein Synthesis Requires Greater Relative Protein Intakes in Healthy Older Versus Younger Men. J Gerontol A Biol Sci Med Sci 70(1):57-62"
+
+  # ── MC probability parameters ────────────────────────────────────────────────
+  alpha:
+    description: |
+      Sensitivity of GFR damage to protein intake above the safety threshold (Kasiske et al. 1998).
+      Each MC trajectory samples a different value, representing individual variation in kidney tolerance to protein load.
+    value: "normal(0.0012, 0.0003)"
+    unit: 1/(g/kg)
+    type: parameter
+    bounds: [0.0003, 0.003]
+    reference: "Kasiske BL et al. (1998)"
+    locator: "Results, a pooled meta-analysis of 13 randomized controlled trials with 1919 patients total, showing the protein-restriction group's annual GFR decline rate reduced by 0.53 mL/min/yr versus control, 95% CI 0.08-0.98"
+
+  mu_s:
+    description: |
+      Muscle-protein synthesis efficiency (kg of muscle generated per g/kg protein-intake event).
+      Under MC sampling this represents individual variation in anabolic capacity (Carrero 2013).
+      Its value must be matched against the overall degradation magnitude set jointly by the baseline degradation rate mu_d and urea-driven degradation mu_u.
+      A 2026-08-02 literature check found that, under the equation structure at the time, the synthesis term mu_s times dietary_protein carries no step multiplier and fires only once at each of the three meal pulses, while the degradation term, (mu_d times muscle plus mu_u times ...) times step, fires every hour, 8736 times over 364 days; a mean of 0.08 therefore caused cumulative annual synthesis to systematically exceed cumulative degradation, and all three static baselines showed net muscle_mass growth by week 52, +3.7 to +10.7 kg, the opposite direction from the net loss Carrero 2013 reports. Lowering the mean to 0.045, about 56 percent of the original value, with mu_d and mu_u unchanged, brings cumulative synthesis back below cumulative degradation, turning week-52 outcomes to net loss within Carrero 2013's 2-5 kg range, with loss decreasing as protein intake rises, producing a genuine muscle-GFR trade-off, see the calibration record in metadata.todo.
+    value: "normal(0.045, 0.007)"
+    unit: kg/(g/kg)
+    type: parameter
+    bounds: [0.01, 0.10]
+    reference: "TODO:SOURCE the synthesis-efficiency coefficient is an estimate pending calibration; Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  beta0:
+    description: |
+      The baseline GFR decline rate from non-protein causes, averaging about 1.5 mL/min/1.73m² per year in CKD stage 3.
+      The original value of 0.0011/day corresponded to about an 18 mL/min/year decline at GFR=45, far above the stated 1.5, and was converted using "1.5 mL/min/year at GFR=45" to a relative rate of 1.5/45/365 ≈ 0.0000913/day in a previous edit, but that edit forgot to convert to the step_unit, hour, actually used by the gfr_decline equation. Plugging the 0.0000913 per-day rate directly into an hourly step of 1 scaled the decline rate up by 24. This was the root cause of all three opt scenarios showing 0 percent feasibility and GFR being driven down to about 20 on 2026-06-20, not the recalibration of mu_s tightening the constraints, as confirmed after investigation to be this missed unit conversion.
+      Corrected on 2026-06-20: 0.0000913/day divided by 24 equals 0.000003804/hour, matching step_unit hour.
+      A citation-tracing check on 2026-09-01 confirmed that the previously labeled KDIGO 2020 reference contains no epidemiological data on CKD's natural annual decline rate and does not support this specific "1.5 mL/min/year" value; it has been changed to calibration choice, with the value falling within the annual decline rate range reported by published CKD stage 3-4 cohort studies, for example 2.83 ± 4.04 mL/min/1.73m²/year for men and 1.66 ± 3.23 for women, including protein effects; a single source giving exactly "CKD stage 3, baseline annual decline excluding protein effects" remains to be found.
+    value: 0.000003804
+    unit: 1/hour
+    type: parameter
+    bounds: [0.0000021, 0.0000125]
+    reference: "Calibration choice: the value falls within a reasonable range from published CKD cohort studies of annual decline rate; citation tracing in reference/ckd.bib"
+    locator: "TODO:SOURCE a cohort study of CKD natural annual decline rate"
+
+  mu_d:
+    description: |
+      Baseline muscle degradation rate, higher in CKD patients than in healthy individuals (Carrero 2013).
+      The original value of 0.002, combined with the raised mu_s (see that entry) and mu_u, produced a 52-week muscle loss far exceeding Carrero 2013's reported range, 2-5 kg; lowering it to 0.0012, still within bounds, together with mu_s=0.08 and a lowered mu_u mean, brought the loss back within the 2-5 kg range.
+      Found and corrected on 2026-06-20: the 0.0012 above was derived as a per-day rate, since the description refers to "52 weeks" and "364 days," but the muscle_dynamics equation's step_unit is hour, and the value was being multiplied directly by an hourly step of 1, scaling the degradation rate up by 24. This was one root cause of muscle_mass being driven down to the 10 kg floor under every scenario, including static baselines, and all three opt scenarios showing 0 percent feasibility, the other root cause being the same bug in beta0 in this file, already corrected, see that entry. Correction: 0.0012/day divided by 24 equals 0.00005/hour.
+      Raised further to 0.00006 on 2026-08-02, a 20 percent increase: 0.00005 combined with the lowered mu_s=0.045, see that entry's 2026-08-02 note, had already turned the kidney_protect and balanced static baselines to net loss, -2.55 and -1.24 kg, but muscle_preserve still showed net growth, +0.84 kg. Iterating with `--sim` confirmed that 0.00006 turns all three static baselines to net loss simultaneously while preserving the monotonic relationship that higher protein intake means smaller loss, with the loss magnitude within Carrero 2013's range.
+    value: 0.00006
+    unit: 1/hour
+    type: parameter
+    bounds: [0.0000417, 0.0002083]
+    reference: "Carrero JJ et al. (2013)"
+    locator: "TODO:LOCATE"
+
+  mu_u:
+    description: |
+      The urea-driven coefficient by which muscle breakdown is enhanced per unit GFR decline.
+      The most sensitive parameter in the sensitivity analysis (Wang & Mitch 2014).
+      The original mean of 0.0015, at a GFR decline of 10-15 units, pushed this term to 0.015-0.0225/day, far exceeding the magnitude of mu_d times muscle, driving muscle mass down to the 10 kg floor under every scenario and degenerating the Pareto front to a single point, muscle_mass fixed at its lower bound. Lowering the mean to near the lower bound, 0.00025, together with mu_s=0.08 and mu_d=0.0012, brought week-52 muscle loss within Carrero 2013's range, 2-5 kg, with higher-protein scenarios showing smaller loss, producing a muscle-GFR trade-off.
+      Found and corrected on 2026-06-20: the same bug as mu_d, 0.00025 was a per-day rate plugged into an equation with step_unit hour, scaled up by 24 in error. Correction: 0.00025/day divided by 24 equals 0.0000104167/hour, with sigma scaled proportionally, 0.00007/24 ≈ 0.0000029167.
+    value: "normal(0.0000104167, 0.0000029167)"
+    unit: 1/(hour·mL/min/1.73m²)
+    type: parameter
+    bounds: [0.0000083333, 0.0001667]
+    reference: "Wang XH & Mitch WE (2014)"
+    locator: "TODO:LOCATE"
+
+  sigma_urea:
+    description: Coefficient of urea production from protein breakdown, BUN change per gram of total protein
+    value: 0.028
+    unit: mg/(dL·g)
+    type: parameter
+    reference: "TODO:SOURCE literature on the protein-BUN relationship"
+
+  bun_clearance_coef:
+    description: |
+      The GFR-dependent BUN clearance rate coefficient, in the bun_dynamics clearance term coef times GFR times BUN.
+      Promoted on 2026-08-02 from an inline hardcoded value of 0.003 in the dynamics expression to a named variable and corrected: 0.003 was the same class of bug as beta0/mu_d/mu_u, a per-day rate plugged into an equation with step_unit hour. Firing 0.003 times GFR times BUN every hour cleared urea far faster than protein breakdown could produce it, collapsing BUN to 0.35-0.9 within 1-2 days and holding it there, far below the target of 14-20 mg/dL, see the 2026-07-21 discovery record in metadata.todo. Applying the same division-by-24 conversion, since the clearance term is a coefficient times a state variable, a linear division per ADR 0121 is the exact solution and no root is needed, corrected to 0.003/24 ≈ 0.000125/hour; `--sim` confirmed with the three static baselines, kidney_protect, balanced, and muscle_preserve, that the week-52 BUN equilibrium falls in about 9.8-17.8 mg/dL, rising with protein intake and staying below the constraint ceiling of 20, preserving a feasible region for high-protein optimized solutions.
+    value: 0.000125
+    unit: "1/(hour·mL/min/1.73m²)"
+    type: parameter
+    reference: "TODO:SOURCE literature on the BUN-protein relationship; conversion approach same as beta0/mu_d/mu_u, see ADR 0121"
+
+  GFR_initial:
+    description: Initial GFR, used to compute relative loss of kidney function, fixed at the starting value
+    value: 45.0
+    unit: mL/min/1.73m²
+    type: parameter
+
+  lm_score:
+    description: Healthy-duration score, cumulative simulated days on which GFR ≥ 30 mL/min, muscle_mass ≥ 22 kg, and BUN ≤ 20 mg/dL all hold at once
+    value: 0.0
+    unit: day
+    type: state
+    reference: "Life Matters Framework core metric"
+
+# ── Dynamics equations ────────────────────────────────────────────────────────
+equations:
+  adherence_dynamics:
+    description: >
+      The adherence dimension, added 2026-08-02: dietary_adherence decays slightly at each restricted-period meal, prescribed dietary_protein below 0.30, and recovers slightly at each standard-period meal, at or above 0.30, with the decay and recovery amounts given in their respective parameter entries. It judges meal type using the prescribed value dietary_protein rather than effective_dietary_protein below, representing that the prescription's own restrictiveness determines the patient's adherence burden, and avoiding a circular dependency with effective_protein_calc.
+    step_unit: hour
+    condition: true
+    priority: 7
+    dynamics:
+      dietary_adherence: >
+        dietary_adherence
+        - adherence_decay_per_meal * (1 if (dietary_protein > 0 and dietary_protein < 0.30) else 0)
+        + adherence_recovery_per_meal * (1 if dietary_protein >= 0.30 else 0)
+    reference: "Rizzetto F et al. (2017) Ren Fail 39(1):357-362"
+
+  effective_protein_calc:
+    description: >
+      Actual intake linearly interpolates between the prescribed amount and the post-decay drift target according to dietary_adherence, nonzero only at meal pulse moments, dietary_protein > 0, and zero at every other step, preserving the same pulse semantics as the original dietary_protein, so a non-meal hour is not accidentally injected with a nonzero value; other equations such as lm_score_update have previously carried a 24-times scaling bug from this same class of "erroneous hourly firing," and this if dietary_protein > 0 condition is used deliberately to avoid the same problem. Its priority is higher than gfr_decline, muscle_dynamics, and bun_dynamics, which execute after this equation and read the effective_dietary_protein computed at this step.
+    step_unit: hour
+    condition: true
+    priority: 8
+    dynamics:
+      effective_dietary_protein: >
+        (dietary_protein * dietary_adherence + dietary_protein_lapse_target * (1 - dietary_adherence))
+        if dietary_protein > 0 else 0
+
+  gfr_decline:
+    description: |
+      GFR decline: damage from protein above the safety threshold, plus baseline non-protein decline.
+      When per-meal protein falls below 0.30 g/kg, about 0.9 g/kg/day across three meals, the overload term is zero, meaning no further protection but no further damage either.
+      As of 2026-08-02, both the threshold check and the damage term use effective_dietary_protein, actual intake, rather than the prescribed value dietary_protein, so a decline in adherence genuinely affects physiological outcomes.
+    step_unit: hour
+    condition: true
+    priority: 6
+    dynamics:
+      GFR: GFR - alpha * max(0, effective_dietary_protein - 0.30) * GFR - beta0 * GFR * step
+    reference: "Kasiske BL et al. (1998); beta0 is a calibration choice, not a direct literature value, see that variable's entry"
+    locator: "TODO:LOCATE"
+
+  muscle_dynamics:
+    description: |
+      Muscle mass: synthesis, protein intake times relative preservation of kidney function, minus baseline degradation minus urea-driven degradation.
+      Relative preservation of kidney function = min(1, GFR/GFR_initial), reflecting anabolic resistance in CKD.
+      As of 2026-08-02, the synthesis term uses effective_dietary_protein, actual intake, rather than the prescribed value.
+      As of 2026-08-23, the synthesis term applies a saturation ceiling, protein_synthesis_saturation, to per-meal intake, beyond which additional intake no longer drives further synthesis; see that variable's entry for the calibration basis.
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      muscle_mass: >
+        muscle_mass + mu_s * min(effective_dietary_protein, protein_synthesis_saturation) * min(1.0, GFR / GFR_initial)
+        - (mu_d * muscle_mass + mu_u * max(0, GFR_initial - GFR) * muscle_mass) * step
+    reference: "Carrero JJ et al. (2013); Wang XH & Mitch WE (2014); Moore DR et al. (2015)"
+    locator: "TODO:LOCATE"
+
+  bun_dynamics:
+    description: |
+      Blood urea nitrogen: production from protein breakdown minus clearance by GFR.
+      BUN is a constraint variable: above 20 mg/dL indicates excess protein.
+      Promoted on 2026-08-02 from an inline hardcoded clearance coefficient of 0.003 to the named variable bun_clearance_coef, corrected to 0.000125, conversion basis in that variable's entry; before the fix, 0.003 collapsed BUN to 0.35-0.9 within 1-2 days of the start of simulation and held it there, far below the target of 14-20 mg/dL. The production term now uses effective_dietary_protein, actual intake, rather than the prescribed value.
+    step_unit: hour
+    condition: true
+    priority: 4
+    dynamics:
+      BUN: BUN + sigma_urea * effective_dietary_protein * body_weight - bun_clearance_coef * GFR * BUN * step
+    reference: "TODO:SOURCE literature on the BUN-protein relationship"
+
+  lm_score_update:
+    description: "Accumulates healthy-duration score, recoverable, when GFR ≥ 30 mL/min, muscle_mass ≥ 22 kg, and BUN ≤ 20 mg/dL (step_unit changed from hour to day on 2026-06-22, reason in metadata.todo)"
+    step_unit: day
+    condition: true
+    priority: 90
+    dynamics:
+      lm_score: "lm_score + step if (GFR >= 30 and muscle_mass >= 22 and BUN <= 20) else lm_score"
+    reference: "Life Matters Framework core metric"
+
+# ── Simulation settings (K=2 segmentation: restricted then standard) ──────────
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"          # 52 weeks = 364 days
+  output_variables:
+    - GFR
+    - muscle_mass
+    - BUN
+    - dietary_protein
+    - effective_dietary_protein
+    - dietary_adherence
+    - lm_score
+  plans:
+    - id: "kidney_protect"
+      label: "Kidney-protection priority (GFR endpoint, low protein throughout)"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Breakfast protein"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Lunch protein"}
+        - {variable: dietary_protein, time_start: "18:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Dinner protein"}
+
+    - id: "balanced"
+      label: "Clinical balanced plan (K=2 segments, restricted for the first 26 weeks, standard for the last 26)"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "Restricted-period breakfast"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.21, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "Restricted-period lunch"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.22, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-06-30"], label: "Restricted-period dinner (pre-sleep)"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.29, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "Standard-period breakfast"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.27, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "Standard-period lunch"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.28, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-01", "2026-12-31"], label: "Standard-period dinner (pre-sleep)"}
+
+    - id: "muscle_preserve"
+      label: "Muscle-preservation priority (muscle endpoint, standard protein throughout)"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.38, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Breakfast protein"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.36, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Lunch protein"}
+        - {variable: dietary_protein, time_start: "21:00", value: 0.37, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-12-31"], label: "Dinner protein (pre-sleep)"}
+
+    - id: "renal_optimized"
+      label: "Nephrology single-discipline optimized plan (maximizing only GFR; re-run with pop=40/gen=9 on 2026-08-02 after adding the adherence dimension, see results in ckd_protein_opt_renal.yaml, GFR=43.05), three meals pushed near the search lower bound"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.170, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Breakfast (near the search lower bound)"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.201, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Lunch"}
+        - {variable: dietary_protein, time_start: "18:37", value: 0.215, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Dinner"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.292, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-06-30", "2026-12-31"], label: "Added once the standard period begins (week 26, on top of breakfast)"}
+
+    - id: "muscle_optimized"
+      label: "Rehabilitation single-discipline optimized plan (maximizing only muscle_mass; re-run with pop=40/gen=10 on 2026-08-23 after adding the protein-synthesis saturation ceiling, see results in ckd_protein_opt_muscle.yaml, muscle_mass=27.79, the best across all scenarios), three meals pushed to a fairly balanced mid-high level, avoiding any single meal exceeding the 0.40 g/kg saturation point and wasting intake"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.314, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Breakfast"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.296, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Lunch"}
+        - {variable: dietary_protein, time_start: "19:57", value: 0.295, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Dinner"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.416, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-06-28", "2026-12-31"], label: "Added once the standard period begins (week 26, on top of breakfast)"}
+
+    - id: "opt_optimized"
+      label: "Joint multidisciplinary optimized plan (GFR plus muscle_mass plus lm_score; re-run with pop=40/gen=10 on 2026-08-23 after adding the protein-synthesis saturation ceiling, yielding a 12-solution non-degenerate front, see results in ckd_protein_opt_joint.yaml; this plan takes the balanced solution on the front closest to both single-discipline optima at once; simulated through this full model the regimen yields muscle_mass≈26.20/GFR≈41.49, the value cited in the paper, not the optimizer's own fitness estimate for the candidate)"
+      regimens:
+        - {variable: dietary_protein, time_start: "08:00", value: 0.284, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Breakfast"}
+        - {variable: dietary_protein, time_start: "12:00", value: 0.292, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Lunch"}
+        - {variable: dietary_protein, time_start: "19:17", value: 0.294, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], label: "Dinner"}
+        - {variable: dietary_protein, time_start: "08:00", value: 0.279, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-07-02", "2026-12-31"], label: "Added once the standard period begins (week 27, on top of breakfast)"}
+
+  mc:
+    runs: 5
+    seed: 19
+
+references:
+  - citation: "KDIGO 2020 Clinical Practice Guideline for Diabetes Management in CKD, Recommendation 3.1.1 (p. S47), Grade 2C"
+    description: "The guideline source for the CKD protein-intake restriction recommendation of 0.8 g/kg/d; the CKD staging table appears in the same guideline's Current CKD Nomenclature table, p. S8, transcribed from KDIGO 2012. No corresponding BUN-related physiological threshold was found in this guideline, see the GFR/BUN variable entries."
+  - citation: "Carrero JJ et al. (2013) Etiology of PEW in CKD. J Ren Nutr 23(2):77-90"
+    description: "The mechanistic source for protein-energy wasting, that is, muscle wasting, in CKD patients, and the calibration basis for the muscle_mass baseline and the 52-week net-loss magnitude."
+  - citation: "Kasiske BL et al. (1998) A meta-analysis of the effects of dietary protein restriction on the rate of decline in renal function. Am J Kidney Dis 31(6):954-961"
+    description: "The calibration basis for alpha, the sensitivity of GFR damage to protein intake above threshold; a pooled analysis of 13 randomized controlled trials shows protein restriction reducing the annual GFR decline rate by 0.53 mL/min/yr."
+  - citation: "Wang XH & Mitch WE (2014) Mechanisms of muscle wasting in CKD. Nat Rev Nephrol 10(9):504-516"
+    description: "The calibration basis for mu_u, the urea-driven coefficient enhancing muscle breakdown."
+  - citation: "Kouw IWK et al. (2017) Protein ingestion before sleep increases overnight muscle protein synthesis rates in healthy older men. J Nutr 147(12):2252-2261"
+    description: "Reports that pre-sleep protein intake promotes overnight muscle synthesis, but this file's muscle_dynamics does not implement a time-of-day term, so this effect is not currently validated by the model, see limitations."
+  - citation: "Res PT et al. (2012) Protein ingestion before sleep improves postexercise overnight recovery. Med Sci Sports Exerc 44(8):1560-1569"
+    description: "As above, supporting the same mechanistic direction that pre-sleep protein intake promotes recovery, likewise not implemented in the current dynamics."
+  - citation: "Rizzetto F et al. (2017) Chronic kidney disease progression: a retrospective analysis of 3-year adherence to a low protein diet. Ren Fail 39(1):357-362"
+    description: "Reports a 3-year follow-up adherence rate of 49.2 percent for CKD patients on a low-protein diet, the anchor from which adherence_decay_per_meal's per-meal decay amount is derived."
+  - citation: "Westenhoefer J et al. (1999) Validation of the flexible and rigid control dimensions of dietary restraint. Int J Eat Disord 26(1):53-64"
+    description: "A comparison of flexible and rigid dietary control, supporting in direction the qualitative point that prescription strictness affects sustained adherence, used as the directional basis for adherence_recovery_per_meal and the symmetric decay-rate assumption. Its subjects were general-population dietary-restraint behavior, not CKD low-protein-diet patients; this citation replaced the earlier De Mauri et al. (2022) on 2026-09-01, after reading that source in full confirmed it did not support this point."
+  - citation: "Bauer J et al. (2013) Evidence-based recommendations for optimal dietary protein intake in older people: a position paper from the PROT-AGE Study Group. J Am Med Dir Assoc 14(8):542-559"
+    description: "The conversion basis for dietary_protein_lapse_target: the protein amount a patient's actual intake drifts toward after adherence declines follows this paper's Table 6 on page 549, the CKD-specific recommendation of >0.8 g/kg BW/d for patients with GFR 30-60."
+  - citation: "Moore DR et al. (2015) Protein Ingestion to Stimulate Myofibrillar Protein Synthesis Requires Greater Relative Protein Intakes in Healthy Older Versus Younger Men. J Gerontol A Biol Sci Med Sci 70(1):57-62"
+    description: "The dose-response saturation point of 0.40 g/kg body mass per meal for muscle protein synthesis in older men, the calibration basis for protein_synthesis_saturation, used to set a ceiling on the synthesis term in muscle_dynamics."
