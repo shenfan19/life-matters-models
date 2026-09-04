@@ -7,7 +7,7 @@
 - **新增模型**：基于公开文献建立新的生理、疾病或社会动力学模型
 - **改进现有模型**：补充文献来源、修正参数、添加优化器配置
 - **修复问题**：修复带 `metadata.todo` 待办标记的问题模型
-- **反馈问题**：在 [Issue Tracker](https://github.com/shenfan19/life-matters/issues) 提交问题或建议
+- **反馈问题**：在 [Issue Tracker](https://github.com/shenfan19/life-matters-models/issues) 提交问题或建议
 
 ## 模型格式
 
@@ -34,7 +34,7 @@
 ## 提交流程
 
 1. Fork 本仓库
-2. 将模型放入对应子目录（`models/references/medical/` 或 `models/references/social/` 等）
+2. 将模型放入对应子目录（`models/references/medical/`、`models/references/social/`、`models/references/environmental/` 或 `models/references/risk/` 等）
 3. 本地运行仿真引擎验证可通过（无 `metadata.todo` 待办）
 4. 提交 Pull Request，描述模型的文献来源和建模场景
 
