@@ -39,8 +39,6 @@ metadata:
     - exploitation
     - survival
     - literature
-  references:
-    - Oliver Twist (Charles Dickens, 1837)
 variables:
   compliance:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: hope_for_escape
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Oliver Twist (Charles Dickens, 1837)

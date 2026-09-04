@@ -32,8 +32,6 @@ metadata:
     innovation: 0.25 - "死亡概率×预期未来贡献"联合建模在已有场景库中尚无先例的意图明确，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [war, mathematician, probability-theory, wwii, sacrifice, TODO]
-  references:
-    - "Bru B, Yor M (2002) Comments on the life and mathematical legacy of Wolfgang Doeblin. Finance and Stochastics 6(1), 3-47."
 
 variables: {}
 equations: {}
@@ -45,3 +43,6 @@ simulation:
   start_date: "1940-05-10"
   end_date:   "1940-06-21"
   output_variables: []
+
+references:
+  - "Bru B, Yor M (2002) Comments on the life and mathematical legacy of Wolfgang Doeblin. Finance and Stochastics 6(1), 3-47."

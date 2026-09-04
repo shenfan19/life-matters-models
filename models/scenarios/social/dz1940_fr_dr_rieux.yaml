@@ -39,8 +39,6 @@ metadata:
     - isolation
     - sacrifice
     - literature
-  references:
-    - La Peste (Albert Camus, 1947)
 variables:
   care_intensity:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: patients_treated
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - La Peste (Albert Camus, 1947)

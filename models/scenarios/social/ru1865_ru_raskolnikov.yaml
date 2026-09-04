@@ -39,8 +39,6 @@ metadata:
     - fever
     - redemption
     - literature
-  references:
-    - Crime and Punishment (Dostoyevsky, 1866)
 variables:
   concealment_effort:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: redemption_potential
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Crime and Punishment (Dostoyevsky, 1866)

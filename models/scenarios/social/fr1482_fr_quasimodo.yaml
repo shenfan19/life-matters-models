@@ -39,8 +39,6 @@ metadata:
     - love
     - sacrifice
     - literature
-  references:
-    - Notre-Dame de Paris (Victor Hugo, 1831)
 variables:
   defense_intensity:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: esmeralda_hope
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Notre-Dame de Paris (Victor Hugo, 1831)

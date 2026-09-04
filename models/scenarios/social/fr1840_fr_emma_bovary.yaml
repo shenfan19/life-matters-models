@@ -38,8 +38,6 @@ metadata:
     - debt
     - society
     - literature
-  references:
-    - Madame Bovary (Gustave Flaubert, 1857)
 variables:
   romantic_pursuit:
     type: input
@@ -138,7 +136,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: psychological_health
@@ -201,3 +199,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Madame Bovary (Gustave Flaubert, 1857)

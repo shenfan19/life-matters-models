@@ -180,7 +180,7 @@ equations:
       evidence: "max(0, evidence - 1)"
       acceptance: "max(0, acceptance - 0.5)"
 
-optimizer:
+optimization:
   method: nsga2
   algorithm:
     population_size: 50

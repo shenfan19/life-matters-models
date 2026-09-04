@@ -237,7 +237,7 @@ equations:
     dynamics:
       strategy: "max(0, strategy - 0.5)"
 
-optimizer:
+optimization:
   method: nsga2
   algorithm:
     population_size: 50

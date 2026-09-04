@@ -39,8 +39,6 @@ metadata:
     - exploitation
     - sacrifice
     - literature
-  references:
-    - 悲惨世界 (Victor Hugo, 1862)
 variables:
   work_intensity:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: cosette_wellbeing
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - 悲惨世界 (Victor Hugo, 1862)

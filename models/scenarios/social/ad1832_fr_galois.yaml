@@ -32,9 +32,6 @@ metadata:
     innovation: 0.25 - 与ad1940_fr_doeblin/ad1915_tr_moseley构成同系列对照案例的意图明确，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [mathematician, duel, group-theory, 19th-century, sacrifice, TODO]
-  references:
-    - "Rothman T (1982) Genius and Biographers: The Fictionalization of Evariste Galois. American Mathematical Monthly 89(2), 84-106."
-    - "Bell ET (1937) Men of Mathematics. Simon & Schuster. [经典传记来源，部分细节存在文学化加工，仅作对照引用]"
 
 variables: {}
 equations: {}
@@ -46,3 +43,7 @@ simulation:
   start_date: "1832-05-29"
   end_date:   "1832-05-31"
   output_variables: []
+
+references:
+  - "Rothman T (1982) Genius and Biographers: The Fictionalization of Evariste Galois. American Mathematical Monthly 89(2), 84-106."
+  - "Bell ET (1937) Men of Mathematics. Simon & Schuster. [经典传记来源，部分细节存在文学化加工，仅作对照引用]"

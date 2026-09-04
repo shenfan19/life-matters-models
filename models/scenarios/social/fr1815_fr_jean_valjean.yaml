@@ -39,8 +39,6 @@ metadata:
     - aging
     - identity
     - literature
-  references:
-    - 悲惨世界 (Victor Hugo, 1862)
 variables:
   virtue_effort:
     type: input
@@ -139,7 +137,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: redemption_progress
@@ -202,3 +200,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - 悲惨世界 (Victor Hugo, 1862)

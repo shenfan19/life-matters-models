@@ -39,8 +39,6 @@ metadata:
     - war
     - europe
     - literature
-  references:
-    - The Magic Mountain (Thomas Mann, 1924)
 variables:
   treatment_adherence:
     type: input
@@ -139,7 +137,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: health
@@ -202,3 +200,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - The Magic Mountain (Thomas Mann, 1924)
