@@ -1,13 +1,4 @@
 metadata:
-  todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: ad1910_po_marie_curie
   lm_format_version: "1.0"
   updated: 2026-04-23
@@ -18,17 +9,17 @@ metadata:
     problem: >
       居里夫人自 1898 年至 1906 年在巴黎开展的放射性研究中，辐射积累量 radiation 随实验强度线性增长，radiation += research_intensity × exposure_factor，同时辐射和过劳共同降低健康并抑制研究产出，progress += research_intensity × (1−radiation/120)。授课与经费申请是维持研究经费的必要来源，使实验时间受限；性别歧视导致机构支持更少，加剧了辐射-健康-财务的三角约束。
     result: >
-      仿真预期显示 8 年，合 96 个月内辐射积累、健康损耗、研究进度和经费的月动态；面向最大化放射性发现、维持健康、保持财务的三目标优化预期给出最优实验、授课、休息分配路径；该场景尚未实际运行仿真。
+      仿真显示 8 年，合 96 个月内辐射积累、健康损耗、研究进度和经费的月动态；三目标优化（2026-09-04 验证，60 代收敛，100% 可行，46 个 Pareto 解）确认 research_intensity 对 research_progress 存在真实权衡（6.28–100 分布），health 目标在前沿上几乎恒定（99.3 附近），radiation 目标在全部解中收敛为 0，后两者的权衡结构未在数值上得到确认，需人工复核。
     limitations: 历史辐射剂量难以精确重建，居里夫人时代尚无个人剂量计；辐射健康损耗使用现代 ICRP 框架，可能低估当时未知危害；性别歧视对机构支持的量化为模型假设。
 
   ratings:
     variable: 0.5 - 辐射损伤锚定现代ICRP框架，历史剂量与性别歧视量化为模型假设
     equation: 0.5 - 辐射与研究产出方程自建，锚定ICRP辐射损伤框架点估计
-    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
-    optimization: 0.5 - research_intensity对progress与radiation/health方向性权衡由方程内生，未数值验证
+    simulation: 0.75 - 2026-09-04验证，--sim正常产出96个月合理轨迹，未与独立数据逐点比对
+    optimization: 0.5 - 2026-09-04验证，--opt收敛46个Pareto解，research_progress维度权衡数值确认成立，但health/radiation两目标在前沿上近乎恒定，权衡未获数值支撑
     importance: 0.5 - 居里夫人是全球最知名女科学家之一，但为历史叙事场景，非框架依赖模块
     innovation: 0.5 - 辐射累积×性别压制×研究节律三维权衡视角独特，核心辐射暴露机制沿用现代框架
-    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
+    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立历史文献数值目标逐点比对
   tags: [historical, curie, radiation, research, 19th-century, france, women-in-science]
   period: "1898-1906"
   location: "Paris, France"

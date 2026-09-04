@@ -2,7 +2,7 @@ metadata:
   todo:
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 实测：--opt 报错 'Optimizer failed: No optimization.startpoint.regimens defined'。optimization 块仍为旧格式（method/algorithm/variables_to_optimize/maps_to），未迁移到当前规范要求的 optimization.startpoint.regimens 结构，引擎无法解析决策变量。"
       next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: ad079_it_pompeii
   lm_format_version: "1.0"
@@ -14,17 +14,17 @@ metadata:
     problem: >
       公元 79 年 8 月 24–25 日维苏威火山喷发期间，庞贝平民面临逃离速度与体能消耗的动态权衡：灰层累积约 15–20 cm/h，典型罗马建筑坍塌阈值约 30–40 cm，岩浆涌即碎屑流，温度约 300°C，于 8 月 25 日 6:30 抵达庞贝，成人在灰雨中步速约 3 km/h，移速越快逃得越远但体能消耗越大、吸入灰层越多，且遮蔽掩护可降低灰伤害但延迟逃离。
     result: >
-      仿真预期显示 19 小时内，即 79-08-24 13:00 至 79-08-25 8:00，逃离距离与体能消耗的小时级轨迹，以及岩浆涌抵达前的逃离临界点；双目标优化预期给出最大化逃离距离与最小化体能损耗的 Pareto 前沿；该场景尚未实际运行仿真。
+      仿真显示 19 小时内，即 79-08-24 13:00 至 79-08-25 8:00，逃离距离与体能消耗的小时级轨迹，以及岩浆涌抵达前的逃离临界点；双目标优化尚未验证（optimization 块为旧格式，--opt 报错，见 metadata.todo）。
     limitations: 聚合个体逃离动力学，未建模人群拥挤和恐慌的社会动力学；路线精度，即庞贝至 Stabiae 约 8 km 的测算，影响结果；参数基于火山学重建，逃离时间线参考小普林尼书信记录。
 
   ratings:
     variable: 0.75 - 灰层/岩浆涌参数据多篇火山学文献重建，速率系数为合理估算
     equation: 0.5 - 分段线性动力学自建，锚定灰层/岩浆涌历史时间线文献估计
-    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
-    optimization: 0.5 - movement_speed对escape_distance与health方向性权衡合理，未数值复现
+    simulation: 0.75 - 2026-09-04验证，--sim正常产出19小时合理轨迹，未与独立数据逐点比对
+    optimization: 0.5 - movement_speed对escape_distance与health方向性权衡合理；2026-09-04尝试--opt验证但因optimization块仍为旧格式而报错，方向性判断未被证伪也未被数值确认
     importance: 0.5 - 庞贝是人类最著名的自然灾难之一，但为历史叙事场景，非框架依赖模块
     innovation: 0.5 - 将火山学参数引入个体逃离决策的建模视角有新意，核心逃离动力学结构沿用已知框架
-    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
+    confidence: 0.0 - 2026-09-04验证：--sim跑通，但--opt因optimization块旧格式报错未跑通，整体验证未完成
   tags: [historical, disaster, volcanic, survival, ancient-rome, 1st-century]
   period: "79-08-24 13:00 ~ 79-08-25 08:00"
   location: "Pompeii, Roman Empire (modern-day Campania, Italy)"
