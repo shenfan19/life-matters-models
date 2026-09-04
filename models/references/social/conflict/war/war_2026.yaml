@@ -1,9 +1,10 @@
 metadata:
   todo:
     - type: quality
-      issue: "默认 optimization 场景（tension 初值10、无历史输入轨迹）下 --opt 收敛到平凡解 best_f=[100,0]（social_stability=100满分、conflict_intensity=0），未展现真实权衡"
+      severity: resolved
+      issue: "[诊断完成 2026-07-06，非bug] 默认 optimization 场景（tension 初值10、无历史输入轨迹）下 --opt 收敛到平凡解 best_f=[100,0]（social_stability=100满分、conflict_intensity=0），未展现真实权衡"
       evidence: "2026-07-06 --opt-only 实测：50代全程 feasible=100%，best_f 从Gen1起即为[100,0]不再变化。原因：tension初值10远低于escalation_dynamics的触发阈值50，即使diplomatic_talks=0、defense_spending=0全程也不会升温，'不采取任何行动'即为平凡最优解，本参考组件默认配置未内置任何冲突压力来源。"
-      next: "这是诚实的'无权衡'发现，非bug——真实的历史压力（军备竞赛轨迹、外生资源冲击）需要显式的输入轨迹才能体现，具体历史校准场景见内部记录（不在本参考组件公开范围）。本参考组件保持通用/无场景状态，不在此处编造压力输入。"
+      resolution: "2026-09-04 翻译前 TODO 复核确认：这是诚实的'无权衡'发现，非bug——真实的历史压力（军备竞赛轨迹、外生资源冲击）需要显式的输入轨迹才能体现，具体历史校准场景见内部记录（不在本参考组件公开范围）。本参考组件按设计保持通用/无场景状态，不在此处编造压力输入，不需要额外修复。"
   log:
     "2026-07-06_01-33-00":
       change: "新增institutional_reversibility状态、k_reversibility_defense/k_reversibility_scarcity参数、resource_shock输入、reversibility_decay/resource_shock_dynamics方程；de_escalation效果改为受institutional_reversibility调制；所有equations.step_unit从非法的'month'改为'day'，字面系数除以30换算（type A状态无关通量项，精确线性）；simulation.step_size同步改为day。"
@@ -26,7 +27,7 @@ metadata:
     variable: 0.75 - 引用Richardson经典著作、Wallace/Diehl军备竞赛-升级实证辩论、Sleesman升级承诺元分析及SIPRI/COW等权威数据来源
     equation: 0.75 - Richardson军备竞赛模型是冲突研究领域被广泛引用的经典结构，资源绝境/可逆度侵蚀为自建扩展机制
     simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    optimization: 0.0 - 2026-07-06/09-04两次实测确认默认场景收敛平凡解[100,0]，无历史压力输入时决策变量间无真实权衡，非bug是设计如此
     confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [war, conflict, geopolitics, Richardson, arms-race, escalation-of-commitment, social]
 
