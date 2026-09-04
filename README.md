@@ -2,6 +2,15 @@
 
 # Life Matters · 模型库
 
+Life Matters 这个名字兼取四层含义：
+
+- Life matters，生命本身很重要，生命里的事情因此也重要，值得认真对待
+- life's matters，生命与生活里的种种决策，是这个项目要建模和优化的对象
+- life-matter，参照 dark matter、condensed matter 的命名方式，指现代生命科学对生命物质本身的研究成果，是建模的依据
+- make life matter，用这些研究帮助人们的生活过得更有意义
+
+LM 基于现代生命科学的研究成果做系统科学建模，对生命与生活中的决策进行多目标优化，当优化不存在唯一最优解时，以 Pareto 前沿呈现结果，把所有较优的可能组合完整交给使用者评估和参考。
+
 > Life Matters（LM）项目的模型内容库，是整个项目的根基：LM format 格式规范与基于公开文献的模型内容都发布于此。  
 > 仿真与优化引擎见 → **[life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)**（LM Reference Engine，LM format 的参考实现）
 
@@ -40,8 +49,8 @@ LM format 是一种开放的 YAML 格式标准，类似 SBML / CellML，但专�
 
 本仓库的定位接近一个面向 AI 时代的、可计算的科学参考库：模型内容由 AI 大量参与生成，这是这个时代无法回避的现实，让这类内容变得可核对、可纠错，是这个仓库存在的意义之一。为此明确两条边界：
 
-- **作者本人负责**：LM format 格式规范，即 [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md)；配套仿真与优化引擎，见 [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)；以及少数已标注为"强验证"的核心示范模型，判定标准为 `validation_confidence` 不低于 4，完整名单见 [`docs/authoring/methodology.md`](docs/authoring/methodology.md) 的纳入标准盘点表与 [`models/test_validation/validation_report.md`](models/test_validation/validation_report.md)。
-- **模型库其余内容**：大部分模型文件由 AI 辅助生成与初步复核，**尚未经过相关领域专家核实**，仅供方法论演示与测试参考，不构成临床或科学结论。每个模型 `metadata.ratings.validation_confidence` 字段标注当前验证程度，量表为 1 到 5 分，定义见 [`docs/authoring/ratings.md`](docs/authoring/ratings.md)；纳入标准盘点表和验证报告如实记录了哪些学科、哪些模型已验证，哪些仍待评估，请据此判断可信度，不要默认已发布的模型就是已核实的。
+- **作者本人负责**：LM format 格式规范，即 [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md)；配套仿真与优化引擎，见 [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)；以及少数已标注为"强验证"的核心示范模型，判定标准为 `confidence` 不低于 0.75，完整名单见 [`docs/authoring/methodology.md`](docs/authoring/methodology.md) 的纳入标准盘点表与 [`models/test_validation/validation_report.md`](models/test_validation/validation_report.md)。
+- **模型库其余内容**：大部分模型文件由 AI 辅助生成与初步复核，**尚未经过相关领域专家核实**，仅供方法论演示与测试参考，不构成临床或科学结论。每个模型 `metadata.ratings.confidence` 字段标注当前验证程度，0-1 连续量表，定义见 [`docs/authoring/ratings.md`](docs/authoring/ratings.md)；纳入标准盘点表和验证报告如实记录了哪些学科、哪些模型已验证，哪些仍待评估，请据此判断可信度，不要默认已发布的模型就是已核实的。
 
 如果你是相关领域的专家，发现某个模型的参数、机制或结论有误，欢迎提交 issue 或 PR 指出——这正是模型以开放、可核对的 YAML 格式发布而非锁在私有工具里的原因。
 
@@ -51,16 +60,20 @@ LM format 是一种开放的 YAML 格式标准，类似 SBML / CellML，但专�
 
 ```
 models/
-  references/   基于文献的参考组件模型
-    medical/      生理、营养、疾病、药理
-    social/       经济、冲突、心理、人口
-  papers/       与论文绑定的完整场景（含优化结果）
-  scenarios/    组合场景（开发中）
-  temp/         未验证草稿（gitignore）
-output/         批量测试输出（gitignore）
+  references/     基于文献的参考组件模型
+    medical/        生理、营养、疾病、药理
+    social/         经济、冲突、心理、人口
+    environmental/  环境科学
+    risk/           精算与风险
+  papers/         与论文绑定的完整场景（含优化结果）
+  scenarios/      组合场景（开发中）
+  test_fixtures/  仿真器功能测试用例
+  test_validation/ 模型验证报告与结果
+  temp/           未验证草稿（gitignore）
+output/           批量测试输出（gitignore）
 docs/
   LM_format_1.0.md   格式规范全文
-  model/        建模实践指南，索引见 model/README.md（方法论、写作规范、评分、regimens/optimizer 等）
+  authoring/    建模实践指南，索引见 authoring/README.md（方法论、写作规范、评分、regimens/optimizer 等）
   quickstart.md 30 分钟写出第一个模型
   decisions/    YAML 格式和模型库结构的架构决策记录（ADR）
 ```
