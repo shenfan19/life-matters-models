@@ -2,14 +2,6 @@ category: physiological
 
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
     - type: noref
       issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
       evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
@@ -24,16 +16,16 @@ metadata:
     problem: >
       非酒精性脂肪肝（NAFLD）是全球患病率最高的慢性肝病，肝脏脂肪堆积超过5%即达到诊断阈值。运动是目前证据最充分的非药物干预手段，其中高强度间歇训练（HIIT），即强度超过约6 MET，比同等运动量的中等强度有氧训练更有效地动员肝脏脂肪，但高强度运动同时会急性升高血清ALT，即肝细胞损伤标志物，两者之间存在减脂效率与肝安全性的直接权衡。运动疲劳的累积还会限制后续训练耐受性，使最优强度的可持续性成为额外约束。
     result: >
-      默认90天仿真，方案为每天一次低强度步行3.5 MET，显示：肝脂从15%缓慢下降，ALT维持在28 IU/L基线附近，疲劳评分处于低水平。仿真尚未运行高强度训练对比场景，理论预期为增加运动强度至HIIT阈值以上可加速肝脂下降，但同时ALT会出现急性升高并以约4.6天半衰期回落，每次高强度训练后的ALT峰值不应超过正常上限40 IU/L。
+      默认90天仿真，方案为每天一次低强度步行3.5 MET，--sim-only验证显示：肝脂从15%缓慢下降至90天末约14.05%，ALT从初始32 IU/L回落并收敛至28 IU/L基线附近，疲劳评分升至约11.7后趋于稳态。--opt-only以主训练日运动强度（6-9 MET区间）为决策变量求解肝脂/ALT双目标，50个解构成非退化前沿：运动强度从约6.24 MET升至7.73 MET时，90天末肝脂从约14.04%降至13.81%，同时ALT峰值从31.4 IU/L升至39.9 IU/L，逼近但未突破40 IU/L硬约束，呈现清晰的减脂效率与肝安全性单调反向权衡，与建模预期方向一致。
     limitations: >
       HIIT额外减脂系数，即beta_hiit参数，为估算值，尚未从HIIT与中等强度有氧对比的随机对照试验中精化。模型未涵盖饮食、体重和胰岛素抵抗对肝脂的影响，仅描述运动的单一干预通路。
   ratings:
     importance: 0.5 - NAFLD 全球患病率高，运动机制组件有广泛应用价值；已有明确papers依赖（A1/MASLD系列），特定子领域中等使用
     variable: 0.5 - ALT 动力学来源良好，beta_hiit 系数为估算值（TODO:SOURCE）
     equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.75 - 2026-09-04验证：--sim-only肝脂/ALT/疲劳轨迹方向和量级符合预期，未逐点对比独立数据
+    optimization: 0.5 - 2026-09-04验证：50个解构成非退化前沿，运动强度6.24-7.73MET单调换取肝脂下降与ALT峰值上升的真实反向权衡；但beta_hiit与delta_alt两个关键系数仍为TODO:SOURCE估算值，量化证据链未闭合
+    confidence: 0.25 - 2026-09-04验证：--sim/--opt均跑通且方向符合预期，但未与独立文献数值逐点比对
   tags: [nafld, fatty_liver, exercise, HIIT, ALT, hepatology]
 
 variables:

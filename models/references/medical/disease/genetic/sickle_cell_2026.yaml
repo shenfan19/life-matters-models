@@ -4,11 +4,11 @@ metadata:
   todo:
     - type: nosim
       issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 用 --sim-only 复现：模型加载阶段报 Model validation failed，variables.fluid_intake_ml_per_day 的 value: 0.0 落在其自身 bounds [500, 4000] 之外，加载即失败，未进入仿真。已知问题，见 task_index.md「references/medical 子树系统性加载失败」条目类型3。"
       next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 用 --opt-only 复现：同一 fluid_intake_ml_per_day 越界导致模型加载失败，与 --sim-only 报错一致，未进入优化。已知问题，见 task_index.md「references/medical 子树系统性加载失败」条目类型3。"
       next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: sickle_cell
   lm_format_version: "1.0"

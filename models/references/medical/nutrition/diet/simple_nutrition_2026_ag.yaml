@@ -1,15 +1,6 @@
 category: dynamics
 
 metadata:
-  todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: "simple_nutrition"
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,15 +11,21 @@ metadata:
     problem: >
       游戏专用简化营养摄入组件：三餐触发时将碳水化合物、蛋白质、脂肪和水分按固定比例注入胃部缓冲区，为香蕉模型等上层场景提供对照基线组件，用于基础校验。
     result: >
-      三餐 schedule 触发后，对应营养素蓄积进胃部。仿真尚未运行，为组件模型。
+      三餐 schedule 触发后，对应营养素蓄积进胃部。--sim-only 中三餐 plan 按时触发，
+      gastric_carbohydrate/gastric_protein/gastric_fat 随三餐累加至 210/60/48g，body_water
+      从 42000ml 累加至 43050ml，累加逻辑正确。--opt-only 中 food_carbohydrate/food_protein/
+      food_fat/water_intake 是四个相互独立的决策变量，food_protein 与 food_fat 之间没有任何
+      共享预算或耦合约束，优化器可同时把 food_protein 推到上界 100g、food_fat 压到下界 0g，
+      50 个解全部收敛到 gastric_protein≈100、gastric_fat≈0 这一点，food_carbohydrate 与
+      water_intake 因不在目标函数中而在可行域内自由取值。
     limitations: 极简转换组件，不包含消化速率、食物组成差异或个体代谢动力学；参数应在上层场景中校准。
   ratings:
     importance: 0.0 - 游戏专用简化营养模型，仅为演示/校验用途，无研究需求，框架内复用价值极低
     variable: 0.25 - 基本营养成分数值合理，但模型极简，缺少生理动力学，无疾病特异文献支撑
     equation: 0.0 - 纯累加记账，不含任何消化/代谢机制，无文献依据
-    simulation: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.0 - 蛋白质与脂肪目标之间无结构耦合，最大化/最小化互不影响，不构成真实权衡
-    confidence: 0.0 - 从未跑通--sim/--opt
+    simulation: 0.75 - 2026-09-04验证：--sim-only三餐plan按时触发，累加轨迹方向和量级符合预期，未做独立数据逐点比对
+    optimization: 0.0 - 2026-09-04验证：50个解在目标空间collapse到gastric_protein≈100/gastric_fat≈0单点，food_protein与food_fat为独立决策变量无共享预算约束，两个目标可同时达到各自极值，不构成真实权衡
+    confidence: 0.25 - 2026-09-04验证：跑通且累加逻辑正确，但未与独立文献数据比对
   tags: [nutrition, simple, demo]
 
 variables:

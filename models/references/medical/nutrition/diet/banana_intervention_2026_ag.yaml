@@ -3,11 +3,11 @@ metadata:
   todo:
     - type: nosim
       issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 用 --sim-only 复现：无报错，但输出全程为 0。追查发现 calculate_nutrition_impact 方程的 condition: '' 是空字符串，AST 按空表达式解析失败回退到 asteval，求值结果为假值，导致 if not condition: continue 恒成立，方程从未执行——与同目录 raw_berry/cooked_meat 用 banana_intake > 0 作为真实条件不同，这里是空字符串误当条件写入，属于模型自身 bug，不是缺少上层摄入事件的正常组件行为。"
       next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 用 --opt-only 复现：50 个前沿点在 banana_intake 50~874 全范围内变化，但 food_carbohydrate/food_fat 全部恒为 0，与 --sim-only 发现的同一 condition: '' 空条件 bug 一致——方程从未执行，优化器实际在对完全无响应的目标做搜索，前沿数值无意义。"
       next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: banana2
   lm_format_version: "1.0"

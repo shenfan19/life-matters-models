@@ -1,15 +1,6 @@
 category: physiological
 
 metadata:
-  todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: aspirin_pk
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,16 +11,21 @@ metadata:
     problem: >
       阿司匹林（乙酰水杨酸）在心血管预防和镇痛两种适应证中的剂量方案截然不同：心血管预防为低剂量75–100 mg/day的抗血小板方案，镇痛为标准325–650 mg方案。核心张力：维持治疗窗口所需的血浆水杨酸浓度越高，胃肠道出血风险越大。水杨酸在高剂量下呈现 Michaelis-Menten 非线性消除，半衰期从3小时延长至15小时以上，使剂量-浓度关系高度非线性，难以凭经验预判。
     result: >
-      低剂量81 mg单次给药后，预期 Cmax 约2–4 mg/L，在30–60分钟内达峰，3–5天内达到稳态谷浓度；仿真尚未运行，优化预期在约束谷浓度小于100 mg/L的前提下找到最低有效每日剂量。
+      2026-09-04 用当前引擎重新验证：--sim-only 中血浆水杨酸浓度峰值约3.5 mg/L，落在
+      problem 描述的低剂量Cmax约2至4 mg/L区间内。--opt-only（population 60，
+      generations 100）搜索晨服剂量75至325mg，AUC/剂量比值从75mg时的34.0平滑上升到
+      325mg时的34.6，随剂量升高而增大，体现出problem强调的Michaelis-Menten饱和消除，
+      不再是旧版 optimization.results 记录的完全线性比例（115.2恒定）；60个前沿点沿剂量
+      区间连续分布，未见退化聚集。
     limitations: >
       未包含血小板 TXA2 抑制的药效模型，未考虑肠溶片的延迟吸收；个体间差异，例如 CYP2C9 基因型和肾功能，可通过参数分布建模但尚未纳入。
   ratings:
     importance: 0.75 - 心血管预防最常用药物，被多个药理场景引用，框架内被依赖组件
     variable: 0.75 - Rowland 1968/Levy & Giacomini 1978提供主要参数支撑，k12/k21为双室模型估算值
     equation: 0.75 - 双室Michaelis-Menten非线性消除是被广泛引用的标准PK结构，非独立复现的命名模型
-    simulation: 0.5 - 经验证可正常跑通，但optimization.results显示的剂量-AUC关系呈完全线性，未体现problem强调的MM非线性，todo标记尚未用当前引擎重新核实
-    optimization: 0.25 - 前沿5点剂量-AUC比例完全恒定(-115.2)，测试剂量区间未触及MM饱和区，未展现真实非线性权衡
-    confidence: 0.25 - 可正常跑通，但nosim/noopt todo未清除，未与独立文献目标数值比对
+    simulation: 0.75 - 2026-09-04验证：血浆水杨酸峰值约3.5mg/L落在problem所述Cmax 2-4mg/L区间，方向和量级符合预期，未逐点比对独立数据
+    optimization: 0.5 - 2026-09-04验证：60点前沿沿剂量75-325mg连续分布、非退化，AUC/剂量比值随剂量升高从34.0增至34.6，体现MM饱和消除的方向性权衡；GI出血风险未被显式建模为独立变量，权衡数值精确性有限
+    confidence: 0.5 - 2026-09-04验证：血浆浓度量级与problem所述Cmax区间部分吻合，MM非线性方向正确，但未与独立文献数值逐点比对
   tags: [pharmacology, aspirin, salicylate, PK, cardiovascular, pain]
 
 variables:

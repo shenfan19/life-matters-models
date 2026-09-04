@@ -2,11 +2,11 @@ metadata:
   todo:
     - type: nosim
       issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
+      evidence: "2026-09-04 用 --sim-only 复现：加载模型数据失败，imports 引用 references/medical/physiology/glucose_regulation_2026_mw 未找到（实际文件无 _mw 后缀）。已知问题，见 task_index.md「references/medical 子树系统性加载失败」条目类型1（_mw 后缀 stale import 依赖链）。"
       next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
+      evidence: "该文件当前未声明 optimization: 块，未跑 --opt-only；sim 阶段已确认的已知 _mw stale import 问题会同样阻断加载。已知问题，见 task_index.md「references/medical 子树系统性加载失败」条目类型1。"
       next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: endocrine_system
   lm_format_version: "1.0"

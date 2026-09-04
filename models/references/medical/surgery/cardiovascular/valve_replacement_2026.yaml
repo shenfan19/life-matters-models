@@ -2,14 +2,10 @@ category: physiological
 
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+      evidence: "2026-09-04 用 --opt-only 复现：60个体×100代（6000次评估）全程feasible=0%，输出opt.csv仅1行（warfarin_dose≈5.36，cardiac_index=3.5恒定，anticoagulation_inr≈2.05）。原因有二，均已核实：(1) pulmonary_pressure<=35声明type:soft但未加metric，追查reference_engine源码确认optimizer_engine.py第80行`constraints = list(opt_block.get('constraints', []))`及optimizer_eval.py的`_eval_G`均未按type字段过滤，soft被当作hard强制执行；`_eval_G`对无metric的约束默认逐时间步校验，baseline初始值38 mmHg高于35，术后早期肺压尚未随左室后负荷改善而下降，从day1起持续违反，与warfarin_dose取值无关，全区间0%可行。(2) 即便约束问题修复，本优化本身也不构成真正的双目标权衡：optimization.startpoint.regimens只声明warfarin_dose一个决策变量，cardiac_index_recovery方程只依赖aortic_gradient和physical_therapy_intensity（后者固定为baseline plan值、不参与搜索），与warfarin_dose完全无耦合——本次复现6000次评估中cardiac_index恒定为3.5（decision variable无关），只有anticoagulation_inr随warfarin_dose变化，实质是单变量单目标（INR贴近2.5）问题，被包装成了双目标形式。"
+      next: "engine层面：_eval_G需要区分type:hard/soft；model层面两处：pulmonary_pressure约束需补充metric（如仅在4-6周窗口生效），以及若要保留cardiac_index为优化目标，需要把physical_therapy_intensity也纳入决策变量，否则应移除该目标改为单目标INR优化。"
   name: valve_replacement
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,16 +16,17 @@ metadata:
     problem: >
       主动脉瓣狭窄在75岁以上人群患病率约3.4%，其 TAVR/SAVR 术后恢复包含两个时序不同的过程：主动脉跨瓣压差在术后 24–48 小时内立即改善，从≥40 mmHg降至<20 mmHg，而肺血管阻力下降和左室肥大消退需数周至数月适应性重塑。抗凝管理同步进行，生物瓣INR目标2.5并维持3个月，机械瓣需终身抗凝，华法林剂量调整与物理治疗强度进阶的协同时序需要量化支持。
     result: >
-      PARTNER Trial（Leon 2010）：TAVR 后压差 24 h 内从 48 降至 18 mmHg；仿真预期 6 周末心脏指数从 1.8 恢复至 2.4–2.6 L/min/m²，肺动脉压从 38 降至 30 mmHg，仿真尚未运行。
+      PARTNER Trial（Leon 2010）：TAVR 后压差 24 h 内从 48 降至 18 mmHg；仿真预期 6 周末心脏指数从 1.8 恢复至 2.4–2.6 L/min/m²，肺动脉压从 38 降至 30 mmHg。
+      --sim-only以文件内baseline plan（PT强度1→3，华法林5mg/day）验证：主动脉压差迅速降至人工瓣固有压差14 mmHg；心脏指数6周末升至声明上界3.5 L/min/m²，明显超过预期的2.4-2.6区间；肺动脉压降至约29.0 mmHg，略优于预期的30；INR收敛至约2.0（低于生物瓣目标2.5，因baseline华法林剂量未按目标滴定）；活动能力评分升至约4.85。心脏指数超出预期上限，提示cardiac_index_recovery方程系数可能偏强。--opt-only以华法林剂量为决策变量求解心脏指数/INR双目标，60个体×100代全程0%可行，且即便约束问题修复，cardiac_index本身也不随warfarin_dose变化（只依赖压差和固定不变的PT强度），并非真正的双目标权衡，详见noopt todo。
     limitations: >
       未包含瓣周漏（PVL）对有效瓣口面积的影响；INR 模型未考虑 CYP2C9/VKORC1 基因型差异；未建模 TAVR 特有并发症，例如传导阻滞约10%、30天卒中约2到3%。
   ratings:
     importance: 0.5 - 主动脉瓣置换（TAVR）是近年心外科最重要进展，血流动力学管理是核心；心外科专项模型，上层场景复用少
     variable: 0.75 - 引用PARTNER Trial及ACC/AHA/ESC多项权威指南，参数有据
     equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.5 - 2026-09-04验证：跑通且压差/肺压量级与PARTNER Trial预期接近，但心脏指数6周末触及声明上界3.5，明显超过预期的2.4-2.6区间，提示cardiac_index_recovery系数偏强
+    optimization: 0.0 - 2026-09-04验证：pulmonary_pressure<=35约束缺metric+soft被engine当作hard强制导致全区间0%可行；且cardiac_index目标本身不随唯一决策变量warfarin_dose变化，并非真实双目标权衡，两个独立问题均详见noopt todo
+    confidence: 0.25 - 2026-09-04验证：--sim方向基本符合PARTNER Trial但心脏指数幅度超出预期，--opt因约束缺陷与目标/决策变量脱耦均无法给出有效结果
   tags: [tavr, savr, valve_replacement, aortic_stenosis, cardiac_index, anticoagulation, warfarin]
 
 variables:
@@ -294,21 +291,6 @@ optimization:
     population_size: 60
     n_generations: 100
     seed: 19
-  results:
-    generated_at: "2026-05-17"
-    method: nsga2
-    n_solutions: 6
-    elapsed_seconds: 128.7
-    pareto_front:
-      - {x: [3.5], f: [-2.31, 1.2]}
-      - {x: [4.0], f: [-2.34, 0.8]}
-      - {x: [5.0], f: [-2.38, 0.3]}
-      - {x: [6.0], f: [-2.40, 0.2]}
-      - {x: [7.0], f: [-2.42, 0.4]}
-      - {x: [8.0], f: [-2.43, 0.9]}
-    recommended:
-      x: [5.5]
-      f: [-2.39, 0.25]
 
 references:
   - "Leon MB et al. (2010) Transcatheter aortic-valve implantation for aortic stenosis in patients who cannot undergo surgery (PARTNER Trial). NEJM 363(17):1597-1607."
