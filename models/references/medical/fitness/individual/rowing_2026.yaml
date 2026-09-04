@@ -15,18 +15,13 @@ metadata:
     limitations: >
       参数基于 80 kg 中级男性赛手，VO2max 为 62 mL/kg/min，不适用于女性或不同体型运动员。未区分单人艇、双人艇、八人艇的技术和配合差异；水流和风阻等环境条件未建模；乳酸清除采用简化一室指数模型，忽略乳酸转运蛋白饱和效应。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 划船是有氧运动之一，应用场景较专项，复用度中等
-    framework_demand: 2 - 专项竞技模型，上层场景复用少
-    evidence_quality: 4 - 引用Secher/Hagerman等划船生理学权威文献，参数有据
-    popularity: 3 - 划船在运动科学中有专科地位，但通用度不及跑步/游泳
+    importance: 0.25 - 划船是有氧运动之一，应用场景较专项，复用度中等；专项竞技模型，上层场景复用少
+    variable: 0.75 - 引用Secher/Hagerman等划船生理学权威文献，参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [rowing, ergometer, Concept2, VO2, lactate, aerobic, anaerobic, endurance, 2000m]
-  references:
-    - "Secher NH (1993) Physiological and biomechanical aspects of rowing. Sports Med 15(1):24-42."
-    - "Hagerman FC (1984) Applied physiology of rowing. Sports Med 1(4):303-326."
-    - "Maestu J et al. (2005) Monitoring of performance and training in rowing. Sports Med 35(7):597-617."
-    - "Concept2 (2023) Concept2 Rowing Calculator and Performance Standards. Concept2 Inc., Morrisville, VT."
-    - "Ingham SA et al. (2002) Determinants of 2,000m rowing ergometer performance in elite rowers. Eur J Appl Physiol 88(3):243-246."
 
 variables:
   stroke_rate:
@@ -165,7 +160,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "有氧训练划频（24 spm）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: split_time
@@ -212,3 +207,10 @@ optimizer:
     recommended:
       x: [340.0]
       f: [107.0, 7.6]
+
+references:
+  - "Secher NH (1993) Physiological and biomechanical aspects of rowing. Sports Med 15(1):24-42."
+  - "Hagerman FC (1984) Applied physiology of rowing. Sports Med 1(4):303-326."
+  - "Maestu J et al. (2005) Monitoring of performance and training in rowing. Sports Med 35(7):597-617."
+  - "Concept2 (2023) Concept2 Rowing Calculator and Performance Standards. Concept2 Inc., Morrisville, VT."
+  - "Ingham SA et al. (2002) Determinants of 2,000m rowing ergometer performance in elite rowers. Eur J Appl Physiol 88(3):243-246."

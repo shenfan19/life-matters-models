@@ -15,16 +15,13 @@ metadata:
     limitations: >
       CTL/ATL 在单次训练内采用线性近似更新，与真实每日更新机制存在偏差。FTP 设为固定参考值，未建模数周训练后的适应性 FTP 提升；营养、睡眠质量等影响恢复速率的非训练因素未纳入模型。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 室内功率车是精确运动负荷管理的重要工具，CTL/ATL体系广泛应用
-    framework_demand: 2 - 专项训练模型，通用度低于基础生理模型
-    evidence_quality: 4 - 引用Coggan/Rønnestad等权威来源，TSS/CTL/ATL方程有据
-    popularity: 3 - TSS训练负荷模型是功率训练专项内容，通用度略低于基础生理模型
+    importance: 0.25 - 室内功率车是精确运动负荷管理的重要工具，CTL/ATL体系广泛应用；专项训练模型，通用度低于基础生理模型
+    variable: 0.75 - 引用Coggan/Rønnestad等权威来源，TSS/CTL/ATL方程有据
+    equation: 0.75 - TSS/CTL/ATL训练负荷体系是功率训练领域被广泛引用的Coggan/Rønnestad标准框架
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [cycling, indoor, power_meter, TSS, CTL, ATL, Form, lactate, Zwift, periodization]
-  references:
-    - "Coggan AR & Allen H (2010) Training and Racing with a Power Meter, 2nd ed. VeloPress, Boulder, CO."
-    - "Rønnestad BR & Mujika I (2014) Optimizing strength training for running and cycling endurance performance: A review. Scand J Med Sci Sports 24(4):603-612."
-    - "Kuipers H (1998) Training and overtraining: An introduction. Med Sci Sports Exerc 30(7):1137-1139."
 
 variables:
   power_zone:
@@ -163,7 +160,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "踏频（90 rpm，有氧效率最优区间）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: form_index
@@ -209,3 +206,8 @@ optimizer:
     recommended:
       x: [2.0]
       f: [-0.8, 50.3]
+
+references:
+  - "Coggan AR & Allen H (2010) Training and Racing with a Power Meter, 2nd ed. VeloPress, Boulder, CO."
+  - "Rønnestad BR & Mujika I (2014) Optimizing strength training for running and cycling endurance performance: A review. Scand J Med Sci Sports 24(4):603-612."
+  - "Kuipers H (1998) Training and overtraining: An introduction. Med Sci Sports Exerc 30(7):1137-1139."

@@ -1,0 +1,35 @@
+metadata:
+  name: banister_step_convergence_grid_pointer
+  lm_format_version: "1.0"
+  description:
+    problem: >-
+      A pure pointer file with no simulation or optimization content; this file itself is not runnable and
+      lacks variables, equations, and simulation declarations, existing only to direct readers browsing the
+      GUI or repository under "the S1 Banister case" to the actual step-size convergence test model.
+    method: "This file contains no mechanism and is pure navigation; the mechanism content is in banister_validation.yaml's description.method."
+    result: >-
+      The Banister analytical-solution comparison and step-size convergence test grid mentioned in the
+      paper's §6 Verify are not runnable from this directory but from 6 independent files under
+      `models/test_fixtures/valid/`, created on 2026-07-15 following the simplifying principle of varying
+      only step size within a fixed 60-day maximum window, named in order `test_valid_banister_v1_analytical.yaml`,
+      a 1-day step; `test_valid_banister_v1_step_12h.yaml`; `test_valid_banister_v1_step_6h.yaml`;
+      `test_valid_banister_v1_step_3h.yaml`; `test_valid_banister_v1_step_1h.yaml`;
+      `test_valid_banister_v1_step_30min.yaml`. All 6 files share the identical physical setup, a constant
+      training load of 50 AU/day and the standard Morton 1990 parameters, differing only in
+      `simulation.step_size`; running `--sim-only` on each independently reproduces the end-of-60-day error
+      figures recorded in the paper's §6 Verify, from coarsest to finest step: 0.78%, 0.38%, 0.19%, 0.10%,
+      0.03%, 0.02%. These live under `test_fixtures/valid/` rather than this directory because these 6 files
+      are engine-correctness fixtures answering whether the engine's numerical integration is accurate, a
+      separate question from whether the daily_training/five_day_training head-to-head comparison figures in
+      this directory's `banister_validation.yaml` have been rechecked under the current protocol, which
+      should not be confused with the former; the latter concerns whether the model's own parameters are up
+      to date, recorded in that file's metadata.todo, and falls under the §7 Validation Research case
+      section, unrelated to the 6 fixtures this file points to.
+    limitations: This file contains no runnable content and is purely a navigation entry for the repository.
+  tags: [banister, pointer, no_content]
+  todo:
+    - type: nosim
+      issue: "This file is not runnable by design (no variables, equations, or simulation) and is a pointer entry with no content, see the 6 file paths in description.result."
+
+references:
+  - "See test_verification/verification_report.md protocol V2"

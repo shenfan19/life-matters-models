@@ -96,7 +96,7 @@ equations:
 ### 3. 加优化：让软件帮你找最优剂量
 
 ```yaml
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: SBP
@@ -165,6 +165,6 @@ dynamics:
 | 完整字段规范 | `docs/LM_format_1.0.md` |
 | 建模实践指南 | `docs/authoring/README.md` |
 | 多模型组合（import） | `docs/authoring/imports_and_organization.md` |
-| 优化器全部参数 | `docs/authoring/regimens_and_optimizer.md` |
+| 优化器全部参数 | `docs/authoring/regimens_and_optimization.md` |
 | 已有可运行模型参考 | `models/papers/` 目录 |
 | 架构决策背景 | `docs/decisions/` 目录 |

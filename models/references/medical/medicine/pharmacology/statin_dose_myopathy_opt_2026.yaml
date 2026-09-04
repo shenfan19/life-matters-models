@@ -15,19 +15,20 @@ metadata:
     limitations: |
       SEARCH trial数据针对simvastatin，肌病风险幂律拟合的具体系数(A,B)不直接适用于其他他汀，本文件LDL部分用的锚点是rosuvastatin的STELLAR trial数据，这是用两个不同他汀的独立数据分别代表效益和风险两条曲线的简化。两条曲线各自的文献来源都可靠，但同一个患者服用同一种他汀会精确复现这两条曲线这一假设本身未经验证，需要在论文中明确注明为方法论简化演示，不是单一药物的完整PK/PD模型。
   ratings:
-    topic_importance: 3 - 剂量选择的效益-风险权衡是他汀临床决策的核心问题
-    framework_demand: 2 - 展示K×4单变量优化+Pareto前沿能力的候选案例
-    evidence_quality: 5 - LDL部分(STELLAR)与肌病风险部分(SEARCH trial)均为高质量RCT数据
-    paper_value: 3 - 候选案例：文献双清洁 + 真实非退化Pareto前沿，但两条曲线来自不同药物需要论文中说明简化
-    innovation: 2 - 剂量-效益-风险权衡结构本身文献已知，用LM format K×4机制形式化是增量贡献
-    validation_confidence: 4 - 两个目标函数各自独立验证通过(见imports文件与本文件limitations)，组合使用为方法论简化
+    importance: 0.25 - 展示K×4单变量优化+Pareto前沿能力的候选案例，非框架依赖模块
+    variable: 0.75 - LDL部分(STELLAR)与肌病风险部分(SEARCH trial)均为高质量RCT数据，但幂律系数为作者对两点数据的拟合
+    equation: 0.5 - LDL用"rule of 6"经验法则，肌病风险为作者自行拟合的两点幂律，非独立复现的标准形式
+    simulation: 0.5 - LDL部分复用已独立验证的statin_ldl_doseresponse，肌病部分仅锚定拟合所用的原始两点，无第三方独立数据比对
+    optimization: 0.75 - 10-80mg剂量范围内跑出真实非退化Pareto前沿，体现效益递减风险加速结构，但两条曲线取自不同他汀药物的独立数据
+    confidence: 0.5 - 两个目标函数各自独立验证通过，但组合使用（同一患者同时复现两条曲线）本身未经验证，属方法论简化
   tags: [statin, ldl, myopathy, dose-optimization, k4, pareto, validation, literature-benchmark]
-  references:
-    - "LDL 部分完整引用见 statin_ldl_doseresponse_2026.yaml"
-    - "SEARCH Collaborative Group (2010) Intensive lowering of LDL cholesterol with 80mg vs 20mg simvastatin daily in 12064 survivors of myocardial infarction. Lancet 376(9753):1658-1669"
 
 imports:
   - ./statin_ldl_doseresponse_2026
+
+references:
+  - "LDL 部分完整引用见 statin_ldl_doseresponse_2026.yaml"
+  - "SEARCH Collaborative Group (2010) Intensive lowering of LDL cholesterol with 80mg vs 20mg simvastatin daily in 12064 survivors of myocardial infarction. Lancet 376(9753):1658-1669"
 
 variables:
   myopathy_risk_pct:
@@ -58,7 +59,7 @@ equations:
     dynamics:
       myopathy_risk_pct: "myopathy_coef_a * (statin_dose ** myopathy_coef_b)"
 
-optimizer:
+optimization:
   method: nsga2
   start_date: "2026-01-01"
   end_date: "2026-01-30"

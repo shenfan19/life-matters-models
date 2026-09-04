@@ -1,0 +1,280 @@
+metadata:
+  name: banister_validation
+  lm_format_version: "1.0"
+  updated: 2026-08-31
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: |
+      Optimizing an athlete's precompetition training plan: over a 16-week buildup, how many days a week to train, how much load at each phase, and when to begin the pre-competition taper together determine the fitness level and fatigue level on competition day.
+      Based on Banister's (1975) two-compartment fitness-fatigue model, training produces both a fitness gain and a fatigue accumulation, decaying at different rates; the key to tapering is letting fatigue dissipate and releasing the resulting supercompensation, while tapering too early lets fitness decline along with it.
+      Training frequency and taper timing carry as much weight as load magnitude, and a fixed protocol cannot reveal this structural relationship.
+    method: |
+      This file implements the Banister two-compartment fitness-fatigue model: fitness and fatigue are two independent dynamic trajectories driven by the same decision variable, training_load, each decaying with its own time constant, 45 days for fitness and 15 days for fatigue (Morton 1990). Performance is obtained by subtracting one from the other, so every adjustment to training load changes both trajectories at once rather than affecting a single outcome: raising load makes fatigue rise faster than fitness in the short term, and tapering makes fatigue dissipate faster than fitness declines, so competition-day performance depends on the relative position of these two differently paced trajectories at a specific point in time, which is exactly why training frequency and taper timing become decision dimensions independent of load magnitude.
+    result: |
+      - This file carries the complete variables and equations physical mechanism, corresponding to §5.2 of paper `paper/c_paper_s1_cn.md`; the `daily_training` plan directly reproduces the constant-load example in Morton 1990's original Fig.3/4 (p.1173-1174), 100 trimps/day for 60 days followed by complete cessation, and running `--sim` reproduces the comparison against the original text's checkpoint figures, performance=307 at day 60 and a peak of 1353 at day 83.
+      - The `five_day_training`, `early_taper`, and `opt_optimized` plans are exploratory comparisons of training frequency and taper timing, not benchmarked against any specific source, used for the K by 4 behavioral optimization extension, see `test_validation/banister/banister_opt.yaml`, archived from this case directory to test_validation on 2026-08-13 as outside S1's current argument scope; this falls under the paper's future work, and §5 Verify does not report its results.
+    limitations: The two-compartment structure, the time constants of 45 and 15 days, the gain coefficients g=1.0 and h=2.0, and the performance equation p=fitness-fatigue have all been verified directly against page 1173 of the Morton 1990 original text, so they are literature-calibrated values. The daily_training plan's protocol of w=100 for 60 days of training followed by complete cessation is taken directly from the Fig.3/4 example in the original text; the continuous-time reference solution's performance peak of 1353.0 on day 82 is almost exactly consistent with the original's reported peak of 1353 on day 83, a difference of 0.00 percent, while the LM engine's own peak of 1383.4 on day 81 differs from the continuous reference solution by 2.33 percent. This file uses continuous-time ODEs rather than the original's discrete daily recursion, and the day-60 checkpoint is more sensitive to discretization method because performance is the difference of two large, close numbers; the continuous reference solution differs from the original's reported value by 20.1 percent relative error, even though fitness and fatigue each differ by only 1.1 and 3.3 percent respectively, the root cause being this difference amplification rather than integration error, see c_paper_s1_cn.md §5.2 for the complete figures and explanation. The `five_day_training`, `early_taper`, and `opt_optimized` plans are not calibrated to any specific athlete and are not intended for literature benchmarking; the model applies to periodized competitive sport, not to assessing a novice's starting training load.
+  ratings:
+    importance: 0.5 - a methodological validation demonstration, serving to validate the framework, with no independent clinical need and not imported by any other paper
+    variable: 1.0 - the g/h gain coefficients, the fitness and fatigue time constants, and the daily_training protocol's w=100 for 60 days followed by complete cessation have all been verified directly against Fig.3/4 on pages 1173-1174 of the Morton 1990 original text, with no independently set example parameters; the earlier additive p0 term was an implementation error introduced by this file itself, with no such term in the original eq.8, removed on 2026-08-31
+    equation: 1.0 - the Banister two-compartment fitness-fatigue structure is one of the most widely cited and independently reproduced standard forms in exercise-physiology modeling
+    simulation: 0.9 - broadly consistent point by point against an independent continuous-time reference solution; the net-value-type performance metric exceeds a 2 percent relative-error threshold at the intermediate checkpoints, day 30 and day 60, already identified as a difference-amplification effect rather than an integration error; the peak checkpoint, day 81/82, differs by 2.33 percent, see todo and Table 4 of c_paper_s1_cn.md §5.2
+    innovation: 0.5 - the Banister model itself is not original to this work; the T3+T4 joint optimization, the K by 4 extension in test_validation/banister/banister_opt.yaml, is the incremental contribution
+    confidence: 0.9 - updated 2026-08-31, for the daily_training plan, the w=100 example from Morton 1990 Fig.3/4, the continuous-time reference solution's performance peak of 1353.0 is almost exactly consistent with the original's reported 1353, day 82 versus day 83, a difference of 0.00 percent, while the LM engine's own peak of 1383.4, day 81, differs from the continuous reference solution by 2.33 percent; the day-60 checkpoint's relative error of 20.1 percent arises because performance is the difference of two large, close numbers, with fitness and fatigue each differing by only 1.1 and 3.3 percent, already explained as a difference-amplification effect; g/h, the time constants, and the performance equation have all been verified directly against the original text with no discrepancy. This is a substantial increase from the earlier 0.5, since the case moved from "independently set example parameters with no literature benchmark possible" to "traceable item by item to the original's page numbers and figures, with the peak closely matching."
+  tags: [banister, validation, fitness, fatigue]
+  todo:
+    - type: bug
+      severity: resolved
+      issue: "[Fixed 2026-08-11] fitness_dynamics and fatigue_dynamics multiplied both the training_load term and the decay term by *step together; training_load, delivered by schedule_runner as a single-step pulse under delivery:total semantics, already arrives as the amount to be delivered in that one step, so multiplying it by step again scaled the daily training load up or down in proportion to step_size, which happened to leave the number unchanged only at step_size=1 hour, this file's long-standing configuration, masking the problem."
+      evidence: "A grid test before the fix: at step_size=6h, performance hit the bounds ceiling of 2000, when it should have been about 1340; at 30 minutes it fell to about 917. After the fix, training_load no longer multiplied by step while the decay term retained *step, the three step sizes 1h/6h/30min converged to performance between 1340.3 and 1342.2, within 0.2 percent of each other."
+      fix: "fitness_dynamics: fitness + g*training_load - k1*fitness*step; fatigue_dynamics was fixed with the same pattern. banister_opt.yaml reuses the same equation set through imports; its cached metadata.optimization.results Pareto front was run before this fix and was not re-optimized this time, requiring a separate task to re-run --opt and update it."
+      next: "The thiazide_level_dynamics equation in diuretic_tradeoff_sim.yaml and the same-named equation in hypertension_gout_sim.yaml use the same 'multiply the pulse value and the decay term by *step together' pattern, with a comment claiming to reuse Banister's already-validated pattern, a claim that did not hold before this fix. Both are also currently fixed at step_size=1h, so they may likewise be correct only by coincidence; a separate task is recommended to check them."
+    - type: quality
+      severity: resolved
+      issue: "[Root cause identified 2026-08-31] Competition-day performance stably converges to about 1340 AU, roughly 2.5 times above the previously assumed Morton 1990 target range of 520-560 AU. Tracing the introduction history of p0=494, w=50/w=10, and the 520-560 AU range in this model, first committed as b3_banister.yaml on 2026-05-04, confirmed all three were example numbers set at once in that same early draft, never carrying a locator; earlier versions had mislabeled p0 as 'borrowed from Mujika et al. 1995' and w=50/w=10 as 'the original Morton 1990 protocol,' both incorrect. A revision on 2026-07-21 had even changed daily_training back to this 'two-phase protocol' based on that same mislabeling, likewise built on an unverified assumption. The g/h gain coefficients and the fitness/fatigue time constants have been verified directly against page 1173 of the original text and match this file exactly; that part is genuinely literature-calibrated."
+      resolution: "A follow-up update on 2026-08-31: once the submission target was set as Simulation Modelling Practice and Theory, the full Morton 1990 text was reread word for word, turning up two usable sets of real data, the least-squares fitted parameters for two real subjects in Table 2 (p.1176), and the complete, citable worked example given in Fig.3/4 (p.1173-1174) itself, w=100 trimps/day of constant training for 60 days followed by complete cessation, with the original text giving checkpoint figures directly, performance=307 at day 60 and a peak of 1353 at day 83. It was also found that the original eq.8 is p(t)=k1·g(t)-k2·h(t), with no additive p0 term; the p0 in this file's earlier implementation was an implementation error this file had added on its own. The file has been rebuilt accordingly: p0 removed, and the daily_training plan changed to w=100 for 60 days of training plus complete cessation, matching the Fig.3/4 example directly. Re-verifying with the continuous-time reference solution, the performance peak of 1353.0 is almost exactly consistent with the original's 1353, day 82 versus day 83, a difference of 0.00 percent, while the LM engine's own peak of 1383.4 differs from the continuous reference solution by 2.33 percent. The mujika1995 entry in banister.bib remains removed, confirmed as an orphan citation, and the morton1990 entry has been updated with the Fig.3/4 example usage. This case no longer needs a separate follow-up task; literature traceability has been achieved."
+    - type: quality
+      severity: resolved
+      issue: "[Error-1, resolved] The head-to-head comparison figures between five_day_training and daily_training cited the load protocol from before daily_training was changed, inconsistent with the current file, and could not be written into the paper's main text before rechecking"
+      evidence: "The opt_optimized plan, about 97 AU/day during the progressive phase with complete cessation from week 10, was cross-validated with one run of --opt (pop=60, gen=120) and --sim, outperforming all three fixed protocols, daily_training, five_day_training, and early_taper, on both the performance and fatigue objectives at once (performance=1700.5 versus 1246.7/1071.4/1036.6 for the three, and fatigue=170.5 versus roughly 1700+ for all three); this conclusion does not depend on daily_training's specific load value and still holds. But in that same record, the head-to-head comparison between five_day_training and daily_training (five_day performance=1071.4 < daily=1246.7) was run while daily_training still used the three-segment 75/30/60 AU protocol; on 2026-07-21 daily_training was changed back to Morton 1990's original two-segment w=50/10 protocol, and this comparison was never re-verified accordingly."
+      resolution: "Confirmed 2026-08-16: this set of comparison figures belongs to the K by 4 training-frequency extension (banister_opt.yaml), judged on 2026-08-13 to fall outside S1's current argument scope and archived to test_validation/; S1 §6 Verify reports only the Table 4 numerical-accuracy benchmark and does not compare training-frequency effects, and the paper's main text has never cited this set of numbers. If this K by 4 work is revisited in the future, a fresh --sim run comparing the current daily_training (w=50/10) against five_day_training would be needed before using this comparison; it is no longer tracked as an S1 blocker."
+  log:
+    "2026-06-25_00-00-00":
+      change: "Changed k1/k2 from daily-calibrated rates to hourly equivalents converted using the root-taking equation from ADR 0121, matching the step_unit: hour used uniformly across simulation and equations"
+      reason: "The original values were calibrated per day but were being fully triggered every hour, effectively scaling the decay rate up by about 24, causing fitness and fatigue to saturate prematurely and failing to reproduce Morton 1990's 16-week growth curve."
+    "2026-07-21_00-00-00":
+      change: "Changed the daily_training plan's training load from the three-segment 75/30/60 AU protocol back to Morton 1990's original two-segment protocol, w=50 AU/day for 16 weeks plus w=10 AU/day for a 4-week taper, extending the simulation window accordingly to 20 weeks"
+      reason: "A validation scenario should strictly reproduce the original literature protocol itself, without mixing in load designs that deviate from the literature."
+    "2026-08-05_00-00-00":
+      change: "Removed resolved todo items and purely historical file-structure migration records; added a method field to description"
+      reason: "Implementing ADR 0141: the main file retains only current state, with the debugging trail moved to history/2026-08-05_banister_validation.yaml."
+    "2026-08-06_10-00-00":
+      change: "Rewrote metadata.todo, flagging that the five_day/daily head-to-head comparison figures cited the daily_training three-segment 75 AU protocol already deprecated on 2026-07-21; changed description.result to a bullet-list format"
+      reason: "While reconciling model-documentation consistency ahead of the S1 paper's §6 to §7 split, found that the comparison data cited in todo had gone stale after this same file's 2026-07-21 parameter change; it needed to be flagged before it could be safely cited in the paper's main text."
+    "2026-08-11_00-00-00":
+      change: "Changed the training_load term in fitness_dynamics and fatigue_dynamics from being multiplied by *step together with the decay term to not being multiplied by step, separating it from the decay term before the whole expression is multiplied by step; updated ratings.validation_confidence with the investigation conclusion; added two todo items, the now-fixed step_size-dependent bug and a separate target-range verification question handed off to the paper and data-audit task line"
+      reason: "Bug candidate investigation: competition-day performance exceeded the Morton 1990 target range by about 2.4 times. A step-size grid test (1h/6h/30min) located the issue to training_load being multiplied by step twice, a genuine bug from a mismatch between schedule_runner's single-step pulse delivery semantics and the dynamics equation's formulation, previously undetected because it happened to be correct only at step_size=1 hour. After the fix, this 2.4-times deviation was confirmed unrelated to step_size and points independently to another still-unverified question; the two are not the same issue."
+    "2026-08-13_00-00-00":
+      change: "Removed the Halson SL (2014) citation; corrected the Mujika citation's year and volume/issue (1996/21(5) to 1995/20(4), with authors completed as Mujika I, Chatard JC, Busso T, Geyssant A, Barale F, Lacoste L)"
+      reason: "The Halson citation's own description already noted it served the training-frequency decision dimension, used only in banister_opt.yaml, archived to test_validation/banister/ on 2026-08-13; neither the variables nor the equations in this file cite it, making it an orphan citation, migrated together with banister_opt.yaml. Mujika's year and volume/issue were verified via PubMed (PMID 8563672) as 1995, Can J Appl Physiol 20(4):395-406, correcting the earlier erroneous 1996/21(5); the same descriptive comment in the 6 banister test fixtures under `models/test_fixtures/` still carries the 1996 date and was not corrected this time, outside this task's scope."
+    "2026-08-16_00-00-00":
+      change: "Marked the five_day/daily head-to-head comparison item in todo as resolved; fixed a YAML structural error where this item had shared the same list entry as the previous Error-3 item, with the issue/next keys overwriting each other, splitting them into separate list entries"
+      reason: "A check of the S1 paper's top-level task list confirmed that the K by 4 training-frequency extension this comparison belongs to was judged on 2026-08-13 to fall outside S1's current argument scope, that S1 §6 Verify has never cited this figure, and that it is no longer a blocker before the S1 submission."
+    "2026-08-21_00-00-00":
+      change: "Regenerated Table 4 and Figure 2 with the current configuration (w=50/10); the reference-solution script is kept at reference_engine/scripts/temp/validate_banister_taper.py, per convention stored in gitignored scripts/temp/ and not distributed with the repository, not yet committed as a version-controlled formal script; ratings migrated to the 0-1 scale in docs/authoring/ratings.md; the quality todo item updated with the 2026-08-21 verification conclusion, g/h and the time constants independently verified correct via PMC1974899, with the target-range discrepancy most likely rooted in a cross-paper splice of p0, though w=50 could not be finally confirmed because the original text is not openly accessible"
+      reason: "While checking the S1 §6.2 task list (the section numbering at the time; Verify later moved to §5, see this file's subsequent §5.2 citations): the earlier record that 'daily_training's 75/30/60 is inconsistent with the paper text's w=50/10' had already been fixed by this file itself on 2026-07-21 but was never marked accordingly, a stale status. The deeper target-range discrepancy question was also checked in passing, since the 2026-08-10_task_citation_audit_papers.md it had been handed off to was never created and the verification work never actually happened; this check fills that gap. The original text (DOI 10.1152/jappl.1990.69.3.1171) was confirmed via Unpaywall to have no legitimate open-access route and could not be downloaded, so a peer-reviewed secondary source (PMC1974899) was used instead to cross-verify the key parameters."
+    "2026-08-31_00-00-00":
+      change: "Read the full text of all three PDFs in reference/, morton1990, banister1975, and mujika1995, directly; corrected the locator in variables and equations from TODO:LOCATE or the incorrect Table 1/eq.3 to p.1173/eq.4/eq.5/eq.8; updated the three reference descriptions accordingly; updated ratings.variable/confidence and the wording of the quality item in metadata.todo; updated the attestation/reliance fields of the three entries in banister.bib accordingly"
+      reason: "A banister.bib citation audit: the g/h gain coefficients and the fitness/fatigue time constants were verified directly against page 1173 of the Morton 1990 original and match this file exactly; the previously recorded source location, Table 1, was wrong, the actual location being the Fig.3 example passage. The performance equation was previously labeled eq.3, which is actually the original's training-impulse quantification formula, unrelated to the performance equation; the performance equation's actual number is eq.8. No corresponding values for the two-phase w=50/w=10 protocol used in daily_training could be found anywhere in Fig.3, Fig.4, or Fig.5 of the Morton 1990 original; what Fig.3 actually shows is the constant-load example of w=100 trimps/day. The full text of Mujika et al. 1995, from which p0=494 was said to be borrowed, likewise shows no specific data point corresponding to that value. The local PDF for the banister1975 entry was found on verification to actually be a companion paper subsequently published by the same author team, Calvert et al. 1976 (IEEE Trans. Syst. Man Cybernet. 6:94-102), not the Aust J Sports Med version the entry itself registers; the page range 57-61 was verified correct against Morton 1990's own reference list."
+    "2026-08-31_18-00-00":
+      change: "Broadened the search for the real sources of p0=494 and the w=50/w=10 two-phase protocol; both were concluded to be untraceable under reasonable search effort, and the next field of the corresponding metadata.todo item was updated accordingly, with the model's actual values left unchanged"
+      reason: "For p0=494: read the full text of Morton et al. 1990 page by page, including the Fig.5 RHM/EWB 28-day self-experiment passage, which gives only EWB's initial fitness value of 1000 arbitrary units, with no data point based on 494 anywhere. Further checks included Busso et al. 1991, cross-verified via secondary citation that its Table 3 reports a baseline performance value of 104.8 in cycling power units for cyclists rather than runners; the Busso 2003 original (p*=240W, cycling power units); the full text of Thomas and Busso 2005 (p*=80 PU, a relative scale); the full text of Wood et al. 2005 (a 1000-point relative scale, runners but a different unit system); the Banister et al. 1975 original and the full text of Fitz-Clarke et al. 1991, both confirmed unobtainable through any existing open channel, the former a discontinued journal with no DOI and the latter paywalled with no open-access version; the teaching-oriented review by Clarke and Skiba 2013, likewise inaccessible in full due to access restrictions; and several rounds of web search. None of these turned up a value directly corresponding to 494, and no correspondence could be found between 494 and the AU dimension and magnitude this file's running scenario requires, in any of the above sources. For the w=50/w=10 two-phase protocol: checking the same body of literature likewise found no numerical value for any 16-week constant load plus 4-week reduced load two-phase protocol; the tapering protocols appearing in Busso 2003 and Thomas and Busso 2005 are both designs with a single step-down in load after constant training plus a constant percentage reduction, structurally different from this file's two-segment protocol; the Banister et al. 1975 original and the full text of Fitz-Clarke et al. 1991 remain unobtainable, so a source within them cannot be ruled out but cannot be verified under current conditions either. Both searches have covered the main extensions of the same research lineage and several rounds of open search, judged to have reached the boundary of reasonable search effort, a genuine gap rather than an uninvestigated one, simply one that remains unfound after investigation; the model's existing values of p0=494 and w=50/w=10 are accordingly kept unchanged rather than forcibly replaced with other unsupported numbers."
+    "2026-08-31_20-00-00":
+      change: "Traced the introduction history of p0=494, w=50/w=10, and the 520-560 AU target range, confirming all three were example numbers set at once when b3_banister.yaml was first committed on 2026-05-04, never carrying a locator; corrected the description and label related to p0 and daily_training to honestly note them as independently set rather than claiming they were borrowed from Mujika 1995 or the original Morton 1990 protocol; removed the simulation header comment and the metadata.limitations passage about 'reproducing the Morton 1990 target range,' repositioning this case as a demonstration of the engine's numerical-integration correctness instead; removed the Mujika 1995 entry from the top-level references; deleted the mujika1995 entry from banister.bib and removed the w=50/10 usage passage from the morton1990 entry; updated ratings.variable/confidence and the corresponding metadata.todo item accordingly"
+      reason: "The user pointed out that the paper's main-text sentence attributing the discrepancy to 'a cross-study splice of these two parameter sources' was dressing up an unsupported guess as an analytical conclusion, and asked that either the real literature source be found or the values be honestly stated as independently set estimates with a stated rationale, rather than left as speculation. Tracing the history confirmed there was no such thing as 'researchers splicing across papers'; these were unverified example parameters from this model's earliest draft, on top of which several later revisions had layered further assumptions built on that same unverified premise, all corrected in this pass."
+    "2026-08-31_22-00-00":
+      change: "With the submission target set as Simulation Modelling Practice and Theory, reassessed whether independently set example values would suffice and decided to actually find real literature parameters instead. Removed the p0 variable and the additive p0 term in performance_update, since the original eq.8 has no such term and it was an implementation error this file had added on its own; changed performance's initial value to 0.0 and widened its bounds to allow negative values; changed the daily_training plan to w=100 trimps/day for 60 days of training followed by complete cessation, directly reproducing the original example in Morton 1990 Fig.3/4 (p.1173-1174); extended simulation.end_date accordingly; updated description, limitations, ratings, and todo accordingly; restored the Fig.3/4 example usage record to the morton1990 entry in banister.bib; rewrote reference_engine/scripts/temp/validate_banister_taper.py and regenerated Table 4 and Figure 2"
+      reason: "Rereading the full text turned up both the real fitted parameters for actual subjects in Table 2 and the complete, citable worked example in Fig.3/4, a better fit for the target journal's readership than continuing to honestly label the values as independently set. A previously unchecked implementation error in the p0 equation term was found along the way. Re-verifying with the w=100/60-day training protocol from Fig.3/4, the performance peak almost exactly matches the original's reported 1353, a difference of 0.00 percent, upgrading this case from validating only the engine's numerical integration to also carrying a genuine literature benchmark as a Validate case."
+
+# ── Variables ───────────────────────────────────────────────────────────────────
+variables:
+  fitness:
+    description: The fitness component, accumulated training adaptation, time constant 45 days (Morton 1990)
+    value: 0.0
+    unit: AU
+    type: state
+    bounds: [0, 6000]
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173, eq.4"
+
+  fatigue:
+    description: The fatigue component, accumulated training load, time constant 15 days (Morton 1990)
+    value: 0.0
+    unit: AU
+    type: state
+    bounds: [0, 3000]
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173, eq.5"
+
+  performance:
+    description: >
+      Overall performance = fitness minus fatigue (Morton 1990 eq.8). Rereading the original text on
+      2026-08-31 found that eq.8 is p(t)=k1·g(t)-k2·h(t), with no additive baseline constant at all; the
+      earlier implementation's p0 term was added by this file itself with no basis in the original, and has
+      been removed, see equations.performance_update and metadata.log below. The initial value is set to 0
+      following the original's derivation: training starts from a zero baseline, fatigue rises faster than
+      fitness in the short term, and performance first dips negative before recovering, a behavior the
+      original text explicitly describes rather than a numerical anomaly; bounds have been widened
+      accordingly to allow negative values.
+    value: 0.0
+    unit: AU
+    type: state
+    bounds: [-2000, 5000]
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173, eq.8"
+
+  training_load:
+    description: The day's training load, arbitrary units, driven by the schedule; zero on rest days
+    value: 0.0
+    unit: AU
+    type: input
+
+  g:
+    description: The fitness gain coefficient (Morton 1990 p.1173 Fig.3 example passage, standard value 1.0)
+    value: 1.0
+    unit: dimensionless
+    type: parameter
+    bounds: [0.4, 2.0]
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173"
+
+  h:
+    description: The fatigue gain coefficient (Morton 1990 p.1173 Fig.3 example passage, standard value 2.0)
+    value: 2.0
+    unit: dimensionless
+    type: parameter
+    bounds: [0.8, 4.0]
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173"
+
+  k1:
+    description: >
+      The fitness decay rate = 1/45 per day (Morton 1990). The original value of 0.02222 was calibrated
+      per day, but the fitness_dynamics equation it belongs to has step_unit hour, and on 2026-06-25 it was
+      found to be fully triggered every hour with no unit conversion, effectively scaling it up by about 24
+      (fitness was measured saturating at 128.44 within about 10 days, when it should have kept growing to
+      about 956.2 by the end of week 16). This term, -k1*fitness*step, is self-exponential decay (ADR 0121
+      type B, target=0), converted exactly with the root-taking equation: k1_hour = 1-(1-1/45)^(1/24) ≈
+      0.00093676. The bounds are converted at their original [0.01,0.05] endpoints with the same equation.
+    value: 0.00093676
+    unit: 1/hour
+    bounds: [0.0004187, 0.0021349]
+    type: parameter
+    reference: "Morton RH et al. (1990); conversion method in life-matters-models ADR 0121"
+    locator: "p.1173"
+
+  k2:
+    description: >
+      The fatigue decay rate = 1/15 per day (Morton 1990). The original value of 0.06667 was calibrated
+      per day, the same bug as k1, step_unit is hour and the value was scaled up by about 24 without
+      conversion. This term, -k2*fatigue*step, is likewise self-exponential decay (ADR 0121 type B),
+      converted with the root-taking equation: k2_hour = 1-(1-1/15)^(1/24) ≈ 0.00287058. The bounds are
+      converted at the same proportion.
+    value: 0.00287058
+    unit: 1/hour
+    bounds: [0.0012683, 0.0067487]
+    type: parameter
+    reference: "Morton RH et al. (1990); conversion method in life-matters-models ADR 0121"
+    locator: "p.1173"
+
+# ── Dynamics equations ────────────────────────────────────────────────────────
+equations:
+  fitness_dynamics:
+    description: >
+      Euler update for fitness: dA/dt = g·w - k1·A. Fixed 2026-08-11: the training_load term had
+      previously been multiplied by *step together with the decay term, (g*training_load -
+      k1*fitness)*step. training_load, delivered by schedule_runner.apply_schedules under delivery:total
+      semantics, already arrives as the amount to be delivered in this one step, with _n_steps=1 for a
+      single-step pulse window and the entire value delivered in that step; it is not a rate that needs
+      converting by multiplying by step again. Multiplying by step twice made the actual daily load
+      injected proportional to step_size, which happened to leave the number unchanged only when step_size
+      is exactly 1 hour, this file's current configuration; any other step_size would scale the total load
+      up or down accordingly, for example performance hitting the bounds ceiling of 2000 at a 6-hour step.
+      The decay term k1*fitness retains *step, since k1 is a genuine hourly rate.
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      fitness: fitness + g * training_load - k1 * fitness * step
+    reference: "Morton RH et al. (1990)"
+    locator: "eq.4"
+
+  fatigue_dynamics:
+    description: >
+      Euler update for fatigue: df/dt = h·w - k2·f. Fixed 2026-08-11: the same class of problem as
+      fitness_dynamics, the training_load term should no longer be multiplied by step, see the fix
+      description under fitness_dynamics.
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      fatigue: fatigue + h * training_load - k2 * fatigue * step
+    reference: "Morton RH et al. (1990)"
+    locator: "eq.5"
+
+  performance_update:
+    description: >
+      Instantaneous performance = fitness minus fatigue (Morton 1990 eq.8, a static computation with no
+      step). The original eq.8 is p(t)=k1·g(t)-k2·h(t), with no additive baseline term; this file's
+      fitness and fatigue state variables have already folded the original's output-side weights k1/k2
+      into input-side gains g/h in their own dynamics (this file's g=1.0 corresponds to Morton's k1, and
+      h=2.0 to Morton's k2), the two being mathematically equivalent (with g(0)=h(0)=0, it can be shown
+      that this file's fitness(t) = k1·g_Morton(t) and fatigue(t) = k2·h_Morton(t)), so subtracting them
+      directly here is equivalent to the original's k1·g(t)-k2·h(t) without multiplying by k1/k2 again.
+    condition: true
+    priority: 3
+    dynamics:
+      performance: fitness - fatigue
+    reference: "Morton RH et al. (1990)"
+    locator: "p.1173, eq.8"
+
+# ── Simulation settings (daily_training protocol: a direct reproduction of the constant-load example
+# in Morton 1990 Fig.3/4) ──────
+# After rereading the original text on 2026-08-31, this file switched to the original setup in Fig.3/4
+# (p.1173-1174): a constant load of w=100 trimps/day for 60 days of training followed by complete
+# cessation, with the original text giving checkpoint figures directly for comparison:
+#   Day 60 (end of training): fitness=3351, fatigue=3044, performance=307 (the original text's figures,
+#   from its discrete daily recursion)
+#   Day 83 (23 days after cessation): performance peak 1353 (the original text's figure)
+# This file uses continuous-time ODEs with Euler integration, the engine's actual implementation, which
+# is not exactly mathematically equivalent to the original's discrete daily recursion; the magnitude and
+# cause of the difference are described in c_paper_s1_cn.md §5.2. The peak comparison is the checkpoint
+# where the two discretization methods agree most closely.
+# Validation targets:
+#   Verify passes when the engine's numerical integration output matches an independent continuous-time
+#   analytical reference solution (see Table 4 in c_paper_s1_cn.md §5.2)
+#   Validate passes when the performance peak matches the 1353 (day 83) Morton 1990 reports, at a
+#   consistent magnitude
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-04-30"
+  output_variables:
+    - fitness
+    - fatigue
+    - performance
+    - training_load
+  plans:
+    - id: "daily_training"
+      label: "Daily training (7 days/week, Morton 1990 Fig.3/4 constant-load example w=100, 60 days of training plus complete cessation)"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 100.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-01"], label: "Training period, w=100 trimps/day (days 1-60, the Morton 1990 Fig.3/4 original value)"}
+        - {variable: training_load, time_start: "09:00", value: 0.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-02", "2026-04-30"], label: "Complete cessation (from day 61, matching the corresponding scenario in the Morton 1990 original)"}
+    - id: "five_day_training"
+      label: "5 days/week training (rhythmic rest days)"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 85.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-03-11"], label: "Progressive phase (weekends off)"}
+        - {variable: training_load, time_start: "09:00", value: 30.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-12", "2026-03-25"], label: "Taper phase"}
+        - {variable: training_load, time_start: "09:00", value: 60.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-26", "2026-04-22"], label: "Maintenance phase"}
+    - id: "early_taper"
+      label: "Early taper (starting week 9, 48 days progressive, 2 weeks taper, 6 weeks maintenance)"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 80.0, days: [Mon, Tue, Wed, Thu, Fri], date_range: ["2026-01-01", "2026-02-26"], label: "Progressive phase"}
+        - {variable: training_load, time_start: "09:00", value: 28.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-02-27", "2026-03-12"], label: "Taper phase (earlier)"}
+        - {variable: training_load, time_start: "09:00", value: 58.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-13", "2026-04-22"], label: "Maintenance phase (longer)"}
+
+    - id: "opt_optimized"
+      label: "Opt-optimized plan (progressive phase about 97 AU/day, 7 days/week, complete cessation from week 10), following optimization.results.reference in banister_opt.yaml, outperforming the other three plans on both performance and fatigue"
+      regimens:
+        - {variable: training_load, time_start: "09:00", value: 97.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-11"], label: "Progressive phase (following the pareto_front solution where x0+x1≈97)"}
+        - {variable: training_load, time_start: "09:00", value: 0.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-03-12", "2026-04-22"], label: "Complete cessation across the taper and maintenance phases (x3≈0, x5≈0)"}
+
+references:
+  - citation: "Morton RH, Fitz-Clarke JR, Banister EW (1990) Modeling human performance in running. J Appl Physiol 69(3):1171-1177"
+    description: "This source is the calibration basis for the fitness and fatigue time constants, the gain coefficients g/h, the performance equation, and the daily_training protocol: the fitness time constant of 45 days, the fatigue time constant of 15 days, and the gain coefficients g=1.0/h=2.0 all come from the Fig.3 example passage on p.1173, and the performance equation p=fitness-fatigue comes from eq.8. The daily_training plan's protocol, w=100 trimps/day for 60 days of training followed by complete cessation, is taken directly from the worked example in Fig.3/4 (p.1173-1174), and the checkpoint figures at day 60 and day 83 (the peak) likewise come from the original text; see metadata.limitations and c_paper_s1_cn.md §5.2."
+  - citation: "Banister EW, Calvert TW, Savage MV, Bach TM (1975) A systems model of training for athletic performance. Aust J Sports Med 7(3):57-61"
+    description: "The original proposal of the fitness-fatigue two-compartment model, whose overall structure this file adopts directly. The original text itself could not be obtained directly; its core structure and parameters were cross-confirmed through Morton et al.'s (1990) citation and description of this source and through a companion paper subsequently published by the same research team, Calvert et al. (1976, IEEE Trans. Syst. Man Cybernet. 6:94-102)."

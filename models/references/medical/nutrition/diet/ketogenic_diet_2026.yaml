@@ -24,17 +24,13 @@ metadata:
     limitations: >
       未建模肾脏酮体清除和尿酮动态，以及Na、K、Mg丢失导致的电解质紊乱机制；超过1年的长期代谢灵活性提升和平台期尚未纳入。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 生酮饮食在糖尿病/减重领域证据强，是当前营养学热点
-    framework_demand: 3 - 饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
-    evidence_quality: 4 - 引用Volek/Westman等高质量RCT，酮症动力学参数有据
-    popularity: 4 - 生酮饮食是营养医学教科书重点内容，学术和大众关注度高
+    importance: 0.5 - 生酮饮食在糖尿病/减重领域证据强，是当前营养学热点；饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
+    variable: 0.75 - 引用Volek/Westman等高质量RCT，酮症动力学参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [nutrition, ketogenic, ketosis, blood_glucose, weight_loss, fat_oxidation, diabetes]
-  references:
-    - "Volek JS et al. (2004) Comparison of energy-restricted very low-carbohydrate and low-fat diets on weight loss and body composition in overweight men and women. Nutr Metab 1:13."
-    - "Westman EC et al. (2008) The effect of a low-carbohydrate, ketogenic diet versus a low-glycemic index diet on glycemic control in type 2 diabetes mellitus. Nutr Metab 5:36."
-    - "Paoli A et al. (2013) Beyond weight loss: a review of the therapeutic uses of very-low-carbohydrate (ketogenic) diets. Eur J Clin Nutr 67(8):789-796."
-    - "Cahill GF Jr. (2006) Fuel metabolism in starvation. Annu Rev Nutr 26:1-22."
 
 variables:
   blood_ketones_mmol_l:
@@ -290,7 +286,7 @@ simulation:
         date_range: ["2026-01-01", "2026-03-31"]
         label: "蛋白质105g/day（约1.1g/kg，防止肌肉流失）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: body_weight_kg
@@ -337,3 +333,9 @@ optimizer:
     recommended:
       x: [20.0]
       f: [83.1, 92.4]
+
+references:
+  - "Volek JS et al. (2004) Comparison of energy-restricted very low-carbohydrate and low-fat diets on weight loss and body composition in overweight men and women. Nutr Metab 1:13."
+  - "Westman EC et al. (2008) The effect of a low-carbohydrate, ketogenic diet versus a low-glycemic index diet on glycemic control in type 2 diabetes mellitus. Nutr Metab 5:36."
+  - "Paoli A et al. (2013) Beyond weight loss: a review of the therapeutic uses of very-low-carbohydrate (ketogenic) diets. Eur J Clin Nutr 67(8):789-796."
+  - "Cahill GF Jr. (2006) Fuel metabolism in starvation. Annu Rev Nutr 26:1-22."

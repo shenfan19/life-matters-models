@@ -15,18 +15,13 @@ metadata:
     limitations: >
       VO2max 增益参数来自 Wisløff 2007 针对心衰患者的数据，健康年轻人绝对改善幅度通常更大。适应速率采用线性累积近似，真实为非线性，初期快、后期趋于平台；未区分跑步与自行车 HIIT 的肌群特异性适应差异；胰岛素敏感性改善基于人群均值，个体变异度较大。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 5 - HIIT是当前运动医学最热门研究领域，代谢/心肺适应机制核心
-    framework_demand: 3 - 研究热点，被NAFLD/代谢场景引用预期中等
-    evidence_quality: 4 - 引用Gibala/Wisløff/MacInnis等高质量RCT，参数有据可查
-    popularity: 4 - HIIT已成为健康运动处方主流，教科书广泛收录
+    importance: 0.5 - HIIT是当前运动医学最热门研究领域，代谢/心肺适应机制核心；研究热点，被NAFLD/代谢场景引用预期中等
+    variable: 0.75 - 引用Gibala/Wisløff/MacInnis等高质量RCT，参数有据可查
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [HIIT, VO2max, insulin_sensitivity, mitochondria, fat_oxidation, metabolic, Gibala, Wisløff, interval_training]
-  references:
-    - "Gibala MJ & McGee SL (2008) Metabolic adaptations to short-term high-intensity interval training. Exerc Sport Sci Rev 36(2):58-63."
-    - "Weston KS et al. (2014) High-intensity interval training in patients with lifestyle-induced cardiometabolic disease. Br J Sports Med 48(16):1227-1234."
-    - "MacInnis MJ & Gibala MJ (2017) Physiological adaptations to interval training and the role of exercise intensity. J Physiol 595(9):2915-2930."
-    - "Wisløff U et al. (2007) Superior cardiovascular effect of aerobic interval training versus moderate continuous training in heart failure patients. Circulation 115(24):3086-3094."
-    - "Little JP et al. (2011) A practical model of low-volume high-intensity interval training induces mitochondrial biogenesis in human skeletal muscle. J Physiol 589(Pt 11):2775-2785."
 
 variables:
   interval_intensity:
@@ -169,7 +164,7 @@ simulation:
         date_range: ["2026-01-01", "2026-03-26"]
         label: "恢复比 1:1（4 分钟工作 + 4 分钟主动恢复）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: vo2max
@@ -215,3 +210,10 @@ optimizer:
     recommended:
       x: [90.0]
       f: [-53.2, 4.0]
+
+references:
+  - "Gibala MJ & McGee SL (2008) Metabolic adaptations to short-term high-intensity interval training. Exerc Sport Sci Rev 36(2):58-63."
+  - "Weston KS et al. (2014) High-intensity interval training in patients with lifestyle-induced cardiometabolic disease. Br J Sports Med 48(16):1227-1234."
+  - "MacInnis MJ & Gibala MJ (2017) Physiological adaptations to interval training and the role of exercise intensity. J Physiol 595(9):2915-2930."
+  - "Wisløff U et al. (2007) Superior cardiovascular effect of aerobic interval training versus moderate continuous training in heart failure patients. Circulation 115(24):3086-3094."
+  - "Little JP et al. (2011) A practical model of low-volume high-intensity interval training induces mitochondrial biogenesis in human skeletal muscle. J Physiol 589(Pt 11):2775-2785."

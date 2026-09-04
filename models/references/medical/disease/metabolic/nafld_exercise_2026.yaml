@@ -28,18 +28,13 @@ metadata:
     limitations: >
       HIIT额外减脂系数，即beta_hiit参数，为估算值，尚未从HIIT与中等强度有氧对比的随机对照试验中精化。模型未涵盖饮食、体重和胰岛素抵抗对肝脂的影响，仅描述运动的单一干预通路。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - NAFLD 全球患病率高，运动机制组件有广泛应用价值
-    framework_demand: 3 - 已有明确papers依赖（A1/MASLD系列），特定子领域中等使用
-    evidence_quality: 3 - ALT 动力学来源良好，beta_hiit 系数为估算值（TODO:SOURCE）
-    popularity: 3 - 专项模型，主要被 A1/MASLD 系列场景导入
+    importance: 0.5 - NAFLD 全球患病率高，运动机制组件有广泛应用价值；已有明确papers依赖（A1/MASLD系列），特定子领域中等使用
+    variable: 0.5 - ALT 动力学来源良好，beta_hiit 系数为估算值（TODO:SOURCE）
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [nafld, fatty_liver, exercise, HIIT, ALT, hepatology]
-  references:
-    - "Keating SE et al. (2015) Exercise and nonalcoholic fatty liver disease. J Hepatol 63(2):509-521."
-    - "Promrat K et al. (2010) Randomized controlled trial testing the effects of weight loss on NASH. Hepatology 51(1):121-129."
-    - "EASL-EASD-EASO Clinical Practice Guidelines (2016) Management of non-alcoholic fatty liver disease. J Hepatol 64(6):1388-1402."
-    - "Prati D et al. (2002) Updated definitions of healthy ranges for serum ALT in adults. Ann Intern Med 137(1):1-10."
-    - "Chalasani N et al. (2012) The diagnosis and management of NAFLD. Hepatology 55(6):2005-2023."
 
 variables:
   liver_fat_pct:
@@ -73,18 +68,18 @@ variables:
     bounds: [0, 12]
 
   alpha_fat:
-    description: "运动对肝脂的基础消耗系数。Keating 2015 Meta：150 MET·min/周×12周 ↓约3-4% 肝脂，换算约 0.003 %/(MET·day)。"
+    description: "运动对肝脂的基础消耗系数。Keating 2012 Meta：150 MET·min/周×12周 ↓约3-4% 肝脂，换算约 0.003 %/(MET·day)。"
     value: 0.003
     unit: "% per MET·day"
     type: parameter
-    reference: "Keating SE et al. (2015) J Hepatol 63(2):509-521."
+    reference: "Keating SE et al. (2012) J Hepatol 57(1):157-166."
 
   beta_hiit:
     description: "HIIT 额外减脂系数（相对于 MICT 同等运动量的倍增因子）。HIIT 约多减 30% 肝脂（估算值，需精化）。"
     value: 0.35
     unit: dimensionless
     type: parameter
-    reference: "TODO:SOURCE Keating 2015 or Promrat 2010 HIIT vs MICT subgroup analysis."
+    reference: "TODO:SOURCE Keating 2012 or Promrat 2010 HIIT vs MICT subgroup analysis."
 
   delta_alt:
     description: "高强度运动（>hiit_threshold MET）对 ALT 的急性升高系数。"
@@ -124,7 +119,7 @@ equations:
       liver_fat_pct: >
         max(0, liver_fat_pct - alpha_fat * exercise_intensity
         * (1 + beta_hiit if exercise_intensity > hiit_threshold else 1.0) * step)
-    reference: "Keating SE et al. (2015) J Hepatol 63(2):509-521."
+    reference: "Keating SE et al. (2012) J Hepatol 57(1):157-166."
 
   alt_dynamics:
     description: "ALT 一阶动力学：高强度运动急性升高 - 向基线的自然回落（半衰期 4.6 天）。"
@@ -164,7 +159,7 @@ simulation:
         date_range: ["2026-01-01", "2026-04-01"]
         label: "低强度步行（MET 3.5，每天一次）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: liver_fat_pct
@@ -193,3 +188,10 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - "Keating SE et al. (2012) Exercise and nonalcoholic fatty liver disease. J Hepatol 57(1):157-166."
+  - "Promrat K et al. (2010) Randomized controlled trial testing the effects of weight loss on NASH. Hepatology 51(1):121-129."
+  - "EASL-EASD-EASO Clinical Practice Guidelines (2016) Management of non-alcoholic fatty liver disease. J Hepatol 64(6):1388-1402."
+  - "Prati D et al. (2002) Updated definitions of healthy ranges for serum ALT in adults. Ann Intern Med 137(1):1-10."
+  - "Chalasani N et al. (2012) The diagnosis and management of NAFLD. Hepatology 55(6):2005-2023."

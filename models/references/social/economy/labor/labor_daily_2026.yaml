@@ -17,11 +17,12 @@ metadata:
       仿真预期呈现一日内储蓄随工作时段增长、疲劳在工作和休息交替下的锯齿形波动，仿真尚未运行，本文件为演示组件。
     limitations: 极简演示模型，参数无文献来源；未建模通货膨胀、技能积累或社会保障，不适合长时间尺度分析。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 3 - 劳动-储蓄-疲劳日模型是场景驱动的基础组件，演示价值为主
-    framework_demand: 1 - noref，演示价值为主，框架复用预期极低
-    evidence_quality: 2 - noref标记，参数无文献来源，为极简演示模型
-    popularity: 2 - 日步长劳动模型较简单，不属于劳动经济学主流基准
+    importance: 0.25 - 劳动-储蓄-疲劳日模型是场景驱动的基础组件，演示价值为主；noref，演示价值为主，框架复用预期极低
+    variable: 0.25 - noref标记，参数无文献来源，为极简演示模型
+    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [economic, social, labor]
 
 variables:
@@ -67,7 +68,7 @@ simulation:
   end_date: "2026-01-02"
   output_variables: [savings, fatigue, work_intensity]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: savings

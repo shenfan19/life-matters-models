@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未包含心房颤动对心输出量的影响，CABG后发生率约30%；未建模 IABP 等机械循环支持；肌酐采用简化一室清除模型，未纳入体重、年龄个体差异；EF 改善系数为人群均值，个体间差异较大。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - CABG是最常见心脏外科手术，术后康复时序优化是真实临床需求
-    framework_demand: 2 - 心外科专项模型，上层场景复用少
-    evidence_quality: 4 - 引用ESC/EACTS指南及Anderson 2016 Cochrane等权威文献
-    popularity: 4 - CABG围手术期管理是心外科和重症医学教科书核心内容
+    importance: 0.5 - CABG是最常见心脏外科手术，术后康复时序优化是真实临床需求；心外科专项模型，上层场景复用少
+    variable: 0.75 - 引用ESC/EACTS指南及Anderson 2016 Cochrane等权威文献
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [cabg, cardiac_surgery, ejection_fraction, cardiac_rehabilitation, creatinine, wound_healing]
-  references:
-    - "Kolh P et al. (2014) 2014 ESC/EACTS Guidelines on myocardial revascularization. Eur J Cardiothorac Surg 46(4):517-592."
-    - "Westaby S et al. (2001) Coronary revascularization in the first year of life. Heart 85(4):357-363."
-    - "Ferguson TB et al. (2002) A decade of change — risk profiles and outcomes for isolated CABG procedures, 1990-1999. Ann Thorac Surg 73(2):480-490."
-    - "Anderson L et al. (2016) Exercise-based cardiac rehabilitation for coronary heart disease. Cochrane Database Syst Rev (1):CD001800."
-    - "Piepoli MF et al. (2010) Exercise training in heart failure: from theory to practice. Eur J Cardiovasc Prev Rehabil 18(Suppl 1):S1-S58."
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -284,7 +279,7 @@ simulation:
         date_range: ["2026-01-01", "2026-02-11"]
         label: "术后抗凝（INR目标1.2，阿司匹林）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: ejection_fraction
@@ -350,3 +345,10 @@ optimizer:
     recommended:
       x: [2.5, 5.0, 8.0]
       f: [-42.7, 122.8]
+
+references:
+  - "Kolh P et al. (2014) 2014 ESC/EACTS Guidelines on myocardial revascularization. Eur J Cardiothorac Surg 46(4):517-592."
+  - "Westaby S et al. (2001) Coronary revascularization in the first year of life. Heart 85(4):357-363."
+  - "Ferguson TB et al. (2002) A decade of change — risk profiles and outcomes for isolated CABG procedures, 1990-1999. Ann Thorac Surg 73(2):480-490."
+  - "Anderson L et al. (2016) Exercise-based cardiac rehabilitation for coronary heart disease. Cochrane Database Syst Rev (1):CD001800."
+  - "Piepoli MF et al. (2010) Exercise training in heart failure: from theory to practice. Eur J Cardiovasc Prev Rehabil 18(Suppl 1):S1-S58."

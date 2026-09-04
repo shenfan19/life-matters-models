@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未包含年龄分层、超级传播者和变异株免疫逃逸机制；空间扩散需要网络模型扩展；参数基于通用类流感病原体，具体病原体须重新校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - SIR群体免疫是公共卫生最核心模型，疫情防控基础理论
-    framework_demand: 2 - 传染病专项模型，与其他场景交叉引用少
-    evidence_quality: 4 - 引用Anderson & May教科书及Fine 2011等权威文献
-    popularity: 5 - SIR模型是流行病学教科书最经典基准，跨领域广泛引用
+    importance: 0.75 - SIR群体免疫是公共卫生最核心模型，疫情防控基础理论；传染病专项模型，与其他场景交叉引用少
+    variable: 0.75 - 引用Anderson & May教科书及Fine 2011等权威文献
+    equation: 1.0 - SIR模型是流行病学被广泛引用且独立复现次数最多的标准方程形式之一
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [epidemiology, vaccine, SIR, herd_immunity, preventive, public_health]
-  references:
-    - "Anderson RM & May RM (1991) Infectious Diseases of Humans: Dynamics and Control. Oxford University Press."
-    - "Fine P, Eames K, Heymann DL (2011) 'Herd immunity': a rough guide. Clin Infect Dis 52(7):911-916."
-    - "Plotkin SA (2010) Correlates of protection induced by vaccination. Clin Vaccine Immunol 17(7):1055-1065."
-    - "Levin EG et al. (2021) Waning immune humoral response to BNT162b2 mRNA vaccine. NEJM 385(24):e84."
-    - "CDC (2023) Influenza Vaccination Coverage, United States, 2022-23 Flu Season."
 
 variables:
   # ── SIR仓室（人口比例）──────────────────────────────────────────────────────
@@ -235,7 +230,7 @@ simulation:
         date_range: ["2026-01-01", "2026-06-30"]
         label: "接种运动（半年，每日0.5%人口）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: immune_fraction
@@ -277,3 +272,10 @@ optimizer:
     recommended:
       x: [0.008]
       f: [-0.74, 0.16]
+
+references:
+  - "Anderson RM & May RM (1991) Infectious Diseases of Humans: Dynamics and Control. Oxford University Press."
+  - "Fine P, Eames K, Heymann DL (2011) 'Herd immunity': a rough guide. Clin Infect Dis 52(7):911-916."
+  - "Plotkin SA (2010) Correlates of protection induced by vaccination. Clin Vaccine Immunol 17(7):1055-1065."
+  - "Levin EG et al. (2021) Waning immune humoral response to BNT162b2 mRNA vaccine. NEJM 385(24):e84."
+  - "CDC (2023) Influenza Vaccination Coverage, United States, 2022-23 Flu Season."

@@ -23,11 +23,12 @@ metadata:
       三餐 schedule 触发后，对应营养素蓄积进胃部。仿真尚未运行，为组件模型。
     limitations: 极简转换组件，不包含消化速率、食物组成差异或个体代谢动力学；参数应在上层场景中校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 1 - 游戏专用简化营养模型，仅为演示/校验用途，无研究需求
-    framework_demand: 1 - _ag游戏专用模型，框架内复用价值极低
-    evidence_quality: 2 - 基本营养成分数值合理，但模型极简，缺少生理动力学
-    popularity: 1 - 游戏（_ag）专用演示组件，无通用性
+    importance: 0.0 - 游戏专用简化营养模型，仅为演示/校验用途，无研究需求，框架内复用价值极低
+    variable: 0.25 - 基本营养成分数值合理，但模型极简，缺少生理动力学，无疾病特异文献支撑
+    equation: 0.0 - 纯累加记账，不含任何消化/代谢机制，无文献依据
+    simulation: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.0 - 蛋白质与脂肪目标之间无结构耦合，最大化/最小化互不影响，不构成真实权衡
+    confidence: 0.0 - 从未跑通--sim/--opt
   tags: [nutrition, simple, demo]
 
 variables:
@@ -157,7 +158,7 @@ simulation:
         label: 晚餐饮水
   output_variables: [gastric_carbohydrate, gastric_protein, gastric_fat, body_water]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: gastric_protein

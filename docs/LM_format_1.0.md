@@ -51,9 +51,9 @@ Whether a specific candidate topic falls within this scope can be checked agains
 - **`variables`/`evidence`**: does the claim have a transferable numeric value (an effect size, a rate constant, a dose-response coefficient), not only a directional statement ("has an effect," "is associated with")?
 - **`equations`**: does the mechanism have an accepted functional form (a differential equation, a regression equation, a kinetic equation) that can be encoded directly, without the modeler inventing structure on the spot?
 - **`simulation`**: once encoded, can the mechanism produce a trajectory that evolves over time and can be checked against an independent data point, rather than only a static number?
-- **`optimizer`**: does the decision space contain a genuine multi-objective tradeoff (not a single best answer) worth searching with an optimizer?
+- **`optimization`**: does the decision space contain a genuine multi-objective tradeoff (not a single best answer) worth searching with an optimizer?
 
-The first two questions determine whether a topic is worth encoding as an LM file at all; the last two determine what the resulting model can be used for once built. A model whose `variables`/`evidence`/`equations` pass but whose `simulation`/`optimizer` questions do not apply is still a valid LM file — it can only be used for mechanism/engine demonstration, not independent prediction or optimization.
+The first two questions determine whether a topic is worth encoding as an LM file at all; the last two determine what the resulting model can be used for once built. A model whose `variables`/`evidence`/`equations` pass but whose `simulation`/`optimization` questions do not apply is still a valid LM file — it can only be used for mechanism/engine demonstration, not independent prediction or optimization.
 
 This test is deliberately coarse and topic-agnostic: it says nothing about whether a *specific* candidate model is correct, only whether the topic is a reasonable target for encoding at all. A living inventory of which sub-disciplines currently pass or fail each question is maintained by the LM Reference Library outside this specification (`docs/authoring/methodology.md`), not in the versioned format spec, since that inventory changes with every modeling round and reflects one library's curation practice rather than a property of the format itself.
 
@@ -71,9 +71,9 @@ The four mechanisms behind these questions give LM format its working shorthand,
 | **Scenario** | An LM file that includes a `simulation:` block and is directly runnable |
 | **LM-compatible engine** | Any software that can load, validate, and execute LM files according to this specification |
 | **LM Reference Engine** | The first LM-compatible engine, authored by Fan Shen at Sun Yat-sen University |
-| **K×4 Regimen** | A calendar-semantic input formalism defined in this specification (§6) |
+| **K×4 Regimen** | A calendar-semantic input formalism defined in this specification (§8) |
 | **Model Library** | A curated collection of LM files, open for contribution and citation |
-| **step** | The canonical time step duration as declared in `metadata.step_size` |
+| **step** | The `step` symbol injected into a formula's `dynamics`, equal to `simulation.step_size` (or `optimization.step_size` when evaluating an optimizer fitness) expressed in that formula's own declared `step_unit` |
 
 ---
 
@@ -84,13 +84,14 @@ LM files are YAML 1.2 documents. A conforming LM file must have a `metadata:` bl
 ### 1.1 Top-Level Structure
 
 ```yaml
-# Top-level keys in an LM file (all optional except metadata)
-metadata:       # Required. Identification, versioning, citation, license.
+# Top-level keys in an LM file (all optional except metadata), read M I V E S O R
+metadata:       # Required. Identification and versioning.
 imports:        # Optional. References to other LM files to merge.
 variables:      # Optional. state, input, and parameter declarations (including literature effect sizes via evidence_type).
 equations:      # Optional. Dynamic equations and instantaneous calculations.
 simulation:     # Optional. Makes this file a runnable Scenario.
-optimizer:      # Optional. Multi-objective optimization configuration and results.
+optimization:      # Optional. Multi-objective optimization configuration and results.
+references:     # Optional. Literature sources this model draws on (§7).
 ```
 
 ### 1.2 Metadata Block
@@ -118,27 +119,15 @@ metadata:
   tags: [medical, renal, musculoskeletal, chronic_kidney_disease]
   lm_format_version: "1.0"                    # Which LM format version this file targets
 
-  # --- Time scale (required for Scenarios; recommended for Components) ---
-  step_size:
-    value: 1
-    unit: day                           # second | minute | hour | day | week | month | year
-
   # --- Authorship (recommended) ---
   authors:
     - name: "Fan Shen"
       email: "shenfan@example.edu"      # optional
 
-  # --- Literature sources this model draws on (recommended when parameters come from literature) ---
-  # Each entry may be a plain citation string, or an object pairing the citation with what
-  # it specifically contributes to this model; see docs/authoring/description_writing.md.
-  references:
-    - citation: "KDIGO 2020 Clinical Practice Guideline for Diabetes Management in CKD. Kidney Int."
-      description: "GFR decline rate and protein restriction threshold."
-    - citation: "Bauer J et al. (2013) Sarcopenia in CKD. NDT."
-      description: "Muscle loss rate under CKD."
-
   updated: "2026-05-10"
 ```
+
+Time scale (`step_size`) is declared under `simulation:` (§5), not here — see §5 and §6. Literature sources (`references:`) are a sibling top-level block (§7), not a `metadata` sub-field — see ADR 0151.
 
 ---
 
@@ -204,7 +193,7 @@ Parameter values may be expressed as distribution strings:
 
 In Monte Carlo mode, each run samples all distribution-valued parameters exactly once (per-run, not per-step), representing inter-individual variability.
 
-**Reproducibility**: A Monte Carlo session can be made reproducible by declaring a fixed seed in `optimizer.mc.seed`. When `seed` is omitted or `null`, the engine generates a random seed each session (suitable for exploration). When a fixed integer seed is declared, every run of the model produces identical trajectories, enabling result sharing and citation. The engine must return the actual seed used (`session_seed`) in its API response so users can record it.
+**Reproducibility**: A Monte Carlo session can be made reproducible by declaring a fixed seed in `optimization.mc.seed`. When `seed` is omitted or `null`, the engine generates a random seed each session (suitable for exploration). When a fixed integer seed is declared, every run of the model produces identical trajectories, enabling result sharing and citation. The engine must return the actual seed used (`session_seed`) in its API response so users can record it.
 
 ---
 
@@ -348,7 +337,7 @@ Equation expressions are Python-compatible arithmetic strings. Available symbols
 | Symbol | Meaning |
 |--------|---------|
 | Any declared variable name | Current value of that variable |
-| `step` | Current step duration in the declared `step_size.unit` |
+| `step` | Current step duration expressed in this formula's own declared `step_unit` (see Terms) |
 | `t` or `time` | Elapsed time in declared unit |
 | `SECOND`, `MINUTE`, `HOUR`, `DAY`, `WEEK` | Absolute conversion constants |
 | `sin`, `cos`, `exp`, `log`, `sqrt`, `abs`, `max`, `min` | Standard math functions |
@@ -395,11 +384,9 @@ imports:
 
 ### 4.2 Step Size in Multi-Model Scenarios
 
-Each component may declare its own native `step_size`. When a Scenario imports components with different step sizes, LM-compatible engines must:
-- Simulate each component at its native step size, or
-- Convert all components to the Scenario's declared step size by rescaling rate coefficients.
+Each component's formulas declare their own native `step_unit`, independent of the Scenario's execution `step_size` (ADR 0104). When a Scenario imports components whose formulas were calibrated at a different time unit than the Scenario's own `simulation.step_size`, the engine does not need to choose between simulating each component separately or rescaling coefficients: it computes `step` per formula as `step_size_sec / step_unit_sec`, so the same execution step size correctly drives every imported formula at its own calibrated unit.
 
-The `step` symbol in equation expressions always equals the component's native step in its declared unit, ensuring equation coefficients remain stable regardless of the computational step chosen by the engine.
+The `step` symbol in each formula's `dynamics` always equals that formula's own native step in its declared `step_unit`, ensuring equation coefficients remain stable regardless of the Scenario's execution `step_size`.
 
 ---
 
@@ -409,7 +396,10 @@ The `simulation:` block makes an LM file a runnable Scenario. Time-varying input
 
 ```yaml
 simulation:
-  start_date: "2026-01-01"             # ISO 8601; step size declared in metadata.step_size
+  step_size:                            # Required (ADR 0104)
+    value: 1
+    unit: day                           # second | minute | hour | day | week | month | year
+  start_date: "2026-01-01"             # ISO 8601
   end_date:   "2026-12-31"
 
   output_variables:                    # Optional: select specific variables by name
@@ -466,7 +456,7 @@ Each entry in a plan's `regimens` list declares a `[time_start, time_end)` windo
 | Only `time_start` given | `time_end = time_start` (single-step window) | Discrete events (a meal, a dose) — numerically what earlier tooling called a "pulse" |
 | Both given | Explicit interval | Sustained intensity/protection spanning multiple steps in a sub-day-step-size model |
 
-**`delivery`: total vs. level (ADR 0132)**: with the default `delivery: total`, or `delivery` omitted, `value` is the window's total quantity, spread evenly across every step inside the resolved window, which suits a variable that downstream equations accumulate, such as a training load or a meal's calories. With `delivery: level`, `value` is instead delivered unchanged to every step inside the window rather than divided, which suits a variable whose value is a current state or setting that downstream equations read as an instantaneous quantity rather than sum, such as a sleep duration, a bedtime, or a care intensity. Both modes share the same window-width resolution above; `delivery` only changes how `value` is spread within the resolved window, not how the window itself is determined.
+**`delivery`: total vs. level (ADR 0132)**: with the default `delivery: total`, or `delivery` omitted, `value` is the window's total quantity, spread evenly across every step inside the resolved window, which suits a variable that downstream equations accumulate, such as a training load or a meal's calories. With `delivery: level`, `value` is instead delivered unchanged to every step inside the window rather than divided, which suits a variable whose value is a current state or setting that downstream equations read as an instantaneous quantity rather than sum, such as a sleep duration, a bedtime, or a care intensity. Both modes share the same window-width resolution above; `delivery` only changes how `value` is spread within the resolved window, not how the window itself is determined. For the extensive/intensive-quantity framing behind this distinction, how it interacts with `days`/`date_range`, and the judgment rule for choosing between the two, see `docs/authoring/regimens_and_optimization.md`.
 
 Multiple entries for the same variable with non-overlapping `date_range` represent the K×4 Regimen segments (see §7); the recommended way to express a multi-phase regimen is one `date_range`-free baseline entry (in effect for the whole simulation) plus one or more `date_range`-scoped entries carrying the *delta* relative to baseline — this way a missing or mistyped `date_range` on a delta entry only shifts a few days at the margin, rather than silently stacking a full duplicate target value on top of another phase's.
 
@@ -476,7 +466,7 @@ Each entry in `simulation.plans` is an independently runnable named scenario wit
 
 ### 5.3 Monte Carlo (simulation.mc)
 
-`simulation.mc` controls the number of Monte Carlo runs for GUI visualization. It is **completely independent** from `optimizer.mc`; neither block inherits from the other.
+`simulation.mc` controls the number of Monte Carlo runs for GUI visualization. It is **completely independent** from `optimization.mc`; neither block inherits from the other.
 
 ```yaml
 simulation:
@@ -487,34 +477,34 @@ simulation:
 
 When `runs > 1`, the engine draws all distribution-valued `parameter` variables independently for each run. The engine must expose the actual seed used (`session_seed`) in its API response so results can be reproduced. The GUI renders N semi-transparent thin lines plus one mean line.
 
-`algorithm.seed` (in `optimizer.algorithm`) controls only the NSGA-II population initialization; it has no effect on MC sampling.
+`algorithm.seed` (in `optimization.algorithm`) controls only the NSGA-II population initialization; it has no effect on MC sampling.
 
 ---
 
 ## 6. Optimizer Block
 
-The `optimizer:` block is a **top-level key** (not nested under `simulation:`). It defines a multi-objective optimization problem whose decision variables are `input` variable schedules. When present, a conforming engine searches for Pareto-optimal K×4 Regimens (see §7). After optimization completes, results are written back into `optimizer.results`.
+The `optimization:` block is a **top-level key** (not nested under `simulation:`). It defines a multi-objective optimization problem whose decision variables are `input` variable schedules. When present, a conforming engine searches for Pareto-optimal K×4 Regimens (see §8). After optimization completes, results are written back into `optimization.results`.
 
 ### Independence Principle
 
-`simulation:` and `optimizer:` are independent scenario descriptions that may be converted between each other by an interactive tool. A file may contain one, both, or neither. The optimizer block defines its own evaluation context; fields absent from the optimizer block fall back to their simulation-block equivalents.
+`simulation:` and `optimization:` are independent scenario descriptions that may be converted between each other by an interactive tool. A file may contain one, both, or neither. The optimization block defines its own evaluation context; fields absent from the optimization block fall back to their simulation-block equivalents.
 
-| Concern | simulation | optimizer |
+| Concern | simulation | optimization |
 |---------|-----------|-----------|
-| Time range | `simulation.start_date` / `end_date` | `optimizer.start_date` / `end_date` (optional override) |
-| Step size | `metadata.step_size` | `optimizer.step_size` (optional override) |
-| Fixed inputs + Decision variables | `simulation.plans[*].regimens` (visualization) | `optimizer.startpoint.regimens` (unified list, independent evaluation) |
+| Time range | `simulation.start_date` / `end_date` | `optimization.start_date` / `end_date` (optional override) |
+| Step size | `simulation.step_size` | `optimization.step_size` (optional override) |
+| Fixed inputs + Decision variables | `simulation.plans[*].regimens` (visualization) | `optimization.startpoint.regimens` (unified list, independent evaluation) |
 
-`optimizer.startpoint.regimens` is a unified list of both fixed background inputs (entries with no `optimize:` block) and decision variables (entries with an `optimize:` block); `startpoint` describes the initial protocol the optimizer searches from. The optimizer never reads `simulation.plans[*].regimens` — the two paths are fully independent, and `optimizer.startpoint.regimens` must be declared explicitly (no implicit fallback between them).
+`optimization.startpoint.regimens` is a unified list of both fixed background inputs (entries with no `optimize:` block) and decision variables (entries with an `optimize:` block); `startpoint` describes the initial protocol the optimizer searches from. The optimizer never reads `simulation.plans[*].regimens` — the two paths are fully independent, and `optimization.startpoint.regimens` must be declared explicitly (no implicit fallback between them).
 
 ```yaml
-optimizer:
+optimization:
   method: nsga2                        # nsga2 | l-bfgs-b | nelder-mead
 
-  # Evaluation time window (optional; defaults to simulation.start_date/end_date + metadata.step_size)
+  # Evaluation time window (optional; defaults to simulation.start_date/end_date/step_size)
   start_date: "YYYY-MM-DD"            # Optional; overrides simulation.start_date for optimizer evaluation
   end_date:   "YYYY-MM-DD"            # Optional; overrides simulation.end_date for optimizer evaluation
-  step_size:                           # Optional; overrides metadata.step_size for optimizer evaluation
+  step_size:                           # Optional; overrides simulation.step_size for optimizer evaluation
     value: 1
     unit: day                          # minute | hour | day
 
@@ -568,40 +558,56 @@ optimizer:
       - {x: [0.80], f: [64.8, 46.2]}
       - {x: [1.00], f: [66.9, 43.8]}
     recommended:                        # Modeler-selected representative point (not the unique optimum)
-      x: [0.80]                        # Decision-variable values, in optimizer.startpoint.regimens decision-entry order
+      x: [0.80]                        # Decision-variable values, in optimization.startpoint.regimens decision-entry order
       f: [64.8, 46.2]                  # Objective values, in objectives order
 ```
 
-Human-readable regimens/objective dictionaries are not stored alongside `x`/`f` — both the human-readable display and "send to Sim" reconstruct them on demand by decoding `x`/`f` against `optimizer.startpoint.regimens` and `objectives` (avoiding two formats that can drift out of sync).
+Human-readable regimens/objective dictionaries are not stored alongside `x`/`f` — both the human-readable display and "send to Sim" reconstruct them on demand by decoding `x`/`f` against `optimization.startpoint.regimens` and `objectives` (avoiding two formats that can drift out of sync).
 
 ### 6.1 Evaluation Time Window
 
-The `optimizer` block may declare an independent evaluation time window (`start_date` / `end_date` / `step_size`). This window governs the simulation that the engine runs internally on each fitness evaluation. When absent, the engine inherits values from `simulation.start_date`/`end_date` and `metadata.step_size`.
+The `optimization` block may declare an independent evaluation time window (`start_date` / `end_date` / `step_size`). This window governs the simulation that the engine runs internally on each fitness evaluation. When absent, the engine inherits values from `simulation.start_date`/`end_date`/`step_size`.
 
 **Use cases:**
-- **Reproducibility**: when `optimizer.results` is published, readers can reproduce the Pareto front by rerunning with the declared evaluation window.
+- **Reproducibility**: when `optimization.results` is published, readers can reproduce the Pareto front by rerunning with the declared evaluation window.
 - **Accelerated search**: a shorter evaluation window (e.g., 2 years instead of 5) reduces per-evaluation cost while preserving search quality, provided the objective variable reaches a stable value within the window.
-- **Decoupled visualization**: `simulation.start_date`/`end_date` controls the GUI display; `optimizer.start_date`/`end_date` controls what the optimizer actually evaluates — these may differ.
+- **Decoupled visualization**: `simulation.start_date`/`end_date` controls the GUI display; `optimization.start_date`/`end_date` controls what the optimizer actually evaluates — these may differ.
 
 A conforming engine must apply the following priority when resolving evaluation time:
 1. Values passed by the interactive session (e.g., GUI toolbar) as runtime overrides — highest priority.
-2. `optimizer.start_date` / `end_date` / `step_size` — declared in the LM file.
-3. `simulation.start_date` / `end_date` and `metadata.step_size` — inherited defaults.
+2. `optimization.start_date` / `end_date` / `step_size` — declared in the LM file.
+3. `simulation.start_date` / `end_date` / `step_size` — inherited defaults.
 
-### 6.2 optimizer.results Design Principles
+### 6.2 optimization.results Design Principles
 
-- **Results travel with the model**: `optimizer.results` is serialized into the same YAML file as the model. Publishing the model = publishing the Pareto front.
+- **Results travel with the model**: `optimization.results` is serialized into the same YAML file as the model. Publishing the model = publishing the Pareto front.
 - **`recommended` is not `best`**: Multi-objective optimization has no unique optimum. `recommended` is a researcher-selected representative point from the Pareto front, chosen to illustrate a specific tradeoff. Users should inspect the full `pareto_front`. The field is named `recommended` rather than `reference` to avoid colliding with the unrelated `reference` field used elsewhere for literature citations (on `variables.<name>` / `equations.<name>`).
 - **Warm-start**: Engines may initialize subsequent runs from `pareto_front` vectors to continue improving the front.
 - **Overwrite on save**: `results` is wholly replaced each time the researcher saves; no append semantics.
 
 ---
 
-## 7. K×4 Regimen Specification
+## 7. References Block
+
+The `references:` block is a **top-level key** (not nested under `metadata:`, ADR 0151). It lists the literature sources a model draws on, separately from the per-entry `reference:` field already available on individual `variables.<name>` / `equations.<name>` entries — the two are independent and neither is required to point at the other.
+
+```yaml
+references:
+  - citation: "KDIGO 2020 Clinical Practice Guideline for Diabetes Management in CKD. Kidney Int."
+    description: "GFR decline rate and protein restriction threshold."
+  - citation: "Bauer J et al. (2013) Sarcopenia in CKD. NDT."
+    description: "Muscle loss rate under CKD."
+```
+
+Each entry may be a plain citation string, or an object pairing the citation with what it specifically contributes to this model; see `docs/authoring/description_writing.md`. `references:` is recommended whenever any parameter in the file comes from literature (see §9.1 Required Fields); it is not read or validated by the Reference Engine loader, so an LM-compatible engine treats it as opaque documentation rather than a field with runtime effect.
+
+---
+
+## 8. K×4 Regimen Specification
 
 **K×4 Regimen** is LM format's canonical input formalism for behavioral intervention optimization. It is a first-class part of the LM format specification, not an engine feature.
 
-### 7.1 Motivation
+### 8.1 Motivation
 
 Clinical interventions are not arbitrary continuous control signals — they are schedules that a real person must execute. A medication regimen is "take 2 tablets at 8am and 8pm." An exercise plan is "30 minutes of walking on Monday, Wednesday, Friday." A dietary plan is "reduce protein to 0.6 g/kg/day for the first 4 weeks."
 
@@ -611,7 +617,7 @@ Standard continuous optimal control outputs (a control signal u(t) for every tim
 
 K×4 Regimen addresses this by formalizing interventions as a finite set of **calendar-semantic segments**.
 
-### 7.2 Formal Definition
+### 8.2 Formal Definition
 
 A **K×4 Regimen** for a single input variable is defined as:
 
@@ -628,7 +634,7 @@ Where:
 
 The search space of a K×4 Regimen over K segments is **4K dimensions**, independent of simulation time T. For typical clinical interventions (K = 2–6), this reduces the search space by a factor of T/4K relative to step-by-step control, often 30× or more.
 
-### 7.3 Calendar Semantics
+### 8.3 Calendar Semantics
 
 K×4 Regimen outputs are directly human-readable and exportable:
 - Each segment maps to a block of calendar entries (iCal format)
@@ -638,7 +644,7 @@ K×4 Regimen outputs are directly human-readable and exportable:
 
 This makes K×4 Regimen the **only optimization output format** in LM format that can be directly given to a patient as an executable plan.
 
-### 7.4 YAML Representation
+### 8.4 YAML Representation
 
 A K×4 Regimen is expressed in a plan's `regimens` list (§5.1) as multiple entries for the same variable, each with a distinct `date_range` (one entry per segment):
 
@@ -664,24 +670,24 @@ simulation:
           label: "Maintenance phase"
 ```
 
-A solved K×4 Regimen from optimization is serialized as an `x` vector in `optimizer.results.recommended` (see §6), decoded against the decision entries in `optimizer.startpoint.regimens` in the same order — engines reconstruct the human-readable per-segment values from `x` on demand rather than storing a separate decoded dictionary (see §6, "optimizer.results Design Principles").
+A solved K×4 Regimen from optimization is serialized as an `x` vector in `optimization.results.recommended` (see §6), decoded against the decision entries in `optimization.startpoint.regimens` in the same order — engines reconstruct the human-readable per-segment values from `x` on demand rather than storing a separate decoded dictionary (see §6, "optimization.results Design Principles").
 
 The underlying `time_start`/`date_range` YAML is human-readable and can be exported as iCal: each segment maps to one VEVENT with DTSTART, DURATION, RRULE (daily), and DESCRIPTION (dose value).
 
 ---
 
-## 8. Model Library Standards
+## 9. Model Library Standards
 
 An LM file is eligible for submission to the **LM Open Model Library** if it meets all of the following:
 
-### 8.1 Required Fields
+### 9.1 Required Fields
 
 - `metadata.name`, `metadata.version`, `metadata.description`
 - `metadata.authors` (at least one author with name)
-- `metadata.references` (at least one entry for each literature-derived parameter, or a `reference` on the individual `variables`/`equations` entry it supports)
+- `references` (at least one entry for each literature-derived parameter, or a `reference` on the individual `variables`/`equations` entry it supports)
 - `metadata.lm_format_version: "1.0"`
 
-### 8.2 Validation
+### 9.2 Validation
 
 A Library-eligible LM file must pass validation by an LM-compatible engine:
 - All variable references in equations resolve to declared variables
@@ -689,7 +695,7 @@ A Library-eligible LM file must pass validation by an LM-compatible engine:
 - Initial values are within declared bounds
 - No circular imports
 
-### 8.3 Quality Status: `metadata.todo`
+### 9.3 Quality Status: `metadata.todo`
 
 Whether an LM file is publication-ready is tracked entirely by a structured `metadata.todo` field, independent of the file name:
 
@@ -703,12 +709,12 @@ metadata:
 ```
 
 - `type` meanings: `nosim` = `--sim` cannot run; `noopt` = `--sim` passes but the optimizer fails; `noref` = missing literature sourcing (a `TODO:SOURCE` marker is present); `quality` = both `--sim`/`--opt` succeed but the result is suspect (e.g. a degenerate Pareto front, an empty feasible region); `other` = anything else.
-- **No `metadata.todo` (or an empty list) means confirmed passing and publication-ready**: `--sim` succeeds, `--opt` succeeds (or is skipped when no `optimizer:` block is present), every parameter has a literature source, and results show no red flags.
+- **No `metadata.todo` (or an empty list) means confirmed passing and publication-ready**: `--sim` succeeds, `--opt` succeeds (or is skipped when no `optimization:` block is present), every parameter has a literature source, and results show no red flags.
 - Once every `todo` item is resolved, remove the field entirely — the file returns to a "clean" state. The file name is never part of this signal (a prior convention encoded status via filename suffixes such as `_HOLD`; renaming broke other files' `imports:` paths and has been removed).
 
 An optional YAML field `metadata.reviewed: true` may be set by the author to indicate that mechanisms and parameter magnitudes have been manually verified. This is not a publication gate.
 
-### 8.4 Contribution License Agreement
+### 9.4 Contribution License Agreement
 
 By contributing an LM file to the LM Open Model Library, contributors confirm:
 1. They have the right to submit the contribution.
@@ -717,29 +723,9 @@ By contributing an LM file to the LM Open Model Library, contributors confirm:
 
 ---
 
-## 9. Versioning
+## 10. Versioning
 
-### 9.1 LM format Version History
-
-| Version | Date | Status | Notes |
-|---------|------|--------|-------|
-| 1.0 | 2026-05-10 | Draft | Initial release |
-| 1.0 | 2026-05-19 | Draft | Updated to align with Reference Engine: `evidence:` as separate top-level block with 8 sub-types; `simulation.schedules` updated to flat-list pulse format; `simulation.plans` added; `optimizer:` moved to top-level; `optimizer.results.reference` (replaces `best`); `metadata.description` structured form; `simulation.step_size` removed (only in `metadata.step_size`) |
-| 1.0 | 2026-05-22 | Draft | Added `optimizer.start_date` / `end_date` / `step_size` (optional evaluation time window, §6.1); optimizer schedule tiers T2/T3/T4 introduced |
-| 1.0 | 2026-05-23 | Draft | Formalized Sim / Opt independence principle (§6 intro) |
-| 1.0 | 2026-05-28 | Draft | **Breaking**: `optimizer.inputs` deprecated → unified `optimizer.schedules` (ADR 0088); T2 field `optimize.time: ["HH","HH"]`; T3 field `optimize.days_pool + days_n` (backend enumerates combinations, replaces explicit `days_options`); T4 field `optimize.date_range: [[lo,hi],[lo,hi]]` (two mandatory windows); all legacy fields (`time_window`, `opt_step`, `days_options`, `date_start_window`, boolean flags) removed from engine and all YAMLs |
-| 1.0 | 2026-05-24 | Draft | Added `optimizer.mc.seed` (optional integer; fixed = reproducible MC, omit = random each session); reproducibility note added to §2.3; Reference Engine returns `session_seed` in API response |
-| 1.0 | 2026-06-06 | Draft | **ADR 0096**: Added §8.3 File Naming Quality Markers — three-suffix convention (`_nosim`, `_noopt`, `_noref`); deprecated `_mw` and `_TODO`; added `metadata.reviewed` optional field. |
-| 1.0 | 2026-06-05 | Draft | **ADR 0092**: `type: input` variable `unit` field must be a bare event-quantity unit (e.g. `mg`, `g/kg`, `kcal`, `MET-h`); rate units (`mg/day`, `kcal/day`, `g/kg/day`) are prohibited — they belong in `description` or `reference`; continuous rate processes must be modeled as `parameter` with step-multiplied equations. **ADR 0045 update**: `simulation.mc` and `optimizer.mc` are now separate, fully independent blocks; `optimizer.mc.enabled` and `optimizer.mc.sim_runs` deprecated → use `runs:` in each block; `algorithm.seed` controls only NSGA-II and does not fall back as mc.seed. §5.3 added for `simulation.mc`; §6 mc block updated. |
-| 1.0 | 2026-07-30 | Draft | Removed former §8 Game Conversion Block (`game:` top-level key, "Story" term) — never implemented in Reference Engine, GUI, or any model YAML; the feature this section described does not exist. Sections renumbered §9-§13 → §8-§12 accordingly. Will be reintroduced as a new versioned addition if/when the LM Game conversion mechanism is actually built. |
-| 1.0 | 2026-07-30 | Draft | §9.3 Planned Extensions: removed "multi-individual simulation (household, cohort scenarios)" — LM format's individual-level scope (Scope section) is explicitly per-individual batch execution (independent MC samples, no inter-individual interaction), not multi-agent/cohort simulation; this was never a planned direction. |
-| 1.0 | 2026-07-30 | Draft | Added Inclusion Test to the Scope section — a four-question operational check (`variables`/`evidence`, `equations`, `simulation`, `optimizer`) for whether a candidate topic falls within LM format's scope. The discipline-by-discipline coverage inventory this test produces is tracked in the LM Reference Library's `docs/model.md`, not versioned with this specification. |
-| 1.0 | 2026-07-30 | Draft | Reconciled the spec with the Reference Engine's current implementation, which had drifted from several sections: **ADR 0137** — `evidence:` is no longer an independent top-level block; literature effect sizes are declared as `variables:` entries with `type: parameter` + `evidence_type` (§2.4 rewritten, `applies_to` auto-wiring documented). **ADR 0109/0127** — `simulation.schedules`/`time:` replaced by `simulation.plans[*].regimens`/`time_start`+`time_end` (sustained execution model with window-width defaults; §5, §5.1, §7.4 rewritten); bare top-level `simulation.schedules` no longer supported. **ADR 0088/0109** — `optimizer.inputs`/`optimizer.schedules` replaced by `optimizer.startpoint.regimens`; `objectives` now `{variable, metric, direction}` (not `{maximize, at_time}`); `constraints` now `{variable, condition, type}` (not `{variable, operator, value}`); `optimizer.results.reference` renamed `optimizer.results.recommended`, storing only `{x, f}` vectors (decoded regimen/objective dictionaries removed 2026-06-21) (§6 rewritten). **ADR 0120** — §8.3 rewritten from the abolished `_nosim`/`_noopt`/`_noref` filename-suffix convention to the current `metadata.todo` structured field. |
-| 1.0 | 2026-08-06 | Draft | Added `delivery: total \| level` to §5.1 (ADR 0132), a regimen field distinguishing accumulated quantities from instantaneous state/setting readings, implemented since 2026-07-15 but missing from this spec until now. The LM Reference Library's practitioner documentation, previously the single file `docs/model.md`, has been split into a `docs/authoring/` directory; pointers elsewhere in this spec to `docs/model.md`, including the Scope section and the 2026-07-30 row above, now resolve via `docs/authoring/README.md`. |
-| 1.0 | 2026-08-06 | Draft | Removed `metadata.citation`, `metadata.sources`/`source_id`, `metadata.license`/`license_url`, `metadata.status`, and `authors[].orcid`/`affiliation`/`role` from §1.2, and the matching `source_id` examples from §2.2/§3.1, none of these were ever read by the Reference Engine loader or used in any model YAML in the library, the same situation as the 2026-07-30 removal of the Game Conversion Block. Literature sourcing is declared via `metadata.references` and the per-`variables`/`equations` `reference` field, both already implemented; §1.2's `authors` example now matches the `name`/`email` shape actually in use; the `tags` example changed from a list of single-key mappings, never used in practice, to the flat string list every model YAML actually uses. §8.1 Required Fields and §8.4 Contribution License Agreement updated to match. These fields may return as a new versioned addition if a Model Library submission mechanism that needs them is actually built. |
-| 1.0 | 2026-08-08 | Draft | **Breaking**: top-level `formulas:` block renamed to `equations:` (ADR 0144), matching the terminology already used throughout this spec's own prose (`differential equation`, `dynamic equations`); the `variables`/`formulas`/`simulation`/`optimizer` shorthand introduced by the 2026-07-30 Inclusion Test row is now named V.E.S.O. — Variables, Equations, Simulation, Optimization. All model YAML files, the Reference Engine, and the GUI updated in the same pass. |
-
-### 9.2 Versioning Policy
+### 10.1 Versioning Policy
 
 LM format uses semantic versioning:
 - **Patch** (1.0.x): Clarifications, editorial fixes, no schema changes
@@ -748,17 +734,17 @@ LM format uses semantic versioning:
 
 LM files declare `metadata.lm_format_version` to indicate which version of the specification they target. LM-compatible engines should accept files targeting older LM format versions.
 
-### 9.3 Planned Extensions (LM format 1.1+)
+### 10.2 Planned Extensions (LM format 1.1+)
 
 - Validation metadata (uncertainty ranges, sensitivity indices)
 - Model composition constraints (required/prohibited imports)
 - Probabilistic event modeling (stochastic state transitions) — not to be confused with the already-implemented Monte Carlo parameter sampling (§2.3/§5.3/§6): MC draws each distribution-valued `parameter` once per run to represent inter-individual variability, while this planned extension is about a state variable making a stochastic transition *during* a run (e.g. a Markov-style jump), which no equation expression can currently do (§3.2 lists no random-draw function)
 
-Features already implemented in Reference Engine (backported into LM format 1.0): `evidence_type`-based effect-size declarations (§2.4), `simulation.plans[*].regimens` (§5), `optimizer.results` (§6).
+Features already implemented in Reference Engine (backported into LM format 1.0): `evidence_type`-based effect-size declarations (§2.4), `simulation.plans[*].regimens` (§5), `optimization.results` (§6).
 
 ---
 
-## 10. Reference Implementation
+## 11. Reference Implementation
 
 The **LM Reference Engine** is the first software implementation of this specification.
 
@@ -777,11 +763,11 @@ The Reference Engine is **one possible implementation** of LM format. Other engi
 3. Validate all variable references and bounds
 4. Execute equations in the declared priority order with correct step-scaling
 5. Support K×4 Regimen as an optimization input formalism
-6. Serialize solved Regimens in the format defined in §6 and §7.4
+6. Serialize solved Regimens in the format defined in §6 and §8.4
 
 ---
 
-## 11. Citation
+## 12. Citation
 
 If you use LM format in a publication, please cite:
 
@@ -811,7 +797,7 @@ If you use the LM Reference Engine, additionally cite:
 
 ---
 
-## 12. Governance
+## 13. Governance
 
 LM format 1.0 is authored and maintained by Fan Shen. The specification is intended to evolve as a **shared research commons** — meaning:
 

@@ -15,18 +15,13 @@ metadata:
     limitations: >
       未区分梗死部位，例如前循环与后循环、皮质与皮质下，也不包含静脉溶栓或动脉取栓的急性期效应。神经可塑性指数为概念性描述，无法直接测量；个体差异，例如年龄、梗死体积，未纳入建模。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 脑卒中是全球第二大死亡原因，康复时序优化是神经科研究热点
-    framework_demand: 2 - 急性病模型，上层场景复用少
-    evidence_quality: 4 - 引用AHA指南及Langhorne 2011等高质量文献，参数有据可查
-    popularity: 4 - NIHSS/mRS/Fugl-Meyer是神经康复教科书核心评估量表
+    importance: 0.75 - 脑卒中是全球第二大死亡原因，康复时序优化是神经科研究热点；急性病模型，上层场景复用少
+    variable: 0.75 - 引用AHA指南及Langhorne 2011等高质量文献，参数有据可查
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [stroke, rehabilitation, NIHSS, mRS, Fugl-Meyer, neuroplasticity, aphasia]
-  references:
-  - "Powers WJ et al. (2019) Guidelines for the Early Management of Patients With Acute Ischemic Stroke. Stroke 50(12):e344-e418."
-  - "Langhorne P et al. (2011) Stroke rehabilitation. Lancet 377(9778):1693-1702."
-  - "Kwakkel G et al. (2004) Effects of augmented exercise therapy time after stroke. Stroke 35(11):2529-2539."
-  - "Feigin VL et al. (2021) Global, regional, and national burden of stroke and its risk factors, 1990-2019. Lancet Neurol 20(10):795-820."
-  - "Krakauer JW et al. (2012) Motor learning principles for neurorehabilitation. Handb Clin Neurol 110:93-103."
 variables:
   nihss_score:
     description: |
@@ -204,7 +199,7 @@ simulation:
       date_range: ["2026-01-01", "2026-04-01"]
       label: "言语治疗1h/day（失语症康复）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: upper_limb_fugl_meyer
@@ -251,3 +246,10 @@ optimizer:
     recommended:
       x: [5.0]
       f: [43.1, 2.5]
+
+references:
+  - "Powers WJ et al. (2019) Guidelines for the Early Management of Patients With Acute Ischemic Stroke. Stroke 50(12):e344-e418."
+  - "Langhorne P et al. (2011) Stroke rehabilitation. Lancet 377(9778):1693-1702."
+  - "Kwakkel G et al. (2004) Effects of augmented exercise therapy time after stroke. Stroke 35(11):2529-2539."
+  - "Feigin VL et al. (2021) Global, regional, and national burden of stroke and its risk factors, 1990-2019. Lancet Neurol 20(10):795-820."
+  - "Krakauer JW et al. (2012) Motor learning principles for neurorehabilitation. Handb Clin Neurol 110:93-103."

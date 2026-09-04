@@ -15,19 +15,13 @@ metadata:
     limitations: >
       未区分前锋与后卫位置的典型班次时长差异，前锋约 45 秒，后卫约 55-60 秒。分钟步长对 45-60 秒班次结构为时间尺度近似；冰面温度和冰刀类型等环境因素未建模。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 冰球班次制无氧主导特征有专项研究价值，受众集中北美/北欧
-    framework_demand: 2 - 团队运动专项模型，上层引用预期低
-    evidence_quality: 3 - 引用Montgomery/Cox等经典文献，参数基本有据
-    popularity: 2 - 冰球在特定地区主流，全球通用度有限
+    importance: 0.25 - 冰球班次制无氧主导特征有专项研究价值，受众集中北美/北欧；团队运动专项模型，上层引用预期低
+    variable: 0.5 - 引用Montgomery/Cox等经典文献，参数基本有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [hockey, ice_hockey, team, anaerobic, shift, lactate, skating_efficiency, VO2max]
-  references:
-    - citation: "Montgomery DL (1988) Physiology of ice hockey. Sports Med 5(2):99-126."
-      description: "提供冰球整体生理特征数据，班次内心率接近 90% HRmax、乳酸可升至 6-10 mmol/L，是心率动力学和班次内乳酸积累机制的参数来源。"
-    - citation: "Twist P & Rhodes T (1993) A physiological analysis of ice hockey positions. J Strength Cond Res 7(1):29-35."
-      description: "提供不同位置的生理负荷分析，是射门力量随疲劳和乳酸下降这一机制的参数来源。"
-    - citation: "Cox MH et al. (1995) Aerobic power and treadmill performance of formal Canadian hockey players. J Sports Sci 13(4):333-340."
-      description: "提供冰球运动员有氧能力数据，是摄氧量动力学的参数来源。"
 
 variables:
   skating_intensity:
@@ -153,7 +147,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "班次时长（50秒，精英前锋典型值）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: shot_power
@@ -199,3 +193,11 @@ optimizer:
     recommended:
       x: [8.0]
       f: [-90.0, 0.48]
+
+references:
+  - citation: "Montgomery DL (1988) Physiology of ice hockey. Sports Med 5(2):99-126."
+    description: "提供冰球整体生理特征数据，班次内心率接近 90% HRmax、乳酸可升至 6-10 mmol/L，是心率动力学和班次内乳酸积累机制的参数来源。"
+  - citation: "Twist P & Rhodes T (1993) A physiological analysis of ice hockey positions. J Strength Cond Res 7(1):29-35."
+    description: "提供不同位置的生理负荷分析，是射门力量随疲劳和乳酸下降这一机制的参数来源。"
+  - citation: "Cox MH et al. (1995) Aerobic power and treadmill performance of formal Canadian hockey players. J Sports Sci 13(4):333-340."
+    description: "提供冰球运动员有氧能力数据，是摄氧量动力学的参数来源。"

@@ -21,7 +21,7 @@ LM 从"要不要为某个学科/某个声称建模"到"论文里能不能引用"
 
 这四问的英文正式表述已写入 `docs/LM_format_1.0.md` 的 Scope 一节（Inclusion Test），作为格式规范本身对"什么话题落在 LM format 范围内"的操作化定义；本节的四问、符号约定和盘点表是该定义在本项目模型库里的具体落地和持续追踪，不是另一套独立标准。
 
-下方盘点表里大量表示尚未评估的 `?` 格子如实反映了模型库的真实状态——本项目模型库大部分内容由 AI 辅助生成与初步复核，尚未经过相关领域专家核实，作者本人的核实精力集中投入在少数 `validation_confidence` ≥ 4 的核心示范模型上；完整的责任边界声明见仓库 README「内容可信度声明」一节。
+下方盘点表里大量表示尚未评估的 `?` 格子如实反映了模型库的真实状态——本项目模型库大部分内容由 AI 辅助生成与初步复核，尚未经过相关领域专家核实，作者本人的核实精力集中投入在少数 `confidence` ≥ 0.75 的核心示范模型上（`docs/authoring/ratings.md` 0-1 量表，`models/papers/lm_format/`、`models/plan/` 下已按此标准打分，其余目录暂沿用未迁移前的旧记录）；完整的责任边界声明见仓库 README「内容可信度声明」一节。
 
 ### 四问粗筛
 
@@ -32,7 +32,7 @@ LM 从"要不要为某个学科/某个声称建模"到"论文里能不能引用"
 - **sim**：编码后的机制能否产出随时间演化、可以跟独立数据点比对的轨迹，而不是只能做静态数值展示？
 - **opt**：该学科的决策空间里是否存在真实的多目标权衡（不是单一最优解），值得跑 optimizer？
 
-前两问（var/equ）决定这个学科的声称值不值得编码进 LM，任一不通过说明素材本身撑不起一个可执行模型，不该投入建模精力；后两问（sim/opt）决定编码完之后能拿这个模型宣称到什么程度，var/equ 通过但 sim/opt 用不上时模型依然成立，只是使用方式受限于机制/引擎正对照展示，不能做独立预测或优化（量表定义见下文 `validation_confidence`）。
+前两问（var/equ）决定这个学科的声称值不值得编码进 LM，任一不通过说明素材本身撑不起一个可执行模型，不该投入建模精力；后两问（sim/opt）决定编码完之后能拿这个模型宣称到什么程度，var/equ 通过但 sim/opt 用不上时模型依然成立，只是使用方式受限于机制/引擎正对照展示，不能做独立预测或优化（量表定义见 `docs/authoring/ratings.md` 的 `confidence`）。
 
 `models/test_validation/validation_report.md`《尝试但未构建的学科》一节记录了具体候选案例层面（不是整个学科层面）已经被四问粗筛淘汰的例子（如 Bass 技术扩散模型因 p/q 参数来源不可信、Lanchester 平方律因原始逐日兵力数据未能公开获取），可作为如何应用这四问的参考样本。
 
@@ -63,7 +63,7 @@ LM 从"要不要为某个学科/某个声称建模"到"论文里能不能引用"
 | medical       | psychology | √／`?` | -／`?` | -／`?` | -／`?`     | 4/5 已评估，全部停在效应量声明层（cbt_depression/mindfulness×2 的 cohens_d + inactivity_shortsleep_mortality 的 RR），没有一个走到机制执行层；adherence_decay 未评估，可能含独立机制，见"心理治疗Cohen's d族"节                                                                                                                   |
 | medical       | surgery    | `?`   | `?`   | `?`   | `?`       | 4 个模型文件尚未进入评估阶段                                                                                                                                                                                                                                                                 |
 | environmental | climate    | √     | √     | √     | -         | CO2 Keeling 曲线留一法预测 1990 年，误差 +2.7%（可由增速本身非恒定解释），S1 强验证候选；模型本身无决策变量，opt 维度不适用于这一例，不代表环境政策学科排除优化场景，见"环境科学：CO2 Keeling曲线跨年份预测"节                                                                                                                                                   |
-| risk          | actuarial  | √     | √     | √     | -         | Gompertz 死亡率定律 3 点全过，但三个锚点疑似同一教学式 illustration 非独立队列，confidence 封顶 4，引用需加注适用性局限；模型本身无决策变量，opt 维度同上不适用于这一例，见"精算/风险学：Gompertz死亡率定律"节                                                                                                                                              |
+| risk          | actuarial  | √     | √     | √     | -         | Gompertz 死亡率定律 3 点全过，但三个锚点疑似同一教学式 illustration 非独立队列，confidence 仅 0.25，引用需加注适用性局限；模型本身无决策变量，opt 维度同上不适用于这一例，见"精算/风险学：Gompertz死亡率定律"节                                                                                                                                              |
 | social        | conflict   | `?`   | `?`   | √     | √         | war_2026/civil_unrest/gang_extortion/disaster 四例的机制已编码并产出非退化仿真/优化结果——这不是"没有机制"，未核对的是机制数值对不对得上独立文献；war_2026 默认场景收敛为无权衡平凡解，已记录为诚实发现而非 bug；四例均 2026-07-27 确认可运行                                                                                                                    |
 | social        | demography | `?`   | `?`   | √     | √self     | population_growth 机制已编码，61 解非退化，未核对文献数值，2026-07-27 确认可运行                                                                                                                                                                                                                        |
 | social        | economy    | √／`?` | -／`?` | √     | √self     | 同一小学科内两种性质并存，不能合并读成一个判定：tobacco_elasticity 是纯回归系数 existence 声明（无机制）；labor_economic/labor_daily/predatory_lending_spiral/pyramid_scheme_dynamics/ancient_merchant_exploitation 五例机制已编码并运行，未核对文献，其中 labor_economic 可点名对应 Shapiro-Stiglitz 效率工资理论——`equ` 在这个小学科的真实瓶颈是"未验证"，不是"不存在" |

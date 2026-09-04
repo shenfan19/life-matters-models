@@ -24,19 +24,13 @@ metadata:
     limitations: >
       参数来自 TKR 文献；ACL 重建的愈合时间常数不同，须重新校准。未建模持续 4–8 周的腱骨整合期生物学约束。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 骨科术后康复是重要临床问题，物理治疗强度优化有广泛需求
-    framework_demand: 2 - 术后专项模型，上层场景引用预期低
-    evidence_quality: 4 - 引用Kehlet/Mizner/Bade等高质量文献，参数有据可查
-    popularity: 3 - TKR康复模型在骨科领域有地位，通用度中等
+    importance: 0.5 - 骨科术后康复是重要临床问题，物理治疗强度优化有广泛需求；术后专项模型，上层场景引用预期低
+    variable: 0.75 - 引用Kehlet/Mizner/Bade等高质量文献，参数有据可查
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [surgery, rehabilitation, orthopedic, TKR, pain, physiotherapy]
-  references:
-    - "Kehlet H & Wilmore DW (2008) Evidence-based surgical care and the evolution of fast-track surgery. Ann Surg 248(2):189-198."
-    - "Mizner RL et al. (2005) Preoperative quadriceps strength predicts functional ability one year after TKA. J Bone Joint Surg 87A(8):1541-1547."
-    - "Artz N et al. (2015) Physiotherapy and outcomes after TKA. BMC Musculoskelet Disord 16:422."
-    - "Bade MJ et al. (2017) Effects of early high-intensity rehabilitation following TKA. J Orthop Sports Phys Ther 47(8):572-579."
-    - citation: "Collins NJ et al. (2011) Measures of knee function. Arthritis Care Res 63(S11):S208-S228."
-      description: "KOOS 评分工具"
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -272,7 +266,7 @@ simulation:
         date_range: ["2026-01-29", "2026-03-27"]
         label: "后期镇痛（减量至对乙酰氨基酚）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: functional_score
@@ -329,3 +323,11 @@ optimizer:
     recommended:
       x: [3.5, 7.0]
       f: [-78.6, 398.2]
+
+references:
+  - "Kehlet H & Wilmore DW (2008) Evidence-based surgical care and the evolution of fast-track surgery. Ann Surg 248(2):189-198."
+  - "Mizner RL et al. (2005) Preoperative quadriceps strength predicts functional ability one year after TKA. J Bone Joint Surg 87A(8):1541-1547."
+  - "Artz N et al. (2015) Physiotherapy and outcomes after TKA. BMC Musculoskelet Disord 16:422."
+  - "Bade MJ et al. (2017) Effects of early high-intensity rehabilitation following TKA. J Orthop Sports Phys Ther 47(8):572-579."
+  - citation: "Collins NJ et al. (2011) Measures of knee function. Arthritis Care Res 63(S11):S208-S228."
+    description: "KOOS 评分工具"

@@ -45,16 +45,13 @@ metadata:
           有累积性影响。引入后可优化方案复杂度（几段式K×4 vs 复杂个性化）以
           提高对脱落的鲁棒性。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
+    importance: 0.25 - 设计为供多个慢病模型import的依从性组件，目前尚无实际import记录
+    variable: 0.75 - WHO 2003/Osterberg 2005/DiMatteo 2004/Haynes 2008 Cochrane/Horne 1999/Vrijens 2012等多篇文献支撑
+    equation: 0.5 - 自建衰减方程，base_decay_rate/reminder_recovery_strength分别锚定DiMatteo与Haynes报告的效应量
+    simulation: 0.5 - 经验证可正常跑通产出三方案轨迹，与自身校准目标(DiMatteo 6个月均值0.50)方向一致，未与独立数据比对
+    optimization: 0.0 - 本文件不含optimization，为纯组件模型，不涉及决策变量搜索
+    confidence: 0.25 - 可正常跑通，但未与独立文献目标数值比对
   tags: [adherence, non-adherence, medication_compliance, chronic_disease, behavioral_dynamics, reference_component]
-  references:
-    - "WHO (2003) Adherence to Long-Term Therapies: Evidence for Action. World Health Organization, Geneva."
-    - "Osterberg L & Blaschke T (2005) Adherence to medication. N Engl J Med 353(5):487-497."
-    - "DiMatteo MR (2004) Variations in patients' adherence to medical recommendations: a quantitative review of 50 years of research. Medical Care 42(3):200-209."
-    - "Haynes RB et al. (2008) Interventions for enhancing medication adherence. Cochrane Database Syst Rev (2):CD000011."
-    - "Horne R & Weinman J (1999) Patients' beliefs about prescribed medicines and their role in adherence. J Psychosom Res 47(6):555-567."
-    - "Jimmy B & Jose J (2011) Patient medication adherence: measures in daily practice. Oman Med J 26(3):155-159."
-    - "Vrijens B et al. (2012) A new taxonomy for describing and defining adherence to medications. Br J Clin Pharmacol 73(5):691-705."
 
 # ── 变量 ─────────────────────────────────────────────────────────────────────────
 variables:
@@ -232,3 +229,12 @@ simulation:
         - {variable: reminder_intervention, time_start: "08:00", value: 1.0,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
            date_range: ["2026-01-01", "2026-12-31"], label: "每日APP提醒"}
+
+references:
+  - "WHO (2003) Adherence to Long-Term Therapies: Evidence for Action. World Health Organization, Geneva."
+  - "Osterberg L & Blaschke T (2005) Adherence to medication. N Engl J Med 353(5):487-497."
+  - "DiMatteo MR (2004) Variations in patients' adherence to medical recommendations: a quantitative review of 50 years of research. Medical Care 42(3):200-209."
+  - "Haynes RB et al. (2008) Interventions for enhancing medication adherence. Cochrane Database Syst Rev (2):CD000011."
+  - "Horne R & Weinman J (1999) Patients' beliefs about prescribed medicines and their role in adherence. J Psychosom Res 47(6):555-567."
+  - "Jimmy B & Jose J (2011) Patient medication adherence: measures in daily practice. Oman Med J 26(3):155-159."
+  - "Vrijens B et al. (2012) A new taxonomy for describing and defining adherence to medications. Br J Clin Pharmacol 73(5):691-705."

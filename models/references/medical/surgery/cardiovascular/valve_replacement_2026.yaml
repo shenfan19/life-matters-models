@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未包含瓣周漏（PVL）对有效瓣口面积的影响；INR 模型未考虑 CYP2C9/VKORC1 基因型差异；未建模 TAVR 特有并发症，例如传导阻滞约10%、30天卒中约2到3%。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 主动脉瓣置换（TAVR）是近年心外科最重要进展，血流动力学管理是核心
-    framework_demand: 2 - 心外科专项模型，上层场景复用少
-    evidence_quality: 4 - 引用PARTNER Trial及ACC/AHA/ESC多项权威指南，参数有据
-    popularity: 4 - 瓣膜置换术后管理是心外科和结构性心脏病教科书重要内容
+    importance: 0.5 - 主动脉瓣置换（TAVR）是近年心外科最重要进展，血流动力学管理是核心；心外科专项模型，上层场景复用少
+    variable: 0.75 - 引用PARTNER Trial及ACC/AHA/ESC多项权威指南，参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [tavr, savr, valve_replacement, aortic_stenosis, cardiac_index, anticoagulation, warfarin]
-  references:
-    - "Leon MB et al. (2010) Transcatheter aortic-valve implantation for aortic stenosis in patients who cannot undergo surgery (PARTNER Trial). NEJM 363(17):1597-1607."
-    - "Nishimura RA et al. (2014) 2014 ACC/AHA Guideline on the Management of Patients with Valvular Heart Disease. JACC 63(22):e57-185."
-    - "Vahanian A et al. (2022) 2021 ESC/EACTS Guidelines for the management of valvular heart disease. Eur Heart J 43(7):561-632."
-    - "Mack MJ et al. (2019) Transcatheter aortic-valve replacement with a balloon-expandable valve in low-risk patients (PARTNER 3). NEJM 380(18):1695-1705."
-    - "Otto CM et al. (2021) 2020 ACC/AHA Guideline for the Management of Patients with Valvular Heart Disease. JACC 77(4):e25-197."
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -263,7 +258,7 @@ simulation:
         date_range: ["2026-01-01", "2026-02-11"]
         label: "华法林5mg晚服（生物瓣3个月方案）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: cardiac_index
@@ -314,3 +309,10 @@ optimizer:
     recommended:
       x: [5.5]
       f: [-2.39, 0.25]
+
+references:
+  - "Leon MB et al. (2010) Transcatheter aortic-valve implantation for aortic stenosis in patients who cannot undergo surgery (PARTNER Trial). NEJM 363(17):1597-1607."
+  - "Nishimura RA et al. (2014) 2014 ACC/AHA Guideline on the Management of Patients with Valvular Heart Disease. JACC 63(22):e57-185."
+  - "Vahanian A et al. (2022) 2021 ESC/EACTS Guidelines for the management of valvular heart disease. Eur Heart J 43(7):561-632."
+  - "Mack MJ et al. (2019) Transcatheter aortic-valve replacement with a balloon-expandable valve in low-risk patients (PARTNER 3). NEJM 380(18):1695-1705."
+  - "Otto CM et al. (2021) 2020 ACC/AHA Guideline for the Management of Patients with Valvular Heart Disease. JACC 77(4):e25-197."

@@ -1,0 +1,76 @@
+metadata:
+  name: fatty_liver_opt_exercise
+  lm_format_version: "1.0"
+  description:
+    problem: "运动医学单学科视角优化：仅最小化训练期疲劳峰值，不考虑肝脏结局，代表如果只听运动医学与周期化理论、不管肝病科诉求，单学科最优会推到什么程度。与肝病科单学科的 fatty_liver_opt_hepatology.yaml、联合多学科的 fatty_liver_opt_joint.yaml 并列对比，才能体现联合优化揭示的权衡区间。完整物理机制与对比仿真见 imports 的 fatty_liver_sim。"
+    method: "机制与 fatty_liver_sim.yaml 相同，完整机制列表见该文件 description.method；本文件把优化目标收窄为单一学科视角，仅最小化训练期疲劳峰值，决策变量与搜索空间与 fatty_liver_opt_hepatology.yaml、fatty_liver_opt_joint.yaml 完全一致，便于三者并列比较。"
+  log:
+    "2026-08-05_00-00-00":
+      change: "results 精简为 2026-07-11 的最终收敛结果，移除已确认冗余的 historical_stale_from_2026-07-10 子块与内部任务记录指针；description 补充 method 字段"
+      reason: "落实 ADR 0141，主文件只保留当前有效结果，调试脉络转移至 history/2026-08-05_fatty_liver_opt_exercise.yaml。"
+
+imports:
+  - papers/lm_format/banister/banister_validation
+  - ./fatty_liver_sim
+
+references:
+  - "见 ./fatty_liver_sim.yaml"
+
+optimization:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-03-27"
+  step_size:
+    value: 1
+    unit: day
+
+  objectives:
+    - variable: fatigue
+      metric: max
+      direction: minimize
+      description: "运动医学单学科目标：仅最小化训练期疲劳峰值，不权衡肝脏结局"
+
+  # 与 fatty_liver_opt_joint.yaml 完全相同的决策变量结构，只换目标函数，
+  # 这样三个场景的搜索空间一致，结果才可比。
+  startpoint:
+    regimens:
+      - variable: training_load
+        time_start: "07:00"
+        time_end: "07:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "基础日常活动强度"
+        optimize:
+          value: [2.5, 5.0]
+
+      - variable: training_load
+        time_start: "07:00"
+        time_end: "07:00"
+        label: "强化训练叠加量 × 频率 × 升级时机"
+        optimize:
+          value: [2.0, 5.5]
+          days_pool: [Mon, Tue, Wed, Thu, Fri, Sat]
+          days_n: [3, 5]
+          date_range:
+            - ["2026-01-01", "2026-02-12"]
+            - ["2026-03-27", "2026-03-27"]
+
+  mc:
+    runs: 5
+    seed: 19
+
+  algorithm:
+    population_size: 50
+    n_generations: 80
+    seed: 19
+
+  results:
+    status: "同一配置（pop=50/gen=80/mc=5）在 2026-07-11 与 2026-07-14 两次独立重跑中逐位一致地报告 best_f=13.22，但独立 --sim-only 复核未能复现该数值，判定为不可信的选择偏差，理由见 note；未采信，未更新 exercise_optimized plan，未更新论文表6。"
+    generated_at: "2026-07-11"
+    method: nsga2
+    population_size: 50
+    n_generations: 80
+    n_solutions: 1
+    recommended:
+      x: [2.563566070099759, 2.309615214149592, 1.5736754218210045, 36.223757412702476]
+      f: [13.222817316070035]
+    note: "解码 x：基础活动 2.56 MET 全程 + 强化叠加 2.31 MET，Mon/Tue/Fri（3次/周），2026-02-06 起（date_range 搜索窗内，非全程）。用该解码 regimen 写入 fatty_liver_sim.yaml 的 exercise_optimized plan 后独立 --sim-only 验证（5-run MC 均值，不同于 opt 内部评估用的单次 5-run 抽样），得 fatigue=20.29，未见改善，反而略差于该 plan 现有值 19.18/20.0。mc.runs=5 样本量较小时，opt 搜索选中的'best'个体可能只是该个体被评估那一刻恰好抽到的一组 MC 样本偏好结果（noisy-fitness 选择偏差），不代表其真实期望疲劳峰值；本次改动未替换 exercise_optimized plan、未更新论文表6。更早的重跑记录见 history/2026-08-05_fatty_liver_opt_exercise.yaml。"

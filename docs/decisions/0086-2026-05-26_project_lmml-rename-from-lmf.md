@@ -8,7 +8,7 @@
 项目格式曾命名为 **Life Matters Format (LMF)**。比较同领域命名惯例（SBML、CellML、NeuroML）后，发现两个问题：
 
 1. **"Format" 过于宽泛**：不传递格式类型信息（SBML 用 "Markup Language" 明确表明结构）。
-2. **覆盖范围不准**："Simulation Language" 仅覆盖仿真，但该格式同时内含 `optimizer:` 块，是对**模型**的完整描述，而非某种运行模式的描述。
+2. **覆盖范围不准**："Simulation Language" 仅覆盖仿真，但该格式同时内含 `optimization:` 块，是对**模型**的完整描述，而非某种运行模式的描述。
 
 "Life Matters" 品牌保留不变——其名词/动词双关（matters = 重要的事 / 生命很重要）是有意设计，且在国际科研命名中具有差异化识别度。
 

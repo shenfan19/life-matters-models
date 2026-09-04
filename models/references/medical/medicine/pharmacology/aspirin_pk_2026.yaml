@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未包含血小板 TXA2 抑制的药效模型，未考虑肠溶片的延迟吸收；个体间差异，例如 CYP2C9 基因型和肾功能，可通过参数分布建模但尚未纳入。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 心血管预防最常用药物，PK 建模基础价值高
-    framework_demand: 4 - 被多个药理场景引用，心血管预防建模必备组件
-    evidence_quality: 5 - Rowland 1968 双室参数权威，Michaelis-Menten 来源清晰
-    popularity: 4 - PK 领域经典基准，可用于多种心血管和镇痛场景
+    importance: 0.75 - 心血管预防最常用药物，被多个药理场景引用，框架内被依赖组件
+    variable: 0.75 - Rowland 1968/Levy & Giacomini 1978提供主要参数支撑，k12/k21为双室模型估算值
+    equation: 0.75 - 双室Michaelis-Menten非线性消除是被广泛引用的标准PK结构，非独立复现的命名模型
+    simulation: 0.5 - 经验证可正常跑通，但optimization.results显示的剂量-AUC关系呈完全线性，未体现problem强调的MM非线性，todo标记尚未用当前引擎重新核实
+    optimization: 0.25 - 前沿5点剂量-AUC比例完全恒定(-115.2)，测试剂量区间未触及MM饱和区，未展现真实非线性权衡
+    confidence: 0.25 - 可正常跑通，但nosim/noopt todo未清除，未与独立文献目标数值比对
   tags: [pharmacology, aspirin, salicylate, PK, cardiovascular, pain]
-  references:
-    - "Rowland M & Riegelman S (1968) Pharmacokinetics of acetylsalicylic acid and salicylic acid. J Pharm Sci 57(8):1313-1319."
-    - "Levy G & Giacomini KM (1978) Rational aspirin dosage regimens. Clin Pharmacol Ther 23(3):247-252."
-    - "Vane JR & Botting RM (2003) The mechanism of action of aspirin. Thromb Res 110(5-6):255-258."
-    - "Antman EM et al. (2002) AHA scientific statement: cardiovascular risk of COX-2 selective agents. Circulation 106(8):898-901."
-    - "Patrono C et al. (2005) Low-dose aspirin for the prevention of atherothrombosis. NEJM 353(22):2373-2383."
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -232,7 +227,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-03"]
         label: "低剂量阿司匹林（心血管预防）81mg 晨服"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: aspirin_dose
@@ -274,3 +269,10 @@ optimizer:
     recommended:
       x: [100.0]
       f: [100.0, -11520.0]
+
+references:
+  - "Rowland M & Riegelman S (1968) Pharmacokinetics of acetylsalicylic acid and salicylic acid. J Pharm Sci 57(8):1313-1319."
+  - "Levy G & Giacomini KM (1978) Rational aspirin dosage regimens. Clin Pharmacol Ther 23(3):247-252."
+  - "Vane JR & Botting RM (2003) The mechanism of action of aspirin. Thromb Res 110(5-6):255-258."
+  - "Antman EM et al. (2002) AHA scientific statement: cardiovascular risk of COX-2 selective agents. Circulation 106(8):898-901."
+  - "Patrono C et al. (2005) Low-dose aspirin for the prevention of atherothrombosis. NEJM 353(22):2373-2383."

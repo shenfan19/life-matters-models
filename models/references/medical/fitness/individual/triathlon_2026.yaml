@@ -15,18 +15,13 @@ metadata:
     limitations: >
       参数基于 70 kg 男性业余铁人三项运动员，换项过渡时间固定为 2 分钟。未包含赛中补糖策略对糖原储量的影响；心理因素，例如疼痛耐受和配速感知误差，未建模；三项运动间肌肉特异性疲劳的积累和转移未分位置区分。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 铁人三项多运动模式整合是运动生理学重要研究方向
-    framework_demand: 2 - 综合了多个运动但专项性强，上层引用预期低
-    evidence_quality: 4 - 引用Hausswirth/O'Toole等权威文献，糖原-配速模型有据
-    popularity: 3 - 铁人三项模型在竞技体育中有价值但通用度不及单项运动
+    importance: 0.25 - 铁人三项多运动模式整合是运动生理学重要研究方向；综合了多个运动但专项性强，上层引用预期低
+    variable: 0.75 - 引用Hausswirth/O'Toole等权威文献，糖原-配速模型有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [triathlon, olympic, swim, bike, run, glycogen, fatigue, bonk, pacing, energy_system]
-  references:
-    - "Hausswirth C & Lehénaff D (2001) Physiological demands of running during long distance runs and triathlons. Sports Med 31(9):679-689."
-    - "Laursen PB & Jenkins DG (2002) The scientific basis for high-intensity interval training. Sports Med 32(1):53-73."
-    - "O'Toole ML & Douglas PS (1995) Applied physiology of triathlon. Sports Med 19(4):251-267."
-    - "Millet GP & Vleck VE (2000) Physiological and biomechanical adaptations to the cycle to run transition in Olympic triathlon. Br J Sports Med 34(5):384-388."
-    - "Jeukendrup AE & Martin J (2001) Improving cycling performance: how should we spend our time and money. Sports Med 31(7):559-569."
 
 variables:
   current_sport:
@@ -179,7 +174,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "跑步强度（75% 阈值，控制糖原消耗）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: race_time_elapsed
@@ -238,3 +233,10 @@ optimizer:
     recommended:
       x: [72.0, 78.0, 75.0]
       f: [127.0, -148.0]
+
+references:
+  - "Hausswirth C & Lehénaff D (2001) Physiological demands of running during long distance runs and triathlons. Sports Med 31(9):679-689."
+  - "Laursen PB & Jenkins DG (2002) The scientific basis for high-intensity interval training. Sports Med 32(1):53-73."
+  - "O'Toole ML & Douglas PS (1995) Applied physiology of triathlon. Sports Med 19(4):251-267."
+  - "Millet GP & Vleck VE (2000) Physiological and biomechanical adaptations to the cycle to run transition in Olympic triathlon. Br J Sports Med 34(5):384-388."
+  - "Jeukendrup AE & Martin J (2001) Improving cycling performance: how should we spend our time and money. Sports Med 31(7):559-569."

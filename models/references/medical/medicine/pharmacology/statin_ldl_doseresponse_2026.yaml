@@ -15,16 +15,13 @@ metadata:
     limitations: |
       "rule of 6"斜率本身在原始 meta-analysis 中标注标准误约1个百分点每次翻倍，40mg是从10mg锚点跨越2次翻倍外推，累积不确定性和实测的3个百分点偏差量级相符，不代表模型有误；ldl_baseline 取值190 mg/dL，为示意性代表患者值，非任何具体试验人群均值。
   ratings:
-    topic_importance: 2 - 方法论验证展示，非独立临床案例
-    framework_demand: 1 - 纯验证用途，不被其他论文import
-    evidence_quality: 5 - STELLAR trial（独立RCT）与 Law 2003 meta-analysis 均为高质量、广泛引用来源
-    paper_value: 2 - 一般性参考组件，可作为心血管药理学案例的剂量-反应子模型
-    innovation: 1 - 纯文献复现，无原创建模贡献
-    validation_confidence: 5 - 20mg预测52%=STELLAR实测52%精确吻合，40mg偏差3个百分点在可接受范围，独立预测检验通过
+    importance: 0.25 - 方法论验证展示，可作为心血管药理学案例的剂量-反应子模型
+    variable: 1.0 - STELLAR trial（独立RCT）与 Law 2003 meta-analysis 均为高质量、广泛引用来源，文献可直接追溯
+    equation: 0.75 - "Rule of 6"是他汀剂量-反应文献中广泛引用的经验法则，非独立复现的微分方程标准形式
+    simulation: 1.0 - 20mg预测52%与STELLAR实测52%精确吻合，40mg偏差3个百分点符合累积不确定性预期，逐点验证通过
+    optimization: 0.0 - 本文件为静态代数计算，不含optimization，不涉及决策变量
+    confidence: 1.0 - 独立预测检验通过，预测值与STELLAR trial独立实测数据吻合
   tags: [statin, ldl, evidence, dose-response, validation, literature-benchmark]
-  references:
-    - "Law MR, Wald NJ, Rudnicka AR (2003) Quantifying effect of statins on low density lipoprotein cholesterol, ischaemic heart disease, and stroke: systematic review and meta-analysis. BMJ 326:1423"
-    - "Jones PH, Davidson MH, Stein EA, et al. (2003) Comparison of the efficacy and safety of rosuvastatin versus atorvastatin, simvastatin, and pravastatin across doses (STELLAR Trial). Am J Cardiol 92(2):152-160"
 
 variables:
   statin_dose:
@@ -114,3 +111,7 @@ simulation:
       label: "rosuvastatin 40mg/天（2次翻倍，STELLAR trial 实测55%对照）"
       regimens:
         - {variable: statin_dose, time_start: "00:00", time_end: "23:00", value: 40.0, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-30"], label: "40mg/天恒定"}
+
+references:
+  - "Law MR, Wald NJ, Rudnicka AR (2003) Quantifying effect of statins on low density lipoprotein cholesterol, ischaemic heart disease, and stroke: systematic review and meta-analysis. BMJ 326:1423"
+  - "Jones PH, Davidson MH, Stein EA, et al. (2003) Comparison of the efficacy and safety of rosuvastatin versus atorvastatin, simvastatin, and pravastatin across doses (STELLAR Trial). Am J Cardiol 92(2):152-160"

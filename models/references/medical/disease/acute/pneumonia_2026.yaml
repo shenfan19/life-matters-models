@@ -15,17 +15,13 @@ metadata:
     limitations: >
       模型不区分病原体种类，例如肺炎链球菌、非典型病原体等，也未包含抗生素耐药场景。CRP动力学为简化描述，未涵盖细胞因子级联反应；不适用于需要机械通气的重症CAP场景。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 4 - CAP是全球最常见住院感染，抗生素剂量优化是临床重点
-    framework_demand: 2 - 急性病模型，上层场景复用少
-    evidence_quality: 4 - 引用IDSA/ATS指南及多篇高质量文献，核心参数有据
-    popularity: 4 - 肺炎模型在感染病学和重症医学中有广泛参考价值
+    importance: 0.5 - CAP是全球最常见住院感染，抗生素剂量优化是临床重点；急性病模型，上层场景复用少
+    variable: 0.75 - 引用IDSA/ATS指南及多篇高质量文献，核心参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [pneumonia, CAP, antibiotic, respiratory, inflammation, SpO2]
-  references:
-  - "Mandell LA et al. (2007) Infectious Diseases Society of America/American Thoracic Society Consensus Guidelines on the Management of Community-Acquired Pneumonia in Adults. Clin Infect Dis 44(Suppl 2):S27-S72."
-  - "Wunderink RG, Waterer G. (2014) Community-Acquired Pneumonia. N Engl J Med 370(6):543-551."
-  - "Fine MJ et al. (1997) A prediction rule to identify low-risk patients with community-acquired pneumonia. N Engl J Med 336(4):243-250."
-  - "Metlay JP et al. (2019) Diagnosis and Treatment of Adults with Community-acquired Pneumonia. An Official Clinical Practice Guideline of the ATS and IDSA. Am J Respir Crit Care Med 200(7):e45-e67."
 variables:
   bacterial_load:
     description: 肺部细菌负荷（相对单位，初始=100表示典型感染负荷）。抗生素半衰期约2天（Mandell 2007）。
@@ -179,7 +175,7 @@ simulation:
       date_range: ["2026-01-01", "2026-01-05"]
       label: "低流量氧疗3L/min（急性期5天）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: fever_celsius
@@ -232,3 +228,9 @@ optimizer:
     recommended:
       x: [1.0, 1.0]
       f: [37.9, 95.8]
+
+references:
+  - "Mandell LA et al. (2007) Infectious Diseases Society of America/American Thoracic Society Consensus Guidelines on the Management of Community-Acquired Pneumonia in Adults. Clin Infect Dis 44(Suppl 2):S27-S72."
+  - "Wunderink RG, Waterer G. (2014) Community-Acquired Pneumonia. N Engl J Med 370(6):543-551."
+  - "Fine MJ et al. (1997) A prediction rule to identify low-risk patients with community-acquired pneumonia. N Engl J Med 336(4):243-250."
+  - "Metlay JP et al. (2019) Diagnosis and Treatment of Adults with Community-acquired Pneumonia. An Official Clinical Practice Guideline of the ATS and IDSA. Am J Respir Crit Care Med 200(7):e45-e67."

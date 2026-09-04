@@ -21,11 +21,12 @@ metadata:
       仿真预期呈现能量储备和代谢率在不同饮食/运动方案下的日动态轨迹，仿真尚未运行，为纯组件模型。
     limitations: BMR 方程，例如 Harris-Benedict 公式等，存在个体差异 ±15%；代谢适应速率参数无文献标注，需在上层场景中校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 能量平衡是肥胖/代谢病建模的根本基础，无法绕开的核心组件
-    framework_demand: 3 - 被1个上层模型import，有潜力但目前引用偏少
-    evidence_quality: 2 - 模块为生成代码，参数描述简略，缺少文献来源标注
-    popularity: 4 - BMR/能量平衡是生理学教科书基础内容，应用广泛
+    importance: 0.5 - 被1个上层模型import，有潜力但目前引用偏少
+    variable: 0.25 - 模块为生成代码，参数描述简略，缺少文献来源标注
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - metabolism
   - energy

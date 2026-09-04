@@ -15,16 +15,13 @@ metadata:
     limitations: >
       参数基于约 70 kg 的精英男子单打运动员，未区分网前搓球与后场扣杀等不同技术动作的代谢差异；未包含受封闭球馆散热限制的热调节和补水因素；分钟步长对 5-7 秒回合结构为时间尺度近似。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 2 - 羽毛球是亚洲主流运动，间歇高强度特征有一定研究价值
-    framework_demand: 2 - 专项运动模型，上层引用预期低
-    evidence_quality: 3 - 引用Chin 1995/Faude 2007等文献，但参数数量有限
-    popularity: 2 - 羽毛球生理模型较专项，在运动科学中地位有限
+    importance: 0.25 - 羽毛球是亚洲主流运动，间歇高强度特征有一定研究价值；专项运动模型，上层引用预期低
+    variable: 0.5 - 引用Chin 1995/Faude 2007等文献，但参数数量有限
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [badminton, racket, interval, explosive, anaerobic, reaction_time, VO2]
-  references:
-    - "Chin MK et al. (1995) Physiological profiles of world-class Badminton players. J Sports Sci 13(3):277-282."
-    - "Faude O et al. (2007) Oxygen uptake and metabolic strain in relation to match intensity in elite badminton. Br J Sports Med 41(8):536-541."
-    - "Phomsoupha M & Laffaye G (2015) The science of badminton: game characteristics, anthropometry, physiology, visual fitness and biomechanics. Sports Med 45(4):473-495."
 
 variables:
   rally_pace:
@@ -150,7 +147,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "扣杀频率（2.5次/min，精英中等水平）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: fatigue
@@ -196,3 +193,8 @@ optimizer:
     recommended:
       x: [7.0]
       f: [0.52, -540.0]
+
+references:
+  - "Chin MK et al. (1995) Physiological profiles of world-class Badminton players. J Sports Sci 13(3):277-282."
+  - "Faude O et al. (2007) Oxygen uptake and metabolic strain in relation to match intensity in elite badminton. Br J Sports Med 41(8):536-541."
+  - "Phomsoupha M & Laffaye G (2015) The science of badminton: game characteristics, anthropometry, physiology, visual fitness and biomechanics. Sports Med 45(4):473-495."

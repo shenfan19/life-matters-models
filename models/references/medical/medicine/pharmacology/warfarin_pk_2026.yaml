@@ -15,15 +15,13 @@ metadata:
     limitations: |
       归一化模型简化了吸收相，真实达峰通常需数十分钟到数小时；同时简化了个体差异，肝肾功能、年龄和药物相互作用均会影响实际半衰期。模型只验证消除相本身的一阶动力学结构，非完整 PK/PD 模型。
   ratings:
-    topic_importance: 2 - 药代动力学族案例之一，用于批量验证一阶消除结构
-    framework_demand: 1 - 通用参考组件，尚未被具体论文import
-    evidence_quality: 5 - 消除半衰期为药代动力学教科书级共识数字
-    paper_value: 1 - 通用参考组件
-    innovation: 1 - 纯文献复现，无原创建模贡献
-    validation_confidence: 5 - 归一化一阶消除曲线与理论值(50%/25%/12.5%/6.25%)逐位吻合
+    importance: 0.25 - 药代动力学族案例之一，通用参考组件，尚未被具体论文import
+    variable: 1.0 - 消除半衰期为药代动力学教科书级共识数字，文献可直接追溯
+    equation: 1.0 - 单室一阶消除是被广泛引用且独立复现的标准药代动力学方程形式
+    simulation: 1.0 - 归一化一阶消除曲线与理论值(50%/25%/12.5%/6.25%)逐位吻合，逐点验证通过
+    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
+    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合
   tags: [pharmacokinetics, warfarin, validation, literature-benchmark, pk-family]
-  references:
-    - "Holford NH (1986) Clin Pharmacokinet 11(6):483-504"
 
 variables:
   normalized_conc:
@@ -61,3 +59,6 @@ simulation:
     - id: "from_peak"
       label: "从峰值浓度(归一化=1.0)开始的消除追踪"
       regimens: []
+
+references:
+  - "Holford NH (1986) Clin Pharmacokinet 11(6):483-504"

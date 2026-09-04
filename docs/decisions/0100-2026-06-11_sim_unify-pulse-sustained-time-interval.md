@@ -123,7 +123,7 @@
   迁移，已迁移过的事件原样返回）；`xToInputEvents` 的事件匹配、新建、T2 slot
   写回均改用 `timeStart`/`timeEnd`。
 - `Simulator.tsx`：YAML↔state 各映射点（`schedList`/`schedDict`/`plan.schedules`/
-  `optimizer.schedules` 决策项匹配/会话恢复/新建事件默认值/Pareto 标签）统一改用
+  `optimization.schedules` 决策项匹配/会话恢复/新建事件默认值/Pareto 标签）统一改用
   `normalizeTimeInterval`/`migrateInputEvents`/`timeStart`/`timeEnd`。
 - `optUtils.ts`：`buildOptSchedules` 用 `isPulse = ev.timeStart === ev.timeEnd`
   统一三路 `mode='sustained'`/`time_range`/`time` 分支为 `entry.time_start`/

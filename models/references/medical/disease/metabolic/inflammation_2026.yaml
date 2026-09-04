@@ -23,11 +23,12 @@ metadata:
       炎症动力学高度简化，时间步长为分钟级，随导入模块继承，与真实慢性炎症数周至数月的演变时间尺度不匹配。参数缺少文献来源标注，需结合具体疾病场景重新校准。
   conflicts: []
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 系统炎症是代谢病/糖尿病共同机制，作为组件有广泛复用价值
-    framework_demand: 3 - 被2个上层模型import，代谢炎症共用组件
-    evidence_quality: 2 - 模块为生成代码，变量描述简略，缺少文献标注
-    popularity: 3 - 炎症组件在代谢建模中有一定地位但非独立经典模型
+    importance: 0.75 - 系统炎症是代谢病/糖尿病共同机制，作为组件有广泛复用价值；被2个上层模型import，代谢炎症共用组件
+    variable: 0.25 - 模块为生成代码，变量描述简略，缺少文献标注
+    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - inflammation
   - immune

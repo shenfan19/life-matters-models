@@ -15,18 +15,13 @@ metadata:
     limitations: >
       参数来自实验室研究，与真实工作环境存在差异；个体差异，如神经质和内外向，通过参数调整；未包含社会支持、组织文化等外部调节因子。
   ratings:
-    validation_confidence: 2 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
-    topic_importance: 5 - Yerkes-Dodson压力-表现模型是心理学/职场健康最普适基础之一
-    framework_demand: 4 - 认知表现是跨场景通用组件，被职场/历史/运动场景引用预期高
-    evidence_quality: 4 - 引用Yerkes-Dodson/Maslach/Kahneman等心理学经典文献
-    popularity: 5 - 工作压力-认知表现-Burnout是组织心理学和职场健康教科书核心内容
+    importance: 0.75 - Yerkes-Dodson压力-表现模型是心理学/职场健康最普适基础之一；认知表现是跨场景通用组件，被职场/历史/运动场景引用预期高
+    variable: 0.75 - 引用Yerkes-Dodson/Maslach/Kahneman等心理学经典文献
+    equation: 0.75 - Yerkes-Dodson倒U型压力-表现定律是心理学被广泛引用的经典结构，具体函数形式为自建
+    simulation: 0.5 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
   tags: [psychology, cognition, stress, burnout, Yerkes-Dodson, performance, work]
-  references:
-    - "Yerkes RM & Dodson JD (1908) The relation of strength of stimulus to rapidity of habit-formation. J Comp Neurol Psychol 18(5):459-482."
-    - "Maslach C, Schaufeli WB, Leiter MP (2001) Job burnout. Annu Rev Psychol 52:397-422."
-    - "Kahneman D (1973) Attention and Effort. Prentice-Hall, Englewood Cliffs, NJ."
-    - "Boksem MAS & Tops M (2008) Mental fatigue: costs and benefits. Brain Res Rev 59(1):125-139."
-    - "Kivimäki M et al. (2012) Job strain as a risk factor for coronary heart disease (IPD-Work Consortium). Lancet 380(9852):1491-1497."
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -243,7 +238,7 @@ simulation:
         date_range: ["2026-01-01", "2026-06-30"]
         label: "日常睡眠质量（6.5-7h/night）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: cumulative_output
@@ -287,3 +282,10 @@ optimizer:
     recommended:
       x: [0.7]
       f: [-103.8, 0.23]
+
+references:
+  - "Yerkes RM & Dodson JD (1908) The relation of strength of stimulus to rapidity of habit-formation. J Comp Neurol Psychol 18(5):459-482."
+  - "Maslach C, Schaufeli WB, Leiter MP (2001) Job burnout. Annu Rev Psychol 52:397-422."
+  - "Kahneman D (1973) Attention and Effort. Prentice-Hall, Englewood Cliffs, NJ."
+  - "Boksem MAS & Tops M (2008) Mental fatigue: costs and benefits. Brain Res Rev 59(1):125-139."
+  - "Kivimäki M et al. (2012) Job strain as a risk factor for coronary heart disease (IPD-Work Consortium). Lancet 380(9852):1491-1497."

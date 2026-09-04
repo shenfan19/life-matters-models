@@ -1,0 +1,17 @@
+metadata:
+  name: mindfulness_mood_case
+  lm_format_version: "1.0"
+  updated: 2026-08-13
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: "A declarative-layer verification entry for §5.3 of paper `paper/c_paper_s1_cn.md`: imports the general reference component `references/medical/psychology/mindfulness_mood_2026.yaml` to confirm that the mindfulness therapy effect on mood, g=0.59, loads correctly within the LM format 1.0 model library and reads back unchanged."
+    result: "This file does not duplicate the mechanism; the complete variables, equations, and results are in the description of the imported file."
+  tags: [s1, declarative-evidence, cohens-d-family, verification]
+
+imports:
+  - references/medical/psychology/mindfulness_mood_2026
+
+references:
+  - "See references/medical/psychology/mindfulness_mood_2026.yaml for the complete citation"

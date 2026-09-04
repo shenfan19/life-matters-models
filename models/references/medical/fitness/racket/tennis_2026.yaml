@@ -18,11 +18,12 @@ metadata:
   name: tennis
   lm_format_version: "1.0"
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 3 - 网球是全球主流运动，间歇爆发特征有一定运动科学复用价值
-    framework_demand: 1 - noref，复用价值极低
-    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
-    popularity: 3 - 网球在运动科学有一定地位但不属于教科书级基准模型
+    importance: 0.25 - 网球是全球主流运动，间歇爆发特征有一定复用价值；noref，复用价值极低
+    variable: 0.25 - noref标记，参数无文献来源，机制为定性近似
+    equation: 0.25 - 方程结构存在但为定性近似，无文献依据，未见独立复现
+    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
+    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
+    confidence: 0.0 - 参数无文献来源，未跑通独立验证
   tags:
     - fitness
     - tennis
@@ -208,7 +209,7 @@ simulation:
     - shot_consistency
     - performance
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance

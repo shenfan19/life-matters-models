@@ -15,18 +15,13 @@ metadata:
     limitations: >
       SOFA评分动力学采用简化线性模型，未涵盖病原体鉴定延误，血培养通常需48至72小时。不区分脓毒症病因，例如肺源性、腹源性、尿路源性等，升压药与心脏后负荷的相互作用也未建模。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 脓毒症是ICU最高死亡率急症，时序优化是生死攸关的研究问题
-    framework_demand: 2 - 急性病模型，上层场景复用少
-    evidence_quality: 5 - 引用Sepsis-3/SSC指南及Kumar 2006等关键RCT，参数精确
-    popularity: 4 - SOFA评分和集束化治疗是重症医学教科书内容
+    importance: 0.75 - 脓毒症是ICU最高死亡率急症，时序优化是生死攸关的研究问题；急性病模型，上层场景复用少
+    variable: 1.0 - 引用Sepsis-3/SSC指南及Kumar 2006等关键RCT，参数精确
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [sepsis, ICU, SOFA, lactate, antibiotics, septic shock, critical care]
-  references:
-  - "Singer M et al. (2016) The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA 315(8):801-810."
-  - "Levy MM et al. (2018) The Surviving Sepsis Campaign Bundle: 2018 Update. Crit Care Med 46(6):997-1000."
-  - "Rivers E et al. (2001) Early goal-directed therapy in the treatment of severe sepsis and septic shock. N Engl J Med 345(19):1368-1377."
-  - "Kumar A et al. (2006) Duration of hypotension before initiation of effective antimicrobial therapy is the critical determinant of survival in human septic shock. Crit Care Med 34(6):1589-1596."
-  - "Seymour CW et al. (2017) Time to Treatment and Mortality during Mandated Emergency Care for Sepsis. N Engl J Med 376(23):2235-2244."
 variables:
   sofa_score:
     description: |
@@ -224,7 +219,7 @@ simulation:
       date_range: ["2026-01-01", "2026-01-02"]
       label: "去甲肾上腺素标准剂量（MAP<65时）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: sofa_score
@@ -277,3 +272,10 @@ optimizer:
     recommended:
       x: [450, 180]
       f: [4.3, 2.0]
+
+references:
+  - "Singer M et al. (2016) The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA 315(8):801-810."
+  - "Levy MM et al. (2018) The Surviving Sepsis Campaign Bundle: 2018 Update. Crit Care Med 46(6):997-1000."
+  - "Rivers E et al. (2001) Early goal-directed therapy in the treatment of severe sepsis and septic shock. N Engl J Med 345(19):1368-1377."
+  - "Kumar A et al. (2006) Duration of hypotension before initiation of effective antimicrobial therapy is the critical determinant of survival in human septic shock. Crit Care Med 34(6):1589-1596."
+  - "Seymour CW et al. (2017) Time to Treatment and Mortality during Mandated Emergency Care for Sepsis. N Engl J Med 376(23):2235-2244."

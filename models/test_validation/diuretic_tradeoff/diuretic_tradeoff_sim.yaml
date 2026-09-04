@@ -1,0 +1,189 @@
+metadata:
+  log:
+    "2026-08-12_00-00-01":
+      change: "thiazide_level_dynamics 的脉冲项 thiazide_dose 不再乘 step，只保留衰减项乘 step"
+      reason: "分步长网格测试（1h/6h/15min）发现 standard_dose 方案终值 blood_pressure 150.1/126.6/153.8、uric_acid 428.9/800（顶到bounds上界）/422.4，随 step_size 系统性漂移，是与同仓库 s4/hypertension_gout_sim.yaml 相同的'脉冲项和衰减项一起乘step'bug，详见 docs/authoring/variables_and_equations.md'方程步长规则'一节与 life-matters-home/tasks/2026-08-12_task_pulse-multiplied-by-step-design-bug.md"
+    "2026-08-12_00-00-00":
+      change: "ua_baseline_prod 的 unit 字段从 μmol/day 改为 μmol/hour，数值未改动"
+      reason: "S1-S4全库day/hour单位换算bug系统性扫描发现：本文件与同仓库s4/hypertension_gout共用同一个ua_baseline_prod设计，该文件已确认是纯label问题（数值本身已按hour校准，稳态反推与基线尿酸420一致），本文件顺带同步修正，不影响已有仿真结果。"
+    "2026-08-06_03-00-00":
+      change: "按 ADR 0142/0143 迁移：problem 改为主题句加列表结构，references 全部改为 {citation, description} 对象写法；清理 result/limitations 里的非豁免括号与破折号"
+      reason: "落实 ADR 0143：编辑 papers/ 模型时顺带完成 description/references 迁移，不再以任务范围小为由跳过。"
+  name: diuretic_tradeoff
+  lm_format_version: "1.0"
+  updated: 2026-06-26
+  description:
+    problem: |
+      噻嗪类利尿剂（HCTZ）的降压效果与升尿酸副作用来自两条独立测量、从未在同一框架内联合评估的文献，把两条文献的剂量-效应系数同时装入同一个药代-药效模型，检验联合可行域是矛盾，即不存在同时满足两个目标的剂量，还是权衡，即存在连续的剂量-效应前沿，只是没有免费的午餐：
+      - Law et al.（2009）meta 分析只报告 HCTZ 剂量对血压的效应，不涉及尿酸结局。
+      - Choi et al.（2012）队列研究只报告 HCTZ 剂量对痛风/尿酸风险的效应，不涉及血压结局。
+      本案例与同目录 homair_ogtt 并列对比两种常见的联合判定模式：homair_ogtt 展示联合可行域受限，部分个体被两套标准给出矛盾结论，本案例展示权衡而非矛盾这一模式，可行域非空且连续。
+    method: |
+      本文件融合以下机制：
+      - HCTZ 药代动力学：给药脉冲累加进一阶消除的体内水平状态 thiazide_level，半衰期约10小时（Beermann & Groschinsky-Grind 1977）
+      - 血压弛豫动力学：blood_pressure 向以 thiazide_level 为驱动的治疗后稳态目标弛豫，降压效力来自 Law 2009 meta-analysis 的剂量-反应系数
+      - 尿酸动力学：uric_acid 由基础产生与自然清除决定稳态，thiazide_level 通过 URAT1 竞争性重吸收机制抑制清除，系数来自 Choi 2012 队列
+      同一个决策变量，即 HCTZ 每日剂量，通过 thiazide_level 这一条共享的药代状态同时驱动血压和尿酸两条轨迹：剂量越高降压越多，但同一剂量也让尿酸清除被抑制得越多，两个来自不同文献、彼此独立测量的结局指标由此在同一个模型里产生真实的此消彼长。
+    result: |
+      用单一决策变量 thiazide_dose 跑 NSGA-II 双目标优化，最小化血压加最小化血尿酸，结果呈现一条连续、非退化的剂量-反应前沿：剂量越高，降压越多但尿酸升高越多，不存在两个目标同时达到各自最优的单一剂量，但每个剂量点都是可行解，具体前沿数据见 `diuretic_tradeoff_opt.yaml` 的 `optimization.results`。
+    limitations: |
+      机制参数，即 lambda_T 降压效力和 gamma_T 尿酸清除抑制系数，取自同仓库 s4/hypertension_gout 案例已校准的同一组文献依据，Law 2009、Choi 2012、Beermann 1977。本文件做了精简，去掉了减重、别嘌醇等 s4 案例特有的临床决策维度，只保留单一药物-双结局这一最小演示结构，不能替代 s4 案例的完整临床决策分析。
+  ratings:
+    importance: 0.25 - 高血压合并痛风共病常见，但本案例定位为简化验证演示，非独立临床决策工具
+    variable: 0.75 - 参数继承自 s4/hypertension_gout 已核对的 Law 2009/Choi 2012/Beermann 1977 文献锚点
+    equation: 0.75 - 药物一阶消除动力学是标准PK结构，机制继承自已验证的s4/hypertension_gout设计
+    simulation: 0.5 - 可跑通产出三方案轨迹，但为精简演示版本，未独立于s4案例做额外数据比对
+    optimization: 0.75 - NSGA-II双目标搜索确认连续非退化剂量-反应前沿，证实两篇独立文献的效应量联合后是权衡而非矛盾
+    innovation: 0.25 - 机制沿用s4案例，贡献在于精简结构与跨文献联合可行域检验框架本身
+    confidence: 0.5 - 两篇独立测量文献的效应量联合后可行域非空、无矛盾，但本次未重新核对两篇来源文献参数是否仍与当前结论一致
+  tags: [diuretic, hypertension, gout, tradeoff_not_contradiction, simulation_as_validation, cross_literature]
+
+# ── 变量 ────────────────────────────────────────────────────────────────────────
+variables:
+  blood_pressure:
+    description: 收缩压（mmHg），未治疗基线155（ESC 2018定义的2级高血压代表值）
+    value: 155.0
+    unit: mmHg
+    type: state
+    bounds: [80, 220]
+    reference: "Williams B et al. (2018)"
+    locator: "TODO:LOCATE"
+
+  uric_acid:
+    description: 血尿酸（μmol/L），未治疗基线420（高于痛风发作阈值360，代表已有高尿酸血症患者）
+    value: 420.0
+    unit: μmol/L
+    type: state
+    bounds: [100, 800]
+    reference: "FitzGerald JD et al. (2020)"
+    locator: "TODO:LOCATE"
+
+  thiazide_dose:
+    description: HCTZ 每日单次剂量（mg），唯一决策变量；声明默认值0.0代表未经schedule覆盖时为"未治疗"
+    value: 0.0
+    unit: mg
+    type: input
+
+  thiazide_level:
+    description: |
+      体内HCTZ有效水平（一阶药代衰减状态，半衰期~10h）。瞬时给药脉冲先累加进该衰减状态，
+      bp_dynamics/ua_dynamics 读取该状态而非瞬时剂量——结构与参数沿用同仓库
+      s4/hypertension_gout_sim.yaml 已验证的设计（瞬时剂量直接驱动慢弛豫方程会被23小时
+      回弹几乎完全抵消，详见该文件 metadata.todo 的历史调试记录）。
+    value: 0.0
+    unit: mg
+    type: state
+    bounds: [0, 200]
+    reference: "Beermann B & Groschinsky-Grind M (1977)"
+    locator: "TODO:LOCATE"
+
+  k_thiazide_decay:
+    description: HCTZ消除速率常数 = ln2/t_half，t_half取10h（Beermann 1977报告血浆半衰期6.4-15h范围中值）
+    value: 0.0693
+    unit: 1/hour
+    type: parameter
+    reference: "Beermann B & Groschinsky-Grind M (1977)"
+    locator: "TODO:LOCATE"
+
+  lambda_T:
+    description: HCTZ 降压效力（Law 2009 meta-analysis：标准剂量降压约8mmHg量级）
+    value: 0.32
+    unit: mmHg/mg
+    type: parameter
+    reference: "Law MR et al. (2009)"
+    locator: "TODO:LOCATE"
+
+  gamma_T:
+    description: HCTZ 对尿酸清除的抑制系数（URAT1竞争性重吸收机制，Choi 2012）
+    value: 0.0018
+    unit: 1/mg
+    type: parameter
+    reference: "Choi HK et al. (2012)"
+    locator: "TODO:LOCATE"
+
+  ua_baseline_prod:
+    description: >
+      尿酸基础产生率（从代表性患者基线倒推，未治疗稳态uric_acid=420）。2026-08-12 修复：
+      此前unit标注为μmol/day，但数值本身已按step_unit:hour的ua_dynamics校准使用——
+      稳态反推200/0.476≈420.2，与基线尿酸420吻合，确认是纯label问题，数值本身无需改动。
+    value: 200.0
+    unit: μmol/hour
+    type: parameter
+    reference: "代表性患者，基线 urate=420 μmol/L"
+
+# ── 动力学方程 ─────────────────────────────────────────────────────────────────
+equations:
+  thiazide_level_dynamics:
+    description: >
+      HCTZ体内水平：给药脉冲累加，按一阶消除速率常数衰减。2026-08-12 修复：此前写法把脉冲项
+      thiazide_dose和衰减项k_thiazide_decay*thiazide_level放进同一括号一起乘了step——
+      thiazide_dose由regimen单次投放，数值上已经是当步该给的量，不该再乘step；只有真正的
+      连续一阶消除项才该乘step。此前写法在本文件固定使用的step_size=1小时下数值上碰巧不变，
+      换成6小时步长会让uric_acid直接顶到bounds上界（详见同仓库
+      s4/hypertension_gout_sim.yaml的同一处修复与docs/authoring/variables_and_equations.md
+      "方程步长规则"一节）。
+    step_unit: hour
+    priority: 7
+    dynamics:
+      thiazide_level: "thiazide_level + thiazide_dose - k_thiazide_decay * thiazide_level * step"
+    reference: "Beermann B & Groschinsky-Grind M (1977)"
+    locator: "TODO:LOCATE"
+
+  bp_dynamics:
+    description: "血压：向'治疗后稳态目标'弛豫，目标 = 未治疗基线155 - HCTZ降压效果（thiazide_level驱动）"
+    step_unit: hour
+    condition: true
+    priority: 6
+    dynamics:
+      blood_pressure: "blood_pressure - 0.04 * (blood_pressure - (155 - lambda_T * thiazide_level)) * step"
+    reference: "Law MR et al. (2009)"
+    locator: "TODO:LOCATE"
+
+  ua_dynamics:
+    description: "尿酸：基础产生 - HCTZ抑制清除（URAT1竞争）- 自然清除（弛豫向基础产生/清除比值决定的稳态）"
+    step_unit: hour
+    condition: true
+    priority: 5
+    dynamics:
+      uric_acid: "uric_acid + (ua_baseline_prod - 0.476 * uric_acid * (1 - gamma_T * thiazide_level)) * step"
+    reference: "Choi HK et al. (2012)"
+    locator: "TODO:LOCATE"
+
+# ── 仿真设置（26周：单一剂量稳态轨迹）────────────────────────────────────────
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-07-01"
+  output_variables:
+    - blood_pressure
+    - uric_acid
+    - thiazide_dose
+    - thiazide_level
+  plans:
+    - id: "no_treatment"
+      label: "未治疗基线（无HCTZ）"
+      regimens: []
+
+    - id: "standard_dose"
+      label: "标准剂量方案（HCTZ 25mg/天，ESC/ESH常用起始剂量）"
+      regimens:
+        - {variable: thiazide_dose, time_start: "08:00", value: 25.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 25mg/天"}
+
+    - id: "max_dose"
+      label: "最大剂量方案（HCTZ 50mg/天，临床剂量上限）"
+      regimens:
+        - {variable: thiazide_dose, time_start: "08:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-07-01"], label: "HCTZ 50mg/天"}
+
+references:
+  - citation: "Law MR et al. (2009) Use of blood pressure lowering drugs in the prevention of cardiovascular disease: meta-analysis. BMJ 338:b1665"
+    description: "HCTZ 降压效力 lambda_T 的剂量-反应系数来源。"
+  - citation: "Choi HK et al. (2012) Antihypertensive drugs and risk of incident gout among patients with hypertension: population case-control study. BMJ 344:d8190; Ann Rheum Dis 71(5):723-727"
+    description: "HCTZ 经 URAT1 竞争性重吸收抑制尿酸清除的系数 gamma_T 来源。"
+  - citation: "Beermann B & Groschinsky-Grind M (1977) Pharmacokinetics of hydrochlorothiazide in man. Eur J Clin Pharmacol 12(4):297-303"
+    description: "HCTZ 血浆半衰期，thiazide_level 一阶消除速率常数 k_thiazide_decay 的标定来源。"
+  - citation: "Williams B et al. (2018) 2018 ESC/ESH Guidelines for the management of arterial hypertension. Eur Heart J 39(33):3021-3104"
+    description: "blood_pressure 未治疗基线 155 mmHg 的分期定义来源。"
+  - citation: "FitzGerald JD et al. (2020) 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Care Res 72(6):744-760"
+    description: "uric_acid 痛风发作阈值与未治疗基线的指南来源。"

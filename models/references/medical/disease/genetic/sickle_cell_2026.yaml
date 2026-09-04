@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未建模以中性粒细胞减少为表现的骨髓抑制剂量依赖毒性，这是实际临床中最关键的剂量限制因素。HbF升高动力学为简化线性模型，实际个体差异因F细胞数量遗传决定而较大；未区分HbSS、HbSC与HbS/β-地中海贫血亚型的不同预后特征。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 3 - SCD影响700万人，但为特定遗传病，复用场景较有限
-    framework_demand: 2 - 遗传病专项模型，上层场景引用预期低
-    evidence_quality: 5 - 引用Charache 1995 MSH RCT等里程碑文献，参数精确可靠
-    popularity: 3 - 羟基脲-HbF模型在血液病学专科有重要地位但通用度有限
+    importance: 0.25 - SCD影响700万人，但为特定遗传病，复用场景较有限；遗传病专项模型，上层场景引用预期低
+    variable: 1.0 - 引用Charache 1995 MSH RCT等里程碑文献，参数精确可靠
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [sickle cell disease, SCD, hydroxyurea, HbF, VOC, pain, hematology, genetic]
-  references:
-    - "Charache S et al. (1995) Effect of hydroxyurea on the frequency of painful crises in sickle cell anemia. N Engl J Med 332(20):1317-1322."
-    - "Yawn BP et al. (2014) Management of Sickle Cell Disease: Summary of the 2014 Evidence-Based Report by Expert Panel Members. JAMA 312(10):1033-1048."
-    - "Piel FB et al. (2017) Sickle-Cell Disease. N Engl J Med 376(16):1561-1573."
-    - "Steinberg MH et al. (2003) Effect of hydroxyurea on mortality and morbidity in adult sickle cell anemia. JAMA 289(13):1645-1651."
-    - "Ware RE. (2010) How I use hydroxyurea to treat young patients with sickle cell anemia. Blood 115(26):5300-5311."
 
 variables:
   hbf_percentage:
@@ -197,7 +192,7 @@ simulation:
         date_range: ["2026-01-01", "2026-06-30"]
         label: "每日补液2500mL"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: hbf_percentage
@@ -244,3 +239,10 @@ optimizer:
     recommended:
       x: [20.0]
       f: [19.8, 10.4]
+
+references:
+  - "Charache S et al. (1995) Effect of hydroxyurea on the frequency of painful crises in sickle cell anemia. N Engl J Med 332(20):1317-1322."
+  - "Yawn BP et al. (2014) Management of Sickle Cell Disease: Summary of the 2014 Evidence-Based Report by Expert Panel Members. JAMA 312(10):1033-1048."
+  - "Piel FB et al. (2017) Sickle-Cell Disease. N Engl J Med 376(16):1561-1573."
+  - "Steinberg MH et al. (2003) Effect of hydroxyurea on mortality and morbidity in adult sickle cell anemia. JAMA 289(13):1645-1651."
+  - "Ware RE. (2010) How I use hydroxyurea to treat young patients with sickle cell anemia. Blood 115(26):5300-5311."

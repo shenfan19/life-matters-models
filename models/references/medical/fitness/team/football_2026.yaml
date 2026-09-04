@@ -18,11 +18,12 @@ metadata:
   name: football
   lm_format_version: "1.0"
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 3 - 足球是全球第一大运动，间歇高强度生理特征有广泛研究价值
-    framework_demand: 1 - noref，复用价值极低
-    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性描述
-    popularity: 3 - 足球生理模型有参考价值但此版本参数质量待补充
+    importance: 0.25 - 足球是全球第一大运动，间歇高强度生理特征有广泛研究价值；noref，复用价值极低
+    variable: 0.25 - noref标记，参数无文献来源，机制为定性描述
+    equation: 0.25 - 方程结构存在但为定性描述，无文献依据，未见独立复现
+    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
+    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
+    confidence: 0.0 - 参数无文献来源，未跑通独立验证
   tags:
     - fitness
     - football
@@ -232,7 +233,7 @@ simulation:
     - technical_performance
     - performance
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: distance_covered

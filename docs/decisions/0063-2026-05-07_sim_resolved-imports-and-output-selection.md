@@ -46,7 +46,7 @@ Paper3 这类模型会通过 `imports` 复用 Paper2 的变量、方程和仿真
 
 ## 后续
 
-如后续需要更完整的 provenance，可把来源信息扩展到 `simulation`、`optimizer` 的每个子字段，并在 GUI 中增加专门的 import/source summary。
+如后续需要更完整的 provenance，可把来源信息扩展到 `simulation`、`optimization` 的每个子字段，并在 GUI 中增加专门的 import/source summary。
 
 ## 修订（2026-06-16，ADR 0107）
 

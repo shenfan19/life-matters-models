@@ -22,11 +22,12 @@ metadata:
     limitations: 方程参数，例如胰岛素促摄取速率等，无正式文献标注；未区分 1 型与 2 型糖尿病的 β 细胞功能损失差异，需上层场景明确病理前提。
   conflicts: []
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 血糖调节是糖尿病/代谢建模最核心组件，被多模型引用
-    framework_demand: 5 - 被8个上层模型import，最高频核心组件
-    evidence_quality: 3 - 血糖/空腹血糖范围符合临床标准，但方程参数无文献标注
-    popularity: 5 - 血糖调节是内分泌生理学教科书标准内容，跨领域广泛引用
+    importance: 1.0 - 被8个上层模型import，最高频核心组件
+    variable: 0.5 - 血糖/空腹血糖范围符合临床标准，但方程参数无文献标注
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - glucose
   - regulation

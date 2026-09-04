@@ -20,7 +20,7 @@
 
 - `models/test/valid/` — 原有 31 个文件原样迁移，用途不变（功能示例，非真实场景）。
 - `models/test/invalid/` — 新增 11 个 fixture，每个只故意写错一处（simulation.step_size、
-  optimizer.method、公式引用未声明变量、废弃符号 `dt`、循环 import、import 越出 models
+  optimization.method、公式引用未声明变量、废弃符号 `dt`、循环 import、import 越出 models
   根目录、evidence 名称冲突、evidence 缺 baseline_ref、顶层 YAML 非 mapping、
   `end_date` 早于 `start_date`），覆盖 `validator.py`/`loader.py`/`validation.py` 四类
   校验分支。

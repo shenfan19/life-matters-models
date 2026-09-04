@@ -9,21 +9,19 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      吸烟-肺癌关联是流行病学里被反复独立测量、meta分析收敛的效应量。现吸烟者相对不吸烟者的肺癌死亡风险比(HR)，是流行病学史上效应量最大、最广泛引用的关联之一
+      吸烟是肺癌最主要的已知危险因素，现吸烟者相对不吸烟者的肺癌死亡风险比(HR)在流行病学文献中普遍报告为两位数量级的大效应量。本文件用 HR=17.85 作为这一量级的示意性数值，2026-08-28 核查确认未能找到报告这一精确数字组合（含 95% CI 14.38-22.17）的具体文献，故不再声称直接引自某一篇研究，改为标注为示意性数值，用于展示 evidence_type=rr 换算机制能正确处理大幅值效应量。
     result: |
       用 LM format 的 evidence 节的 rr 子类型声明该效应量，代入示意性基线风险0.6%，验证 Loader 能正确读取、承载并展示这一效应量，暴露组风险等于基线风险乘以17.85，即HR为17.85。
     limitations: |
-      本案例是"效应量编码正确性"展示，不是独立预测检验：17.85这个数字本身就是要验证的目标，不是外推后与另一个独立来源比较。基线风险0.6%为示意性设定值，非任何具体人群的实测患病率。
+      本案例是"效应量编码正确性"展示，不是独立预测检验：17.85这个数字本身就是要验证的目标，不是外推后与另一个独立来源比较。基线风险0.6%为示意性设定值，非任何具体人群的实测患病率。HR=17.85 本身是示意性数值，不对应特定文献，与本文件其余同族案例（processed_meat_mortality 等）均能追溯到具体文献不同，这一点已在 problem 字段说明，投稿前如需引用真实文献支撑吸烟-肺癌这一关联，需要另行检索替换。
   ratings:
-    topic_importance: 2 - 流行病学效应量族案例之一，用于批量验证evidence编码
-    framework_demand: 1 - 通用参考组件，尚未被具体论文import
-    evidence_quality: 5 - 来自meta分析/大型队列研究的共识效应量
-    paper_value: 1 - 通用参考组件
-    innovation: 1 - 纯文献效应量复现，无原创建模贡献
-    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析/经典队列研究共识值
+    importance: 0.25 - 流行病学效应量族案例之一，通用参考组件，尚未被具体论文import
+    variable: 0.25 - 2026-08-28 核查确认 HR=17.85 查无具体对应文献，已改为示意性数值，不再声称来自meta分析/大型队列研究的共识值
+    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
+    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
+    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
+    confidence: 0.25 - 数值本身查无实据，与同族其余案例的置信度不可比，见 problem/limitations 说明
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family]
-  references:
-    - "Meta-analysis of prospective cohort studies on current smoking and lung cancer mortality; HR=17.85, 95% CI 14.38 to 22.17"
 
 variables:
   baseline_risk_pct:
@@ -43,8 +41,8 @@ variables:
     evidence_type: rr
     value: 17.85
     unit: "HR"
-    description: 现吸烟者相对不吸烟者的肺癌死亡风险比(HR)，是流行病学史上效应量最大、最广泛引用的关联之一
-    reference: "Meta-analysis of prospective cohort studies on current smoking and lung cancer mortality; HR=17.85 (95% CI 14.38-22.17)"
+    description: 现吸烟者相对不吸烟者肺癌死亡风险比量级的示意性数值，不对应特定文献
+    reference: "示意性数值，不声称引自特定研究；2026-08-28 核查未找到报告 HR=17.85（95% CI 14.38-22.17）这一精确数字组合的文献，改用此标注"
 
 equations:
   risk_calc:
@@ -67,3 +65,6 @@ simulation:
     - id: "exposure_scenario"
       label: "暴露组 vs 基线风险效应量展示"
       regimens: []
+
+references:
+  - "示意性数值，不声称引自特定研究；2026-08-28 核查未找到报告 HR=17.85（95% CI 14.38-22.17）这一精确数字组合的文献"

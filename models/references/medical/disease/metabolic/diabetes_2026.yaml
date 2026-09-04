@@ -18,11 +18,12 @@ metadata:
     limitations: >
       参数尚无正式文献来源，12个状态变量的机制系数均为估算值，需要校准。胰岛素动力学高度简化，未包含β细胞功能的不可逆性衰退、黎明现象等临床复杂因素。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 糖尿病是全球最重大代谢流行病，综合动力学模型复用价值极高
-    framework_demand: 2 - noref，有import记录但参数质量限制广泛复用
-    evidence_quality: 2 - noref标记，12个变量均无文献来源，参数需校准
-    popularity: 4 - 糖尿病综合模型（血糖-胰岛素-并发症）是代谢建模标准框架
+    importance: 0.75 - 糖尿病是全球最重大代谢流行病，综合动力学模型复用价值极高；noref，有import记录但参数质量限制广泛复用
+    variable: 0.25 - noref标记，12个变量均无文献来源，参数需校准
+    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [medical, physiological, core]
 
 variables:
@@ -119,7 +120,7 @@ simulation:
         date_range: ["2026-01-01", "2026-04-01"]
         label: "有氧运动（MET）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: blood_glucose

@@ -15,16 +15,13 @@ metadata:
     limitations: |
       简化了吸收相，真实达峰需1-2小时，本文件按t=0瞬时达峰处理，只验证消除动力学本身；5小时半衰期是健康成年人的代表值，个体差异范围较大，为1.5–9.5小时，与CYP1A2基因型相关，未做蒙特卡洛个体差异建模。
   ratings:
-    topic_importance: 2 - 方法论验证展示，非独立临床案例
-    framework_demand: 1 - 纯验证用途，不被其他论文import
-    evidence_quality: 5 - 咖啡因PK是药理学教科书级共识数字，无争议
-    paper_value: 2 - 一般性参考组件，可作为单室一阶PK的标准子模型复用
-    innovation: 1 - 纯文献复现，无原创建模贡献
-    validation_confidence: 5 - 全部检查点(5/10/15/20/24小时)与理论衰减曲线偏差<0.1个百分点
+    importance: 0.25 - 方法论验证展示，非独立临床案例，可作为单室一阶PK的标准子模型复用
+    variable: 1.0 - 咖啡因消除半衰期是药理学教科书级共识数字，文献可直接追溯
+    equation: 1.0 - 单室一阶消除是被广泛引用且独立复现的标准药代动力学方程形式
+    simulation: 1.0 - 全部检查点(5/10/15/20/24小时)与理论衰减曲线偏差<0.1个百分点，逐点验证通过
+    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
+    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合
   tags: [pharmacokinetics, caffeine, validation, literature-benchmark]
-  references:
-    - "Institute of Medicine (2001) Caffeine for the Sustainment of Mental Task Performance: Equationtions for Military Operations. National Academies Press."
-    - "Alsabri SG, Mari WO, Younes S, et al. (2018) Kinetic and Dynamic Description of Caffeine. J Caffeine Adenosine Res 8(1)."
 
 variables:
   caffeine_dose:
@@ -90,3 +87,7 @@ simulation:
       label: "单次口服200mg咖啡因（08:00，约2杯咖啡）"
       regimens:
         - {variable: caffeine_dose, time_start: "08:00", value: 200.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "单次给药"}
+
+references:
+  - "Institute of Medicine (2001) Caffeine for the Sustainment of Mental Task Performance: Equationtions for Military Operations. National Academies Press."
+  - "Alsabri SG, Mari WO, Younes S, et al. (2018) Kinetic and Dynamic Description of Caffeine. J Caffeine Adenosine Res 8(1)."

@@ -13,17 +13,13 @@ metadata:
     limitations: >
       未包含通货膨胀、失业风险和社会保障；个体差异，如技能初值和行业类型，通过参数调整；单个劳动者模型，不反映市场均衡和宏观动态。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 4 - 人力资本-效率工资-疲劳健康耦合是劳动经济学核心研究问题
-    framework_demand: 3 - 劳动经济基础组件，被历史/职场场景引用预期中等
-    evidence_quality: 4 - 引用Becker/Shapiro-Stiglitz经典文献及OECD数据，参数有据
-    popularity: 4 - 人力资本理论是经济学教科书核心内容，劳动-健康耦合有广泛应用
+    importance: 0.5 - 人力资本-效率工资-疲劳健康耦合是劳动经济学核心研究问题；劳动经济基础组件，被历史/职场场景引用预期中等
+    variable: 0.75 - 引用Becker/Shapiro-Stiglitz经典文献及OECD数据，参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [labor, economics, human_capital, efficiency_wage, fatigue, savings]
-  references:
-    - "Becker GS (1964) Human Capital: A Theoretical and Empirical Analysis. Columbia University Press, New York."
-    - "Shapiro C & Stiglitz JE (1984) Equilibrium unemployment as a worker discipline device. Am Econ Rev 74(3):433-444."
-    - "OECD (2023) Hours Worked: Average annual hours actually worked per worker. OECD Employment Database."
-    - "Kivimäki M et al. (2015) Long working hours and risk of coronary heart disease and stroke. Lancet 385(9972):1739-1746."
 
 variables:
   # R1: Labor Output
@@ -118,7 +114,7 @@ simulation:
       date_range: ["2026-01-01", "2026-12-31"]
       label: "周末完整休假"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: savings
@@ -177,3 +173,9 @@ optimizer:
     recommended:
       x: [2.92, 1.00, 1.82]
       f: [-255996.25, -1.339]
+
+references:
+  - "Becker GS (1964) Human Capital: A Theoretical and Empirical Analysis. Columbia University Press, New York."
+  - "Shapiro C & Stiglitz JE (1984) Equilibrium unemployment as a worker discipline device. Am Econ Rev 74(3):433-444."
+  - "OECD (2023) Hours Worked: Average annual hours actually worked per worker. OECD Employment Database."
+  - "Kivimäki M et al. (2015) Long working hours and risk of coronary heart disease and stroke. Lancet 385(9972):1739-1746."

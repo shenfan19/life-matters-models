@@ -20,7 +20,7 @@ LM 项目此前没有明确的"纳入标准"，判断"要不要为某个学科/�
 - **var**，对应 `variables`/`evidence`：该学科声称是否有可迁移的具体数值，而不只是方向性描述？
 - **for**，对应 `formulas`：该机制是否存在公认的函数形式可以直接编码？
 - **sim**，对应 `simulation`：编码后能否产出可与独立数据点比对的轨迹？
-- **opt**，对应 `optimizer`：决策空间是否存在真实的多目标权衡，值得跑 optimizer？
+- **opt**，对应 `optimization`：决策空间是否存在真实的多目标权衡，值得跑 optimization？
 
 前两问决定"值不值得编码进 LM"，后两问决定"编码完之后能用到什么程度"。var/for 通过但 sim/opt 用不上时，模型依然成立，只是使用方式受限于机制/引擎正对照展示。
 
@@ -42,7 +42,7 @@ LM 项目此前没有明确的"纳入标准"，判断"要不要为某个学科/�
 ## 影响范围
 
 - `docs/model.md`：新增「模型纳入标准（Inclusion Criteria）与学科覆盖盘点」一节，含四问、符号约定、大学科/小学科按 var/for/sim/opt 的盘点表。
-- `docs/LM_format_1.0.md`：Scope 一节新增「Inclusion Test」小节，承载四问的英文正式表述。过程中一并发现并修复了该文件多处滞后于当前实现的内容：`evidence:` 独立顶层块已被 ADR 0137 取代，`_nosim`/`_noopt`/`_noref` 文件名后缀已被 ADR 0120 取代，`simulation.schedules`/`optimizer.inputs` 等字段名已被 ADR 0109/0088/0127 取代，详见该文件 Version History 2026-07-30 各条目。这些修复是本次工作中顺带发现的滞后维护问题，不属于本 ADR 的决策本身，但记录在此备查。
+- `docs/LM_format_1.0.md`：Scope 一节新增「Inclusion Test」小节，承载四问的英文正式表述。过程中一并发现并修复了该文件多处滞后于当前实现的内容：`evidence:` 独立顶层块已被 ADR 0137 取代，`_nosim`/`_noopt`/`_noref` 文件名后缀已被 ADR 0120 取代，`simulation.schedules`/`optimization.inputs` 等字段名已被 ADR 0109/0088/0127 取代，详见该文件 Version History 2026-07-30 各条目。这些修复是本次工作中顺带发现的滞后维护问题，不属于本 ADR 的决策本身，但记录在此备查。
 - `models/test_validation/validation_report.md`：全文 emoji 符号统一替换为 √、×、-；顶部任务清单新增一条待办，要求每轮验证完成后同步更新 `docs/model.md` 的盘点表。
 - 移除了 `docs/LM_format_1.0.md` 中未实现的 §8 Game Conversion Block，即 `game:` 顶层字段和"Story"术语。审计确认 Reference Engine、GUI、任何模型 YAML 均未实现或使用此功能，写在规范里等同于对外承诺了一个不存在的特性。同时移除了 §9.3 Planned Extensions 中的 multi-individual simulation 一项，即户内多主体仿真设想，与 LM 个体尺度批次执行的既定范围不符，独立 MC 采样不涉及多主体互动，此前不应作为规划方向出现。
 
@@ -54,4 +54,4 @@ LM 项目此前没有明确的"纳入标准"，判断"要不要为某个学科/�
 ## 未决
 
 - 盘点表目前只到小学科粒度，例如 `medical/disease` 这一层。未来如需要下探到三级学科，例如区分 `medical/disease/chronic` 与 `acute`，或需要按此表批量决定下一批建模优先级，属于该表的自然延伸使用场景，本 ADR 不预先设计。
-- `docs/model.md`「完整 YAML Schema」参考示例，约在第 255 至 468 行，仍使用 ADR 0109/0088 之前的旧字段名，即 `simulation.schedules`/`optimizer.inputs`，与同文件后面的权威章节自相矛盾，是审计中顺带发现的独立文档 bug，不属于本 ADR 范围，留待后续处理。
+- `docs/model.md`「完整 YAML Schema」参考示例，约在第 255 至 468 行，仍使用 ADR 0109/0088 之前的旧字段名，即 `simulation.schedules`/`optimization.inputs`，与同文件后面的权威章节自相矛盾，是审计中顺带发现的独立文档 bug，不属于本 ADR 范围，留待后续处理。

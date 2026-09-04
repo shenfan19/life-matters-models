@@ -23,11 +23,12 @@ metadata:
       仿真预期呈现三餐触发后各营养素在胃部缓冲区的累积与消耗波形，仿真尚未运行，为纯组件模型。
     limitations: 极简转移层，未建模食物消化速率差异，例如液体与固体的区别、胃排空个体变异或饥饿信号；参数应在上层场景中校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 营养摄入转移是代谢建模基础组件，供消化系统等多模型调用
-    framework_demand: 4 - 被3个上层模型import，代谢链路的基础组件
-    evidence_quality: 2 - 模块为生成代码，参数无文献标注，仅提供基本转移逻辑
-    popularity: 3 - 营养摄入组件在代谢/糖尿病建模中有复用价值但不独立使用
+    importance: 0.75 - 被3个上层模型import，代谢链路的基础组件
+    variable: 0.25 - 模块为生成代码，参数无文献标注，仅提供基本转移逻辑
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [nutrition, intake]
 
 variables:

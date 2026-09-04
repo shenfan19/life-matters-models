@@ -28,6 +28,10 @@ social/
   law/          法律与政策约束
   psychology/   心理健康与认知模型
   technology/   技术扩散模型
+environmental/
+  climate/      气候与环境动力学
+risk/
+  actuarial/    精算与死亡率模型
 ```
 
 ## 使用方式
@@ -56,17 +60,17 @@ Loader 递归合并导入的子模型，根文件中的同名变量/方程覆盖
 | `medical/physiology/banister_fitness_fatigue_2026.yaml` | 3 | 适应/疲劳双时间常数机制；发现 `bounds` 过窄导致 performance 恒为0 的模型级 bug 并修复 |
 | `medical/disease/chronic/ckd_protein_muscle_2026.yaml` | 3 | 低蛋白护肾 vs 高蛋白保肌的方向性权衡；发现并触发了下述引擎级 bug 的排查 |
 | `medical/nutrition/diet/mediterranean_diet_2026.yaml` | 3 | 依从性与红肉拮抗效应；修正 LDL 速率常数换算错误（3年误算成7年）；opt 前沿诚实退化为单点——唯一决策变量对 LDL 单调有益但不影响 CRP，两目标间无真实冲突，非 bug |
-| `medical/fitness/individual/running_2026.yaml` | 3 | 配速-乳酸-疲劳-表现耦合；发现"单日模型只跑1小时"引擎 bug，并将 optimizer 目标从"末端表现"改为"消耗热量"以消除退化前沿 |
+| `medical/fitness/individual/running_2026.yaml` | 3 | 配速-乳酸-疲劳-表现耦合；发现"单日模型只跑1小时"引擎 bug，并将 optimization 目标从"末端表现"改为"消耗热量"以消除退化前沿 |
 | `social/demography/population/population_growth_2026.yaml` | 3 | 生育政策通过出生率影响人口结构；模型原用 `step_unit: month`（当前 format 不支持），已改写为 day 级步长 |
 | `social/economy/labor/labor_economic_2026.yaml` | 3 | 加班/休假/技能投资的收入-疲劳-生产力权衡；模型原用 `step_unit: week`（当前 format 不支持）且完全缺失 `simulation.plans`，均已补齐 |
 
-其余 `references/` 下 62 个模型仍带 `metadata.todo` 的 `nosim`/`noopt` 标记（未在本轮验证范围内），
-按同样方法逐一核实前先不要假定其 `optimizer.results` 或 `description.result` 数值可信。
+`references/` 下其余模型是否仍带 `metadata.todo` 的 `nosim`/`noopt` 标记会随建模进度持续变化，
+按同样方法逐一核实前先不要假定其 `optimization.results` 或 `description.result` 数值可信，
+以下方查询命令跑出的实时结果为准，不要依赖本文档里的历史数字。
 
 **批量发布提示**：本项目"可发布"的唯一判据是 `metadata.todo` 是否存在/非空（ADR 0120，与文件名无关）。
-当前 `references/` 下 `metadata.todo` 为空的文件共 13 个（上表 6 个 + 此前已无标记的 7 个，均未在
-本轮验证范围内、也未按上述两个引擎 bug 复核过——批量发布前建议至少对这 7 个也跑一遍
-`--sim`/`--opt` 确认没有中招）。查询命令（在 `models/references/` 下执行，需要 PyYAML）：
+批量发布前建议对 `metadata.todo` 为空但未在某一轮验证表格里出现过的文件也跑一遍
+`--sim`/`--opt` 确认没有中招。查询命令（在 `models/references/` 下执行，需要 PyYAML）：
 
 ```python
 import yaml, glob
@@ -94,9 +98,9 @@ for f in sorted(glob.glob('**/*.yaml', recursive=True)):
 
 ## 贡献规范
 
-见 [`docs/model_requirements.md`](../../docs/model_requirements.md)。每个组件文件必须包含：
-- `metadata.description`（机制说明）
-- `metadata.references`（文献来源）
+见 [`docs/authoring/README.md`](../../docs/authoring/README.md)。每个组件文件必须包含：
+- `metadata.description`（机制说明，写作规范见 [`docs/authoring/description_writing.md`](../../docs/authoring/description_writing.md)）
+- 顶层 `references`（文献来源）
 - 每个变量的 `description` 和 `unit`
 
 每个模型文件都欢迎任何用户参与编辑、补充参数来源或修复问题。

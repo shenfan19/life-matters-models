@@ -1,39 +1,51 @@
 metadata:
   name: hypertension_gout
   lm_format_version: "1.0"
-  updated: 2026-04-23
+  updated: 2026-08-12
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
+  todo:
+    - type: quality
+      issue: "[待办] optimization.results 目前是 population=20/generations=20 验证性预算，需要用文件声明的完整预算 population=80/generations=120 重新求解"
+      evidence: "hourly粒度下单次完整预算求解显著慢于修复前的day粒度设计（单次评估90天×24步而非90步），本次排查未等待完整预算跑完。"
+      next: "用完整预算重新跑一次 --opt，更新 results.pareto_front/recommended，去掉 status 字段里'验证性预算'的说明。"
+    - type: quality
+      issue: "[待办，非本次修复范围] weight_loss_rate 声明为决策/约束变量但没有任何 regimen 驱动它"
+      evidence: "simulation.plans 的 default 方案和 optimization.startpoint 均未给 weight_loss_rate 提供 regimen，实际仿真中恒为0，减重相关机制（体重下降、酮体竞争尿酸排泄）目前不可能被复现，这是修复前就存在的建模缺口。"
+      next: "决定是否要把 weight_loss_rate 也做成 optimization 的决策变量，或者在 description 里明确这一维度当前只是声明、未接入。"
+  log:
+    "2026-08-12_00-00-00":
+      change: >
+        新增 thiazide_level 一阶药代衰减状态与 k_thiazide_decay 参数，bp_dynamics/ua_dynamics
+        改读 thiazide_level 而非瞬时 diuretic_dose；purine_intake/weight_loss_rate 的 regimen
+        改为全天窗口+delivery:level；weight_dynamics 补上 *step；simulation.step_size 从
+        1 day 改为 1 hour；bp_dynamics/ua_dynamics 的 τ=14天弛豫速率按 ADR 0121 类型B开根公式
+        重新换算为小时等效值；description.result 与 optimization.results 按新机制重新生成，
+        旧结果移入 optimization.results.historical_stale_from_2026-05-17 保留存档。
+      reason: >
+        本文件与 papers/s4/hypertension_gout/hypertension_gout_sim.yaml 同名同主题，后者早先
+        发现瞬时给药脉冲直接驱动慢弛豫方程会被脉冲窗口外的23小时"回弹"抵消，已改用衰减态修复；
+        本文件当时用 day 粒度仿真，脉冲窗口恰好与仿真步长重合，同一个问题被掩盖而未暴露，
+        属于全库排查"脉冲输入被重复乘step"这一类问题时确认的一个实例，用户判断这是公开
+        FAIR 模型库的基础设施风险（不止本论文引用，未来可能被其他人 imports 或复用），
+        要求本次直接修复而非只记录待办。详见
+        life-matters-home/tasks/2026-08-12_task_pulse-multiplied-by-step-design-bug.md。
   description:
     problem: >
       高血压合并痛风是一种在临床上极为常见的共病组合，然而两病的标准治疗方案之间存在直接冲突。噻嗪类利尿剂，例如氢氯噻嗪，是高血压一线用药，可显著降低收缩压，但同时会升高血尿酸约60至80 μmol/L，直接对抗痛风控制目标，即尿酸应低于360 μmol/L。减重是对两病均有益的干预，但减重过快时体内酮体会竞争尿酸的肾小管排泄，反而导致尿酸一过性升高。没有单一干预能同时满足两套指南的目标，权衡必须通过量化来实现。
     result: >
-      默认90天仿真显示，使用12.5 mg氢氯噻嗪配合适度饮食控制时，收缩压从158 mmHg降至约151 mmHg，但血尿酸从480 μmol/L升高至约420 μmol/L，仍高于ACR指南目标360 μmol/L。优化结果展示了降压剂量与尿酸升高之间的线性权衡曲线：剂量越大，降压效果越好，同时尿酸风险越高，不存在同时达标的方案。
+      默认90天仿真显示，使用12.5 mg氢氯噻嗪配合每日800mg嘌呤摄入时，收缩压从158 mmHg降至约155.0 mmHg，血尿酸从480升至约489.1 μmol/L，仍高于ACR指南目标360 μmol/L。这两个数字与2026-08-12修复前记录的151/420不同，是因为修复前HCTZ剂量效应直接读取瞬时给药量，修复后改读一阶药代衰减状态thiazide_level，两种机制的稳态换算关系不同，不是同一个模型的重新标定，见limitations。优化结果展示了降压剂量与尿酸升高之间的权衡曲线：剂量越大，降压效果越好，同时尿酸风险越高，不存在同时达标的方案。
     limitations: >
-      血压与尿酸动力学均采用一阶线性趋近模型，基于稳态假设，真实药物效应存在非线性饱和与个体差异。未涵盖别嘌醇等降尿酸药物的联合治疗场景，也未建模痛风急性发作的触发与消退过程。
+      血压与尿酸动力学均采用一阶线性趋近模型，基于稳态假设，真实药物效应存在非线性饱和与个体差异。未涵盖别嘌醇等降尿酸药物的联合治疗场景，也未建模痛风急性发作的触发与消退过程。thiazide_level对血压/尿酸的效应系数（0.4 mmHg/mg、2.8 μmol/L/mg）延续修复前对瞬时剂量的标定，未针对衰减态的稳态量级重新校准，是2026-08-12修复遗留的简化，后续如需更精确的量效关系应重新标定这两个系数。weight_loss_rate声明为决策/约束变量但当前simulation.plans与optimization.startpoint均未提供驱动它的regimen，实际仿真中恒为0，减重相关机制目前不可复现，这是修复前就存在的、本次未处理的建模缺口。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 药物冲突问题临床高发，被 A5 系列多次引用，患者群体庞大
-    framework_demand: 4 - 被A5系列多次引用，跨科室冲突场景核心组件
-    evidence_quality: 4 - ESC/ACR 双指南支撑，HCTZ 效应系数有文献来源
-    popularity: 4 - 跨科室冲突领域代表性模型，多方案比较首选组件
+    importance: 0.75 - 药物冲突问题临床高发，被 A5 系列多次引用，患者群体庞大；被A5系列多次引用，跨科室冲突场景核心组件
+    variable: 0.75 - ESC/ACR 双指南支撑，HCTZ 效应系数有文献来源
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [cardiology, rheumatology, hypertension, gout, uric_acid, optimization, physiological, A5]
-  references:
-  - citation: "Williams B et al. (ESC/ESH 2018) 2018 ESC/ESH Guidelines for the management of arterial hypertension. Eur Heart J 39(33):3021-3104."
-    description: "噻嗪类利尿剂为高血压一线降压用药，治疗目标为血压低于130/80 mmHg。"
-  - citation: "FitzGerald JD et al. (ACR 2020) 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Rheumatol 72(6):879-895."
-    description: "痛风患者的尿酸控制目标为低于360 μmol/L。"
-  - citation: "Law MR, Wald NJ, Morris JK (2003) Use of blood pressure lowering drugs in the prevention of cardiovascular disease. BMJ 326(7403):1427."
-    description: "HCTZ 25mg可使收缩压降低约8至10 mmHg。"
-  - citation: "Gurwitz JH et al. (1992) Hydrochlorothiazide and the risk of gout. J Clin Epidemiol 45(9):989-996."
-    description: "HCTZ每25mg可使血尿酸升高约60至80 μmol/L。"
-  - citation: "Neter JE et al. (2003) Influence of weight reduction on blood pressure. Hypertension 42(5):878-884."
-    description: "每减重1kg，收缩压约降低1 mmHg。"
-  - citation: "Choi HK, Liu S, Curhan G (2005) Intake of purine-rich foods, protein, and dairy products. Arthritis Rheum 52(1):283-289."
-    description: "阐明嘌呤摄入量与血尿酸水平的关系。"
-  - citation: "Fam AG (2005) Gout, diet, and the insulin resistance syndrome. J Rheumatol 32(4):608-610."
-    description: "阐明快速减重促进尿酸升高的机制。"
 
 variables:
   # R1: Blood Pressure
@@ -105,19 +117,49 @@ variables:
       降压效果：25mg → 收缩压降低约10 mmHg（Law 2003）；剂量-效应线性假设。
       尿酸代价：25mg → 尿酸升高约70 μmol/L（Gurwitz 1992）。
       临床推荐范围：12.5-25 mg/day（ESC 2018，指每日一次给药）。
+      2026-08-12 起不再被 bp_dynamics/ua_dynamics 直接读取，见 thiazide_level。
     value: 0.0
     unit: "mg"
     type: input
     bounds: [0.0, 25.0]
 
+  # P1b: HCTZ 体内水平（一阶药代衰减状态，2026-08-12 新增）
+  thiazide_level:
+    description: >
+      HCTZ 体内有效水平（一阶药代衰减状态，半衰期≈10h，Beermann & Groschinsky-Grind 1977）。
+      2026-08-12 新增：此前 bp_dynamics/ua_dynamics 直接读取瞬时 diuretic_dose 作为弛豫目标
+      的一部分，diuretic_dose 由 regimen 单点脉冲投放（仅在给药那一刻非零），本文件此前用
+      day 粒度仿真（simulation.step_size=1day）恰好让每日一次脉冲和每日一步的仿真步长
+      重合，才没有暴露问题；一旦换成更细的仿真粒度（如本仓库 papers/s4/hypertension_gout
+      同名模型最初就踩过的坑），瞬时剂量在弛豫方程里会被大部分步的"0"读数抵消，药效几乎
+      消失。改为脉冲先累加进这个衰减状态、bp_dynamics/ua_dynamics 改读该状态，结构复用
+      papers/s4/hypertension_gout_sim.yaml 已验证过的设计，同时把本文件的仿真粒度从
+      day 改为 hour，让这一衰减动态本身也得到合理精度的积分。
+    value: 0.0
+    unit: "mg"
+    type: state
+    bounds: [0.0, 100.0]
+    reference: "Beermann B & Groschinsky-Grind M (1977) Eur J Clin Pharmacol 12(4):297-303"
+
+  k_thiazide_decay:
+    description: "HCTZ消除速率常数 = ln2/t_half，t_half取10h（Beermann & Groschinsky-Grind 1977报告血浆半衰期6.4-15h范围中值）。与 papers/s4/hypertension_gout_sim.yaml 使用同一取值。"
+    value: 0.0693
+    unit: "1/hour"
+    type: parameter
+    reference: "Beermann B & Groschinsky-Grind M (1977) Eur J Clin Pharmacol 12(4):297-303"
+
   # P2: Dietary Purine Intake
   purine_intake:
     description: |
-      每日嘌呤摄入事件量（mg，每日触发一次代表全天饮食）。
+      每日嘌呤摄入水平（mg，代表持续的饮食习惯而非单次给药事件）。
       高嘌呤食物：内脏（肝/肾/脑），贝类，红肉 → 每100g约150-1000mg嘌呤。
       低嘌呤目标：<500 mg/日（ACR 2020建议）。
       参考基线：普通饮食约1000 mg/日（Choi 2005）。
       每降低500mg嘌呤 → 尿酸降低约30 μmol/L（Choi 2005数据估算）。
+      2026-08-12：regimen 改为全天窗口 + delivery:level（见 simulation.plans），
+      使这一读数在任意仿真粒度下都保持恒定，不是需要衰减态缓冲的离散给药事件——
+      饮食习惯是"当前持续设定"，不是"单次投放的量"，两者需要不同的建模处理，
+      不能套用 diuretic_dose 那种脉冲+衰减态的修法。
     value: 1000.0
     unit: "mg"
     type: input
@@ -126,31 +168,48 @@ variables:
   # P3: Weight Loss Rate — 双刃剑输入
   weight_loss_rate:
     description: |
-      每日减重事件量（kg/日，每日触发一次）。
+      当前减重速率设定（kg/日，代表持续的饮食/运动方案而非单次事件）。
       正面效应：减重1kg → 收缩压降低约1 mmHg（Neter 2003）；同时降低尿酸。
       负面效应（快速减重>0.071 kg/日，即>0.5 kg/周）：酮体在肾小管竞争尿酸排泄 →
       尿酸反而升高（Fam 2005）。
       ACR 2020推荐：≤0.071 kg/日（≤0.5 kg/周，避免痛风急性发作）。
       约束：0-0.143 kg/日（对应≤1.0 kg/周）。
+      2026-08-12：regimen 改为全天窗口 + delivery:level，理由同 purine_intake。
     value: 0.0
     unit: "kg"
     type: input
     bounds: [0.0, 0.143]
 
 equations:
+  # F0: Thiazide Level Dynamics（一阶药代衰减，2026-08-12 新增）
+  thiazide_level_dynamics:
+    description: >
+      HCTZ体内水平：给药脉冲累加，按一阶消除速率常数衰减，供bp_dynamics/ua_dynamics读取。
+      priority设为全文件最高，确保同一step内bp_dynamics/ua_dynamics读到的是本step更新后的值。
+    step_unit: hour
+    condition: true
+    priority: 10
+    dynamics:
+      thiazide_level: thiazide_level + diuretic_dose - k_thiazide_decay * thiazide_level * step
+    reference: "Beermann B & Groschinsky-Grind M (1977) Eur J Clin Pharmacol 12(4):297-303"
+
   # F1: Blood Pressure Dynamics（一阶趋向平衡动力学）
   # 目标收缩压 = 基线 - 药物效应 - 减重效应
   # 趋向速率τ ≈ 14天（HCTZ达到稳态约2周，来源：Lacourciere 2000）
   # dSBP/dt = (target_SBP - SBP) × (1/14)
   bp_dynamics:
-    description: |
+    description: >
       收缩压向目标值的一阶动力学趋近（τ=14天）。
-      target_SBP = 基线 - HCTZ效应(10mmHg/25mg) - 减重效应(1mmHg/kg)。
-      来源：Law 2003 (HCTZ); Neter 2003 (减重)。
-    step_unit: day
+      target_SBP = 基线 - HCTZ效应(10mmHg/25mg，改读thiazide_level衰减态) - 减重效应(1mmHg/kg)。
+      来源：Law 2003 (HCTZ); Neter 2003 (减重)。2026-08-12：τ=14天换算为小时等效值须用
+      ADR 0121类型B开根公式（本项是"状态-目标"弛豫项）：k_day=1/14≈0.07143，
+      k_hour=1-(1-k_day)^(1/24)≈0.0030831。系数0.4（mmHg/mg）延续原始标定，代表
+      thiazide_level这个衰减态量级下的降压效力，与真实瞬时剂量的对应关系未重新校准，
+      是本次改动遗留的简化，与本文件已声明的"一阶线性趋近模型"限制同一性质。
+    step_unit: hour
     condition: true
     dynamics:
-      systolic_bp: "systolic_bp + ((bp_baseline - diuretic_dose * 0.4 - max(0.0, body_weight_ref - body_weight) * 1.0) - systolic_bp) * (1.0/14.0) * step"
+      systolic_bp: "systolic_bp + ((bp_baseline - thiazide_level * 0.4 - max(0.0, body_weight_ref - body_weight) * 1.0) - systolic_bp) * 0.0030831 * step"
     priority: 7
 
   # F2: Uric Acid Dynamics（一阶趋向平衡动力学）
@@ -158,25 +217,32 @@ equations:
   # 趋向速率τ ≈ 14天（血尿酸平衡约2周，来源：临床观测）
   # 快速减重效应：若减重速率>0.5 kg/week，每超额1 kg/week → 尿酸额外升高50 μmol/L
   ua_dynamics:
-    description: |
+    description: >
       血尿酸向目标值的一阶动力学趋近（τ=14天）。
-      target_UA = 基线 + HCTZ效应(+70μmol/L per 25mg) + 饮食效应((purine-1000)×0.06) + 快速减重惩罚。
+      target_UA = 基线 + HCTZ效应(+70μmol/L per 25mg，改读thiazide_level衰减态) +
+      饮食效应((purine-1000)×0.06) + 快速减重惩罚。
       快速减重惩罚：max(0, weight_loss_rate - 0.5) × 50 μmol/L（Fam 2005）。
-      来源：Gurwitz 1992 (HCTZ); Choi 2005 (饮食); Fam 2005 (减重)。
-    step_unit: day
+      来源：Gurwitz 1992 (HCTZ); Choi 2005 (饮食); Fam 2005 (减重)。2026-08-12：
+      τ换算同bp_dynamics；purine_intake/weight_loss_rate在这里是瞬时读数用于计算目标值，
+      不是被累加进状态，不需要单独乘step——真正需要按ADR 0121类型B换算的只有τ=14天这一项。
+    step_unit: hour
     condition: true
     dynamics:
-      uric_acid: "uric_acid + ((ua_baseline + diuretic_dose * 2.8 + (purine_intake - 1000.0) * 0.06 + max(0.0, weight_loss_rate - 0.0714) * 350.0) - uric_acid) * (1.0/14.0) * step"
+      uric_acid: "uric_acid + ((ua_baseline + thiazide_level * 2.8 + (purine_intake - 1000.0) * 0.06 + max(0.0, weight_loss_rate - 0.0714) * 350.0) - uric_acid) * 0.0030831 * step"
     priority: 7
 
   # F3: Body Weight Dynamics
-  # 每次体重变化 = -weight_loss_rate（kg，每日触发）
+  # 每次体重变化 = -weight_loss_rate（kg/日，作为持续速率读数乘step积分）
   weight_dynamics:
-    description: "体重按每日减重事件量线性下降（安全约束：≤0.143 kg/日，即≤1.0 kg/周）。"
+    description: >
+      体重按当前减重速率设定线性下降（安全约束：≤0.143 kg/日，即≤1.0 kg/周）。
+      2026-08-12：weight_loss_rate 的 regimen 改为全天窗口+delivery:level（详见该变量
+      description），本方程需要相应补上 *step 才能正确积分——此前"不乘step"是配合单点脉冲
+      regimen 在day粒度仿真下的写法，两处必须同步修改，不能只改其中一处。
     step_unit: day
     condition: weight_loss_rate > 0.0
     dynamics:
-      body_weight: "max(50.0, body_weight - weight_loss_rate)"
+      body_weight: "max(50.0, body_weight - weight_loss_rate * step)"
     priority: 5
 
   # F4: Composite Goal Score
@@ -195,10 +261,10 @@ equations:
 simulation:
   step_size:
     value: 1
-    unit: day
+    unit: hour
   start_date: "2026-01-01"
   end_date: "2026-04-01"
-  output_variables: [systolic_bp, uric_acid, body_weight, goal_score, diuretic_dose, purine_intake, weight_loss_rate]
+  output_variables: [systolic_bp, uric_acid, thiazide_level, body_weight, goal_score, diuretic_dose, purine_intake, weight_loss_rate]
   plans:
   - id: default
     label: "Baseline plan"
@@ -208,15 +274,17 @@ simulation:
       value: 12.5
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-04-01"]
-      label: "HCTZ 晨服（初始12.5mg）"
+      label: "HCTZ 晨服（初始12.5mg，单点脉冲，累加进thiazide_level）"
     - variable: purine_intake
       time_start: "00:00"
+      time_end: "24:00"
+      delivery: level
       value: 800.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-04-01"]
-      label: "每日嘌呤摄入量（mg）"
+      label: "每日嘌呤摄入水平（mg，全天恒定设定）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: systolic_bp
@@ -249,17 +317,65 @@ optimizer:
     n_generations: 120
     seed: 19
   results:
-    generated_at: "2026-05-17"
+    status: >
+      2026-08-12 修复 thiazide_level 衰减态机制并把仿真粒度从 day 改为 hour 后，下方前沿是用
+      population=20/generations=20 的验证性预算重新生成的，只用于确认权衡结构（连续、单调）
+      本身在新机制下依然成立，不是最终数字；historical_stale_from_2026-05-17 是修复前旧机制
+      下的前沿，两者不可比。定稿前需要用文件当前 algorithm 声明的完整预算（population=80/
+      generations=120）重新求解一次；hourly 粒度下单次完整预算求解显著慢于原 day 粒度设计
+      （单次评估90天×24步，而非90步），本次未跑完整预算。
+    generated_at: "2026-08-12"
     method: nsga2
-    n_solutions: 6
-    elapsed_seconds: 94.3
+    population_size: 20
+    n_generations: 20
+    n_solutions: 20
     pareto_front:
-    - {x: [0.0], f: [158.0, 480.0]}
-    - {x: [6.25], f: [154.5, 497.5]}
-    - {x: [12.5], f: [151.2, 514.8]}
-    - {x: [18.75], f: [148.1, 531.9]}
-    - {x: [25.0], f: [145.2, 548.6]}
-    - {x: [12.5], f: [151.2, 420.4]}
+    - {x: [0.0006], f: [158.00, 480.00]}
+    - {x: [2.04], f: [157.51, 483.43]}
+    - {x: [3.45], f: [157.17, 485.81]}
+    - {x: [4.66], f: [156.88, 487.85]}
+    - {x: [5.42], f: [156.70, 489.13]}
+    - {x: [6.62], f: [156.41, 491.14]}
+    - {x: [8.43], f: [155.97, 494.21]}
+    - {x: [8.68], f: [155.91, 494.62]}
+    - {x: [10.70], f: [155.42, 498.03]}
+    - {x: [12.18], f: [155.07, 500.51]}
+    - {x: [13.29], f: [154.80, 502.39]}
+    - {x: [14.53], f: [154.50, 504.48]}
+    - {x: [15.43], f: [154.29, 506.00]}
+    - {x: [16.66], f: [153.99, 508.06]}
+    - {x: [17.76], f: [153.73, 509.92]}
+    - {x: [17.84], f: [153.71, 510.06]}
+    - {x: [18.92], f: [153.45, 511.87]}
+    - {x: [21.83], f: [152.75, 516.78]}
+    - {x: [22.96], f: [152.47, 518.68]}
+    - {x: [25.0], f: [151.98, 522.12]}
     recommended:
-      x: [12.5]
-      f: [151.2, 420.4]
+      x: [12.18]
+      f: [155.07, 500.51]
+    note: "20个非退化解，剂量0到25mg，SBP 158.0降到152.0mmHg，UA同步从480升到522.1μmol/L，连续单调权衡结构确认成立；具体数值待完整预算重新求解后更新，本字段与 recommended 到时需同步更新。"
+    historical_stale_from_2026-05-17:
+      note: "2026-08-12修复thiazide_level衰减态机制前的旧前沿，用的是直接读瞬时diuretic_dose的旧机制，与当前机制不可比，保留仅供追溯"
+      pareto_front:
+      - {x: [0.0], f: [158.0, 480.0]}
+      - {x: [6.25], f: [154.5, 497.5]}
+      - {x: [12.5], f: [151.2, 514.8]}
+      - {x: [18.75], f: [148.1, 531.9]}
+      - {x: [25.0], f: [145.2, 548.6]}
+      - {x: [12.5], f: [151.2, 420.4]}
+
+references:
+  - citation: "Williams B et al. (ESC/ESH 2018) 2018 ESC/ESH Guidelines for the management of arterial hypertension. Eur Heart J 39(33):3021-3104."
+    description: "噻嗪类利尿剂为高血压一线降压用药，治疗目标为血压低于130/80 mmHg。"
+  - citation: "FitzGerald JD et al. (ACR 2020) 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Rheumatol 72(6):879-895."
+    description: "痛风患者的尿酸控制目标为低于360 μmol/L。"
+  - citation: "Law MR, Wald NJ, Morris JK (2003) Use of blood pressure lowering drugs in the prevention of cardiovascular disease. BMJ 326(7403):1427."
+    description: "HCTZ 25mg可使收缩压降低约8至10 mmHg。"
+  - citation: "Gurwitz JH et al. (1992) Hydrochlorothiazide and the risk of gout. J Clin Epidemiol 45(9):989-996."
+    description: "HCTZ每25mg可使血尿酸升高约60至80 μmol/L。"
+  - citation: "Neter JE et al. (2003) Influence of weight reduction on blood pressure. Hypertension 42(5):878-884."
+    description: "每减重1kg，收缩压约降低1 mmHg。"
+  - citation: "Choi HK, Liu S, Curhan G (2005) Intake of purine-rich foods, protein, and dairy products. Arthritis Rheum 52(1):283-289."
+    description: "阐明嘌呤摄入量与血尿酸水平的关系。"
+  - citation: "Fam AG (2005) Gout, diet, and the insulin resistance syndrome. J Rheumatol 32(4):608-610."
+    description: "阐明快速减重促进尿酸升高的机制。"

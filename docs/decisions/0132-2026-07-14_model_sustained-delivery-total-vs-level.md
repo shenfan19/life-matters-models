@@ -82,7 +82,7 @@ regimens:
 - `models/papers/s3/sleep_schedule/sleep_schedule_sim.yaml`（同上三个变量，22 处）
 - 内部另一个场景文件（同上三个变量，4 处 `optimize.value`）
 - `burnout_allostatic_opt_{workoutput,cvdrisk,joint}.yaml`、
-  `sleep_schedule_opt_{cognitive,healthrisk,joint}.yaml`（各自独立的 `optimizer.startpoint.regimens`
+  `sleep_schedule_opt_{cognitive,healthrisk,joint}.yaml`（各自独立的 `optimization.startpoint.regimens`
   边界，同一批变量）
 
 `exercise_min`/`break_min`/`nap_minutes`（脉冲）、`training_load`（Banister，真正的日速率）

@@ -15,9 +15,9 @@ metadata:
       next: "建议的下一步，或留给人工判断的选项；不替人工下结论"
 ```
 
-- `type` 取值含义：`nosim`=sim 无法运行；`noopt`=sim 通过但 optimizer 失败；`noref`=缺文献来源（`TODO:SOURCE`）；`quality`=sim/opt 均成功但结果有疑点（如 Pareto 前沿退化、可行域为空集）；`other`=其他。
+- `type` 取值含义：`nosim`=sim 无法运行；`noopt`=sim 通过但 optimization 失败；`noref`=缺文献来源（`TODO:SOURCE`）；`quality`=sim/opt 均成功但结果有疑点（如 Pareto 前沿退化、可行域为空集）；`other`=其他。
 - `evidence` 是核心：把诊断过程中得到的具体数值/现象写下来，避免下次处理（无论 AI 或人工）重新运行诊断。
-- **无 `metadata.todo`（或为空）= 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimizer:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
+- **无 `metadata.todo`（或为空）= 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimization:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
 - 所有 `todo` 项处理完毕后删除该字段，文件回到"干净"状态——**不需要重命名文件**。
 
 ### reviewed: true
@@ -48,7 +48,7 @@ metadata:
 
 ## 调试历史版本管理：`history/` 目录（ADR 0141）
 
-反复调试同一个模型（多次调整 `optimizer` 配置重跑、多次改写 `description` 以反映诊断结论）时，**旧版本的完整内容不进入主 YAML 文件**——不要把历次 rerun 的 `optimizer.results`、被推翻的旧 `description` 表述、诊断过程本身累积保留在同一个文件里，这会让文件持续膨胀、新读者分不清哪部分是当前有效结论。这条与"改进历史：`metadata.log`"是两回事：`metadata.log` 只留一行"改了什么/为什么"的索引，本身很小，留在主文件里；`history/` 存的是被取代的完整文件内容，体量可能很大，不适合留在对外发布的文件里。
+反复调试同一个模型（多次调整 `optimization` 配置重跑、多次改写 `description` 以反映诊断结论）时，**旧版本的完整内容不进入主 YAML 文件**——不要把历次 rerun 的 `optimization.results`、被推翻的旧 `description` 表述、诊断过程本身累积保留在同一个文件里，这会让文件持续膨胀、新读者分不清哪部分是当前有效结论。这条与"改进历史：`metadata.log`"是两回事：`metadata.log` 只留一行"改了什么/为什么"的索引，本身很小，留在主文件里；`history/` 存的是被取代的完整文件内容，体量可能很大，不适合留在对外发布的文件里。
 
 **做法**：调试出新版本前，先把当前文件原样复制一份到同目录下的 `history/` 子文件夹，文件名加日期戳前缀（`history/YYYY-MM-DD_原文件名.yaml`），再回到主文件里删除已被取代的内容，只保留反映当前状态的一份干净版本。`history/` 内容仅供作者本人日后复查调试脉络，不受《面向最终读者的交付物：不留过程痕迹》规则约束，可以如实保留调试细节、失败尝试、中间数值；整个 `history/` 目录通过仓库根 `.gitignore` 的 `**/history/` 规则排除，不随代码库发布，外部读者看到的永远只是主文件的最终版本。
 

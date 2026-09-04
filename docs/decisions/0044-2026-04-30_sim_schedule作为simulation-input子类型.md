@@ -12,7 +12,7 @@
 
 1. 原始实现将 `schedules:` 作为顶层 key，与 `variables:`、`formulas:` 平级。
 2. GUI 读取 `content.schedules`（错误路径），且将其渲染为只读块，与 `variables` 中 `type: input` 的同名变量完全断开——用户在 Inputs 面板只看到 `carb_intake = 0.0` 的空输入框，schedule 数据形同虚设。
-3. 顶层 `schedules` 与优化器（optimizer）字段混用风险：optimizer 若需要自己的时间序列，会产生命名冲突。
+3. 顶层 `schedules` 与优化器（optimization）字段混用风险：optimization 若需要自己的时间序列，会产生命名冲突。
 
 ---
 
@@ -22,7 +22,7 @@
 
 `schedules` 描述的是"仿真执行时如何驱动某个输入量随时间变化"，这是**仿真配置**，不是变量定义，也不是动力学公式。因此它应属于 `simulation` 块，与 `start_date`、`step` 等同级。
 
-Optimizer 若需要时间序列（如最优给药方案），可在 `optimizer` 块内自定义，两者命名空间隔离。
+Optimizer 若需要时间序列（如最优给药方案），可在 `optimization` 块内自定义，两者命名空间隔离。
 
 ### 语义归属
 

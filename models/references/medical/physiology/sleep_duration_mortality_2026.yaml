@@ -15,16 +15,13 @@ metadata:
     limitations: |
       本案例是"效应量编码正确性"展示，不是独立预测检验，两个per-hour RR系数本身就是要验证的目标，不是外推后与另一个独立来源比较。真实剂量-反应关系在两个分段间的过渡区并非严格分段线性，因为meta分析报告的是汇总斜率，不是逐小时精确曲线，供其它模型引用时应视为工程近似而非精确解析解；此外该效应量测的是"死亡率"，不是"次日工作表现"或"次日皮质醇水平"等短期结局，其它模型引用这条曲线的*方向*，即存在最优点、双侧递减，是有依据的，但如果需要短期行为结局的精确系数，应额外核实是否有更直接对应的文献，例如 Van Dongen et al. 2003 关于连续限制睡眠对认知表现累积损害的剂量-反应研究。
   ratings:
-    topic_importance: 3 - 跨多个行为优化模型复用的基础机制系数，本身不是独立论文案例
-    framework_demand: 3 - 供 burnout_allostatic/infant_breastfeeding 等模型引用，非孤立组件
-    evidence_quality: 5 - Cappuccio et al. (2010) 是该领域被反复引用的经典 meta 分析
-    paper_value: 1 - 通用参考组件，不单独进入任何论文章节
-    innovation: 1 - 纯文献效应量复现，无原创建模贡献
-    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析共识值
+    importance: 0.5 - 跨多个行为优化模型复用的基础机制系数，供burnout_allostatic/infant_breastfeeding等模型引用，非孤立组件
+    variable: 1.0 - Cappuccio et al. (2010) 是该领域被反复引用的经典meta分析，文献可直接追溯
+    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
+    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
+    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
+    confidence: 0.75 - 效应量本身来自高质量独立来源(meta分析共识值)，Loader正确编码展示，非独立预测已在理由中注明
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family, sleep, physiology]
-  references:
-    - "Cappuccio FP, D'Elia L, Strazzullo P, Miller MA (2010) Sleep duration and all-cause mortality: a systematic review and meta-analysis of prospective studies. Sleep 33(5):585-592"
-    - "American Academy of Sleep Medicine (AASM) consensus: 7-8 hours/night appropriate for optimal adult health; ≥9-10 hours classified as long sleep duration"
 
 variables:
   optimal_sleep_hours:
@@ -99,3 +96,7 @@ simulation:
       label: "长睡眠展示（10小时/晚）"
       regimens:
         - {variable: sleep_hours_input, time_start: "00:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "10h"}
+
+references:
+  - "Cappuccio FP, D'Elia L, Strazzullo P, Miller MA (2010) Sleep duration and all-cause mortality: a systematic review and meta-analysis of prospective studies. Sleep 33(5):585-592"
+  - "American Academy of Sleep Medicine (AASM) consensus: 7-8 hours/night appropriate for optimal adult health; ≥9-10 hours classified as long sleep duration"

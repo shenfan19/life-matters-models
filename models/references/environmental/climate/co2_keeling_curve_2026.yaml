@@ -11,20 +11,17 @@ metadata:
     problem: |
       验证目的：跨学科拓展到环境科学。Mauna Loa 观测站自1958年起连续测量大气CO2浓度，即广为人知的 Keeling Curve，是地球科学里持续时间最长、测量最精确的连续观测记录之一。用1959年316ppm和2024年425ppm两个端点年份拟合恒定复合增长率模型，对中间年份1990年做留一法预测，检验"简单指数增长"能否描述这条曲线，以及偏差方向是否符合"CO2增速本身在加速"这一已知事实。
     result: |
-      用1959/2024两个端点拟合年复合增长率0.457%，预测1990年CO2浓度364.0ppm，NOAA/NASA GISS记录的1990年实测值为354.29ppm，预测偏高约2.7%，偏差方向与CO2年增速本身随时间加速这一事实一致：1960年代年增速约0.7ppm/年，2020年代年增速约2.5至3ppm/年，恒定速率模型用全周期两端点拟合，会在增速较慢的早期到中期区间系统性高估。
+      本文件对应论文 `paper/c_paper_s1_cn.md` §6.2。用1959/2024两个端点拟合年复合增长率0.457%，预测1990年CO2浓度364.0ppm，NOAA/NASA GISS记录的1990年实测值为354.29ppm，预测偏高约2.7%，偏差方向与CO2年增速本身随时间加速这一事实一致：1960年代年增速约0.7ppm/年，2020年代年增速约2.5至3ppm/年，恒定速率模型用全周期两端点拟合，会在增速较慢的早期到中期区间系统性高估。
     limitations: |
       本文件用简单复合增长率模型近似一条已知非恒速的曲线，模型本身承认这一简化，预测偏差正是由此产生，不是数据或计算错误；不包含任何排放驱动机制，纯粹是对观测记录本身的函数拟合展示。
   ratings:
-    topic_importance: 1 - 方法论验证展示，非独立研究案例
-    framework_demand: 1 - 纯验证用途，不被其他论文import
-    evidence_quality: 5 - Mauna Loa 观测记录是地球科学最长、最精确的连续观测数据之一
-    paper_value: 2 - 一般性参考组件，environmental 分类下首个案例，可作为气候相关跨学科场景的背景组件
-    innovation: 1 - 纯观测数据复现（含作者自行的指数拟合），无原创建模贡献
-    validation_confidence: 5 - 1990年留一法预测364.0ppm vs 实测354.29ppm，偏差2.7%且方向可由CO2增速本身加速解释
+    importance: 0.25 - 方法论验证展示，environmental分类下首个案例，可作为气候相关跨学科场景背景组件
+    variable: 1.0 - Mauna Loa观测记录是地球科学最长、最精确的连续观测数据之一，文献可直接追溯
+    equation: 0.5 - 作者自行对真实观测数据做指数拟合，非独立复现的标准方程形式
+    simulation: 1.0 - 1990年留一法预测364.0ppm vs 实测354.29ppm，偏差2.7%且方向可解释，逐点验证通过
+    optimization: 0.0 - 本文件不含optimization，纯观测数据拟合验证，不涉及决策变量
+    confidence: 1.0 - 独立预测检验通过：用不参与拟合的独立数据点做留一法预测，结果与实测数据吻合
   tags: [environmental, climate, co2, validation, literature-benchmark, cross-domain]
-  references:
-    - "Keeling CD et al., Scripps Institution of Oceanography / NOAA Global Monitoring Laboratory, Mauna Loa CO2 record (mlo.html)"
-    - "NASA GISS Global Mean CO2 Mixing Ratios (Observations), data.giss.nasa.gov"
 
 variables:
   days_since_1959:
@@ -86,3 +83,7 @@ simulation:
     - id: "observed_record"
       label: "1959-2024 Mauna Loa 观测记录复现（无输入事件，纯时钟驱动的静态曲线评估）"
       regimens: []
+
+references:
+  - "Keeling CD et al., Scripps Institution of Oceanography / NOAA Global Monitoring Laboratory, Mauna Loa CO2 record (mlo.html)"
+  - "NASA GISS Global Mean CO2 Mixing Ratios (Observations), data.giss.nasa.gov"
