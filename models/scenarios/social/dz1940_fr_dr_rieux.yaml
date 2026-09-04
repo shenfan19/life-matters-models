@@ -25,11 +25,13 @@ metadata:
       仿真预期比较高强度救治为主、严格隔离为主、均衡分配三种策略下，城市死亡率与医生存活率的 52 周轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，鼠疫传播参数需参考 SIR 模型文献。
   ratings:
-    topic_importance: 4 - 《鼠疫》是加缪存在主义代表作，医者在流行病中的坚守是永恒命题
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将救治强度与自我保护的动态权衡转化为可优化系统意图存在，但尚未完善
-    social_value: 5 - 触及责任、荒诞和人类团结的普世伦理，文学和哲学价值极高
+    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，鼠疫传播参数未锚定SIR模型文献
+    equation: 0.0 - 5条方程均为纯叙事自建，未采用SIR标准形式，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - care_intensity对patients_treated与doctor_health方向性权衡由方程内生，未数值验证
+    importance: 0.5 - 《鼠疫》是加缪存在主义代表作，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - epidemic
     - duty

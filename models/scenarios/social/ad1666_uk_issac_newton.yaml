@@ -22,11 +22,13 @@ metadata:
     limitations: 17 世纪营养参数，如黑麦面包、麦芽酒的热量换算，为历史估算；认知负荷系数（Sweller 1988）来自当代实验室研究，时代适用性需审慎。
 
   ratings:
-    topic_importance: 5 - 牛顿瘟疫年是科学史最传奇的创造力爆发案例，全球知名
-    framework_demand: 1 - 历史叙事场景，不被其他模型引用
-    evidence_quality: 3 - 认知负荷理论基础，历史营养数值估算成分高
-    innovation: 4 - 洞见积累动力学 × 营养 × 疲劳三维建模，研究节律优化首次历史应用
-    social_value: 5 - 科学史最传奇的创造力爆发案例，"天才神话 vs 系统建模"的颠覆性对比
+    variable: 0.5 - 认知负荷据Sweller(1988)，17世纪营养/作息参数多为历史估算
+    equation: 0.5 - 洞见积累方程为自建复合形式，锚定认知负荷与营养生理概念
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.25 - optimizer为旧格式(TODO注明需重写)，权衡方向未经当前引擎验证
+    importance: 0.5 - 牛顿瘟疫年是科学史最传奇的创造力爆发案例之一，但为历史叙事场景，非框架依赖模块
+    innovation: 0.5 - 洞见积累×营养×疲劳三维建模应用于历史人物研究节律是新颖组合，核心认知负荷机制沿用已知理论
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags: [historical, newton, cognition, nutrition, 17th-century, england]
   period: "1665-1667"
   location: "Woolsthorpe Manor, Lincolnshire, England"

@@ -23,11 +23,13 @@ metadata:
       仿真窗口已预置，覆盖 1855 年 1 月 1 日至 12 月 31 日；变量和方程待人物视角确定后填写，该场景尚未实际运行仿真。
     limitations: 人物视角、地理背景和核心干预变量均未确定；需参考 Benedict 1996 和 Echenberg 2007。
   ratings:
-    topic_importance: 4 - 第三次鼠疫是现代流行病学起源事件，历史和公卫价值高
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO存根，变量和方程未实现，无法评估参数质量
-    innovation: 2 - 鼠疫个人视角建模意图存在，但尚未实现
-    social_value: 4 - 触及现代公共卫生制度起源，有重要历史教育价值
+    variable: 0.0 - TODO存根，variables为空未定义任何参数
+    equation: 0.0 - TODO存根，equations为空未定义任何方程
+    simulation: 0.0 - TODO存根，无可用方程与输出变量，无法产生仿真轨迹
+    optimization: 0.0 - 无optimization块，模型设计上尚不含决策变量
+    importance: 0.5 - 第三次鼠疫是现代流行病学起源事件，但为TODO存根，非框架依赖模块
+    innovation: 0.25 - 鼠疫个人视角建模意图存在，但尚未实现无法评估实际创新程度
+    confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [plague, infectious-disease, 19th-century, pandemic, TODO]
   references:
     - "Benedict C (1996) Bubonic Plague in Nineteenth-Century China. Stanford University Press."

@@ -25,11 +25,13 @@ metadata:
       仿真预期显示 90 天内精神健康、被捕风险和救赎进度的日动态。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 4 - 《罪与罚》是心理犯罪小说的巅峰，道德-精神健康-贫困的耦合极具研究价值
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将道德冲突外化为"精神发烧"动力学的意图极具创意，但尚未完善
-    social_value: 5 - 探索道德越界的心理代价和救赎的可能性，是陀思妥耶夫斯基最重要作品
+    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
+    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - redemption_potential与mental_health经方程追踪无对立驱动，spiritual_seeking同时有利两目标
+    importance: 0.5 - 《罪与罚》是心理犯罪小说的巅峰，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - poverty
     - crime

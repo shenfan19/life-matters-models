@@ -24,11 +24,13 @@ metadata:
     limitations: >
       "预期未来科研贡献"变量的构造方式存在方法论争议，决斗前夜手稿写作强度与史实细节的可信度需进一步核实。参考文献方面，Rothman（1982）提供史学考据，Bell（1937）是经典但存在文学化倾向的传记来源，仅作对照引用。
   ratings:
-    topic_importance: 4 - Galois 是"天才早逝机会成本"最经典的历史案例，教育与科学史价值高
-    framework_demand: 1 - TODO 存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
-    innovation: 4 - 与 ad1940_fr_doeblin、ad1915_tr_moseley 构成同一系列的第三个案例，非战争情境下的对照，意图明确但尚未实现
-    social_value: 4 - 触及天才保护与早逝机会成本的普遍议题，不涉及战争或族群道德评判
+    variable: 0.0 - TODO存根，variables为空未定义任何参数
+    equation: 0.0 - TODO存根，equations为空未定义任何方程
+    simulation: 0.0 - TODO存根，无可用方程与输出变量，无法产生仿真轨迹
+    optimization: 0.0 - 无optimization块，模型设计上尚不含决策变量
+    importance: 0.5 - Galois是"天才早逝机会成本"经典历史案例，但为TODO存根，非框架依赖模块
+    innovation: 0.25 - 与ad1940_fr_doeblin/ad1915_tr_moseley构成同系列对照案例的意图明确，但尚未实现无法评估实际创新程度
+    confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [mathematician, duel, group-theory, 19th-century, sacrifice, TODO]
   references:
     - "Rothman T (1982) Genius and Biographers: The Fictionalization of Evariste Galois. American Mathematical Monthly 89(2), 84-106."

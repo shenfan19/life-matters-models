@@ -25,11 +25,13 @@ metadata:
       仿真预期显示 216 个月内道德资本、身份安全度和贾维尔追踪压力的动态轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 4 - 冉·阿让是文学史上最著名的救赎叙事，司法不公与道德重生有深刻社会意义
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将善行-隐藏身份-自我照料的三角权衡转化为动力学意图清晰，但尚未完善
-    social_value: 5 - 《悲惨世界》是探讨社会正义和人性救赎的世界级经典，社会价值极高
+    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，纯文学设定无客观数据
+    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - redemption_progress与community_trust经方程追踪无对立驱动，两决策变量均单向有利
+    importance: 0.5 - 冉·阿让是文学史上最著名的救赎叙事之一，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - justice
     - redemption

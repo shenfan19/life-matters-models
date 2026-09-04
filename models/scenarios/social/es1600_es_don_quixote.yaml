@@ -25,11 +25,13 @@ metadata:
       仿真预期比较三种策略下 36 个月内骑士满足感、身体状态和社会尊严的轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 4 - 《堂吉诃德》是欧洲小说开山之作，理想主义代价的量化建模有独特意义
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将理想-现实冲突和身体衰退转化为可优化动力学意图有创意，但尚未完善
-    social_value: 4 - 探索理想主义与现实的永恒张力，具有重要人文价值
+    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
+    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - delusion_maintenance对ideal_strength与actual_good_done方向性权衡由方程内生，未数值验证
+    importance: 0.5 - 《堂吉诃德》是欧洲小说开山之作，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - idealism
     - delusion

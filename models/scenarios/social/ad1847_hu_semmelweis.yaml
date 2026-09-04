@@ -22,11 +22,13 @@ metadata:
     limitations: Rogers 扩散参数来自 20 世纪研究，应用于 19 世纪医学机构存在泛化风险；倡导强度与心理损耗的定量关系为模型假设。
 
   ratings:
-    topic_importance: 4 - 医学史最著名的知识阻力案例，医学史和科学政策圈高度关注
-    framework_demand: 1 - 历史叙事场景，不被其他模型引用
-    evidence_quality: 4 - Rogers 扩散理论和 Carter 传记提供良好文献基础
-    innovation: 5 - 首次将科学创新接受度动力学建模为可优化问题
-    social_value: 5 - 医学史最著名的知识阻力案例，直接关联循证医学政策
+    variable: 0.75 - Rogers 扩散理论和 Carter 传记提供良好文献基础
+    equation: 0.5 - 接受度扩散方程自建，锚定Rogers扩散理论概念与Carter传记情节
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - advocacy_intensity对acceptance与mental_health方向性权衡由方程内生，未数值验证
+    importance: 0.75 - 医学史最著名的知识阻力案例，医学/科学政策圈高度关注，直接关联循证医学政策讨论价值
+    innovation: 1.0 - 首次将科学创新接受度动力学建模为可优化问题
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags: [historical, medical, handwashing, science-rejection, mental-health, 19th-century]
   period: "1847-1865"
   location: "Vienna General Hospital / Budapest, Hungary"

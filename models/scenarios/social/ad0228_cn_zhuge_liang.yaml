@@ -18,11 +18,13 @@ metadata:
     limitations: 历史参数，如蜀军营养、军务强度上限，为文献推算；过劳动力学系数基于 Xie & Boven（2006）当代研究，时代适用性需审慎。
 
   ratings:
-    topic_importance: 4 - 诸葛亮是中国文化史最具代表性人物，三国叙事东亚影响深远
-    framework_demand: 1 - 历史叙事场景，不被其他模型引用
-    evidence_quality: 3 - 过劳动力学参数有当代文献基础，历史数值估算成分高
-    innovation: 4 - 将慢性过劳动力学应用于三国历史叙事，叙事与科学跨越形式独特
-    social_value: 4 - 以历史人物为载体探讨健康管理与国家使命的终极冲突，文化共鸣强
+    variable: 0.5 - 过劳系数据Xie & Boven(2006)，历史数值多为文献推算
+    equation: 0.5 - 多因子调制方程自建，锚定过劳动力学文献概念
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - work_intensity对strategy与health方向性权衡成立，未数值复现
+    importance: 0.5 - 诸葛亮是中国文化史最具代表性人物之一，但为历史叙事场景，非框架依赖模块
+    innovation: 0.5 - 将慢性过劳动力学应用于历史人物叙事是新颖组合，核心过劳机制沿用当代研究
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags: [historical, china, three-kingdoms, cognition, strategy, overwork]
   period: "228-234"
   location: "Qishan Camp, Wei-Shu Border, China"
