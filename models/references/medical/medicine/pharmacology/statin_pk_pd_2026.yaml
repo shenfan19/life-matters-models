@@ -28,18 +28,13 @@ metadata:
     limitations: >
       参数来自阿托伐他汀，不适用于瑞舒伐他汀；未建模 CYP3A4 药物相互作用，例如克拉霉素可使血药浓度升高 3–4 倍；SLCO1B1 基因型差异尚未纳入。
   ratings:
-    topic_importance: 5 - 他汀是全球最广泛处方药之一，剂量-效益-风险权衡是核心临床问题
-    framework_demand: 3 - 心血管预防场景常用背景组件
-    evidence_quality: 5 - 引用AHA/ACC指南及CURVES/SLCO1B1等高质量RCT，参数精确
-    popularity: 5 - 他汀PK/PD是临床药理学教科书标准案例
-    validation_confidence: 1 - 从未跑通--sim/--opt(见上方todo)，LDL剂量-反应斜率本身已被同目录statin_ldl_doseresponse_2026.yaml独立验证，但本文件其余部分(肌病风险等)未经检验
+    importance: 0.5 - 他汀是全球最广泛处方药之一，是心血管预防场景常用背景组件
+    variable: 0.75 - Jones 2003 CURVES/Rosenson 2004/Grundy 2018/Link 2008等RCT与指南支撑充分，ck_dose_alpha为单点反推的标定值
+    equation: 0.75 - Sigmoidal Emax模型是药效学领域被广泛引用的标准剂量-反应形式，CK幂函数为自建但锚定文献报告的观察量级
+    simulation: 0.5 - 经验证可正常跑通，LDL斜率已被同目录statin_ldl_doseresponse_2026.yaml间接佐证，CK风险维度未经独立检验
+    optimization: 0.75 - LDL与CK前沿呈现单调真实权衡(10mg至80mg降LDL但升CK)，机制锚定CURVES与Rosenson两篇独立研究
+    confidence: 0.25 - 可正常跑通，LDL部分有间接佐证，但整体未与独立文献目标数值逐点比对
   tags: [pharmacology, statin, LDL, cholesterol, cardiovascular, PK/PD, myopathy]
-  references:
-    - "Jones PH et al. (2003) Atorvastatin vs simvastatin in patients with hypercholesterolaemia (CURVES study). Am J Cardiol 81(5):582-587."
-    - "Grundy SM et al. (2018) 2018 AHA/ACC Guideline on Management of Blood Cholesterol. Circulation 139(25):e1082-e1143."
-    - "Rosenson RS et al. (2004) Statin safety: an assessment using an administrative claims database. Am J Cardiol 94(9A):26C-34C."
-    - "Link E et al. (2008) SLCO1B1 variants and statin-induced myopathy. NEJM 359(8):789-799."
-    - "Stone NJ et al. (2014) ACC/AHA guideline on treatment of blood cholesterol. JACC 63(25 Pt B):2889-2934."
 
 variables:
   ldl_cholesterol:
@@ -173,7 +168,7 @@ simulation:
         date_range: ["2026-01-01", "2026-12-31"]
         label: "阿托伐他汀40mg 晚服（中-高强度标准剂量）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: ldl_cholesterol
@@ -219,3 +214,10 @@ optimizer:
     recommended:
       x: [40.0]
       f: [103.6, 126.9]
+
+references:
+  - "Jones PH et al. (2003) Atorvastatin vs simvastatin in patients with hypercholesterolaemia (CURVES study). Am J Cardiol 81(5):582-587."
+  - "Grundy SM et al. (2018) 2018 AHA/ACC Guideline on Management of Blood Cholesterol. Circulation 139(25):e1082-e1143."
+  - "Rosenson RS et al. (2004) Statin safety: an assessment using an administrative claims database. Am J Cardiol 94(9A):26C-34C."
+  - "Link E et al. (2008) SLCO1B1 variants and statin-induced myopathy. NEJM 359(8):789-799."
+  - "Stone NJ et al. (2014) ACC/AHA guideline on treatment of blood cholesterol. JACC 63(25 Pt B):2889-2934."

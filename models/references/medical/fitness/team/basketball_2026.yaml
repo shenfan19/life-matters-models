@@ -18,11 +18,12 @@ metadata:
     limitations: >
       此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分控卫、前锋、中锋等位置的代谢负荷差异；未建模暂停和犯规停钟期间的恢复动力学。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 3 - 篮球是全球主流运动，间歇高强度特征有运动医学研究价值
-    framework_demand: 1 - noref，复用价值极低
-    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性描述
-    popularity: 3 - 篮球运动生理模型有一定参考价值但不属于教科书基准
+    importance: 0.25 - 篮球是全球主流运动，间歇高强度特征有研究价值；noref，复用价值极低
+    variable: 0.25 - noref标记，参数无文献来源，机制为定性描述
+    equation: 0.25 - 方程结构存在但为定性描述，无文献依据，未见独立复现
+    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
+    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
+    confidence: 0.0 - 参数无文献来源，未跑通独立验证
   tags: [sport, basketball, interval, explosive]
 
 variables:
@@ -133,7 +134,7 @@ simulation:
   end_date: "2026-01-02"
   output_variables: [heart_rate, calories_burned, fatigue, lactate, agility, shot_accuracy, performance]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance

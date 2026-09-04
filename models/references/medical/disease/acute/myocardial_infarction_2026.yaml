@@ -15,18 +15,13 @@ metadata:
     limitations: >
       未建模再灌注损伤和无复流现象，不含心律失常风险评估。EF恢复速率参数来自人群均值，个体差异，例如梗死面积、年龄、心肌活性，未包含。未区分前壁与下壁心梗在预后和重构模式上的差异。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - STEMI是心血管最高危急症，PCI术后康复优化是临床研究核心
-    framework_demand: 2 - 急性病模型，上层场景复用少
-    evidence_quality: 4 - 引用ESC/ACC/AHA指南及5篇高质量文献，参数有据可查
-    popularity: 4 - 心肌梗死模型在心血管研究中地位重要，临床广泛应用
+    importance: 0.75 - STEMI是心血管最高危急症，PCI术后康复优化是临床研究核心；急性病模型，上层场景复用少
+    variable: 0.75 - 引用ESC/ACC/AHA指南及5篇高质量文献，参数有据可查
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [STEMI, myocardial infarction, PCI, cardiac rehabilitation, ejection fraction, remodeling]
-  references:
-  - "Ibanez B et al. (2018) 2017 ESC Guidelines for the management of acute myocardial infarction in patients presenting with ST-segment elevation. Eur Heart J 39(2):119-177."
-  - "Frangogiannis NG. (2014) The inflammatory response in myocardial injury, repair, and remodelling. Nat Rev Cardiol 11(5):255-265."
-  - "Pfeffer MA, Braunwald E. (1990) Ventricular remodeling after myocardial infarction. Experimental observations and clinical implications. Circulation 81(4):1161-1172."
-  - "Buch P et al. (2005) Temporal decline in the prognostic impact of a recurrent acute myocardial infarction on mortality. Heart 91(12):1609-1614."
-  - "Antman EM et al. (2004) ACC/AHA Guidelines for the Management of Patients With ST-Elevation Myocardial Infarction. Circulation 110(5):e82-e292."
 variables:
   ejection_fraction_pct:
     description: |
@@ -194,7 +189,7 @@ simulation:
       date_range: ["2026-01-08", "2026-01-28"]
       label: "第2-4周中等强度康复（快走4 MET）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: ejection_fraction_pct
@@ -241,3 +236,10 @@ optimizer:
     recommended:
       x: [4.0]
       f: [42.8, 55.0]
+
+references:
+  - "Ibanez B et al. (2018) 2017 ESC Guidelines for the management of acute myocardial infarction in patients presenting with ST-segment elevation. Eur Heart J 39(2):119-177."
+  - "Frangogiannis NG. (2014) The inflammatory response in myocardial injury, repair, and remodelling. Nat Rev Cardiol 11(5):255-265."
+  - "Pfeffer MA, Braunwald E. (1990) Ventricular remodeling after myocardial infarction. Experimental observations and clinical implications. Circulation 81(4):1161-1172."
+  - "Buch P et al. (2005) Temporal decline in the prognostic impact of a recurrent acute myocardial infarction on mortality. Heart 91(12):1609-1614."
+  - "Antman EM et al. (2004) ACC/AHA Guidelines for the Management of Patients With ST-Elevation Myocardial Infarction. Circulation 110(5):e82-e292."

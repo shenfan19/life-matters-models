@@ -13,17 +13,13 @@ metadata:
     limitations: >
       损伤积累采用线性近似，真实纤维化进展为非线性过程，呈Sigmoid曲线。未包含遗传修饰因素，例如ALDH2、ADH1B基因型，及营养状态的影响，也不适用于急性酒精中毒的短时尺度预测。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 4 - 酒精性肝病是全球重大公卫问题，剂量-纤维化因果链有复用价值
-    framework_demand: 3 - 潜在被社会/生活方式场景使用，中等复用预期
-    evidence_quality: 4 - 引用Rehm 2010、Stickel 2017等权威文献，损伤函数有据
-    popularity: 3 - 酒精肝模型有一定参考价值但不属于教科书级经典基准
+    importance: 0.5 - 酒精性肝病是全球重大公卫问题，剂量-纤维化因果链有复用价值；潜在被社会/生活方式场景使用，中等复用预期
+    variable: 0.75 - 引用Rehm 2010、Stickel 2017等权威文献，损伤函数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [alcohol, liver_disease, fibrosis, dose_response, chronic]
-  references:
-  - "Rehm J et al. (2010) The relation between different dimensions of alcohol consumption and burden of disease. Addiction 105(5):817-843."
-  - "Stickel F et al. (2017) Genetic risk factors for alcoholic liver disease. Nat Rev Gastroenterol Hepatol 14(1):45-60."
-  - "NIAAA (2023) Alcohol Use Disorder: A Comparison Between DSM-IV and DSM-5. National Institute on Alcohol Abuse and Alcoholism."
-  - "O'Shea RS, Dasarathy S, McCullough AJ (2010) Alcoholic liver disease: ACG Practice Guideline. Am J Gastroenterol 105(1):14-32."
 variables:
   alcohol_dose:
     description: "酒精剂量水平 (0=无, 1=轻度饮酒, 2=中度, 3=重度)"
@@ -101,7 +97,7 @@ simulation:
       date_range: ["2026-01-01", "2026-04-01"]
       label: "每日中度饮酒（约20-30g乙醇）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: liver_health_score
@@ -123,3 +119,9 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - "Rehm J et al. (2010) The relation between different dimensions of alcohol consumption and burden of disease. Addiction 105(5):817-843."
+  - "Stickel F et al. (2017) Genetic risk factors for alcoholic liver disease. Nat Rev Gastroenterol Hepatol 14(1):45-60."
+  - "NIAAA (2023) Alcohol Use Disorder: A Comparison Between DSM-IV and DSM-5. National Institute on Alcohol Abuse and Alcoholism."
+  - "O'Shea RS, Dasarathy S, McCullough AJ (2010) Alcoholic liver disease: ACG Practice Guideline. Am J Gastroenterol 105(1):14-32."

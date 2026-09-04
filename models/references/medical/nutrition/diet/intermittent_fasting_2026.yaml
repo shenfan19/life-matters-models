@@ -29,17 +29,13 @@ metadata:
       未建模昼夜节律调节，即eTRF与晚窗方案的差异，和女性月经周期对禁食响应的差异；
       超过1年的长期代谢适应与平台期尚未纳入。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 间歇性禁食是当前代谢健康最热门干预，学术和公众需求均高
-    framework_demand: 3 - 饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
-    evidence_quality: 4 - 引用Sutton 2018、Wilkinson 2020等Cell Metab高质量RCT
-    popularity: 4 - 16:8禁食已成为主流健康干预，教科书和媒体广泛关注
+    importance: 0.75 - 间歇性禁食是当前代谢健康最热门干预，学术和公众需求均高；饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
+    variable: 0.75 - 引用Sutton 2018、Wilkinson 2020等Cell Metab高质量RCT
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [nutrition, intermittent_fasting, insulin_sensitivity, autophagy, body_composition, IGF1, time_restricted_eating]
-  references:
-    - "Patterson RE et al. (2017) Intermittent fasting and human metabolic health. J Acad Nutr Diet 115(8):1203-1212."
-    - "Wilkinson MJ et al. (2020) Ten-hour time-restricted eating reduces weight, blood pressure, and atherogenic lipids in patients with metabolic syndrome. Cell Metab 31(1):92-104."
-    - "Sutton EF et al. (2018) Early time-restricted feeding improves insulin sensitivity, blood pressure, and oxidative stress even without weight loss in men with prediabetes. Cell Metab 27(6):1212-1221."
-    - "Tinsley GM & La Bounty PM (2015) Effects of intermittent fasting on body composition and clinical health markers in humans. Nutr Rev 73(10):661-674."
 
 variables:
   insulin_sensitivity_index:
@@ -275,7 +271,7 @@ simulation:
         date_range: ["2026-01-01", "2026-06-29"]
         label: "禁食态晨练（06:30，进食窗口08:00开始）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: insulin_sensitivity_index
@@ -321,3 +317,9 @@ optimizer:
     recommended:
       x: [8.0]
       f: [0.713, 71.5]
+
+references:
+  - "Patterson RE et al. (2017) Intermittent fasting and human metabolic health. J Acad Nutr Diet 115(8):1203-1212."
+  - "Wilkinson MJ et al. (2020) Ten-hour time-restricted eating reduces weight, blood pressure, and atherogenic lipids in patients with metabolic syndrome. Cell Metab 31(1):92-104."
+  - "Sutton EF et al. (2018) Early time-restricted feeding improves insulin sensitivity, blood pressure, and oxidative stress even without weight loss in men with prediabetes. Cell Metab 27(6):1212-1221."
+  - "Tinsley GM & La Bounty PM (2015) Effects of intermittent fasting on body composition and clinical health markers in humans. Nutr Rev 73(10):661-674."

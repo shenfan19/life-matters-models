@@ -1,0 +1,528 @@
+metadata:
+  name: infant_breastfeeding_night_tradeoff_demo_babymax
+  lm_format_version: "1.0"
+  updated: 2026-08-04
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  log:
+    "2026-08-05_00-00-00":
+      change: "移除已解决的 todo 条目；description 补充 method 字段"
+      reason: "落实 ADR 0141，主文件只保留当前状态，调试脉络转移至 history/2026-08-05_infant_breastfeeding_night_tradeoff_demo_babymax.yaml。"
+    "2026-08-06_00-00-00":
+      change: "description 按 problem/method/result/limitations 四字段重写，problem/method/result/limitations 改为列表结构，去掉案例C这类框架内部代号，改用基线文件指代，清理硬换行与非豁免括号，来源文献不再单列 citation 字段，改为直接挂在基线文件 description.problem 各机制条目下面"
+      reason: "落实 ADR 0142。"
+  description:
+    problem: |
+      与同目录 infant_breastfeeding_night_tradeoff_demo.yaml 共享完全相同的动力学机制与来源文献，为什么需要联合建模见该文件 description.problem，此处不重复。
+      本文件把夜间净吸收奶量预算从150 mL每晚拉高到400 mL每晚，超过四个候选时段各自0到90 mL上界能产生的物理上限360 mL每晚，使这条约束实质上不再起作用，目标结构不变，用于回答：夜间预算约束是塑造前沿婴儿与母亲权衡这一发现的关键因素，还是即使预算不设限前沿也能自发保持多样性。
+    method: |
+      机制与同目录 infant_breastfeeding_night_tradeoff_demo.yaml 相同，耦合结构说明见该文件 description.method，此处不重复。
+      本文件把 night_absorbed_volume_budget 从150 mL每晚拉高到400 mL每晚，超过决策变量物理上限使约束不再绑定，用于检验夜间预算约束松紧本身对前沿结构的影响。
+    result: |
+      预算拉高到400 mL每晚且不再绑定后，前沿没有收窄成几乎全是婴儿利益的单一区域，反而变得更宽，但更宽的部分主要是信息量最低的极端解，真正有决策价值的中段权衡反而被稀释。
+      - 前沿保留了基线文件已经找到的单时段与双时段两种规模，母亲健康时长140.0与29.42到29.50。
+      - 新增了基线文件因预算限制从未出现过的三时段与四时段两种规模，母亲健康时长分别为3.21与1.4583，后者正是基线文件在加入预算约束前记录过的角点收敛冻结值本身。
+      - 总吸收奶量范围从基线文件的59142到69372 mL扩大到59142到87756 mL。
+      预算约束真正的作用因此不是把前沿限制在某个区域内，而是把四个时段全开、母亲收益冻结在最差值这一支配性但信息量最低的解排除在可行域之外：这个解在总奶量单一维度上确实最优，一旦预算不限制它，搜索算法必然把它保留为非支配解，但它对研究母亲与婴儿权衡这件事没有信息量。更准确的说法不是预算越高越偏向婴儿利益，而是预算越高，前沿越容易被单一维度最优但退化的解重新占据一角，预算约束真正的作用是排除这类退化解，不是单纯限制婴儿一侧的收益上限。
+    limitations: |
+      与基线文件共享同一套简化边界，详见该文件 description.limitations，此处不重复。
+      400 mL每晚这个数字是刻意选取的方法论探针，明确超过决策变量物理上限，让约束不绑定，不代表任何临床推荐喂养量，不应被引用为标定选择以外的任何意义。
+  ratings:
+    importance: 0.25 - 简化演示场景，测试探针性质，非独立科学案例
+    variable: 0.5 - 大部分参数沿用infant_breastfeeding_sim/postpartum_recovery_sim已有文献锚点，机制继承为主
+    equation: 0.5 - 自建方程复用postpartum_recovery_sim已验证的重返职场棘轮/职业代价机制
+    simulation: 0.5 - 可跑通产出更宽前沿，厘清预算约束的真实作用是排除退化解而非单纯限制婴儿收益上限
+    optimization: 0.5 - 放宽预算后保留基线单/双时段权衡规模并新增两种规模，前沿信息量部分被极端退化解稀释
+    innovation: 0.25 - 对已有模型放宽预算约束的探针性质变体，厘清约束机制作用但不构成新方法
+    confidence: 0.0 - 简化演示场景，尚未与任何独立文献目标数值比对，仅验证夜间预算约束松紧对决策变量结构的影响
+
+# ── 变量 ─────────────────────────────────────────────────────────────────────
+variables:
+
+  baby_weight_fixed:
+    type: parameter
+    value: 3.3
+    unit: kg
+    description: >
+      固定出生体重，本演示场景不建模体重增长。2026-08-02仿真窗口从14天延长到140天后，这一简化的失真程度比原版更明显（20周内婴儿体重实际会有显著增长），但本文件的 total_absorbed_volume目标本来就是"决策变量结构能否产生非退化前沿"的相对比较代理指标，不是绝对生长结局判断，继续使用固定体重以保持与原14天版本的一致性、避免引入原始90天模型已知的体重标定问题。
+
+  stomach_capacity_per_kg:
+    type: parameter
+    value: 30.0
+    unit: mL/kg
+    description: "每kg体重对应的胃容量，沿用原文件参数。"
+    reference: "Scammon & Doyle (1920) AJDC 20:516-538."
+
+  gastric_emptying_rate:
+    type: parameter
+    value: 0.46
+    unit: 1/hour
+    description: "胃排空一阶速率常数，沿用原文件参数。"
+    reference: "Cavell B (1981) Acta Paediatr Scand 70:639-641."
+
+  sleep_disruption_per_nightfeed:
+    type: parameter
+    value: 0.75
+    unit: hour
+    description: "每次夜间喂奶消耗的有效睡眠时间，沿用原文件参数。"
+    reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200-206."
+
+  sleep_recovery_rate:
+    type: parameter
+    value: 0.083
+    unit: hour/hour
+    description: "每小时睡眠债自然恢复速率，沿用原文件参数。"
+    reference: "Borbely AA (1982) Hum Neurobiol 1(3):195-204."
+
+  sleep_fragmentation_quality_loss:
+    type: parameter
+    value: 0.4
+    unit: dimensionless
+    bounds: [0, 0.8]
+    description: >
+      夜间喂奶造成的睡眠碎片化对"剩余睡眠"恢复效率的折损比例，2026-08-02改编自 postpartum_recovery_sim.yaml（S4）已验证的同名机制与同一数值（0.4为标定选择，非直接文献测量值，原文件已如此标注）。
+    reference: "Bonnet MH (1985) Sleep 8(1):11-19; Insana SP & Montgomery-Downs HE (2013) Infant Behav Dev 36(4):554-560"
+
+  # ── 母亲职业发展心理维度 ─────────────────────────────────────
+  return_to_work_trigger:
+    type: input
+    value: 0.0
+    unit: dimensionless
+    bounds: [0.0, 1.0]
+    description: >
+      重返职场触发标记（T4决策变量：只搜索触发的起始日期，量值本身固定不搜索）。从 optimization搜到的起始日起每天0点触发一次，触发后 return_to_work_ratchet 方程把 at_work 锁定为1（不会因为触发窗口结束而复位），代表"重返职场是一次性状态转换，不是可逆事件"。
+
+  at_work:
+    type: state
+    value: 0.0
+    unit: dimensionless
+    bounds: [0, 1]
+    description: "是否已重返职场的棘轮状态（一旦变为1，此后保持1，见 return_to_work_ratchet）。"
+
+  leave_length_days:
+    type: state
+    value: 0.0
+    unit: day
+    description: >
+      实际请假天数：at_work=0期间逐日累加，at_work变为1后冻结，冻结时的值即为本次仿真里"实际请假多少天才重返职场"，同时驱动 maternal_depression_index 与 career_penalty_index 两条曲线。
+
+  leave_threshold_days:
+    type: parameter
+    value: 84.0
+    unit: day
+    description: >
+      产后12周（84天），母婴身心结局最优的循证阈值，兼作 maternal_depression_index 的下降终点与 career_penalty_index 的上升起点。
+    reference: "Whitney MD et al. (2023) Matern Child Health J 27(8):1308-1323"
+
+  depression_penalty_max:
+    type: parameter
+    value: 0.79
+    unit: dimensionless
+    description: >
+      请假时长趋近0时 maternal_depression_index 的峰值，直接取自 Chatterji & Markowitz（2012）报告的真实测量值："产假<12周"对应 CES-D 12项抑郁量表 +0.79分。maternal_depression_index 在请假0至84天间按线性插值从此峰值降到0，是把该文献单一时间点的categorical测量值換算为连续曲线的工程近似（文献本身未提供连续的剂量-反应轨迹数据），非独立测量值本身延伸出的连续曲线。
+    reference: "Chatterji P & Markowitz S (2012) J Ment Health Policy Econ 15(2):61-76"
+
+  career_penalty_rate_per_day:
+    type: parameter
+    value: 0.01
+    unit: 1/day
+    description: >
+      请假超过 leave_threshold_days 后，career_penalty_index 每多请假一天的增量。标定选择，非直接文献测量值：Kleven et al.（2019）用丹麦行政数据证明生育后女性收入受到真实、持续的长期损失（"child penalty"），为"延长职业中断有真实经济代价"这一机制的存在性提供文献依据，但该文献未给出"每多请假一天代价增加多少"的斜率，此处取值仅代表量级存在、方向正确，不代表已校准的真实斜率。
+    reference: "标定选择（见描述）；机制存在性依据 Kleven H et al. (2019) Am Econ J Appl Econ 11(4):181-209"
+
+  maternal_depression_index:
+    type: state
+    value: 0.79
+    unit: dimensionless
+    description: >
+      短假期抑郁风险指数（CES-D量表点数近似）：leave_length_days在0至 leave_threshold_days区间内线性下降至0，之后保持0（不是二元阈值，每多请一天假风险连续下降，避免重蹈原90天模型WHO二元阈值导致前沿退化为单点的覆辙）。
+    reference: "Chatterji P & Markowitz S (2012) J Ment Health Policy Econ 15(2):61-76"
+
+  career_penalty_index:
+    type: state
+    value: 0.0
+    unit: dimensionless
+    description: >
+      职业代价指数：leave_length_days超过leave_threshold_days后，超出部分乘以 career_penalty_rate_per_day连续累积，之前恒为0。与maternal_depression_index 方向相反，共同构成请假时长的真实两面权衡（而非"请假越长越好"的单调关系）。
+    reference: "标定选择，机制存在性依据 Kleven H et al. (2019)"
+
+  work_daytime_retention_factor:
+    type: parameter
+    value: 0.7
+    unit: dimensionless
+    bounds: [0, 1]
+    description: >
+      重返职场后，日间哺乳/泵奶能达成的比例（相对未返岗时的100%）。标定选择，非直接文献测量值，定性方向由"全职工作与更早重返职场显著降低母乳喂养持续时长/频率"这一发现支撑（Determinants of breastfeeding initiation and cessation among employed mothers 队列研究），用于让"重返职场时点"这一决策与已有的夜间喂养决策空间产生真实耦合：更早重返职场会压低日间奶量，迫使更多夜奶才能维持总摄入量。
+    reference: "标定选择；定性支持见描述"
+
+  # 日间固定喂养（非决策变量，通过 startpoint.regimens 的无 optimize 块条目声明）
+  breast_milk_day:
+    type: input
+    value: 100.0
+    unit: mL
+    description: "日间固定喂养量，非决策变量。"
+
+  effective_breast_milk_day:
+    type: state
+    value: 0.0
+    unit: mL
+    description: >
+      实际有效日间哺乳量（脉冲，语义同breast_milk_day）：at_work=0时等于breast_milk_day，at_work=1后按work_daytime_retention_factor打折。stomach_intake_and_overflow/absorbed_volume_tracking改用这个变量而非breast_milk_day，使重返职场时点真实影响婴儿侧摄入结局。
+
+  # 夜间4个候选时段，独立决策变量，0表示跳过
+  night_feed_1:
+    type: input
+    value: 0.0
+    unit: mL
+    bounds: [0, 90]
+    description: "夜间候选喂奶时段1（23:00）。值0表示本次跳过不喂。"
+
+  night_feed_2:
+    type: input
+    value: 0.0
+    unit: mL
+    bounds: [0, 90]
+    description: "夜间候选喂奶时段2（01:00）。值0表示本次跳过不喂。"
+
+  night_feed_3:
+    type: input
+    value: 0.0
+    unit: mL
+    bounds: [0, 90]
+    description: "夜间候选喂奶时段3（03:00）。值0表示本次跳过不喂。"
+
+  night_feed_4:
+    type: input
+    value: 0.0
+    unit: mL
+    bounds: [0, 90]
+    description: "夜间候选喂奶时段4（05:00）。值0表示本次跳过不喂。"
+
+  night_absorbed_volume_budget:
+    type: parameter
+    value: 400.0
+    unit: mL
+    description: >
+      夜间（23:00-05:00窗口）四个候选时段净吸收奶量之和的预算上限，本案例（案例A）刻意拉高到
+      400 mL/night，超过night_feed_1..4四个决策变量各自[0,90]上界能产生的物理上限
+      （4×90=360 mL/night），让这条约束实质上不再绑定。跟案例C（同目录基线文件，150 mL/night）
+      唯一的差异就是这个数字，用于测试预算约束的松紧如何塑造前沿。不是标定选择，是方法论探针，
+      不代表任何临床推荐喂养量。
+
+  baby_stomach_volume:
+    type: state
+    value: 0.0
+    unit: mL
+    description: "宝宝胃内当前奶量。"
+
+  total_absorbed_volume:
+    type: state
+    value: 0.0
+    unit: mL
+    description: "累计吸收奶量（不含溢出部分），婴儿侧目标的简化代理指标。"
+
+  night_absorbed_volume:
+    type: state
+    value: 0.0
+    unit: mL
+    description: >
+      夜间四个候选时段（night_feed_1..4）净吸收奶量（扣除胃容量溢出后）的仿真窗口累计总和，
+      仅用于optimization.constraints约束夜奶总预算，不是独立的婴儿侧目标。
+
+  mother_sleep_debt:
+    type: state
+    value: 0.0
+    unit: hour
+    description: "妈妈累计睡眠债，沿用原文件动态。"
+
+  lm_mother_score:
+    type: state
+    value: 0.0
+    unit: hour
+    description: "妈妈健康时长：睡眠债低于4小时的累计小时数。"
+
+# ── 动力学方程 ────────────────────────────────────────────────────────────────
+equations:
+
+  return_to_work_ratchet:
+    step_unit: hour
+    priority: 50
+    dynamics:
+      at_work: "max(at_work, 1.0 if return_to_work_trigger > 0 else 0.0)"
+    description: >
+      重返职场是一次性状态转换：return_to_work_trigger 从T4搜到的起始日起每天触发，at_work 一旦被置1便不会复位（棘轮），代表这是不可逆事件而非可重复开关。
+
+  leave_length_tracking:
+    step_unit: day
+    priority: 45
+    dynamics:
+      leave_length_days: "leave_length_days + step * (1 if at_work < 0.5 else 0)"
+    description: "请假天数累加：at_work=0期间逐日累加，变1后自动冻结（增量条件恒为0）。"
+
+  psych_index_update:
+    step_unit: day
+    priority: 40
+    dynamics:
+      maternal_depression_index: "max(0.0, depression_penalty_max * (1.0 - leave_length_days / leave_threshold_days))"
+      career_penalty_index: "max(0.0, leave_length_days - leave_threshold_days) * career_penalty_rate_per_day"
+    description: >
+      两条连续曲线，均为 leave_length_days 的直接函数（无记忆，每步用当前leave_length_days 重新计算，leave_length_days冻结后两者自然也冻结在最终值）：请假越短抑郁风险越高（线性降到leave_threshold_days=0），请假超过leave_threshold_days后职业代价连续上升。
+    reference: "Chatterji P & Markowitz S (2012); Whitney MD et al. (2023); Kleven H et al. (2019)"
+
+  effective_daytime_feed_calc:
+    step_unit: hour
+    priority: 12
+    dynamics:
+      effective_breast_milk_day: >
+        (breast_milk_day * (1.0 if at_work < 0.5 else work_daytime_retention_factor))
+        if breast_milk_day > 0 else 0
+    description: >
+      实际有效日间哺乳量，仅在喂奶脉冲时刻（breast_milk_day>0）非零，其余步为0（保持与 breast_milk_day相同的脉冲语义，避免非进餐小时被误注入非零值）。priority 12，早于 absorbed_volume_tracking（11）/stomach_intake_and_overflow（10）执行，两者改用这个变量而非 breast_milk_day。
+
+  absorbed_volume_tracking:
+    priority: 11
+    dynamics:
+      total_absorbed_volume: >
+        total_absorbed_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - max(0.0, baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - stomach_capacity_per_kg * baby_weight_fixed)
+    description: >
+      喂奶脉冲的吸收量记账：priority 11，先于 stomach_intake_and_overflow（priority 10）执行，读取的 baby_stomach_volume 是本步更新前的旧值，避免与胃容量更新方程重复计算溢出量。2026-08-02改用 effective_breast_milk_day（重返职场后打折）而非 breast_milk_day。
+
+  night_absorbed_volume_tracking:
+    priority: 11
+    dynamics:
+      night_absorbed_volume: >
+        (night_absorbed_volume + (night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - max(0.0, baby_stomach_volume + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - stomach_capacity_per_kg * baby_weight_fixed)))
+        if (night_feed_1 > 0 or night_feed_2 > 0 or night_feed_3 > 0 or night_feed_4 > 0) else night_absorbed_volume
+    description: >
+      夜间四时段净吸收量（扣除胃容量溢出）的累计记账，priority与absorbed_volume_tracking相同，
+      读取的baby_stomach_volume是本步更新前的旧值。用if(是否有夜间脉冲)门控整个更新表达式：
+      夜间脉冲时累加净吸收量，其余时段（含日间脉冲与空步）原样保持night_absorbed_volume不变
+      （不能写成else 0，那会把累计值每步清零）。
+
+  stomach_intake_and_overflow:
+    priority: 10
+    dynamics:
+      baby_stomach_volume: >
+        baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - max(0.0, baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
+        - stomach_capacity_per_kg * baby_weight_fixed)
+    description: "喂奶脉冲：加入胃，超过胃容量的部分记为溢出（不计入吸收量）。2026-08-02同上改用 effective_breast_milk_day。"
+
+  gastric_emptying:
+    step_unit: hour
+    priority: 0
+    dynamics:
+      baby_stomach_volume: "max(0.0, baby_stomach_volume - gastric_emptying_rate * baby_stomach_volume * step)"
+    description: "一阶胃排空，沿用原文件参数。"
+
+  maternal_sleep_tracking:
+    step_unit: hour
+    priority: 20
+    dynamics:
+      mother_sleep_debt: >
+        max(0.0, mother_sleep_debt - sleep_recovery_rate * step
+        + sleep_disruption_per_nightfeed * (1 + sleep_fragmentation_quality_loss)
+        * (1 if (night_feed_1 > 0 or night_feed_2 > 0 or night_feed_3 > 0 or night_feed_4 > 0) else 0))
+    description: >
+      睡眠债动态：本步任意一个夜间时段有非零喂奶即计一次夜醒代价，沿用原文件单次代价系数，2026-08-02叠加睡眠碎片化质量折损乘子（改编自postpartum_recovery_sim.yaml，引用Bonnet 1985）。
+
+  lm_mother_score_update:
+    step_unit: hour
+    priority: 30
+    dynamics:
+      lm_mother_score: "lm_mother_score + step / 24.0 * (1 if mother_sleep_debt <= 4.0 else 0)"
+    description: "妈妈健康时长累积（单位：天），判据沿用原文件 4.0h 阈值。"
+
+# ── 仿真设置 ───────────────────────────────────────────────────────────────────
+simulation:
+  step_size:
+    value: 1
+    unit: hour
+  start_date: "2026-01-01"
+  end_date: "2026-05-21"
+  output_types: [input, state]
+  plans:
+    - id: "no_night_feeds"
+      label: "夜间全跳过（对照：只喂日间），重返职场固定84天"
+      regimens:
+        - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "日间7:00"}
+        - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "日间11:00"}
+        - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "日间15:00"}
+        - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "日间19:00"}
+        - {variable: return_to_work_trigger, time_start: "00:00", value: 1.0, date_range: ["2026-03-26", "2026-05-21"], label: "重返职场（固定第84天/12周）"}
+
+optimization:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-05-21"
+  step_size:
+    value: 1
+    unit: hour
+
+  constraints:
+    - variable: night_absorbed_volume
+      condition: "<= 56000"
+      metric: final
+      type: hard
+      description: >
+        夜间净吸收奶量预算约束（案例A）：400 mL/night × 140天 = 56000 mL，标定依据见
+        night_absorbed_volume_budget，刻意拉高到超过决策变量物理上限，让约束不绑定。
+
+  objectives:
+    - variable: total_absorbed_volume
+      metric: final
+      direction: maximize
+      description: "最大化140天末累计吸收奶量（婴儿侧简化代理指标）"
+    - variable: lm_mother_score
+      metric: final
+      direction: maximize
+      description: "最大化140天末妈妈健康时长（天）"
+    - variable: maternal_depression_index
+      metric: final
+      direction: minimize
+      description: "最小化短假期抑郁风险指数"
+    - variable: career_penalty_index
+      metric: final
+      direction: minimize
+      description: "最小化职业代价指数，与上一目标方向相反"
+
+  startpoint:
+    regimens:
+      - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "日间7:00（固定背景量）"}
+      - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "日间11:00（固定背景量）"}
+      - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "日间15:00（固定背景量）"}
+      - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "日间19:00（固定背景量）"}
+      - variable: night_feed_1
+        time_start: "23:00"
+        label: "夜间23:00（T1决策变量）"
+        optimize:
+          value: [0.0, 90.0]
+          value_step: 5
+      - variable: night_feed_2
+        time_start: "01:00"
+        label: "夜间01:00（T1决策变量）"
+        optimize:
+          value: [0.0, 90.0]
+          value_step: 5
+      - variable: night_feed_3
+        time_start: "03:00"
+        label: "夜间03:00（T1决策变量）"
+        optimize:
+          value: [0.0, 90.0]
+          value_step: 5
+      - variable: night_feed_4
+        time_start: "05:00"
+        label: "夜间05:00（T1决策变量）"
+        optimize:
+          value: [0.0, 90.0]
+          value_step: 5
+      - variable: return_to_work_trigger
+        time_start: "00:00"
+        label: "重返职场时点（T4决策变量）"
+        optimize:
+          value: [0.9, 1.0]
+          date_range:
+            - ["2026-01-15", "2026-04-15"]   # 起始日搜索窗：第14天至第104天
+            - ["2026-05-21", "2026-05-21"]   # 结束日固定：仿真末日
+
+  algorithm:
+    population_size: 60
+    n_generations: 60
+    seed: 19
+
+  results:
+    status: "2026-08-04首次运行NSGA-II（pop=60/gen=60/seed=19）。60个非支配解，出现5档
+      lm_mother_score：4个时段激活（[90,90,90,90]附近，多个解在night_feed_3/4上有小幅
+      变化，如[90,90,85,90]/[90,90,75,90]/[90,90,85,75]等）给出1.4583333333333337，与
+      2026-08-03（案例C修复前）记录的角点收敛冻结值完全一致；3个时段激活给出
+      3.2083333333333304；2个时段激活（[90,90,0,0]/[0,90,0,90]两种配对）给出
+      29.416666666666956至29.50000000000029；1个时段激活（[0,90,0,0]）给出满分
+      140.00000000000307。total_absorbed_volume范围59141.7-87756.1 mL，上界较案例C
+      （59142-69372 mL）明显扩大，4个时段激活的解正是这个扩大区间的贡献者。详细分析与
+      对比结论见metadata.description.result。"
+    generated_at: "2026-08-04"
+    method: nsga2
+    population_size: 60
+    n_generations: 60
+    n_solutions: 60
+    pareto_front:
+      - {x: [90.0, 90.0, 85.0, 90.0, 0.9483221426452987, 84.7303234881588], f: [87449.52501030643, 1.4583333333333337, 0.0, 0.15000000000002517]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.978830402838257, 89.95508223401883], f: [70863.91560106531, 29.50000000000029, 0.0, 0.20000000000003085]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9608646788032968, 69.08845712599499], f: [69021.51396348438, 29.50000000000029, 0.009404761904755381, 0.0]}
+      - {x: [90.0, 90.0, 75.0, 90.0, 0.974178694462087, 86.0697220338705], f: [87510.84512047814, 1.4583333333333337, 0.0, 0.1600000000000263]}
+      - {x: [90.0, 90.0, 85.0, 75.0, 0.96662543908681, 69.3436782597892], f: [86468.40324755869, 1.4583333333333337, 0.009404761904755381, 0.0]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9758628086978021, 68.8755720988839], f: [59141.70283210942, 140.00000000000307, 0.009404761904755381, 0.0]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9758936436013158, 68.8755720988839], f: [59141.70283210942, 140.00000000000307, 0.009404761904755381, 0.0]}
+      - {x: [90.0, 90.0, 85.0, 90.0, 0.961007268629505, 89.66979124233163], f: [87756.12556116508, 1.4583333333333337, 0.0, 0.20000000000003085]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9754240702904415, 86.68950950696603], f: [60733.86615050013, 140.00000000000307, 0.0, 0.17000000000002743]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9744004619436081, 89.60591669426448], f: [80734.5255992046, 3.2083333333333304, 0.0, 0.20000000000003085]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9823209869172461, 69.08845712599499], f: [79443.23956050756, 3.2083333333333304, 0.009404761904755381, 0.0]}
+      - {x: [0.0, 90.0, 0.0, 90.0, 0.9744004619436081, 89.60591669426448], f: [70869.85070356537, 29.416666666666956, 0.0, 0.20000000000003085]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9616332359977537, 89.79106481833843], f: [60999.22670356525, 140.00000000000307, 0.0, 0.20000000000003085]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9608646788032968, 69.08845712599499], f: [69021.51396348438, 29.50000000000029, 0.009404761904755381, 0.0]}
+      - {x: [0.0, 90.0, 0.0, 90.0, 0.9744004619436081, 70.38004091805898], f: [69625.6603497979, 29.416666666666956, 0.0, 8.100187187665143e-15]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9619576269296525, 83.82652872878347], f: [80365.58673100545, 3.2083333333333304, 0.0, 0.14000000000002402]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.983047413196935, 77.56051919930609], f: [79996.64786280629, 3.2083333333333304, 0.0, 0.0800000000000172]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9616332359977537, 83.190887836829], f: [60380.05207974664, 140.00000000000307, 0.0, 0.13000000000002288]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9742294671688592, 75.32077293793029], f: [59672.423938239655, 140.00000000000307, 0.0, 0.05000000000001378]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9591549781547496, 79.90957815918934], f: [60114.69152668152, 140.00000000000307, 0.0, 0.10000000000001948]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9590124232327357, 71.98123335578849], f: [59407.06338517454, 140.00000000000307, 0.0, 0.020000000000010374]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9845285653033147, 71.98123335578849], f: [59407.06338517454, 140.00000000000307, 0.0, 0.020000000000010374]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9792591322016603, 72.5774624157675], f: [69372.44760873789, 29.50000000000029, 0.0, 0.03000000000001151]}
+      - {x: [90.0, 90.0, 90.0, 85.0, 0.9665630854641758, 88.44009899410327], f: [87633.48534082163, 1.4583333333333337, 0.0, 0.18000000000002855]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9625993899607092, 78.64068354230773], f: [69898.84807661816, 29.50000000000029, 0.0, 0.09000000000001833]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9741767069882062, 78.08101484058369], f: [79996.64786280629, 3.2083333333333304, 0.0, 0.0800000000000172]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.974408819344051, 75.29707866858806], f: [79812.17842870671, 3.2083333333333304, 0.0, 0.05000000000001378]}
+      - {x: [90.0, 90.0, 85.0, 75.0, 0.9632150799165592, 75.68810350788128], f: [86897.64401876081, 1.4583333333333337, 0.0, 0.06000000000001492]}
+      - {x: [90.0, 90.0, 85.0, 90.0, 0.9610685358382153, 79.81806651878618], f: [87142.92445944775, 1.4583333333333337, 0.0, 0.10000000000001948]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9616332359977537, 81.10295799322762], f: [60203.14504436989, 140.00000000000307, 0.0, 0.11000000000002061]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9667477264972996, 72.5774624157675], f: [69372.44760873789, 29.50000000000029, 0.0, 0.03000000000001151]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9744884897202497, 71.12422818346066], f: [69196.98078611112, 29.50000000000029, 0.0, 0.010000000000009238]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9665630854641758, 88.44009899410327], f: [70688.44877843854, 29.50000000000029, 0.0, 0.18000000000002855]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9546354704354921, 71.12422818346066], f: [69196.98078611112, 29.50000000000029, 0.0, 0.010000000000009238]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9626141532367605, 79.0865883906897], f: [69898.84807661816, 29.50000000000029, 0.0, 0.09000000000001833]}
+      - {x: [90.0, 90.0, 85.0, 85.0, 0.9737981934545173, 74.40586522929432], f: [86775.00379841735, 1.4583333333333337, 0.0, 0.04000000000001265]}
+      - {x: [0.0, 90.0, 0.0, 90.0, 0.982600516761169, 82.71252729527299], f: [70434.38407974676, 29.416666666666956, 0.0, 0.13000000000002288]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9731749041043237, 83.82652872878347], f: [80365.58673100545, 3.2083333333333304, 0.0, 0.14000000000002402]}
+      - {x: [90.0, 90.0, 80.0, 80.0, 0.9745289384099952, 81.97413252098062], f: [87265.56467979123, 1.4583333333333337, 0.0, 0.12000000000002174]}
+      - {x: [90.0, 90.0, 75.0, 90.0, 0.9663156414570414, 86.28985947509582], f: [87510.84512047814, 1.4583333333333337, 0.0, 0.1600000000000263]}
+      - {x: [90.0, 90.0, 90.0, 90.0, 0.9526982569903085, 84.7303234881588], f: [87449.52501030643, 1.4583333333333337, 0.0, 0.15000000000002517]}
+      - {x: [90.0, 90.0, 85.0, 75.0, 0.9738142943829402, 74.40586522929432], f: [86775.00379841735, 1.4583333333333337, 0.0, 0.04000000000001265]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9748606048093276, 86.68950950696603], f: [60733.86615050013, 140.00000000000307, 0.0, 0.17000000000002743]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9678741848030036, 89.24838189934775], f: [60910.773185876875, 140.00000000000307, 0.0, 0.1900000000000297]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9680307942314036, 89.26622729008382], f: [60910.773185876875, 140.00000000000307, 0.0, 0.1900000000000297]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9625363309164068, 81.10663271009697], f: [60203.14504436989, 140.00000000000307, 0.0, 0.11000000000002061]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9606293941133149, 76.57665125697504], f: [69723.38125399139, 29.50000000000029, 0.0, 0.07000000000001606]}
+      - {x: [90.0, 90.0, 85.0, 90.0, 0.9624279196691481, 69.95173162203058], f: [86529.72335773041, 1.4583333333333337, 0.0, 8.100187187665143e-15]}
+      - {x: [90.0, 90.0, 90.0, 80.0, 0.9745128374815725, 82.0012355814777], f: [87265.56467979123, 1.4583333333333337, 0.0, 0.12000000000002174]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9743062404690928, 76.18595081302615], f: [69635.64784267802, 29.50000000000029, 0.0, 0.06000000000001492]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9604858358250672, 76.57665125697504], f: [69723.38125399139, 29.50000000000029, 0.0, 0.07000000000001606]}
+      - {x: [0.0, 90.0, 0.0, 90.0, 0.9826019385570133, 77.505604446017], f: [70123.33649130489, 29.416666666666956, 0.0, 0.0800000000000172]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9823209869172461, 69.08845712599499], f: [79443.23956050756, 3.2083333333333304, 0.009404761904755381, 0.0]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.974408819344051, 74.86584479556672], f: [79812.17842870671, 3.2083333333333304, 0.0, 0.05000000000001378]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9809919199039365, 77.505604446017], f: [59937.784491304774, 140.00000000000307, 0.0, 0.0800000000000172]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9748651385955918, 85.29413954969235], f: [60556.95911512338, 140.00000000000307, 0.0, 0.15000000000002517]}
+      - {x: [90.0, 90.0, 0.0, 0.0, 0.9742454427310485, 84.31245062285562], f: [70337.51513318504, 29.50000000000029, 0.0, 0.14000000000002402]}
+      - {x: [90.0, 90.0, 0.0, 90.0, 0.9637163106860324, 86.21419375630276], f: [80488.5663537385, 3.2083333333333304, 0.0, 0.1600000000000263]}
+      - {x: [0.0, 90.0, 0.0, 0.0, 0.9826053918162656, 76.2689026398331], f: [59760.87745592803, 140.00000000000307, 0.0, 0.06000000000001492]}
+      - {x: [0.0, 90.0, 0.0, 90.0, 0.9449678536601336, 84.7303234881588], f: [70558.8031151235, 29.416666666666956, 0.0, 0.15000000000002517]}
+    recommended:
+      x: [90.0, 90.0, 85.0, 90.0, 0.9483221426452987, 84.7303234881588]
+      f: [87449.52501030643, 1.4583333333333337, 0.0, 0.15000000000002517]
+
+references:
+  - "Scammon & Doyle (1920) AJDC 20:516-538"
+  - "Cavell B (1981) Acta Paediatr Scand 70:639-641"
+  - "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200-206"
+  - "Borbely AA (1982) Hum Neurobiol 1(3):195-204"
+  - "Goyal D et al. (2009) Arch Womens Ment Health 12(4):229-237"
+  - "Bonnet MH (1985) Effect of sleep disruption on sleep, performance, and mood. Sleep 8(1):11-19"
+  - "Insana SP & Montgomery-Downs HE (2013) Sleep and postpartum fatigue. Infant Behav Dev 36(4):554-560"
+  - "Chatterji P & Markowitz S (2012) Family leave after childbirth and the mental health of new mothers. J Ment Health Policy Econ 15(2):61-76"
+  - "Whitney MD, Holbrook C, Alvarado L, Boyd S (2023) Length of Maternity Leave Impact on Mental and Physical Health of Mothers and Infants, a Systematic Review and Meta-analysis. Matern Child Health J 27(8):1308-1323"
+  - "Kleven H, Landais C, Sogaard JE (2019) Children and Gender Inequality: Evidence from Denmark. Am Econ J Appl Econ 11(4):181-209"

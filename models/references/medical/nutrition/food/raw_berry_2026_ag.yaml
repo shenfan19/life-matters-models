@@ -24,11 +24,12 @@ metadata:
       摄入触发时，对应营养素按比例注入上层场景的胃缓冲区。仿真尚未运行，为组件模型。
     limitations: 极简食物转换组件，不包含消化动力学；参数应在上层场景中结合具体上下文校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 1 - 游戏专用食物组件，仅提供基本营养成分转换，无研究复用价值
-    framework_demand: 1 - _ag游戏专用模型，框架内复用价值极低
-    evidence_quality: 3 - 浆果营养成分数值来自食品成分表，数据本身可靠
-    popularity: 1 - 游戏（_ag）专用食物模块，通用度极低
+    importance: 0.0 - 游戏专用食物组件，仅提供基本营养成分转换，无研究复用价值
+    variable: 0.5 - 浆果营养成分数值来自食品成分表，数据本身可靠
+    equation: 0.0 - 纯累加记账，不含任何消化/代谢机制
+    simulation: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.0 - 决策变量之间无结构耦合，不构成真实权衡
+    confidence: 0.0 - 从未跑通--sim/--opt
   tags: [food, diet, fruit, berry]
 
 variables:
@@ -85,7 +86,7 @@ simulation:
   end_date: "2026-01-02"
   output_variables: [food_carbohydrate, food_protein, food_fat, water_intake]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: food_carbohydrate

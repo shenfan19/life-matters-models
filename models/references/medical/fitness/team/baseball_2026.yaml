@@ -15,19 +15,13 @@ metadata:
     limitations: >
       未区分直球、曲球、变速球等不同投球类型的生物力学应力差异；肩关节应力为综合指标，未建模肩袖具体解剖结构的损伤累积；未包含打者等待时间内肌肉温度下降和预激活状态变化对打击质量的影响。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 棒球肩关节管理有专项研究价值，但受众限于特定运动圈
-    framework_demand: 2 - 团队运动专项模型，上层引用预期低
-    evidence_quality: 3 - 引用Potteiger/Mangine等文献，参数覆盖基本但数量有限
-    popularity: 2 - 棒球在东亚和北美有受众，但全球通用度有限
+    importance: 0.25 - 棒球肩关节管理有专项研究价值，但受众限于特定运动圈；团队运动专项模型，上层引用预期低
+    variable: 0.5 - 引用Potteiger/Mangine等文献，参数覆盖基本但数量有限
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [baseball, team, shoulder_stress, reaction_time, grip_strength, pitch_count, explosive]
-  references:
-    - citation: "Potteiger JA et al. (1992) Physiological and performance responses to prolonged, competitive baseball games. J Strength Cond Res 6(3):149-153."
-      description: "提供长时间比赛中的生理和表现响应数据，是肩部疲劳积累和综合精准度动力学的参数来源。"
-    - citation: "Szymanski DJ et al. (2011) Relationship between the NSCA physical testing guidelines and baseball performance in collegiate baseball players. J Strength Cond Res 25(8):2101-2112."
-      description: "提供体能测试指标与投球表现的关系数据，是手臂应激指数与 MLB 约 100 球限制对应关系的参数来源。"
-    - citation: "Mangine GT et al. (2012) The effect of recovery time on bat speed, bat path efficiency, and contact rate of NCAA division I baseball players. J Strength Cond Res 26(3):809-815."
-      description: "研究恢复时间对挥棒速度和接触率的影响，是打者反应时间随疲劳延长这一机制的参数来源。"
 
 variables:
   pitch_velocity:
@@ -134,7 +128,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "打者挥击强度（RPE=7）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance_accuracy
@@ -180,3 +174,11 @@ optimizer:
     recommended:
       x: [90.0]
       f: [-86.0, 0.45]
+
+references:
+  - citation: "Potteiger JA et al. (1992) Physiological and performance responses to prolonged, competitive baseball games. J Strength Cond Res 6(3):149-153."
+    description: "提供长时间比赛中的生理和表现响应数据，是肩部疲劳积累和综合精准度动力学的参数来源。"
+  - citation: "Szymanski DJ et al. (2011) Relationship between the NSCA physical testing guidelines and baseball performance in collegiate baseball players. J Strength Cond Res 25(8):2101-2112."
+    description: "提供体能测试指标与投球表现的关系数据，是手臂应激指数与 MLB 约 100 球限制对应关系的参数来源。"
+  - citation: "Mangine GT et al. (2012) The effect of recovery time on bat speed, bat path efficiency, and contact rate of NCAA division I baseball players. J Strength Cond Res 26(3):809-815."
+    description: "研究恢复时间对挥棒速度和接触率的影响，是打者反应时间随疲劳延长这一机制的参数来源。"

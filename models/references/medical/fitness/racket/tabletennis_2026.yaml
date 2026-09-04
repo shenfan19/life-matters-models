@@ -18,11 +18,12 @@ metadata:
   name: tabletennis
   lm_format_version: "1.0"
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 3 - 乒乓球在亚洲普及但反应速度-神经疲劳模型复用场景有限
-    framework_demand: 1 - noref，复用价值极低
-    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
-    popularity: 2 - 乒乓球生理模型较小众，不属于运动科学主流基准
+    importance: 0.25 - 乒乓球在亚洲普及但反应速度-神经疲劳模型复用场景有限；noref，复用价值极低
+    variable: 0.25 - noref标记，参数无文献来源，机制为定性近似
+    equation: 0.25 - 方程结构存在但为定性近似，无文献依据，未见独立复现
+    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
+    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
+    confidence: 0.0 - 参数无文献来源，未跑通独立验证
   tags:
     - fitness
     - tabletennis
@@ -218,7 +219,7 @@ simulation:
     - concentration
     - performance
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance

@@ -13,17 +13,13 @@ metadata:
     limitations: >
       未区分自由泳、蝶泳、仰泳等不同泳姿的技术特征和肌群疲劳模式；水温、水阻以及 25 m 与 50 m 两种泳道长度等环境因素未建模；心率响应基于跑步参数调整，游泳特有的低心率效应，约比跑步低 10 bpm，通过常数近似处理。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 4 - 游泳是低冲击有氧运动，在康复和健身中有广泛应用价值
-    framework_demand: 3 - 最通用有氧运动模型之一，康复场景可用
-    evidence_quality: 3 - 引用Costill/Toussaint等文献，但参数description较简略
-    popularity: 4 - 游泳是教科书级有氧运动，在运动科学和心肺康复中广泛参考
+    importance: 0.5 - 游泳是低冲击有氧运动，在康复和健身中有广泛应用价值；最通用有氧运动模型之一，康复场景可用
+    variable: 0.5 - 引用Costill/Toussaint等文献，但参数description较简略
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [sport, swimming, aerobic, technique, vo2, low_impact]
-  references:
-    - "Costill DL et al. (1985) Energy metabolism during front crawl swimming. J Appl Physiol 58(2):397-401."
-    - "Toussaint HM & Hollander AP (1994) Energetics of competitive swimming. Sports Med 18(6):384-405."
-    - "Mujika I & Padilla S (2001) Physiological and performance characteristics of male professional road cyclists. Eur J Appl Physiol 87(4-5):441-451."
-    - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."
 
 variables:
   training_intensity:
@@ -133,7 +129,7 @@ simulation:
   end_date: "2026-01-02"
   output_variables: [heart_rate, distance, stroke_efficiency, calories_burned, fatigue, technique_score, performance]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance
@@ -167,3 +163,9 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - "Costill DL et al. (1985) Energy metabolism during front crawl swimming. J Appl Physiol 58(2):397-401."
+  - "Toussaint HM & Hollander AP (1994) Energetics of competitive swimming. Sports Med 18(6):384-405."
+  - "Mujika I & Padilla S (2001) Physiological and performance characteristics of male professional road cyclists. Eur J Appl Physiol 87(4-5):441-451."
+  - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."

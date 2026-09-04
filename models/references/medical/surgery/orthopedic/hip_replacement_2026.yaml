@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未区分脱位风险较高的后外侧入路与风险较低的直接前路；未建模翻修手术和假体松动等长期并发症；脱位风险采用人群均值，未纳入BMI超过30时风险升高2倍和认知状态；骨整合时间假设固定 6 周，个体差异显著。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 3 - THA是全球最常见骨科手术之一，术后康复方案优化有重要临床价值
-    framework_demand: 2 - 骨科专项模型，上层场景复用少
-    evidence_quality: 4 - 引用Learmonth/Charnley等经典文献及ERAS方案，参数有据
-    popularity: 4 - 全髋关节置换术是骨科教科书最重要手术，康复模型有广泛需求
+    importance: 0.25 - THA是全球最常见骨科手术之一，术后康复方案优化有重要临床价值；骨科专项模型，上层场景复用少
+    variable: 0.75 - 引用Learmonth/Charnley等经典文献及ERAS方案，参数有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [tha, hip_replacement, oxford_score, dislocation_risk, gait_symmetry, physical_therapy, orthopedic]
-  references:
-    - "Learmonth ID et al. (2007) The operation of the century: total hip replacement. Lancet 370(9597):1508-1519. [THA综述，10年结果，患者满意度数据]"
-    - "Mancuso CA et al. (2012) Improvement in pain, disability, and patient satisfaction after total hip arthroplasty. J Bone Joint Surg Am 94(7):578-585. [患者期望值与实际结果差距]"
-    - "Charnley J (1972) The long-term results of low-friction arthroplasty of the hip performed as a primary intervention. Clin Orthop Relat Res 95:9-25. [Charnley功能评分，疼痛缓解75%]"
-    - "Pivec R et al. (2012) Hip arthroplasty. Lancet 380(9855):1768-1777. [THA并发症，脱位风险1-3%]"
-    - "Wainwright TW & Middleton RG (2020) An orthopaedic enhanced recovery programme. Curr Anaesth Crit Care 21(3):114-120. [ERAS方案，快速康复协议]"
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -286,7 +281,7 @@ simulation:
         date_range: ["2026-02-12", "2026-03-31"]
         label: "第7-12周：完全负重"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: hip_function_score
@@ -352,3 +347,10 @@ optimizer:
     recommended:
       x: [3.0, 5.0, 7.5]
       f: [-36.4, 0.00385]
+
+references:
+  - "Learmonth ID et al. (2007) The operation of the century: total hip replacement. Lancet 370(9597):1508-1519. [THA综述，10年结果，患者满意度数据]"
+  - "Mancuso CA et al. (2012) Improvement in pain, disability, and patient satisfaction after total hip arthroplasty. J Bone Joint Surg Am 94(7):578-585. [患者期望值与实际结果差距]"
+  - "Charnley J (1972) The long-term results of low-friction arthroplasty of the hip performed as a primary intervention. Clin Orthop Relat Res 95:9-25. [Charnley功能评分，疼痛缓解75%]"
+  - "Pivec R et al. (2012) Hip arthroplasty. Lancet 380(9855):1768-1777. [THA并发症，脱位风险1-3%]"
+  - "Wainwright TW & Middleton RG (2020) An orthopaedic enhanced recovery programme. Curr Anaesth Crit Care 21(3):114-120. [ERAS方案，快速康复协议]"

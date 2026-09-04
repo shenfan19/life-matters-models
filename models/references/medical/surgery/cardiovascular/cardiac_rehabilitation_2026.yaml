@@ -24,18 +24,13 @@ metadata:
     limitations: >
       未区分 CPET 指导的个体化处方与固定处方；未建模 β 受体阻滞剂对 HRR 的抑制效应；未包含室性心律失常对训练安全性的影响；VO₂peak–MET 转换采用标准系数，未考虑体重差异。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 心脏康复是心血管事件后A级推荐干预，个体化处方是临床核心问题
-    framework_demand: 2 - 术后专项模型，与其他场景交叉引用少
-    evidence_quality: 5 - 基于Anderson 2016 Cochrane（63 RCT）等最高质量证据，参数精确
-    popularity: 5 - 心脏康复处方是心血管内科和康复医学教科书必备内容
+    importance: 0.75 - 心脏康复是心血管事件后A级推荐干预，个体化处方是临床核心问题；术后专项模型，与其他场景交叉引用少
+    variable: 1.0 - 基于Anderson 2016 Cochrane（63 RCT）等最高质量证据，参数精确
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [cardiac_rehabilitation, exercise_capacity, ejection_fraction, 6mwt, heart_rate, quality_of_life]
-  references:
-    - "Anderson L et al. (2016) Exercise-based cardiac rehabilitation for coronary heart disease. Cochrane Database Syst Rev (1):CD001800. [63 RCTs, n=14,486; VO2peak +18-25%, EF +3.7%]"
-    - "Piepoli MF et al. (2010) Exercise training in heart failure: from theory to practice. Eur J Cardiovasc Prev Rehabil 18(Suppl 1):S1-58. [ESC指南，靶心率60-80% HRR，强度分级]"
-    - "AACVPR (2013) Guidelines for Cardiac Rehabilitation and Secondary Prevention Programs, 5th ed. Human Kinetics. [运动处方标准，12周II期门诊CR方案]"
-    - "Corra U et al. (2010) Cardiopulmonary exercise testing in clinical practice. Eur J Cardiovasc Prev Rehabil 17(Suppl 1):S3-S10. [CPET指导运动处方]"
-    - "Taylor RS et al. (2019) Cardiac rehabilitation versus usual care: systematic review and meta-analysis. BMJ 365:l5822. [死亡率降低26%，6MWT改善60-80m]"
 
 variables:
   # ── 状态变量 ──────────────────────────────────────────────────────────────────
@@ -293,7 +288,7 @@ simulation:
         date_range: ["2026-02-26", "2026-03-31"]
         label: "第9-12周训练频率"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: exercise_capacity_mets
@@ -360,3 +355,10 @@ optimizer:
     recommended:
       x: [3.5, 5.5, 7.5]
       f: [-8.1, 64.3]
+
+references:
+  - "Anderson L et al. (2016) Exercise-based cardiac rehabilitation for coronary heart disease. Cochrane Database Syst Rev (1):CD001800. [63 RCTs, n=14,486; VO2peak +18-25%, EF +3.7%]"
+  - "Piepoli MF et al. (2010) Exercise training in heart failure: from theory to practice. Eur J Cardiovasc Prev Rehabil 18(Suppl 1):S1-58. [ESC指南，靶心率60-80% HRR，强度分级]"
+  - "AACVPR (2013) Guidelines for Cardiac Rehabilitation and Secondary Prevention Programs, 5th ed. Human Kinetics. [运动处方标准，12周II期门诊CR方案]"
+  - "Corra U et al. (2010) Cardiopulmonary exercise testing in clinical practice. Eur J Cardiovasc Prev Rehabil 17(Suppl 1):S3-S10. [CPET指导运动处方]"
+  - "Taylor RS et al. (2019) Cardiac rehabilitation versus usual care: systematic review and meta-analysis. BMJ 365:l5822. [死亡率降低26%，6MWT改善60-80m]"

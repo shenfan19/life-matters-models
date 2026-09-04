@@ -13,18 +13,13 @@ metadata:
     limitations: >
       未包含灾害扩散前锋的空间传播；未区分地震、洪水、飓风的特异性动力学；参数来自典型地震研究，须按具体灾害类型校准。
   ratings:
-    validation_confidence: 2 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
-    topic_importance: 5 - 灾害响应动力学是全球公共安全研究核心，Sendai框架是国际标准
-    framework_demand: 3 - 灾难场景通用基础组件，被历史/灾难场景引用预期中等
-    evidence_quality: 3 - 引用Sendai框架/FEMA等权威来源，但模型参数较简略
-    popularity: 3 - 灾害管理模型在应急管理领域有重要地位，跨学科应用有限
+    importance: 0.75 - 灾害响应动力学是全球公共安全研究核心，Sendai框架是国际标准；灾难场景通用基础组件，被历史/灾难场景引用预期中等
+    variable: 0.5 - 引用Sendai框架/FEMA等权威来源，但模型参数较简略
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
   tags: [disaster, earthquake, emergency_response, Sendai_framework, risk]
-  references:
-    - "UNDRR (2015) Sendai Framework for Disaster Risk Reduction 2015-2030. United Nations, Geneva."
-    - "Quarantelli EL (2005) Catastrophes are different from disasters. Social Science Research Council, New York."
-    - "FEMA (2019) National Response Framework, 4th edition. US Department of Homeland Security."
-    - "Guha-Sapir D et al. (2016) Annual Disaster Statistical Review 2015. CRED, Brussels."
-    - "De Groeve T et al. (2013) Global Disaster Alert and Coordination System. JRC Technical Report EUR 25929."
 variables:
   hazard_intensity:
     description: 灾害强度
@@ -108,7 +103,7 @@ simulation:
     - population_safety
     - rescue_progress
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: population_safety
@@ -149,3 +144,10 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - "UNDRR (2015) Sendai Framework for Disaster Risk Reduction 2015-2030. United Nations, Geneva."
+  - "Quarantelli EL (2005) Catastrophes are different from disasters. Social Science Research Council, New York."
+  - "FEMA (2019) National Response Framework, 4th edition. US Department of Homeland Security."
+  - "Guha-Sapir D et al. (2016) Annual Disaster Statistical Review 2015. CRED, Brussels."
+  - "De Groeve T et al. (2013) Global Disaster Alert and Coordination System. JRC Technical Report EUR 25929."

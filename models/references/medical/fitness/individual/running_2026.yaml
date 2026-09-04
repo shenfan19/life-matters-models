@@ -13,18 +13,13 @@ metadata:
     limitations: >
       参数基于 70 kg 成年男性，不适用于体重或有氧能力差异较大的人群。未包含气温、坡度、海拔等环境因素；疲劳模型未区分神经主导的中枢疲劳与肌肉主导的外周疲劳机制；fatigue 方程不依赖 pace，故优化前沿中配速恒为最快值，未体现配速本身也有代价的真实约束。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim与--opt均可正常跑通(opt在gen1后即100%feasible)，但未与独立文献目标数值比对
-    topic_importance: 4 - 跑步是最普及的有氧运动，配速-心率-乳酸动力学是运动医学核心
-    framework_demand: 3 - 最通用有氧运动模型，被多个场景使用预期
-    evidence_quality: 4 - 引用Daniels方程/ACSM指南等经典来源，参数有据可查
-    popularity: 5 - 跑步生理模型是运动科学教科书最常见基准模型
+    importance: 0.5 - 跑步是最普及的有氧运动，配速-心率-乳酸动力学是运动医学核心；最通用有氧运动模型，被多个场景使用预期
+    variable: 0.75 - 引用Daniels方程/ACSM指南等经典来源，参数有据可查
+    equation: 0.75 - Daniels跑步方程是运动科学教科书最常见基准模型，被广泛引用且独立复现
+    simulation: 0.5 - 2026-07-22实测--sim与--opt均可正常跑通(opt在gen1后即100%feasible)，但未与独立文献目标数值比对
+    optimization: 0.5 - 消耗热量与疲劳积累呈现真实权衡前沿，但配速因不影响疲劳而收敛至边界值，未体现配速本身的代价
+    confidence: 0.25 - 可正常跑通，但未与独立文献目标数值比对
   tags: [sport, running, aerobic, endurance, VO2max, Daniels, lactate]
-  references:
-    - "Daniels J (2014) Daniels' Running Equation, 3rd ed. Human Kinetics, Champaign, IL."
-    - "Borg G (1998) Borg's Perceived Exertion and Pain Scales. Human Kinetics, Champaign, IL."
-    - "Weltman A et al. (1990) The lactate threshold is a valid indicator of endurance performance. J Sports Med Phys Fitness 30(2):212-218."
-    - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."
-    - "Wilmore JH, Costill DL, Kenney WL (2008) Physiology of Sport and Exercise, 4th ed. Human Kinetics."
 
 variables:
   training_intensity:
@@ -197,7 +192,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "配速4.5分/公里（阈值/无氧区，60分钟）"
 
-optimizer:
+optimization:
   method: nsga2
   # 原用 performance(final) 作为 maximize 目标：60分钟单次训练课内 performance 只会
   # 从基线100单调下降（无长期适应效应可体现），与 fatigue(minimize) 无真实冲突，
@@ -261,3 +256,10 @@ optimizer:
     recommended:
       x: [233.2, 180.0]
       f: [-1433.16, 19.53]
+
+references:
+  - "Daniels J (2014) Daniels' Running Equation, 3rd ed. Human Kinetics, Champaign, IL."
+  - "Borg G (1998) Borg's Perceived Exertion and Pain Scales. Human Kinetics, Champaign, IL."
+  - "Weltman A et al. (1990) The lactate threshold is a valid indicator of endurance performance. J Sports Med Phys Fitness 30(2):212-218."
+  - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."
+  - "Wilmore JH, Costill DL, Kenney WL (2008) Physiology of Sport and Exercise, 4th ed. Human Kinetics."

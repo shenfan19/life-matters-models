@@ -22,11 +22,12 @@ metadata:
     limitations: 参数无正式文献标注，昼夜节律相位和应激幅值应在上层场景中校准。
   conflicts: []
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 内分泌系统（胰高血糖素/皮质醇/生长激素）是代谢调控核心组件
-    framework_demand: 3 - 被2个上层模型import，中频调用的代谢调控组件
-    evidence_quality: 2 - 模块为生成代码，变量描述简略，参数缺少文献来源
-    popularity: 3 - 内分泌组件在代谢建模中有复用价值，但不独立使用
+    importance: 0.5 - 被2个上层模型import，中频调用的代谢调控组件
+    variable: 0.25 - 模块为生成代码，变量描述简略，参数缺少文献来源
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - hormones
   - glucagon

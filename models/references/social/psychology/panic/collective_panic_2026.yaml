@@ -15,18 +15,13 @@ metadata:
     limitations: >
       均匀混合假设忽略社会网络异质性和超级传播者；未包含社交媒体算法的信息茧房机制；参数来自历史事件，现代社交媒体环境下基本再生数 R₀ 可能高得多。
   ratings:
-    validation_confidence: 2 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
-    topic_importance: 4 - 集体恐慌和谣言传播是危机管理和社会心理学的核心问题
-    framework_demand: 3 - 灾难/战争场景常用背景组件，被危机场景引用预期中等
-    evidence_quality: 3 - 引用Quarantelli/Daley/Coombs等文献，但SEPA模型为本文改进
-    popularity: 3 - SIR类社会传播模型有跨学科应用，但恐慌特化模型较专项
+    importance: 0.5 - 集体恐慌和谣言传播是危机管理和社会心理学的核心问题；灾难/战争场景常用背景组件，被危机场景引用预期中等
+    variable: 0.5 - 引用Quarantelli/Daley/Coombs等文献，但SEPA模型为本文改进
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
   tags: [panic, social, psychology, rumor, SIR, collective_behavior, crisis_management]
-  references:
-    - "Quarantelli EL (1954) The nature and conditions of panic. Am J Sociol 60(3):267-275."
-    - "Daley DJ & Kendall DG (1964) Stochastic rumours. J Inst Math Appl 1(1):42-55."
-    - "Coombs WT (2015) Ongoing Crisis Communication: Planning, Managing, and Responding. 4th ed. SAGE Publications."
-    - "Epstein JM (2002) Modeling civil violence: An agent-based computational approach. Proc Natl Acad Sci 99(Suppl 3):7243-7250."
-    - "WHO (2020) Risk communication and community engagement readiness and response to coronavirus disease (COVID-19). WHO, Geneva."
 
 variables:
   calm_population:
@@ -238,7 +233,7 @@ simulation:
         date_range: ["2026-01-11", "2026-01-31"]
         label: "危机后期谣言自然衰减"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: cumulative_panic_days
@@ -290,3 +285,10 @@ optimizer:
     recommended:
       x: [0.6, 0.2]
       f: [4.37, 0.36]
+
+references:
+  - "Quarantelli EL (1954) The nature and conditions of panic. Am J Sociol 60(3):267-275."
+  - "Daley DJ & Kendall DG (1964) Stochastic rumours. J Inst Math Appl 1(1):42-55."
+  - "Coombs WT (2015) Ongoing Crisis Communication: Planning, Managing, and Responding. 4th ed. SAGE Publications."
+  - "Epstein JM (2002) Modeling civil violence: An agent-based computational approach. Proc Natl Acad Sci 99(Suppl 3):7243-7250."
+  - "WHO (2020) Risk communication and community engagement readiness and response to coronavirus disease (COVID-19). WHO, Geneva."

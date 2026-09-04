@@ -15,18 +15,13 @@ metadata:
     limitations: >
       参数基于 70kg 训练有素骑手，FTP 为 250W，VO2max 为 65 mL/kg/min，不适用于初级骑手或体重差异较大人群。未包含坡度、风阻、空气密度等环境因素；踏频-效率关系采用线性近似，真实关系为倒 U 形曲线，最佳踏频约 90 rpm。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 4 - 自行车是主流耐力运动，功率-乳酸动力学有广泛训练科学复用价值
-    framework_demand: 3 - 最通用有氧运动模型之一，被多个场景使用预期
-    evidence_quality: 4 - 引用Coggan/Coyle/ACSM等权威来源，核心参数有据可查
-    popularity: 4 - FTP/功率区间训练体系是运动科学教科书内容
+    importance: 0.5 - 自行车是主流耐力运动，功率-乳酸动力学有广泛训练科学复用价值；最通用有氧运动模型之一，被多个场景使用预期
+    variable: 0.75 - 引用Coggan/Coyle/ACSM等权威来源，核心参数有据可查
+    equation: 0.75 - FTP/功率区间体系是训练科学中被广泛引用的Coggan标准框架，非独立复现的微分方程本身
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [cycling, power, FTP, lactate, VO2, heart_rate, Coggan, aerobic, endurance]
-  references:
-    - "Coggan AR & Allen H (2010) Training and Racing with a Power Meter, 2nd ed. VeloPress, Boulder, CO."
-    - "Coyle EF et al. (1988) Determinants of endurance in well-trained cyclists. J Appl Physiol 64(6):2622-2630."
-    - "Wasserman K et al. (2011) Principles of Exercise Testing and Interpretation, 5th ed. Lippincott Williams & Wilkins."
-    - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."
-    - "Seiler S & Kjerland GO (2006) Quantifying training intensity distribution in elite endurance athletes. Scand J Med Sci Sports 16(1):49-56."
 
 variables:
   power_output:
@@ -177,7 +172,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "最佳踏频 90 rpm"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: power_output
@@ -224,3 +219,10 @@ optimizer:
     recommended:
       x: [250.0]
       f: [-250.0, 4.1]
+
+references:
+  - "Coggan AR & Allen H (2010) Training and Racing with a Power Meter, 2nd ed. VeloPress, Boulder, CO."
+  - "Coyle EF et al. (1988) Determinants of endurance in well-trained cyclists. J Appl Physiol 64(6):2622-2630."
+  - "Wasserman K et al. (2011) Principles of Exercise Testing and Interpretation, 5th ed. Lippincott Williams & Wilkins."
+  - "ACSM (2021) ACSM's Guidelines for Exercise Testing and Prescription, 11th ed. Lippincott Williams & Wilkins."
+  - "Seiler S & Kjerland GO (2006) Quantifying training intensity distribution in elite endurance athletes. Scand J Med Sci Sports 16(1):49-56."

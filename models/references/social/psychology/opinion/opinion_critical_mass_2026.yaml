@@ -1,0 +1,160 @@
+metadata:
+  name: opinion_critical_mass
+  lm_format_version: "1.0"
+  version: "1.0.0"
+  step_size:
+    value: 1
+    unit: day
+  authors:
+    - name: Fan Shen
+      email: shenfan@mail.sysu.edu.cn
+  description:
+    problem: >
+      简单的传染式扩散模型，例如逻辑斯蒂增长，只要存在任何正的传播率就会单调收敛到全体接受，
+      无法解释一个反复被观察到的现象：同一种新规范或新行为，在支持者比例较低时长期停滞不前，
+      一旦支持者比例跨过某个临界点，却能在短时间内迅速扩散到多数。本组件把持有某一立场的
+      人口比例，对应字段opinion_support_share，作为一个状态变量显式建模为双稳态动力学，
+      而非单调扩散，用一个不稳定不动点表达"临界质量"本身：该点以下自发衰减回原状态，
+      该点以上被推向新常态。
+    method: >
+      核心机制是三次方形式的双稳态常微分方程，在critical_mass_threshold处存在一个不稳定
+      不动点，这一函数形式和不动点位置的实验依据来自Centola et al. (2018)对小群体社会
+      惯例转变的受控实验：当推动变革的既定少数群体比例低于约25%时，群体最终仍回到原有
+      惯例；一旦比例达到约25%，会出现群体动态的突然转变，多数群体在很短时间内转向新惯例。
+      本组件额外引入外源推动力advocacy_push，代表媒体曝光、精英表态、法律裁决等外部事件
+      对支持比例的直接推力，以及由此产生的政治性反弹polarization_backlash，代表主动施压
+      本身诱发的抵制性反动员，其存在削弱了推动力的净效果。
+    result: >
+      本组件是可复用的通用机制定义，不内置具体历史场景，历史/实验校准场景与其诚实的
+      拟合优劣评估见 models/papers/sx2/opinion_critical_mass/。
+    limitations: >
+      Centola et al. (2018)的25%阈值来自数十人规模、社交联系紧密的受控实验群体，本组件
+      将其作为国家或大规模人群尺度的默认标定值使用，属于跨尺度的直接复用而非重新标定，
+      这一跨尺度假设本身未经独立验证，是本组件最主要的局限，具体检验结果见上方result
+      指向的案例文件。模型把"人群"表达为单一聚合状态变量，不含网络拓扑、个体异质性或
+      任何显式的人际连接结构，无法回答"谁影响了谁"这类结构性问题，这类问题需要网络
+      重整化或多主体仿真这类LM format当前作用域之外的技术，见案例文件的讨论。
+      k_diffusion_rate、k_push_effect、k_backlash_generation、k_backlash_decay、
+      k_backlash_drag均为标定选择而非直接文献测量值。
+  ratings:
+    importance: 0.5 - 社会规范/态度转变的临界质量机制是理解大规模集体行为变化的核心理论之一，探索性组件引用预期中等
+    variable: 0.75 - 核心阈值引用Science发表的受控实验(Centola et al. 2018)，反弹机制引用Klarman(2013)对真实历史案例的系统分析
+    equation: 0.5 - 双稳态临界质量结构在社会物理学中有先例，具体耦合形式为自建
+    simulation: 0.25 - 核心阈值直接复用小群体实验数值，同一机制在papers/sx2/opinion_critical_mass_sim.yaml国家尺度检验中被证实存在数量级时间尺度错配
+    optimization: 0.0 - 本文件不含optimization，不涉及决策变量
+    confidence: 0.25 - 小群体实验阈值本身可信，但跨尺度迁移到大规模人群场景已被下游独立检验证伪，未重新标定
+  tags: [opinion-dynamics, social-physics, critical-mass, tipping-point, bistability, sociology, social]
+
+variables:
+  opinion_support_share:
+    type: state
+    value: 10
+    unit: "分"
+    bounds: [0, 100]
+    description: "持有目标立场的人口比例"
+
+  polarization_backlash:
+    type: state
+    value: 0
+    unit: "分"
+    bounds: [0, 100]
+    description: "由主动推动力度诱发的抵制性反动员强度"
+    reference: "机制依据 Klarman (2013)"
+
+  critical_mass_threshold:
+    type: parameter
+    value: 25
+    unit: "分"
+    bounds: [15, 35]
+    description: "临界质量阈值：动力学方程的不稳定不动点位置"
+    reference: "Centola et al. (2018) Science 360(6393):1116-1119"
+
+  k_diffusion_rate:
+    type: parameter
+    value: 0.05
+    unit: "分/day，双稳态项系数"
+    description: >
+      双稳态项的整体速率系数：标定选择，非直接文献测量值。Centola et al. (2018)测量的是
+      阈值位置本身，未给出跨越阈值后的扩散速度常数，量级选择目标是让轨迹在数十到数百天
+      的模拟窗口内可观测地演化，而非瞬间饱和或永不移动。
+    reference: "TODO:SOURCE 标定选择；不动点位置依据 Centola et al. (2018)"
+
+  k_push_effect:
+    type: parameter
+    value: 0.6
+    unit: "分 per 级推动力 per day"
+    description: "外源推动力对支持比例的直接推力速率：标定选择，非直接文献测量值。"
+    reference: "TODO:SOURCE 标定选择"
+
+  k_backlash_generation:
+    type: parameter
+    value: 0.1
+    unit: "分 per 级推动力 per day"
+    description: >
+      推动力度诱发反弹强度上升的速率：标定选择，非直接文献测量值，机制依据 Klarman
+      (2013)，法院裁决等强制性推动历史上确实诱发了显著的政治反弹动员，但原文是历史
+      案例分析，未给出可直接映射为该动力学系数的数值。
+    reference: "TODO:SOURCE 标定选择；机制依据 Klarman (2013)"
+
+  k_backlash_decay:
+    type: parameter
+    value: 0.05
+    unit: "1/day"
+    description: "反弹强度的自然衰减速率，代表议题热度随时间自然消退：标定选择，非直接文献测量值。"
+    reference: "TODO:SOURCE 标定选择"
+
+  k_backlash_drag:
+    type: parameter
+    value: 0.02
+    unit: "分 per 分反弹强度 per day"
+    description: "反弹强度对支持比例增长的拖累速率：标定选择，非直接文献测量值。"
+    reference: "TODO:SOURCE 标定选择"
+
+  advocacy_push:
+    type: input
+    value: 0
+    unit: "级"
+    bounds: [0, 1]
+    description: "外源推动力强度：媒体曝光、精英表态、法律裁决等事件的合成代理，0=无，1=高强度持续推动"
+
+equations:
+  opinion_dynamics:
+    description: >
+      三次方形式的双稳态核心机制：在critical_mass_threshold处存在一个不稳定不动点，该点
+      以下的支持比例自发衰减回0，该点以上被推向100，加上外源推动力的直接推力与反弹强度
+      的拖累项。
+    step_unit: day
+    dynamics:
+      opinion_support_share: >
+        max(0, min(100, opinion_support_share
+          + k_diffusion_rate * (opinion_support_share / 100) * (1 - opinion_support_share / 100)
+          * (opinion_support_share / 100 - critical_mass_threshold / 100) * 100 * step
+          + k_push_effect * advocacy_push * step
+          - k_backlash_drag * polarization_backlash * step))
+    priority: 5
+    reference: "三次方双稳态结构与不动点位置依据 Centola et al. (2018) Science 360(6393):1116-1119"
+
+  backlash_dynamics:
+    description: "外源推动力度越大，诱发的反弹强度越高；反弹强度随时间自然衰减，代表议题热度消退。"
+    step_unit: day
+    dynamics:
+      polarization_backlash: >
+        max(0, min(100, polarization_backlash
+          + k_backlash_generation * advocacy_push * step
+          - k_backlash_decay * polarization_backlash * step))
+    priority: 6
+    reference: "机制依据 Klarman (2013)"
+
+simulation:
+  step_size:
+    value: 1
+    unit: day
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  output_variables: [opinion_support_share, polarization_backlash]
+
+references:
+  - citation: "Centola D, Becker J, Brackbill D, Baronchelli A (2018) Experimental evidence for tipping points in social convention. Science 360(6393):1116-1119."
+    description: "临界质量阈值约25%的实验测量值，双稳态动力学的功能形式依据。"
+  - citation: "Klarman MJ (2013) From the Closet to the Altar: Courts, Backlash, and the Struggle for Same-Sex Marriage. Oxford University Press."
+    description: "法院裁决等强制性推动引发政治性反弹动员的历史证据，机制依据但未给出可直接映射的动力学系数。"

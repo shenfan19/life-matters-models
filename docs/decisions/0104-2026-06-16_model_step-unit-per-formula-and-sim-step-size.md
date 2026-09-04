@@ -13,12 +13,12 @@ ADR 0046 将 `step_size` 放在 `metadata` 下，作为整个模型的全局步�
 1. **公式语义单位**：公式中 `step` 符号所代表的时间长度
 2. **仿真执行步长**：引擎每步实际推进的时间
 
-此外，`optimizer.step_size` 可选地覆盖仿真执行步长用于优化。
+此外，`optimization.step_size` 可选地覆盖仿真执行步长用于优化。
 
 **问题**：
 
 - `metadata` 的定位是描述性字段（name、tags、description），包含计算语义的步长在语义上不属于此处。
-- `optimizer.step_size` 的存在使得这两个角色已经分离，但仿真侧没有对称字段，导致不对称。
+- `optimization.step_size` 的存在使得这两个角色已经分离，但仿真侧没有对称字段，导致不对称。
 - 公式的步长单位是*公式本身的属性*（系数按什么时间尺度标定），而不是模型级别的全局属性——跨模块 import 时，同一运行中的不同公式可能来自不同步长的源模型，全局 metadata 字段无法准确表达这一差异。
 
 ---
@@ -55,9 +55,9 @@ simulation:
   end_date:   "YYYY-MM-DD"
 ```
 
-- 声明仿真执行的步长，与 `optimizer.step_size` 完全对称。
+- 声明仿真执行的步长，与 `optimization.step_size` 完全对称。
 - **必填**：validator 强制检查。
-- `optimizer.step_size` 保持可选（缺省沿用 API 传入的覆盖值）。
+- `optimization.step_size` 保持可选（缺省沿用 API 传入的覆盖值）。
 
 ### 3. `step` 数值的计算方式
 
@@ -83,7 +83,7 @@ step = step_size_sec / step_unit_sec
 | `loader.py` | 读取 `simulation.step_size` 而非 `metadata.step_size`；为每条公式读取 `form_data['step_unit']` 并设 `formula.step_unit` 和 `formula.step_size_sec` |
 | `validator.py` | 新增：`simulation.step_size` 必填检查；每条 formula 的 `step_unit` 必填且值域检查 |
 | `base.py` | `Formula` dataclass 新增 `step_unit: Optional[str]` 字段 |
-| `optimizer_engine.py` | 不变（已独立读取 `optimizer.step_size`） |
+| `optimizer_engine.py` | 不变（已独立读取 `optimization.step_size`） |
 | `simulator_engine.py` | 不变（读取 loader 注入的 `simulator['step_size']`） |
 
 ---

@@ -81,14 +81,19 @@ step 的净变化一次性算出来，再靠 `delivery: level` 把这个"一次�
 - 当前 `delivery: level` 对 `sleep_hours` 的数值修复（ADR 0132）不受影响、依然有效——已
   验证步长鲁棒（1h/30min/15min 回归不发散），只是不解决更细粒度的动力学表达问题。
 
-## 实现（待执行）
+## 实现
 
-- `docs/model.md`：补一节"delivery 判断规则"，替换现有偏模糊的"累加 vs 直接读取"表述为
-  规则 A + 规则 B 完整版本。
-- `draft_s1_numerical_consistency.md`：按本 ADR 补充"两类模型数值一致性保证范围不同"的
-  说明；`sleep_schedule`/`burnout_allostatic` 论文 `limitations` 段落补充更精确的
-  "day-lumped map"技术描述，替换现有笼统的"日步长丢失小时级细节"表述——均已记入上述 task
-  文件的"论文 further work 标注"一节，不在本 ADR 内展开编辑。
+- `docs/authoring/regimens_and_optimization.md`（`docs/model.md` 的后继路径）：已补"delivery
+  判断规则：结构位置检验，兼 day-lumped map 反模式识别（ADR 0133）"一节，规则 A + 规则 B 完整
+  版本，替换掉此前偏模糊的"累加 vs 直接读取"表述；同一份文档另加了一节"概念基础"，把
+  `value`/`delivery`/`days`/`date_range` 统一到广延量/强度量框架下（2026-08-25，随 S1 论文
+  §4.4 同批改写一并落地，见该节的等价论证）。
+- `draft_s1_numerical_consistency.md` / S1 论文 §4.4：论证只覆盖规则 A 类模型（公式写在原生
+  粒度）；规则 B 类模型（day-lumped map）读数虽不随 `step_size` 漂移，但方程本身不收敛到更
+  精确解，论文这次改写为只保留一句前提陈述，不展开反模式的完整技术描述（2026-08-25，用户
+  审阅后判断论文正文应弱化举例，完整反模式描述保留在本 ADR 和上述 authoring 文档）。
+  `sleep_schedule`/`burnout_allostatic` 论文 `limitations` 段落尚未补充更精确描述，留待接触
+  这两篇论文时处理。
 
 ## 已知局限（不在本 ADR 处理）
 

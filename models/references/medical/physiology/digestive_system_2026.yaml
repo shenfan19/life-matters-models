@@ -23,11 +23,12 @@ metadata:
       仿真预期输出 amino_acids、bile_acids、cholecystokinin_level 等在餐后数小时内的吸收曲线，仿真尚未运行，为纯组件模型。
     limitations: 参数无正式文献标注，应在被上层场景调用时结合具体病理/饮食上下文校准。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 消化系统是营养吸收的核心组件，在代谢/糖尿病建模中广泛复用
-    framework_demand: 3 - 被2个上层模型import，代谢链路中游组件
-    evidence_quality: 2 - 模块为生成代码，29变量的参数缺乏文献来源标注
-    popularity: 3 - 消化系统生理组件在代谢建模中有一定地位，但不独立使用
+    importance: 0.5 - 被2个上层模型import，代谢链路中游组件
+    variable: 0.25 - 模块为生成代码，29变量的参数缺乏文献来源标注
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [digestion, gastrointestinal]
 
 imports:

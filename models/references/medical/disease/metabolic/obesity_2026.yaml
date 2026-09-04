@@ -19,11 +19,12 @@ metadata:
       参数尚无正式文献来源，obesity_index为定性级别分类而非定量体脂率，精度有限。时间步长为分钟级，随导入模块继承，与肥胖演变的月至年时间尺度不匹配，建议在日步长场景中使用。
   conflicts: []
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 肥胖是全球最重大代谢流行病之一，与糖尿病高度耦合
-    framework_demand: 2 - 被2个上层模型import但noref，参数质量低限制复用
-    evidence_quality: 2 - noref标记，参数无文献来源，obesity_index为定性级别
-    popularity: 4 - 肥胖-糖尿病风险模型是代谢建模基础组件
+    importance: 0.75 - 肥胖是全球最重大代谢流行病之一，与糖尿病高度耦合；被2个上层模型import但noref，参数质量低限制复用
+    variable: 0.25 - noref标记，参数无文献来源，obesity_index为定性级别
+    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags:
   - obesity
   - diabetes

@@ -15,15 +15,13 @@ metadata:
     limitations: |
       本案例是"效应量编码正确性"展示，不是独立预测检验，0.59这个数字本身就是要验证的目标。心理治疗效应量普遍存在跨研究异质性，例如发表偏倚、对照类型差异等，本文件只承载一个综合meta分析点估计，不代表该效应量在所有情境下都精确稳定。
   ratings:
-    topic_importance: 2 - 心理治疗效应量族案例之一，用于批量验证evidence编码
-    framework_demand: 1 - 通用参考组件，尚未被具体论文import
-    evidence_quality: 4 - 来自meta分析综合样本，但心理治疗效应量普遍存在跨研究异质性
-    paper_value: 1 - 通用参考组件
-    innovation: 1 - 纯文献效应量复现，无原创建模贡献
-    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，来源为meta分析综合样本，但需注意心理治疗效应量的跨研究异质性
+    importance: 0.25 - 心理治疗效应量族案例之一，通用参考组件，尚未被具体论文import
+    variable: 0.75 - 效应量来自meta分析综合样本，但心理治疗效应量普遍存在跨研究异质性
+    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
+    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
+    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
+    confidence: 0.5 - 效应量来自meta分析综合样本，但心理治疗效应量的跨研究异质性未纳入编码本身
   tags: [psychology, cohens-d, evidence, validation, literature-benchmark, cohend-family]
-  references:
-    - "Hofmann SG et al. (2010) J Consult Clin Psychol; meta-analytic review of mindfulness-based therapy, Hedges g=0.59"
 
 variables:
   effect_size_sd:
@@ -61,3 +59,6 @@ simulation:
     - id: "intervention_vs_control"
       label: "干预组 vs 对照组效应量展示"
       regimens: []
+
+references:
+  - "Hofmann SG et al. (2010) J Consult Clin Psychol; meta-analytic review of mindfulness-based therapy, Hedges g=0.59"

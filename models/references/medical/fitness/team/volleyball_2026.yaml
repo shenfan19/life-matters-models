@@ -15,19 +15,13 @@ metadata:
     limitations: >
       未区分二传、主攻、自由人等不同位置的代谢负荷和跳跃频次差异；跳跃次数模型未细分助跑扣球与原地拦网的生物力学差异；参数基于精英男子排球运动员。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 排球爆发力衰减建模有一定运动科学价值，受众较专项
-    framework_demand: 2 - 团队运动专项模型，上层引用预期低
-    evidence_quality: 3 - 引用Sheppard/Gabbett等文献，参数基本有据
-    popularity: 2 - 排球生理模型较小众，通用度有限
+    importance: 0.25 - 排球爆发力衰减建模有一定运动科学价值，受众较专项；团队运动专项模型，上层引用预期低
+    variable: 0.5 - 引用Sheppard/Gabbett等文献，参数基本有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [volleyball, team, interval, explosive, jump_power, blocking, VO2]
-  references:
-    - citation: "Sheppard JM et al. (2008) Relative importance of strength, power, and anthropometric measures on jump performance in elite volleyball players. J Strength Cond Res 22(3):758-765."
-      description: "研究表明高强度比赛后弹跳力可降低约 10-15%，是跳跃能力随疲劳衰减这一机制的直接参数来源。"
-    - citation: "Palao JM et al. (2014) Physical actions and physiological load during short-duration volleyball competitions. Int J Perform Anal Sport 14(1):119-131."
-      description: "提供比赛中身体动作和生理负荷数据，是热量消耗和疲劳积累机制的参数来源。"
-    - citation: "Gabbett TJ et al. (2007) Physiological and anthropometric characteristics of junior elite and sub-elite volleyball players with consideration for the positions played. J Sports Sci 25(5):583-592."
-      description: "提供不同位置运动员的生理和人体测量特征数据，是心率和摄氧量动力学的参数来源。"
 
 variables:
   spike_intensity:
@@ -147,7 +141,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "防守鱼跃频率（1次/min）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: jump_power_index
@@ -193,3 +187,11 @@ optimizer:
     recommended:
       x: [7.0]
       f: [-72.0, 0.48]
+
+references:
+  - citation: "Sheppard JM et al. (2008) Relative importance of strength, power, and anthropometric measures on jump performance in elite volleyball players. J Strength Cond Res 22(3):758-765."
+    description: "研究表明高强度比赛后弹跳力可降低约 10-15%，是跳跃能力随疲劳衰减这一机制的直接参数来源。"
+  - citation: "Palao JM et al. (2014) Physical actions and physiological load during short-duration volleyball competitions. Int J Perform Anal Sport 14(1):119-131."
+    description: "提供比赛中身体动作和生理负荷数据，是热量消耗和疲劳积累机制的参数来源。"
+  - citation: "Gabbett TJ et al. (2007) Physiological and anthropometric characteristics of junior elite and sub-elite volleyball players with consideration for the positions played. J Sports Sci 25(5):583-592."
+    description: "提供不同位置运动员的生理和人体测量特征数据，是心率和摄氧量动力学的参数来源。"

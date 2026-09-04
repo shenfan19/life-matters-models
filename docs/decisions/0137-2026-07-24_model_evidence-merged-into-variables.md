@@ -98,7 +98,7 @@ ADR 0040 把文献效应量（OR/HR/RR/Cohen's d 等）设计成独立的顶层 
 
 ## 结果
 
-- 顶层 YAML 节从 `metadata`/`imports`/`variables`/`formulas`/`simulation`/`optimizer` +
+- 顶层 YAML 节从 `metadata`/`imports`/`variables`/`formulas`/`simulation`/`optimization` +
   `evidence` 收敛回不含 `evidence` 的这条主线，evidence 声明是 `variables:` 条目的一个可选
   维度，不再是独立命名空间。
 - `VariableType` 保持 3 值，未引入方案 1 那种 11 值的角色×来源复合枚举。

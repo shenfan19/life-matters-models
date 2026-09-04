@@ -15,16 +15,13 @@ metadata:
     limitations: >
       核心体温模型为简化热平衡近似，未包含环境温度和湿度作为输入变量；脱水对心率和表现的影响通过出汗率间接代理，未建模血浆容量减少和渗透压变化；参数基于 70 kg 成年男性运动员，未区分热适应状态差异。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 壁球MET最高但受众有限，热调节-代谢交互有专项研究价值
-    framework_demand: 2 - 小众专项运动，上层引用预期低
-    evidence_quality: 3 - 引用Steininger/Duncombe等文献，但文献数量和参数覆盖有限
-    popularity: 2 - 壁球在运动科学中较小众，通用度有限
+    importance: 0.25 - 壁球MET最高但受众有限，热调节-代谢交互有专项研究价值；小众专项运动，上层引用预期低
+    variable: 0.5 - 引用Steininger/Duncombe等文献，但文献数量和参数覆盖有限
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [squash, racket, high_intensity, heat_stress, sweating, core_temperature, MET12]
-  references:
-    - "Duncombe SL et al. (2006) The relationship between physical characteristics, fitness and match performance in senior elite squash players. Int J Sports Med 27(9):734-740."
-    - "Steininger K & Wodick RE (1987) Sports-specific fitness testing in squash. Br J Sports Med 21(2):23-26."
-    - "Todd MK et al. (1998) Physiological responses to sub-maximal treadmill running at increments of speed in national standard squash players. Med Sci Sports Exerc 30(5 Suppl):S244."
 
 variables:
   game_intensity:
@@ -144,7 +141,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "场地覆盖速度（3.5 km/h均值）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance
@@ -190,3 +187,8 @@ optimizer:
     recommended:
       x: [7.0]
       f: [-86.0, 39.2]
+
+references:
+  - "Duncombe SL et al. (2006) The relationship between physical characteristics, fitness and match performance in senior elite squash players. Int J Sports Med 27(9):734-740."
+  - "Steininger K & Wodick RE (1987) Sports-specific fitness testing in squash. Br J Sports Med 21(2):23-26."
+  - "Todd MK et al. (1998) Physiological responses to sub-maximal treadmill running at increments of speed in national standard squash players. Med Sci Sports Exerc 30(5 Suppl):S244."

@@ -13,19 +13,15 @@ metadata:
     result: >
       三种方案的仿真结果显示，一年后 LDL 从145 mg/dL的基线分别降至：高依从性方案142.67 mg/dL，西式基线方案144.79 mg/dL，高依从性叠加高红肉的对照方案142.70 mg/dL。高依从性方案的降幅约为西式基线的11倍，而高红肉对照方案仅比高依从性方案少降0.03 mg/dL，说明红肉的拮抗效应远小于橄榄油等保护因素的效应，方向与PREDIMED的定性结论一致。基于NSGA-II的优化前沿退化为单点：橄榄油80 mL/day，LDL 141.40 mg/dL，CRP 2.48 mg/L。唯一决策变量olive_oil_ml_day对LDL、HDL、SBP均单调有益，而crp_dynamics只依赖未暴露为决策变量的鱼类、豆类、红肉摄入，不依赖橄榄油，因此LDL与CRP两个目标之间没有真实冲突，种群必然收敛到橄榄油摄入的上界。真正的多目标权衡需要同时把鱼类、豆类、红肉摄入暴露为决策变量，并且模型需要一个与更健康饮食方向相反的竞争目标，例如依从性或口味成本，当前模型未包含这样的目标。
     limitations: >
-      参数来自地中海人群，不同种族基线值和效应量可能不同；未建模多酚等微量营养素协同效应；APOE ε4 基因型对 LDL 响应的个体差异尚未纳入。LDL一年降幅约2.33 mg/dL，按PREDIMED三年7mg/dL的比例换算得到；CRP、SBP、HDL的速率常数未做同等复核，量级基本合理但未逐一按文献重新推导。当前 optimizer 只暴露 olive_oil_ml_day 为决策变量，因此给不出真正的多目标 Pareto 前沿，参见上文result的说明；如需要有意义的前沿，需要重新设计决策变量集合与目标和约束。
+      参数来自地中海人群，不同种族基线值和效应量可能不同；未建模多酚等微量营养素协同效应；APOE ε4 基因型对 LDL 响应的个体差异尚未纳入。LDL一年降幅约2.33 mg/dL，按PREDIMED三年7mg/dL的比例换算得到；CRP、SBP、HDL的速率常数未做同等复核，量级基本合理但未逐一按文献重新推导。当前 optimization 只暴露 olive_oil_ml_day 为决策变量，因此给不出真正的多目标 Pareto 前沿，参见上文result的说明；如需要有意义的前沿，需要重新设计决策变量集合与目标和约束。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 地中海饮食是证据最强的心血管保护饮食，全球营养研究核心
-    framework_demand: 3 - 饮食干预是场景常用背景组件，中等引用预期
-    evidence_quality: 5 - 基于PREDIMED大型RCT（N>7000），LDL/CRP参数精确可靠
-    popularity: 5 - 地中海饮食是营养学教科书最重要基准，WHO/AHA广泛推荐
+    importance: 0.75 - 地中海饮食是证据最强的心血管保护饮食，全球营养研究核心；饮食干预是场景常用背景组件，中等引用预期
+    variable: 1.0 - 基于PREDIMED大型RCT（N>7000），LDL/CRP参数精确可靠
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [nutrition, mediterranean, cardiovascular, LDL, CRP, blood_pressure, HDL, PREDIMED, olive_oil]
-  references:
-    - "Estruch R et al. (2013/2018) Primary prevention of cardiovascular disease with a Mediterranean diet supplemented with extra-virgin olive oil or nuts. NEJM 368:1279-1290 / 378:e34."
-    - "Toledo E et al. (2015) Mediterranean diet and invasive breast cancer risk among women at high cardiovascular risk in the PREDIMED trial. Ann Intern Med 163(7):503-510."
-    - "Sofi F et al. (2010) Accruing evidence on benefits of adherence to the Mediterranean diet on health: an updated systematic review and meta-analysis. Nutr Metab Cardiovasc Dis 20(7):456-463."
-    - "Martinez-Gonzalez MA et al. (2015) Mediterranean diet and 10-year incidence of CVD and mortality. Eur J Clin Nutr 69(1):99-107."
 
 variables:
   ldl_mg_dl:
@@ -327,7 +323,7 @@ simulation:
         date_range: ["2026-01-01", "2026-12-31"]
         label: "红肉7份/周（与default唯一差异：红肉从1份/周升到7份/周）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: ldl_mg_dl
@@ -381,3 +377,9 @@ optimizer:
     recommended:
       x: [80.0]
       f: [141.40, 2.48]
+
+references:
+  - "Estruch R et al. (2013/2018) Primary prevention of cardiovascular disease with a Mediterranean diet supplemented with extra-virgin olive oil or nuts. NEJM 368:1279-1290 / 378:e34."
+  - "Toledo E et al. (2015) Mediterranean diet and invasive breast cancer risk among women at high cardiovascular risk in the PREDIMED trial. Ann Intern Med 163(7):503-510."
+  - "Sofi F et al. (2010) Accruing evidence on benefits of adherence to the Mediterranean diet on health: an updated systematic review and meta-analysis. Nutr Metab Cardiovasc Dis 20(7):456-463."
+  - "Martinez-Gonzalez MA et al. (2015) Mediterranean diet and 10-year incidence of CVD and mortality. Eur J Clin Nutr 69(1):99-107."

@@ -15,18 +15,13 @@ metadata:
     limitations: >
       模型参数主要来自以女性受试者为主的随机对照试验（Cramer 2013），男性效应可能偏小；冥想与呼吸练习的正念效应和纯体式练习未分离建模；个体基线柔韧性差异对增益速率影响较大。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 瑜伽对皮质醇/HRV/精神健康的影响是当前压力管理研究热点
-    framework_demand: 2 - 压力管理专项场景，上层引用预期低
-    evidence_quality: 4 - 引用Cramer 2013 meta等高质量系统综述，参数有文献依据
-    popularity: 3 - 瑜伽生理模型在压力管理领域有价值但非主流经典框架
+    importance: 0.25 - 瑜伽对皮质醇/HRV/精神健康的影响是当前压力管理研究热点；压力管理专项场景，上层引用预期低
+    variable: 0.75 - 引用Cramer 2013 meta等高质量系统综述，参数有文献依据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [yoga, flexibility, cortisol, HRV, mindfulness, stress, parasympathetic, relaxation]
-  references:
-    - "Cramer H et al. (2013) A systematic review and meta-analysis of yoga for low back pain. Clin J Pain 29(5):450-460."
-    - "Innes KE & Vincent HK (2007) The influence of yoga-based programs on risk profiles in adults with type 2 diabetes. J Am Board Fam Med 20(5):486-492."
-    - "Ross A & Thomas S (2010) The health benefits of yoga and exercise: a review of comparison studies. J Altern Complement Med 16(1):3-12."
-    - "Streeter CC et al. (2012) Effects of yoga on the autonomic nervous system, gamma-aminobutyric-acid, and allostasis in epilepsy, depression, and post-traumatic stress disorder. Med Hypotheses 78(5):571-579."
-    - "Pascoe MC & Bauer IE (2015) A systematic review of randomised control trials on the effects of yoga on stress measures and mood. J Psychiatr Res 68:270-282."
 
 variables:
   yoga_intensity:
@@ -145,7 +140,7 @@ simulation:
         date_range: ["2026-01-01", "2026-03-26"]
         label: "60 分钟练习课程"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: flexibility_index
@@ -191,3 +186,10 @@ optimizer:
     recommended:
       x: [3.0]
       f: [-75.0, -61.0, 10.1]
+
+references:
+  - "Cramer H et al. (2013) A systematic review and meta-analysis of yoga for low back pain. Clin J Pain 29(5):450-460."
+  - "Innes KE & Vincent HK (2007) The influence of yoga-based programs on risk profiles in adults with type 2 diabetes. J Am Board Fam Med 20(5):486-492."
+  - "Ross A & Thomas S (2010) The health benefits of yoga and exercise: a review of comparison studies. J Altern Complement Med 16(1):3-12."
+  - "Streeter CC et al. (2012) Effects of yoga on the autonomic nervous system, gamma-aminobutyric-acid, and allostasis in epilepsy, depression, and post-traumatic stress disorder. Med Hypotheses 78(5):571-579."
+  - "Pascoe MC & Bauer IE (2015) A systematic review of randomised control trials on the effects of yoga on stress measures and mood. J Psychiatr Res 68:270-282."

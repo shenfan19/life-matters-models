@@ -65,7 +65,7 @@ day-rate 输入（如 `caloric_deficit`）被强行套进"某个时刻触发"的
   新函数（原 `_normalize_time_interval` 改名并重写为公开函数）。
 - `model_structure/loader.py::_parse_schedule_entries`（`simulation.plans[*].regimens`
   解析路径）：改为调用 `resolve_time_interval`。
-- `optimizer_engine.py`（`optimizer.startpoint.regimens` 解析路径，`fixed_events_map`
+- `optimizer_engine.py`（`optimization.startpoint.regimens` 解析路径，`fixed_events_map`
   构建 + `_build_regimen_events` 的 `d0` 解码，共 3 处）：改为调用 `resolve_time_interval`。
 
 四处默认逻辑合并为一处，消除了原本 `loader.py`（'00:00'）与 `optimizer_engine.py`（'08:00'）
@@ -89,7 +89,7 @@ day-rate 输入（如 `caloric_deficit`）被强行套进"某个时刻触发"的
   章节改写、"窗宽是同一范畴的量"章节改写），不再把 pulse 作为独立模式介绍。
 - **全库验证（2026-07-09 追加，纠正下面这条曾经的错误陈述）**：曾以为"完全不写时间"这个
   写法此前从未被合法使用过，**核实后是错的**——实测扫描全部 205 个 `models/**/*.yaml`
-  文件，`optimizer.startpoint.regimens` 里有 **18 处**真实实例（`ckd_protein_opt_*`×4 个
+  文件，`optimization.startpoint.regimens` 里有 **18 处**真实实例（`ckd_protein_opt_*`×4 个
   `dietary_protein`、`infant_breastfeeding_opt_*`×3 个文件各 2 处 `breast_milk`、
   `bergman_glucose_opt_*`×3 个 `exercise_met_min`、`masld_insulin_opt_*`×3 个
   `exercise_met_min`、`test_opt_t2.yaml` 2 处），全部同一结构：T2（`optimize.time_start`
@@ -102,7 +102,7 @@ day-rate 输入（如 `caloric_deficit`）被强行套进"某个时刻触发"的
   test 45 + scenarios 27 + references 75）真实跑一遍 `--sim`/`--opt`
   （对 `--opt` 用极小 pop/gen 压缩验证时间），**ADR 0127 造成的失败为 0**——发现的 17
   处失败全部是预存、与本次改动无关的问题（`references/medical` 断链 import + 内容 bug 14
-  处、`scenarios/` 两个文件的旧版 optimizer schema 从未迁移、`test/valid` 一个孤立
+  处、`scenarios/` 两个文件的旧版 optimization schema 从未迁移、`test/valid` 一个孤立
   fixture 缺 `optimize:` 块），已记录到内部任务
   `2026-07-09_task_reference-library-broken-imports-audit.md`，
   不在本 ADR 范围内处理。

@@ -24,18 +24,13 @@ metadata:
     limitations: >
       危险因素交互作用以线性近似处理；Framingham 方程源自美国白人人群，应用于其他种族须校正；未包含多基因遗传风险评分。
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 多危险因素CVD综合预防是全球最重要的慢性病管理问题
-    framework_demand: 3 - 心血管预防场景通用组件，中等引用预期
-    evidence_quality: 5 - 引用Framingham方程及ACC/AHA/ADA等权威指南，参数可靠
-    popularity: 5 - Framingham风险评分是心血管预防教科书核心内容
+    importance: 0.75 - 多危险因素CVD综合预防是全球最重要的慢性病管理问题；心血管预防场景通用组件，中等引用预期
+    variable: 1.0 - 引用Framingham方程及ACC/AHA/ADA等权威指南，参数可靠
+    equation: 0.75 - Framingham风险方程是心血管预防领域被广泛引用且独立复现的标准形式
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags: [cardiovascular, prevention, Framingham, blood_pressure, cholesterol, diabetes, smoking, BMI, multi_risk]
-  references:
-    - "D'Agostino RB Sr et al. (2008) General cardiovascular risk profile for use in primary care. Circulation 117(6):743-753."
-    - "Grundy SM et al. (2018) 2018 AHA/ACC Guideline on Blood Cholesterol. Circulation 139(25):e1082-e1143."
-    - "Whelton PK et al. (2018) 2017 ACC/AHA Hypertension Guideline. JACC 71(19):e127-e248."
-    - "American Diabetes Association (2023) Standards of Medical Care in Diabetes. Diabetes Care 46(Suppl 1):S1-S291."
-    - "Stead LF et al. (2016) Combined pharmacotherapy and behavioural interventions for smoking cessation. Cochrane Database Syst Rev 3:CD008286."
 
 variables:
   sbp:
@@ -261,7 +256,7 @@ simulation:
         date_range: ["2026-01-01", "2030-12-31"]
         label: "生活方式干预（标准）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: cvd_risk_10yr
@@ -307,3 +302,10 @@ optimizer:
     recommended:
       x: [0.5]
       f: [0.073, 0.5]
+
+references:
+  - "D'Agostino RB Sr et al. (2008) General cardiovascular risk profile for use in primary care. Circulation 117(6):743-753."
+  - "Grundy SM et al. (2018) 2018 AHA/ACC Guideline on Blood Cholesterol. Circulation 139(25):e1082-e1143."
+  - "Whelton PK et al. (2018) 2017 ACC/AHA Hypertension Guideline. JACC 71(19):e127-e248."
+  - "American Diabetes Association (2023) Standards of Medical Care in Diabetes. Diabetes Care 46(Suppl 1):S1-S291."
+  - "Stead LF et al. (2016) Combined pharmacotherapy and behavioural interventions for smoking cessation. Cochrane Database Syst Rev 3:CD008286."

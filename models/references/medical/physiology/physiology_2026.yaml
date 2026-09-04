@@ -22,11 +22,12 @@ metadata:
     limitations: 15 个变量参数为定性近似，无文献标注；器官功能系数的实际临床测量方法不统一，建议在上层场景中替换为可测指标，例如 GFR、ALT 等。
   conflicts: []
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 4 - 多器官功能系数聚合组件，为复杂场景提供生理基础
-    framework_demand: 2 - 顶层聚合组件，被1个上层模型import，实际引用低
-    evidence_quality: 2 - 模块为生成代码，15个变量参数无文献标注，为定性近似
-    popularity: 3 - 顶层生理聚合组件在多系统建模中有价值，但不独立引用
+    importance: 0.25 - 顶层聚合组件，被1个上层模型import，实际引用低
+    variable: 0.25 - 模块为生成代码，15个变量参数无文献标注，为定性近似
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - organs
   - function

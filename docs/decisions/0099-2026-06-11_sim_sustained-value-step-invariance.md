@@ -99,7 +99,7 @@ per_step_value = value / N_steps
 - **`simulation.schedules`（`_apply_schedules`，forward `--sim`/`plans` 路径）不支持
   `mode: sustained`**——该路径是独立实现（`model_structure/simulation.py`），只认
   `pulse`/`step`/`linear` 插值，不读取 `mode`/`time_range`/`_n_steps`。
-  `mode: sustained` 目前**仅在 `optimizer.schedules` 与 GUI regimen 路径
+  `mode: sustained` 目前**仅在 `optimization.schedules` 与 GUI regimen 路径
   （均经过 `apply_regimens`）生效**。如果某个 forward-sim-only 场景
   （不跑 `--opt`）需要 sustained 输入，需要单独的 ADR 把 `_apply_schedules`
   也接入 `precompute_sustained_divisors`/`apply_regimens` 的逻辑，或复用同一套

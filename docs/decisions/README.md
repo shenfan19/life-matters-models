@@ -54,7 +54,7 @@
 | [0046](0046-2026-04-30_sim_步长设计-step_size元数据与step公式符号.md) | 步长最终方案：`metadata.step_size.{value,unit}`；方程用 `step`；simulation 去掉 step/step_unit | ✅ 已实施 | 2026-04-30 |
 | [0049](0049-2026-05-02_sim_Optimizer异步Job系统设计.md) | Optimizer 异步 Job 系统设计 | ✅ 已实施 | 2026-05-02 |
 | [0050](0050-2026-05-04_sim_InputEvent扁平化与交互状态颜色规则.md) | InputEvent 扁平化与交互状态颜色规则 | ✅ 已实施 | 2026-05-04 |
-| [0052](0052-2026-05-04_sim_schedule格式统一与opt-regimen支持.md) | Schedule 格式统一（扁平列表）& optimizer.regimen 支持 | ✅ 已实施 | 2026-05-04 |
+| [0052](0052-2026-05-04_sim_schedule格式统一与opt-regimen支持.md) | Schedule 格式统一（扁平列表）& optimization.regimen 支持 | ✅ 已实施 | 2026-05-04 |
 | [0053](0053-2026-05-03_sim_date_range调度字段与YAML-schedule优先级修复.md) | `date_range` 日期区间字段；YAML Schedule 优先于 GUI Regimen | ✅ 已实施 | 2026-05-03 |
 | [0054](0054-2026-05-04_sim_unified-apply-regimens.md) | 仿真/优化 Regimen 执行函数统一：删除 `_apply_regimen_events` | ✅ 已实施 | 2026-05-04 |
 | [0055](0055-2026-05-04_project_docs-go-public-private-split.md) | `docs/` 公开发布 / `go/` 内部不发布 分界规则 | ✅ 已实施 | 2026-05-04 |
@@ -87,7 +87,7 @@
 | [0085](0085-2026-05-25_sim_remove-lock-free-switch-running-indicator.md) | 移除锁机制、自由切换模型、双箭头运行指示器、云端运行拦截 | ✅ 已实施 | 2026-05-25 |
 | [0086](0086-2026-05-26_project_lmml-rename-from-lmf.md) | 格式命名：LMF → LMML（Life Matters Model Language） | ✅ 已实施 | 2026-05-26 |
 | [0087](0087-2026-05-27_sim_schedules-plans-coexistence.md) | `simulation.schedules` 与 `plans` 共存语义：plans 优先，papers/ 禁止混用 | ✅ 已实施 | 2026-05-27 |
-| [0088](0088-2026-05-28_sim_optimizer-schedules-unified-format.md) | optimizer.schedules 统一格式：决策变量与固定背景量合并列表 | ✅ 已接受 | 2026-05-28 |
+| [0088](0088-2026-05-28_sim_optimizer-schedules-unified-format.md) | optimization.schedules 统一格式：决策变量与固定背景量合并列表 | ✅ 已接受 | 2026-05-28 |
 | [0089](0089-2026-05-30_sim_session-refactor-warm-start-dirty-active-model.md) | Session 精化：useSession 分离、userEdited 追踪、Warm-start Dirty 检测 | ✅ 已实施 | 2026-05-30 |
 | [0090](0090-2026-05-31_sim_remove-second-step-unit.md) | 移除 second 步长单位，统一 minute/hour/day | ✅ 已接受 | 2026-05-31 |
 | [0091](0091-2026-06-01_project_cli-batch-tool.md) | `sim_cli/`：批量仿真 CLI 工具 | ✅ 已实施 | 2026-06-01 |
@@ -95,7 +95,7 @@
 | [0093](0093-2026-06-05_sim_runtime-log-panel.md) | Sim/Opt 运行时日志面板：内容分层（模型信息、NaN/bounds 警告、完成统计）与实现 | ✅ 已实施 | 2026-06-05 |
 | [0096](0096-2026-06-06_model_filename-quality-markers.md) | 模型文件名质量标记约定（_nosim / _noopt / _noref） | ⚪ 已被 0101 取代 | 2026-06-06 |
 | [0097](0097-2026-06-08_model_description-3-fields.md) | papers/ 模型 description 简化为三字段（brief / problem / method） | ✅ 已实施 | 2026-06-08 |
-| [0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimizer.schedules 新增 mode: sustained（子日步长持续输入） | ✅ 已实施 | 2026-06-11 |
+| [0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) | optimization.schedules 新增 mode: sustained（子日步长持续输入） | ✅ 已实施 | 2026-06-11 |
 | [0099](0099-2026-06-11_sim_sustained-value-step-invariance.md) | sustained 模式 value 语义修正：窗口总量 / N_steps（step-size 不变性） | ✅ 已实施 | 2026-06-11 |
 | [0100](0100-2026-06-11_sim_unify-pulse-sustained-time-interval.md) | 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day/time/sustained 三态 | 🟡 部分实施（papers 术语已补充说明，未做全文改写） | 2026-06-11 |
 | [0101](0101-2026-06-14_model_hold-suffix-todo-field.md) | 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表（取代 0096） | ⚪ 文件名部分被 0120 取代 | 2026-06-14 |
@@ -125,3 +125,8 @@
 | [0142](0142-2026-08-06_model_description-list-structure-and-references-annotations.md) | `papers/` description 的 `problem`/`method`/`result` 并列事实改用列表；来源文献的具体贡献从 `problem` 搬进 `metadata.references` 的可选 `{citation, description}` 对象；引用统一句末作者年份夹注，不用数字编号 | ✅ 已实施 | 2026-08-06 |
 | [0143](0143-2026-08-06_model_description-migration-no-longer-deferred.md) | 废止 0142"非目标"里"不追溯批量重写"的表述：此后任何原因编辑 `papers/` 模型都应顺带迁移 description/references 到 0142 定义的格式；references 的 `{citation, description}` 写法从"可选"升级为推荐默认 | ✅ 已实施 | 2026-08-06 |
 | [0144](0144-2026-08-08_project_formulas-renamed-to-equations-and-veso-mnemonic.md) | LM format 顶层 `formulas:` 字段更名为 `equations:`，与规范正文已在用的 differential/dynamic equation 表述对齐；四要素简写 var/for/sim/opt 改为 var/equ/sim/opt，助记符 V.F.S.O. 改为可连读的 V.E.S.O.；规范仍处 Draft 未冻结发布，不构成破坏性变更，`LM_format_1.0.md` 保持 v1.0 | ✅ 已实施 | 2026-08-08 |
+| [0145](0145-2026-08-15_project_lm-modeling-agent-four-step-pipeline.md) | LM 建模协作固化为四步流水线（灵感/起草/诊断/调整，加收尾报告约定），完整指令存本仓库 `agents/`，reference_engine 端只放 `.claude/agents/` 薄封装 stub；权限边界按步骤收敛，仅 Step 3.2 能编辑模型副本且绝不碰正式文件；任务报告存内部 `life-matters-home/agent_reports/` | ✅ 已实施 | 2026-08-15 |
+| _（0146-0149 见 reference-engine 仓库索引，或保留候选未创建，详见对应仓库记录）_ | | | |
+| [0150](0150-2026-08-20_model_ratings-scale-changed-to-0-1-and-veso-scoring-fields.md) | `metadata.ratings` 评分尺度从 1-5 整数改为 0-1 连续量表（五锚点 0/0.25/0.5/0.75/1）；字段按技术类（VESO：`variable`/`equation`/`simulation`/`optimization`）与非技术类（`importance`/`innovation`/`confidence`）两分法重组精简，原六个通用+三个类型专属字段合并为四个通用技术类+三个非技术类；适用范围扩展到 `models/plan/`；agent 文档改为运行时读取 `ratings.md` 而非各自复制量表定义；不追溯迁移 S2/S3/S4/scenarios/references 下已有评分 | ✅ 已实施（规范本身，模型文件迁移为后续任务） | 2026-08-20 |
+| [0151](0151-2026-08-23_model_references-top-level-block-and-mivesor-order.md) | `references:` 从 `metadata.references` 提升为顶层块，与 `imports` 同级；顶层键顺序统一为 M I V E S O R；顺带修复 `LM_format_1.0.md` 里 ADR 0104/0105（`metadata.step_size`→`simulation.step_size`+逐公式`step_unit`）从未同步进规范文档的历史遗留；引擎无需改动（`references`/`checksum` 均从未被 loader/validator 读取）；现有模型文件迁移为后续任务，见 `skill_agent/lm-model-calibration.md` | ✅ 已实施（规范本身，模型文件迁移为后续任务） | 2026-08-23 |
+| [0152](0152-2026-08-25_project_optimizer-field-renamed-to-optimization.md) | LM format 顶层 `optimizer:` 字段更名为 `optimization:`，补齐 ADR 0144 已定的 VESO 助记符（Variables, Equations, Simulation, **Optimization**）与实际字段名之间的落差，`simulation:` 装的是仿真实验配置而非"仿真器"工具本身，`optimizer:` 同理；只改外部可见的字段名（YAML、规范、论文、GUI 文案、API JSON 字段），engine 内部模块文件名/类名/属性名/API 路由路径保留 `optimizer` 不变；规范仍处 Draft 未冻结发布，不构成破坏性变更，`LM_format_1.0.md` 保持 v1.0 | ✅ 已实施 | 2026-08-25 |

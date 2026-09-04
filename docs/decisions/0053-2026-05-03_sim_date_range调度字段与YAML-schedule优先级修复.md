@@ -214,4 +214,4 @@ docs/model_design.md
 | `test_glucose_meal` 两餐之间 | `carb_intake = 0.0` | `_apply_schedules` pulse 模式无事件步返回 0 |
 | `test_banister` 全程 6 步 | Mon-Fri `training_load=70`，Sat=35，Sun=0 | `date_range` + `days` 限定正确 |
 | 加载含 `date_range` 的模型 | GUI 显示有效期起止日期 | 前端 `date_range` 解析为 `validStart/validEnd` |
-| 优化器运行 | YAML schedule 被抑制，optimizer 控制变量 | `_run_sim` 显式写 `manual_overrides` |
+| 优化器运行 | YAML schedule 被抑制，optimization 控制变量 | `_run_sim` 显式写 `manual_overrides` |

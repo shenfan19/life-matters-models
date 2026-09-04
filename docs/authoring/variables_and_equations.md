@@ -166,7 +166,7 @@ simulation:
     unit: day             # minute | hour | day
 ```
 
-`optimizer.step_size` 同格式，可选（缺省沿用 `simulation.step_size`）。
+`optimization.step_size` 同格式，可选（缺省沿用 `simulation.step_size`）。
 
 ### 方程内符号
 
@@ -206,6 +206,36 @@ dynamics:
 dynamics:
   stomach_carbs: stomach_carbs + carb_intake
 ```
+
+**这条规则最容易在"脉冲输入 + 衰减态"这个组合模式里被忘记**：文献给的连续 ODE 常见形式是
+`dA/dt = g·w(t) - k·A`，直接照抄成 Euler 更新会写成 `A: A + (g*w - k*A) * step`——语法上完全合法，
+`w`（脉冲 input）和 `k*A`（衰减项）被放进同一个括号一起乘了 `step`，是上面表格明确列为**禁止写法**
+的用法，但因为两项写在一起、跟教科书上的连续方程长得一模一样，很容易被直接照搬。
+
+**为什么不能这样写，不只是"这套引擎的规定"**：`w(t)` 在文献原始语境里通常代表"每天一次的训练/给药事件"，
+数学上更准确的写法是一列离散冲量（Dirac delta 之和），不是真正连续可积的函数；对这类"脉冲强迫项"的
+ODE 做数值离散，标准做法本来就是把脉冲项当"瞬时跳变"直接加进状态，只有真正连续的衰减/恢复项才按
+`Δt` 折算——这是数值方法里处理 impulsive forcing 的通用做法，换成任何引擎/语言手写都是同一个结论，
+不是 LM format 自己的额外规定。判断标准很简单：这一项的数值是不是由 `regimens:` 单次投放决定的
+（`delivery: total` 或 `delivery: level` 都算），是的话就不乘 `step`，不管它是不是和另一个真正的衰减项
+写在同一行、同一个括号里。
+
+**已知曾经违反这条规则、后来修复的模型**（2026-08-12 全库排查发现，均已修复）：
+
+| 文件 | 方程 | 症状 |
+|---|---|---|
+| `banister_validation.yaml` | `fitness_dynamics`/`fatigue_dynamics` | 比赛日 performance 随 step_size 漂移，6小时步长下顶到变量上界 |
+| `hypertension_gout_sim.yaml` | `thiazide_level_dynamics`/`allopurinol_level_dynamics` | 6小时步长下 uric_acid 顶到 bounds 上界 |
+| `diuretic_tradeoff_sim.yaml` | `thiazide_level_dynamics` | 同上 |
+| `postpartum_recovery_sim.yaml` | `caloric_intake_smoothing` | 同一模式，注释里写"复用已验证的模式"，但被复用的源头本身是错的 |
+| `sodium_lifestyle_bp_sim.yaml` | `net_sodium_balance_dynamics` | 同上 |
+| `masld_insulin_sim.yaml` | `liver_fat_dynamics` 里的 `dietary_glycemic_load` 项 | 同一模型内 `caloric_deficit`/`exercise_met_min` 两个平行 input 都写对了，只有这一项写错，三者 regimen 声明方式完全相同 |
+
+**当前没有自动检测**：validator 不会替你检查这条规则有没有被违反——原因和 ADR 0121 拒绝自动换算参数
+单位是同一条：判断一个 input 变量在某条方程里该不该乘 `step`，需要理解这条方程的物理结构，超出了
+"公式即数学表达式，引擎不做语义推断"的设计原则。写完含"脉冲+衰减态"模式的方程后，建议自己跑一次
+分步长网格自查（同一模型分别用 1h/6h/15min 等不同 `simulation.step_size` 跑，看终值是否收敛到同一个数），
+不要等到论文投稿前才发现。
 
 ### 跨 step_unit 的参数换算：线性除法 vs 开根（ADR 0121）
 

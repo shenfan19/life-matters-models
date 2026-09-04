@@ -15,15 +15,13 @@ metadata:
     limitations: |
       time_course_75pct 方案里 epoc_rate 初值和衰减时间常数由 magnitude/duration 反推，假设 duration≈5×时间常数，是本文件作者自行采用的简化换算，不是 Bahr & Sejersted (1991) 论文直接报告的一阶衰减参数，只演示引擎能正确对给定ODE做数值积分，还原到已知总量，不构成对该强度下真实衰减形状的独立验证。predict_50pct 方案的留一法预测才是本文件真正的独立验证。
   ratings:
-    topic_importance: 3 - 运动生理学经典强度-恢复关系，可作为训练负荷类案例的补充子模型
-    framework_demand: 2 - 尚未被具体论文import，结构可迁移到训练恢复相关场景
-    evidence_quality: 4 - Bahr & Sejersted (1991) 是EPOC强度依赖关系的经典实测数据
-    paper_value: 2 - 一般性参考组件，非旗舰案例
-    innovation: 1 - 纯文献复现（含作者自行的指数外推拟合），无原创建模贡献
-    validation_confidence: 4 - 强度-总量关系留一法预测通过(50%强度5.46L vs 实测5.7±1.71L)，持续时间外推未通过，两类指标测量稳健性不同
+    importance: 0.25 - 运动生理学经典强度-恢复关系，可作为训练负荷类案例的补充子模型，尚未被具体论文import
+    variable: 0.75 - Bahr & Sejersted (1991) 是EPOC强度依赖关系的经典实测数据
+    equation: 0.5 - 作者自行对实测数据做指数外推拟合，非独立复现的标准方程形式
+    simulation: 0.5 - 强度-总量关系留一法预测通过，持续时间外推未通过，两类指标测量稳健性不同
+    optimization: 0.0 - 本文件不含optimization，不涉及决策变量
+    confidence: 0.5 - 强度-总量关系留一法预测通过(50%强度5.46L vs 实测5.7±1.71L)，但持续时间外推未通过
   tags: [epoc, exercise, validation, literature-benchmark, exponential-fit]
-  references:
-    - "Bahr R, Sejersted OM (1991) Effect of intensity of exercise on excess postexercise O2 consumption. Metabolism 40(8):836-841"
 
 variables:
   exercise_intensity:
@@ -173,3 +171,6 @@ simulation:
       label: "50% VO2max 强度——留一法预测检验（不使用时间动力学，只用静态外推方程）"
       regimens:
         - {variable: exercise_intensity, time_start: "00:00", time_end: "23:00", value: 0.50, delivery: level, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-03"], label: "强度=0.50恒定"}
+
+references:
+  - "Bahr R, Sejersted OM (1991) Effect of intensity of exercise on excess postexercise O2 consumption. Metabolism 40(8):836-841"

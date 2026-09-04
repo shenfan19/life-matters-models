@@ -1,4 +1,4 @@
-# 0098 — optimizer.schedules 新增 mode: sustained（子日步长持续输入）
+# 0098 — optimization.schedules 新增 mode: sustained（子日步长持续输入）
 
 **日期**：2026-06-11
 **状态**：✅ 已实施
@@ -8,7 +8,7 @@
 
 ## 背景
 
-`optimizer.schedules` 的默认调度是 **pulse 模式**（`regimen_runner.apply_regimens`）：
+`optimization.schedules` 的默认调度是 **pulse 模式**（`regimen_runner.apply_regimens`）：
 每个 step 开始时所有受控变量先清零，仅 `time: "HH:MM"` 命中的那一个 step 写入 `value`。
 
 对于 `step_size: day`（或更长，恰为 86400 秒整数倍）的模型，配合 `days: [Mon..Sun]` 全勾选，

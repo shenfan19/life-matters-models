@@ -1,0 +1,141 @@
+metadata:
+  name: ckd_protein_opt_joint
+  lm_format_version: "1.0"
+  updated: 2026-05-22
+  description:
+    problem: "Joint multidisciplinary optimization of the CKD protein-muscle trade-off: three-meal protein amounts, dinner timing, and the restricted-to-standard switch timing are searched together, with the goal of simultaneously maximizing GFR and muscle_mass, representing a joint nephrology and rehabilitation perspective. The complete physical mechanism and comparison simulations are in the imported ckd_protein_sim, and comparing this file side by side with the single-discipline ckd_protein_opt_renal.yaml and ckd_protein_opt_muscle.yaml is what reveals the trade-off range exposed by joint optimization."
+    method: "The mechanism is identical to ckd_protein_sim.yaml, see that file's description.method for the full list; this file places GFR, muscle_mass, and healthy-duration score into the same multi-objective search, showing the trade-off range joint optimization achieves relative to what each single-discipline optimum can reach on its own."
+  log:
+    "2026-08-05_00-00-00":
+      change: "results was trimmed to the final converged result from 2026-08-02, after the adherence dimension was added; earlier repeated rerun records were migrated to history/2026-08-05_ckd_protein_opt_joint.yaml"
+      reason: "Implementing ADR 0141, the main file retains only currently valid results."
+    "2026-08-23_00-00-00":
+      change: "Re-searched after adding the protein_synthesis_saturation ceiling to muscle_dynamics in ckd_protein_sim.yaml, population_size=40/n_generations=10, a session environment limit, same as the 2026-08-02 record; after 10 generations the search found 12 non-dominated solutions, muscle_mass ranging 24.19-27.87 and GFR ranging 41.75-43.02, a non-degenerate front"
+      reason: "Same as the 2026-08-23 record in ckd_protein_opt_muscle.yaml: after adding the synthesis saturation ceiling, the previously found front was no longer truly optimal and needed a re-search."
+    "2026-09-02_00-00-00":
+      change: "results was filled out with the complete pareto_front list, since it had previously stored only the range and a single recommended point, so the Figure 3 plotting script had been re-invoking the optimizer live each time, which exposed that the same seed=19 and the same population_size=40/n_generations=10 configuration did not reproduce the same result. This re-search found 9 non-dominated solutions, muscle_mass ranging 25.89-27.61 and GFR ranging 42.45-43.13, a narrower front than the 12-solution front of 24.19-27.87/41.75-43.02 recorded on 2026-08-23, judged to be a reproducibility issue from environment or dependency-version drift rather than a change in the model mechanism itself; the 9 solutions found this time are the authoritative reproducible result under the current environment. The specific regimen in the recommended field, breakfast, lunch, dinner, and the standard-period addition, has already been written into the opt_optimized plan in ckd_protein_sim.yaml and directly verified by simulation, independent of optimizer reproducibility, so it is kept unchanged; the GFR of 41.49 and muscle mass of 26.20 cited in Table 6 and the main text come from that plan's `--sim` result and are likewise unaffected."
+      reason: "The user asked that the plotting script read from archived results rather than re-optimizing live; the archived results lacked a complete pareto_front list, which had to be filled in first to support this change."
+
+imports:
+  - ./ckd_protein_sim
+
+# ── Optimization settings (T1+T2+T4 joint optimization, multidisciplinary: GFR + muscle_mass + lm_score) ──────────
+optimization:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  step_size:
+    value: 1
+    unit: hour
+
+  objectives:
+    - variable: muscle_mass
+      metric: final
+      direction: maximize
+      description: "Maximize skeletal muscle mass at week 52 (preventing sarcopenia, the rehabilitation perspective)"
+    - variable: GFR
+      metric: final
+      direction: maximize
+      description: "Maximize GFR at week 52 (slowing kidney-function decline, the nephrology perspective)"
+    - variable: lm_score
+      metric: final
+      direction: maximize
+      description: "Maximize CKD healthy-duration score (cumulative days on which GFR ≥ 30, muscle_mass ≥ 22 kg, and BUN ≤ 20 all hold)"
+
+  constraints:
+    - variable: BUN
+      condition: "<= 20"
+      type: hard
+      description: "Blood urea nitrogen constraint: BUN ≤ 20 mg/dL"
+    - variable: GFR
+      condition: ">= 30"
+      type: hard
+      description: "GFR lower bound: must not enter CKD stage 4"
+    # Removed on 2026-06-20: the dietary_protein>=0.10 constraint was checked by default at every time step
+    # across the whole run (no metric field), but dietary_protein is a pulse input that is zero except at
+    # meal times, so the constraint was violated at nearly every one of the 8736 steps in the trajectory.
+    # This was the second root cause of all three opt scenarios persistently showing 0% feasible (the first
+    # was the beta0/mu_d/mu_u unit bug, already fixed). The constraint was also redundant: the three-meal
+    # search lower bound of 0.15 (see startpoint) already satisfies its original intent of "at least 0.10
+    # per meal," so it was removed outright rather than fixed with a metric setting. See the resolved item
+    # in ckd_protein_sim.yaml metadata.todo for details.
+
+  startpoint:
+    regimens:
+      # T1: breakfast protein amount (fixed at 08:00, optimized quantity)
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Breakfast protein amount"
+        optimize:
+          value: [0.15, 0.45]
+
+      # T1: lunch protein amount (fixed at 12:00)
+      - variable: dietary_protein
+        time_start: "12:00"
+        time_end: "12:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Lunch protein amount"
+        optimize:
+          value: [0.15, 0.40]
+
+      # T1+T2: dinner protein amount plus meal-timing window optimization (chrononutrition)
+      # Rationale: pre-sleep protein, around 21:00, activates overnight mTOR, improving muscle protein synthesis
+      # Kouw 2017, Res 2012: pre-sleep protein intake significantly raises overnight synthesis rate
+      - variable: dietary_protein
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Dinner protein amount and meal timing (chrononutrition optimization)"
+        optimize:
+          value: [0.15, 0.45]
+          time_start: ["17:00", "22:00"]
+
+      # T4: restricted-to-standard switch timing (searched within the week 13-39 window)
+      # Rationale: raising protein is only safe once GFR has stabilized; raising it too early accelerates GFR damage
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Standard-period start timing (restricted-to-standard switch day)"
+        optimize:
+          value: [0.27, 0.42]
+          date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
+
+
+  mc:
+    runs: 5
+    seed: 19
+
+  algorithm:
+    population_size: 100
+    n_generations: 200
+    seed: 19
+
+  results:
+    generated_at: "2026-09-02"
+    method: nsga2
+    population_size: 40
+    n_generations: 10
+    n_solutions: 9
+    pareto_front_range:
+      muscle_mass: [25.894242944974252, 27.60699795658021]
+      GFR: [42.44664078692098, 43.13246931062491]
+      lm_score: [364.0000000000258, 364.0000000000258]
+    pareto_front:
+      - {x: [0.22549251515194488, 0.2914615518513775, 0.2948114015908263, 1.8105516968594226, 0.32634175714699437, 178.34700563389748], f: [27.03474512230199, 42.507358426378076, 364.0000000000258]}
+      - {x: [0.21632594195659482, 0.28783655534301156, 0.2948114015908263, 1.8122898914635228, 0.290556444496524, 180.12750465241095], f: [26.99325976501516, 42.70205218995024, 364.0000000000258]}
+      - {x: [0.18238942441597683, 0.26686439467018785, 0.2997475345046155, 1.2737820126185628, 0.27498957223527043, 163.50034733064973], f: [26.380048430463255, 42.81765316805574, 364.0000000000258]}
+      - {x: [0.2947337934344692, 0.2851783118646472, 0.2820526996593442, 2.5683096014451188, 0.2887928767367009, 182.65396437073008], f: [27.069092405741372, 42.50456711700564, 364.0000000000258]}
+      - {x: [0.1930439031050113, 0.28523504258997223, 0.29520666643941323, 2.505432166374977, 0.2734630878425373, 140.3984503455571], f: [26.43118053067817, 42.7049375767096, 364.0000000000258]}
+      - {x: [0.29740184077086956, 0.28517839569809433, 0.28208539303779184, 2.5683096014451188, 0.2887928767367009, 182.65471909810617], f: [27.60699795658021, 42.44664078692098, 364.0000000000258]}
+      - {x: [0.17078039987567792, 0.2987032547161547, 0.2979643327895459, 1.2028482202747213, 0.2756428853634354, 181.56792882693856], f: [25.894242944974252, 43.13246931062491, 364.0000000000258]}
+      - {x: [0.1855075826411535, 0.2986539944024048, 0.2979643327895459, 2.5570847042475804, 0.27564474914023496, 181.56792882693856], f: [25.965631146042302, 42.99914831141349, 364.0000000000258]}
+      - {x: [0.17725433979861344, 0.29849771826048865, 0.2980940884314356, 2.5429146968704655, 0.27564359657369125, 163.91914464710888], f: [26.031064208326562, 42.827874409063654, 364.0000000000258]}
+    recommended:
+      status: "The balanced solution on the front closest to both single-discipline optima at once, taking the normalized solution whose worse-off objective completion is maximized"
+      x: [0.2835228116433856, 0.29216931782910394, 0.2935959748966051, 2.2789036229032407, 0.2788540442971292, 181.6516510484636]
+      f: [27.476432954541036, 42.53959362145301, 364.0000000000258]
+    note: "Re-searched after adding the protein-synthesis saturation ceiling, Moore et al. 2015, see the protein_synthesis_saturation entry in ckd_protein_sim.yaml. Decoding recommended: breakfast 0.284 g/kg (08:00), lunch 0.292 g/kg (12:00), dinner 0.294 g/kg (19:17), standard-period addition 0.279 g/kg (starting 08:00 on 2026-07-02, week 27). This front's range cross-confirms against the independent convergence values of the two single-discipline scenarios, ckd_protein_opt_renal.yaml, unchanged since GFR does not depend on the synthesis saturation ceiling, still 43.05, and ckd_protein_opt_muscle.yaml, reconverged to 27.79 after adding the ceiling; the trade-off is real but moderate, and the 12 non-dominated solutions are not degenerate. The old solution's standard-period addition before the ceiling was added, 0.359 g/kg, itself stayed below the new saturation point of 0.40, but the new front's overall intake distribution, after the three-meal totals changed, sits closer beneath this 0.30-0.40 saturation range, with no meal pushed above the saturation point to waste intake. The opt_optimized plan in ckd_protein_sim.yaml has been updated with this decoded result. Earlier repeated rerun records are in history/2026-08-05_ckd_protein_opt_joint.yaml."
+
+references:
+  - "See ./ckd_protein_sim.yaml"

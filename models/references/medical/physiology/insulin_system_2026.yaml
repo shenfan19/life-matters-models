@@ -22,11 +22,12 @@ metadata:
     limitations: β 细胞质量衰竭速率参数无文献标注；未区分 1 型自身免疫与 2 型脂毒性损伤机制，需上层场景明确病理背景。
   conflicts: []
   ratings:
-    validation_confidence: 1 - 从未跑通--sim/--opt(nosim/noopt标记)
-    topic_importance: 5 - 胰岛素系统是糖尿病建模最核心组件，与血糖调节不可分割
-    framework_demand: 5 - 被4个上层模型import，与glucose_regulation并列核心
-    evidence_quality: 3 - 变量范围符合临床标准，但方程参数（β细胞质量等）无文献标注
-    popularity: 5 - 胰岛素分泌/β细胞功能是内分泌学教科书最重要内容之一
+    importance: 1.0 - 被4个上层模型import，与glucose_regulation并列核心
+    variable: 0.5 - 变量范围符合临床标准，但方程参数（β细胞质量等）无文献标注
+    equation: 0.25 - 模块为生成代码，参数缺乏文献来源标注，方程为定性近似，未见独立复现
+    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
   tags:
   - insulin
   - beta_cell

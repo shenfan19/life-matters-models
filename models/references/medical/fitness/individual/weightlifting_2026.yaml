@@ -15,18 +15,13 @@ metadata:
     limitations: >
       1RM 基线设为成年男性中级训练者的 100 kg，未区分深蹲、卧推、硬拉等具体动作的差异；未包含蛋白质摄入量和热量盈余对肌肥大速率的调节；疲劳采用 Banister 提出的单室指数衰减简化模型，忽略中枢疲劳与外周疲劳的分离机制。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 4 - 阻力训练是健身/肌少症/力量训练的核心，渐进超负荷原则广泛应用
-    framework_demand: 3 - 力量训练通用组件，被肌少症/健身场景引用预期中等
-    evidence_quality: 4 - 引用Kraemer/Schoenfeld/ACSM等权威文献，参数有据可查
-    popularity: 4 - 力量训练肌肥大模型是运动科学教科书标准内容
+    importance: 0.5 - 阻力训练是健身/肌少症/力量训练的核心，渐进超负荷原则广泛应用；力量训练通用组件，被肌少症/健身场景引用预期中等
+    variable: 0.75 - 引用Kraemer/Schoenfeld/ACSM等权威文献，参数有据可查
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [weightlifting, strength, hypertrophy, 1RM, progressive_overload, fatigue, protein_synthesis, ACSM]
-  references:
-    - "Kraemer WJ & Ratamess NA (2004) Fundamentals of resistance training: progression and exercise prescription. Med Sci Sports Exerc 36(4):674-688."
-    - "Schoenfeld BJ (2010) The mechanisms of muscle hypertrophy and their application to resistance training. J Strength Cond Res 24(10):2857-2872."
-    - "ACSM (2009) American College of Sports Medicine position stand: progression models in resistance training. Med Sci Sports Exerc 41(3):687-708."
-    - "Helms ER et al. (2014) Evidence-based recommendations for natural bodybuilding contest preparation. J Int Soc Sports Nutr 11:20."
-    - "Schoenfeld BJ et al. (2017) Dose-response relationship between weekly resistance training volume and increases in muscle mass. J Strength Cond Res 31(12):3508-3523."
 
 variables:
   training_volume:
@@ -158,7 +153,7 @@ simulation:
         date_range: ["2026-01-01", "2026-03-26"]
         label: "训练强度：75%1RM（肌肥大优化区间）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: muscle_strength_1rm
@@ -201,3 +196,10 @@ optimizer:
     recommended:
       x: [80.0]
       f: [-115.9, 42.5]
+
+references:
+  - "Kraemer WJ & Ratamess NA (2004) Fundamentals of resistance training: progression and exercise prescription. Med Sci Sports Exerc 36(4):674-688."
+  - "Schoenfeld BJ (2010) The mechanisms of muscle hypertrophy and their application to resistance training. J Strength Cond Res 24(10):2857-2872."
+  - "ACSM (2009) American College of Sports Medicine position stand: progression models in resistance training. Med Sci Sports Exerc 41(3):687-708."
+  - "Helms ER et al. (2014) Evidence-based recommendations for natural bodybuilding contest preparation. J Int Soc Sports Nutr 11:20."
+  - "Schoenfeld BJ et al. (2017) Dose-response relationship between weekly resistance training volume and increases in muscle mass. J Strength Cond Res 31(12):3508-3523."

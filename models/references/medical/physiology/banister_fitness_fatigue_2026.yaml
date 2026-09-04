@@ -12,16 +12,13 @@ metadata:
       三种方案的仿真结果呈现清晰对比。轻量维持方案在TRIMP等于15时，约在第10到30天出现疲劳主导的表现低谷，降至约40分，随后适应分量逐步超过疲劳分量，第90天回升至约199分；标准方案在TRIMP等于60到80时因负荷更高，同样的疲劳低谷更早触底，第10天已到0分，但也更早回升，约第60天封顶200分；无休息日高负荷方案在TRIMP等于120时将低谷显著拉长，第30天仍为0分，直到第60天左右才追上前两者，体现负荷越高、表现受抑制期越长的过度训练风险，三方案共同验证了适应与疲劳双时间常数机制的方向性正确。基于NSGA-II的优化给出末期表现与疲劳积累的权衡前沿，含7个解：从零训练时的100分、0疲劳，到工作日加周六合计约15 TRIMP时的193分、96疲劳，后者已逼近硬约束上限。
     limitations: 参数仍需补充正式文献来源，此为noref标记的已知缺口；未区分有氧与力量训练的分量差异。
   ratings:
-    topic_importance: 5 - Banister模型是运动科学最核心的训练负荷-表现模型，极高复用价值
-    framework_demand: 4 - 已知被多个fitness论文模型import，运动科学核心基础组件
-    evidence_quality: 4 - 引用Banister 1975原始论文及Morton/Busso等后续验证文献
-    popularity: 5 - Banister适应-疲劳模型是运动科学教科书经典，被广泛引用和验证
-    validation_confidence: 2 - --sim/--opt已跑通且方向自洽，但未与独立文献目标数值比对；同结构在papers/s1/banister_validation.yaml对标Morton 1990时发现比赛日performance偏离目标2.4倍，本文件未做同等对标，见 test_validation/validation_report.md
+    importance: 1.0 - Banister模型是运动科学最核心的训练负荷-表现模型，被多个fitness论文模型import，框架内核心依赖组件
+    variable: 0.75 - 引用Banister 1975原始论文及Morton/Busso等后续验证文献，参数有据可查
+    equation: 1.0 - Banister适应-疲劳双室结构是运动生理学被广泛引用且独立复现次数最多的标准形式之一
+    simulation: 0.5 - --sim/--opt已跑通且方向自洽，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 同结构在papers/lm_format/banister_validation.yaml对标Morton 1990时发现比赛日performance偏离目标2.4倍，本文件未做同等对标
   tags: [sports_science, training, optimization, physiological, banister, B3]
-  references:
-    - "Banister EW, Calvert TW, Savage MV, Bach TM (1975) A systems model of training for athletic performance. Aust J Sports Med 7(3):57-61."
-    - "Morton RH, Fitz-Clarke JR, Banister EW (1990) Modeling human performance in running. J Appl Physiol 69(3):1171-1177."
-    - "Busso T (2003) Variable dose-response relationship between exercise training and performance. Med Sci Sports Exerc 35(7):1188-1195."
 
 variables:
   # R1: Fitness Component (Positive Training Effect, PTE)
@@ -183,7 +180,7 @@ simulation:
         date_range: ["2026-01-01", "2026-07-01"]
         label: "每日高负荷训练（TRIMP=120，无休息日）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: performance
@@ -235,3 +232,8 @@ optimizer:
     recommended:
       x: [1.60, 14.30]
       f: [-145.98, 47.31]
+
+references:
+  - "Banister EW, Calvert TW, Savage MV, Bach TM (1975) A systems model of training for athletic performance. Aust J Sports Med 7(3):57-61."
+  - "Morton RH, Fitz-Clarke JR, Banister EW (1990) Modeling human performance in running. J Appl Physiol 69(3):1171-1177."
+  - "Busso T (2003) Variable dose-response relationship between exercise training and performance. Med Sci Sports Exerc 35(7):1188-1195."

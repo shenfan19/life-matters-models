@@ -1,0 +1,187 @@
+metadata:
+  name: aircrew_circadian_opt
+  lm_format_version: "1.0"
+  description:
+    problem: >
+      Under an eastbound scenario, tz_shift_hours fixed at +8, the direction where the return leg is harder to recover from and the operational-safety tension is sharpest, see the eastbound-westbound asymmetry check in aircrew_circadian_sim.yaml, this file searches over two decision variables, layover days and light-exposure timing, to make explicit the real trade-off between the operational-cost proxy, trip_cost_days, and the fatigue proxy for the first duty day after return, circadian_misalignment_proxy. The complete physical mechanism is in the imported aircrew_circadian_sim.
+    method: >
+      The mechanism is identical to aircrew_circadian_sim.yaml, see that file's description.method for the full list. This file narrows the search range of the two decision variables to the region confirmed during that file's `--sim` diagnostic scanning to carry a real gradient without overall saturation: layover_days takes [1,5] days, since the `--sim` diagnostics show worst_alertness_window already saturated in the 1.0 to 1.5-day range while fatigue varies continuously across 2 to 5 days, see this file's log, and light_pulse_center_hour takes [4,22] local-clock hours, excluding the core sleep period.
+
+      Qualitative predictions, made before running `--opt` and not based on any numerical result:
+      - The partial derivative of trip_cost_days with respect to layover_days is always +1, since trip_cost_days = layover_days + crew_day_overhead_fixed is a direct linear relationship, and with respect to light_pulse_center_hour is always 0, since that constant expression does not contain this variable.
+      - The partial derivative of circadian_misalignment_proxy with respect to layover_days is expected to be negative, since a longer layover lets the FJK pacemaker move closer to the limit-cycle state realigned with the destination or origin rhythm, so the fatigue proxy on the first duty day after return should fall accordingly, with diminishing marginal benefit expected, since convergence toward the limit cycle is an asymptotic process.
+      - The partial derivative of circadian_misalignment_proxy with respect to light_pulse_center_hour is expected to be non-monotonic, since the phase-response curve, PRC, intrinsic to the FJK model implies favorable and unfavorable windows for light timing; the prediction is that moving light exposure toward the crew's local early morning, assumed to correspond to the phase-advance window and matching the direction of phase advance eastbound travel requires, should reduce the fatigue proxy.
+      - Because layover_days genuinely moves both objectives in opposite directions, positive for cost, negative for fatigue, while light_pulse_center_hour affects only the fatigue objective and not cost, the front is expected to show a continuous curve of rising cost and falling fatigue, with light_pulse_center_hour optimized to a local optimum at each value of layover_days without independently widening the front.
+
+    result: |
+      - 100 of 100 solutions are non-dominated and the front is continuous with no single-point degeneration: trip_cost_days runs from 3.0 to 6.99 days, a span of about 4.0 days, and circadian_misalignment_proxy falls from 1.0 to 0.583, a span of about 0.42, with all 99 adjacent pairs strictly non-increasing.
+      - Against the qualitative predictions: trip_cost_days being always +1 with respect to layover_days and always 0 with respect to light timing matches exactly, trip_cost_days = layover_days + 2.0 holding for every solution on the front. The prediction that circadian_misalignment_proxy falls as layover_days grows is directionally correct in broad terms but not strictly monotonic, the 1.0 to 2.0 day range sitting near the saturation ceiling and a small local rebound appearing in the 2.5 to 3.0 day range, see the diagnostic scan in aircrew_circadian_sim.yaml, which does not fully match the prediction of steady monotonic asymptotic improvement throughout.
+      - After the 2026-08-31 re-search using St Hilaire (2007)'s own revised parameters, alpha0, beta_n, G, the finding that did not match the prediction shifted from "light_pulse_center_hour contributes almost nothing" to "the direction of light_pulse_center_hour still does not match the prediction, but its contribution is much larger than under the old parameters." All 100 solutions converge light_pulse_center_hour to about 13.1 to 14.9 local-clock hours, noon to early afternoon, with none falling in the predicted early-morning phase-advance window, the same directional conclusion as before. But isolating the contribution of light_pulse_center_hour at fixed layover_days, comparing noon, 12:00, against the front's converged value, shows this dimension's contribution growing substantially as layover_days increases: no difference at layover=1.0 day, both saturating at the ceiling, about 0.009 at 2.0 days, about 0.136 at 4.0 days, and about 0.199 at 5.0 days, four points spread across the whole search range and all avoiding the 2.5 to 3.0 day local-fluctuation zone, indicating this is a genuine effect that strengthens with longer layovers, not a fluctuation artifact. The earlier conclusion that "the light_pulse_center_hour dimension has not been validated within the current modeling scope" no longer holds; in long-layover scenarios, light timing is a second decision dimension with substantial contribution, only converging in direction toward afternoon rather than the predicted morning.
+      - optimization.results.recommended selects the point on the front closest in operational cost to the non-LM baseline, layover about 3.11 days, light_pulse_center_hour about 14.03, cost=5.11 days, fatigue=0.856; it is not a unique optimum, shown for illustration only.
+      - The 2026-08-24 full-budget re-run, pop=100/gen=200, versus the earlier 2026-08-19 run at pop=48/gen=60, kept the qualitative conclusions stable, with the light_pulse_center_hour convergence range shifting slightly right and narrowing from 11.6-13.6 to 12.5-15.0. After the 2026-08-31 parameter correction, the same full-budget re-search shifted the convergence range further right to 13.1-14.9, and the cost/fatigue range moved from 3.00-6.99/0.608-1.000 to 3.00-6.99/0.583-1.000; the complete record is in optimization.results.note.
+
+imports:
+  - ./aircrew_circadian_sim
+
+references:
+  - citation: "See ./aircrew_circadian_sim.yaml"
+
+optimization:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-01-09"
+  step_size:
+    value: 15
+    unit: minute
+
+  objectives:
+    - variable: trip_cost_days
+      metric: final
+      direction: minimize
+      description: "Minimize the crew's total days away, the operational-cost and turnaround-efficiency proxy"
+    - variable: circadian_misalignment_proxy
+      metric: final
+      direction: minimize
+      description: "Minimize the fatigue proxy for the first duty day after return, the safety-side objective"
+
+  startpoint:
+    regimens:
+      - variable: tz_shift_hours
+        time_start: "00:00"
+        time_end: "24:00"
+        value: 8.0
+        delivery: level
+        label: "Eastbound, 8 time zones (fixed background quantity, not a decision variable)"
+
+      - variable: layover_days
+        time_start: "00:00"
+        time_end: "24:00"
+        label: "Layover days"
+        delivery: level
+        optimize:
+          value: [1.0, 5.0]
+
+      - variable: light_pulse_center_hour
+        time_start: "00:00"
+        time_end: "24:00"
+        label: "Light-exposure timing (local-clock hour)"
+        delivery: level
+        optimize:
+          value: [4.0, 22.0]
+
+  algorithm:
+    population_size: 100
+    n_generations: 200
+    seed: 19
+
+  results:
+    generated_at: "2026-08-31"
+    method: nsga2
+    n_solutions: 100
+    elapsed_seconds: 2285
+    note: "2026-08-24 full-budget result (pop=100/gen=200): cost range 3.00-6.99, fatigue range 0.608-1.000, light_pulse_center_hour convergence range 12.53-14.98. A 2026-08-31 citation-tracing check found that alpha0, beta_n, and g_gain had been using the older Kronauer values transcribed by Rea 2022 rather than the revised values St Hilaire (2007) gives directly after its eq.9; after switching to the revised values, the same full budget (pop=100/gen=200, seed=19) was re-run: trip_cost_days = layover_days + 2.0 holds exactly across all 100 solutions, matching the old-parameter result; the cost range 3.00-6.99 is unchanged; the fatigue range narrows to 0.583-1.000, better at the lower end than under the old parameters; all 99 adjacent pairs on the front are strictly non-increasing, with zero violations; the light_pulse_center_hour convergence range shifts right from 12.53-14.98 to 13.11-14.89, still hugging noon to early afternoon and staying far from both the search lower bound of 4.0 and the predicted early-morning region, the directional conclusion unchanged. New finding: isolating the contribution of light_pulse_center_hour at fixed layover_days shows it growing substantially as layover_days increases, no difference at 1.0 day, about 0.009 at 2.0 days, about 0.136 at 4.0 days, and about 0.199 at 5.0 days, all four points avoiding the 2.5-3.0 day local-fluctuation zone found in aircrew_circadian_sim.yaml's diagnostic scan; the earlier conclusion under the old parameters that 'light_pulse_center_hour contributes only marginally and this dimension's value is unvalidated' no longer holds, since this dimension carries a substantial contribution in long-layover scenarios."
+    pareto_front:
+      - {x: [1.000000, 13.106721], f: [3.000000, 1.000000]}
+      - {x: [1.000000, 13.118013], f: [3.000000, 1.000000]}
+      - {x: [1.166737, 13.281591], f: [3.166737, 0.999353]}
+      - {x: [1.177148, 13.658107], f: [3.177148, 0.994262]}
+      - {x: [1.177148, 13.715096], f: [3.177148, 0.994262]}
+      - {x: [1.187532, 14.370002], f: [3.187532, 0.989428]}
+      - {x: [1.188406, 13.611601], f: [3.188406, 0.988646]}
+      - {x: [1.197980, 13.815141], f: [3.197980, 0.982276]}
+      - {x: [1.197982, 13.727683], f: [3.197982, 0.982181]}
+      - {x: [1.208407, 13.590657], f: [3.208407, 0.974669]}
+      - {x: [1.208407, 13.584339], f: [3.208407, 0.974669]}
+      - {x: [1.218761, 13.501578], f: [3.218761, 0.965795]}
+      - {x: [1.218761, 13.561512], f: [3.218761, 0.965795]}
+      - {x: [1.229224, 13.659071], f: [3.229224, 0.955056]}
+      - {x: [1.229224, 13.659859], f: [3.229224, 0.955056]}
+      - {x: [1.239658, 13.663899], f: [3.239658, 0.942209]}
+      - {x: [1.239686, 13.407012], f: [3.239686, 0.942000]}
+      - {x: [1.239686, 13.414540], f: [3.239686, 0.942000]}
+      - {x: [2.166750, 13.816282], f: [4.166750, 0.935851]}
+      - {x: [2.177085, 14.253904], f: [4.177085, 0.930812]}
+      - {x: [2.177220, 13.854415], f: [4.177220, 0.928927]}
+      - {x: [2.187767, 13.879523], f: [4.187767, 0.921250]}
+      - {x: [2.187767, 13.784869], f: [4.187767, 0.921250]}
+      - {x: [2.197928, 13.916561], f: [4.197928, 0.912653]}
+      - {x: [2.208367, 14.889287], f: [4.208367, 0.910265]}
+      - {x: [2.208368, 13.542222], f: [4.208368, 0.903131]}
+      - {x: [2.208372, 13.816282], f: [4.208372, 0.902850]}
+      - {x: [2.218758, 13.845061], f: [4.218758, 0.891363]}
+      - {x: [2.218758, 13.846351], f: [4.218758, 0.891363]}
+      - {x: [2.229173, 13.833242], f: [4.229173, 0.877459]}
+      - {x: [2.229173, 13.834924], f: [4.229173, 0.877459]}
+      - {x: [2.239655, 13.573951], f: [4.239655, 0.860852]}
+      - {x: [2.239655, 13.560779], f: [4.239655, 0.860852]}
+      - {x: [3.114593, 14.034923], f: [5.114593, 0.855625]}
+      - {x: [3.114593, 14.072012], f: [5.114593, 0.855625]}
+      - {x: [3.125213, 14.243575], f: [5.125213, 0.849372]}
+      - {x: [3.125213, 14.117135], f: [5.125213, 0.849372]}
+      - {x: [3.135747, 14.161253], f: [5.135747, 0.842796]}
+      - {x: [3.135747, 14.197325], f: [5.135747, 0.842796]}
+      - {x: [3.145962, 14.161610], f: [5.145962, 0.835897]}
+      - {x: [3.145962, 14.164685], f: [5.145962, 0.835897]}
+      - {x: [3.156269, 14.196837], f: [5.156269, 0.828664]}
+      - {x: [3.156269, 14.231123], f: [5.156269, 0.828664]}
+      - {x: [3.166894, 14.231182], f: [5.166894, 0.821071]}
+      - {x: [3.166894, 14.196896], f: [5.166894, 0.821071]}
+      - {x: [3.177127, 14.013870], f: [5.177127, 0.813063]}
+      - {x: [3.187583, 14.196946], f: [5.187583, 0.804536]}
+      - {x: [3.187583, 14.239543], f: [5.187583, 0.804536]}
+      - {x: [3.197924, 14.091511], f: [5.197924, 0.795305]}
+      - {x: [3.197924, 14.092556], f: [5.197924, 0.795305]}
+      - {x: [3.208393, 14.196818], f: [5.208393, 0.785051]}
+      - {x: [3.208393, 14.156732], f: [5.208393, 0.785051]}
+      - {x: [3.218922, 14.232530], f: [5.218922, 0.773238]}
+      - {x: [3.218922, 14.238511], f: [5.218922, 0.773238]}
+      - {x: [3.229260, 14.008090], f: [5.229260, 0.758986]}
+      - {x: [3.229260, 14.011656], f: [5.229260, 0.758986]}
+      - {x: [3.239586, 14.226467], f: [5.239586, 0.741528]}
+      - {x: [4.031319, 14.230305], f: [6.031319, 0.740723]}
+      - {x: [4.043492, 14.196672], f: [6.043492, 0.735957]}
+      - {x: [4.052849, 14.006945], f: [6.052849, 0.730930]}
+      - {x: [4.062786, 14.342691], f: [6.062786, 0.725845]}
+      - {x: [4.063219, 14.040709], f: [6.063219, 0.725660]}
+      - {x: [4.072921, 14.039106], f: [6.072921, 0.720168]}
+      - {x: [4.072921, 14.088438], f: [6.072921, 0.720168]}
+      - {x: [4.083562, 14.194254], f: [6.083562, 0.714471]}
+      - {x: [4.083562, 14.191873], f: [6.083562, 0.714471]}
+      - {x: [4.093955, 14.205531], f: [6.093955, 0.708589]}
+      - {x: [4.093955, 14.220872], f: [6.093955, 0.708589]}
+      - {x: [4.104481, 14.331829], f: [6.104481, 0.702501]}
+      - {x: [4.104481, 14.484780], f: [6.104481, 0.702501]}
+      - {x: [4.114716, 14.346813], f: [6.114716, 0.696223]}
+      - {x: [4.114716, 14.270070], f: [6.114716, 0.696223]}
+      - {x: [4.125165, 14.203117], f: [6.125165, 0.690007]}
+      - {x: [4.125420, 14.391765], f: [6.125420, 0.689803]}
+      - {x: [4.135639, 14.468214], f: [6.135639, 0.683255]}
+      - {x: [4.135639, 14.355030], f: [6.135639, 0.683255]}
+      - {x: [4.145907, 14.353425], f: [6.145907, 0.676586]}
+      - {x: [4.145907, 14.352271], f: [6.145907, 0.676586]}
+      - {x: [4.156313, 14.489196], f: [6.156313, 0.669795]}
+      - {x: [4.166719, 14.347227], f: [6.166719, 0.662867]}
+      - {x: [4.166719, 14.332725], f: [6.166719, 0.662867]}
+      - {x: [4.177168, 14.411518], f: [6.177168, 0.655762]}
+      - {x: [4.177168, 14.401533], f: [6.177168, 0.655762]}
+      - {x: [4.187549, 14.355082], f: [6.187549, 0.648403]}
+      - {x: [4.187549, 14.347263], f: [6.187549, 0.648403]}
+      - {x: [4.197918, 14.355726], f: [6.197918, 0.640645]}
+      - {x: [4.197918, 14.415274], f: [6.197918, 0.640645]}
+      - {x: [4.208361, 14.487491], f: [6.208361, 0.632242]}
+      - {x: [4.208361, 14.398070], f: [6.208361, 0.632242]}
+      - {x: [4.218750, 14.321307], f: [6.218750, 0.622778]}
+      - {x: [4.218750, 14.343119], f: [6.218750, 0.622778]}
+      - {x: [4.229219, 14.364618], f: [6.229219, 0.611564]}
+      - {x: [4.229219, 14.411734], f: [6.229219, 0.611564]}
+      - {x: [4.239637, 14.453633], f: [6.239637, 0.597481]}
+      - {x: [4.947996, 14.398712], f: [6.947996, 0.597158]}
+      - {x: [4.958392, 14.398614], f: [6.958392, 0.594451]}
+      - {x: [4.969020, 14.467207], f: [6.969020, 0.591259]}
+      - {x: [4.979313, 14.266773], f: [6.979313, 0.587597]}
+      - {x: [4.989748, 14.256682], f: [6.989748, 0.583485]}
+      - {x: [4.989748, 14.403318], f: [6.989748, 0.583485]}
+    recommended:
+      status: "The point on the front closest in operational cost to the non-LM baseline, not a unique optimum, shown for illustration only"
+      x: [3.114593, 14.034923]
+      f: [5.114593, 0.855625]

@@ -15,16 +15,13 @@ metadata:
     limitations: |
       0.015 g/dL/小时是健康成年人代表值，个体差异范围0.009-0.035 g/dL/小时，性别、体重、饮酒经验等因素会影响肝脏乙醇脱氢酶活性；未建模吸收相，真实饮酒后血药浓度需30-90分钟达峰，本文件从峰值时刻开始计算，只验证消除相。
   ratings:
-    topic_importance: 2 - 法医毒理学/临床教学标准案例
-    framework_demand: 1 - 纯参考组件，尚未被具体论文import
-    evidence_quality: 5 - Widmark零阶消除速率是毒理学教科书级共识数字
-    paper_value: 1 - 通用参考组件
-    innovation: 1 - 纯文献复现，无原创建模贡献
-    validation_confidence: 5 - 零阶线性衰减解析解与仿真结果逐位吻合，是与caffeine_pk_2026(一阶动力学)形成方法论对比的正对照
+    importance: 0.25 - 法医毒理学/临床教学标准案例，通用参考组件
+    variable: 1.0 - Widmark零阶消除速率是毒理学教科书级共识数字，文献可直接追溯
+    equation: 1.0 - Widmark零阶消除方程是法医毒理学被广泛引用且独立复现的标准形式
+    simulation: 1.0 - 零阶线性衰减解析解与仿真结果逐位吻合，逐点验证通过
+    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
+    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合，与caffeine_pk_2026一阶动力学形成方法论对照
   tags: [pharmacokinetics, alcohol, zero-order-kinetics, validation, literature-benchmark]
-  references:
-    - "Widmark EMP (1932) Die theoretischen Grundlagen und die praktische Verwendbarkeit der gerichtlich-medizinischen Alkoholbestimmung. Urban & Schwarzenberg, Berlin."
-    - "StatPearls: Physiology, Zero- and First-Order Kinetics. NCBI Bookshelf, 2023."
 
 variables:
   blood_alcohol_conc:
@@ -62,3 +59,7 @@ simulation:
     - id: "peak_0.08"
       label: "从0.08 g/dL峰值血药浓度开始的消除追踪"
       regimens: []
+
+references:
+  - "Widmark EMP (1932) Die theoretischen Grundlagen und die praktische Verwendbarkeit der gerichtlich-medizinischen Alkoholbestimmung. Urban & Schwarzenberg, Berlin."
+  - "StatPearls: Physiology, Zero- and First-Order Kinetics. NCBI Bookshelf, 2023."

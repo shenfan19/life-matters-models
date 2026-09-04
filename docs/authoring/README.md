@@ -7,11 +7,11 @@
 ## 目录
 
 - [methodology.md](methodology.md)：LM 的核心方法论，耦合而非堆叠的判断标准，以及模型纳入标准与学科覆盖盘点表，写新模型或审查已有模型该不该保留某个机制时先看这份。
-- [description_writing.md](description_writing.md)：`metadata.description` 与 `metadata.references` 的写作规范，`problem/method/result/limitations` 四字段怎么分工、来源文献的贡献说明怎么写。这份文件是自包含的，可以单独交给另一个协作者或另一个 AI 会话，作为写模型 description 的素材。
-- [ratings.md](ratings.md)：`metadata.ratings` 评分体系，`topic_importance`/`framework_demand`/`evidence_quality`/`validation_confidence` 等通用字段与各模型类型专属字段的打分标准。
+- [description_writing.md](description_writing.md)：`metadata.description` 与顶层 `references` 的写作规范，`problem/method/result/limitations` 四字段怎么分工、来源文献的贡献说明怎么写。这份文件是自包含的，可以单独交给另一个协作者或另一个 AI 会话，作为写模型 description 的素材。
+- [ratings.md](ratings.md)：`metadata.ratings` 评分体系，0-1 量表，技术类（VESO：`variable`/`equation`/`simulation`/`optimization`）与非技术类（`importance`/`innovation`/`confidence`）通用字段的打分标准。
 - [bookkeeping.md](bookkeeping.md)：`metadata.todo`/`metadata.log`/`history/` 目录/`reviewed` 字段，模型文件从起草到发布的状态标记与改动追溯约定。
 - [variables_and_equations.md](variables_and_equations.md)：变量三种类型与 `evidence_type` 换算规则，方程的 `step_unit`/`priority`/Euler 离散积分等执行细节，比规范本身的字段定义更详细，含设计理由和已知陷阱。
-- [regimens_and_optimizer.md](regimens_and_optimizer.md)：`simulation.plans[*].regimens` 与 `optimizer` 的完整用法，含正反例、`lm_score` 健康时长核心指标、T1-T4 决策变量层级、`optimizer.results` 内嵌格式。
+- [regimens_and_optimization.md](regimens_and_optimization.md)：`simulation.plans[*].regimens` 与 `optimization` 的完整用法，含正反例、`lm_score` 健康时长核心指标、T1-T4 决策变量层级、`optimization.results` 内嵌格式。
 - [imports_and_organization.md](imports_and_organization.md)：`imports` 合并规则与模型分类目录约定。
 
 ## 与 LM_format_1.0.md 的分工

@@ -15,16 +15,13 @@ metadata:
     limitations: |
       Ebbinghaus 1885 原始数据来自他本人一位被试的自我实验，样本量为 1，历史上从未有大规模跨个体重复，直至 2015 年才有这次复现，这是本案例被归入"跨样本/跨个体变异性"而非"模型结构错误"的直接原因：单一个体的记忆曲线本身就不足以代表群体，130 年后另一组被试出现系统性偏离是符合预期的，不是拟合曲线的问题。
   ratings:
-    topic_importance: 2 - 心理学基础模型，可作为跨学科组合案例的记忆/学习子模型
-    framework_demand: 2 - 尚未被具体论文import，但结构通用（可迁移到教育/培训场景）
-    evidence_quality: 4 - Ebbinghaus 1885 是心理学奠基性历史数据，Murre & Dros 2015 是同行评审的独立复现
-    paper_value: 2 - 一般性参考组件，非旗舰案例
-    innovation: 1 - 纯文献复现（含作者自行的幂律拟合），无原创建模贡献
-    validation_confidence: 3 - 1天检验点吻合(偏差1.5%)，其余多数检验点偏差15-48%，源于1885原始数据样本量为1，代表性有限
+    importance: 0.25 - 心理学基础模型，可作为跨学科组合案例的记忆/学习子模型，尚未被具体论文import
+    variable: 0.75 - Ebbinghaus 1885 是心理学奠基性历史数据，Murre & Dros 2015 是同行评审的独立复现
+    equation: 0.5 - 作者自行对历史数据做幂律拟合，非独立复现的标准方程形式
+    simulation: 0.5 - 1天检验点吻合(偏差1.5%)，其余多数检验点偏差15-48%，方向正确但量级偏差较大
+    optimization: 0.0 - 本文件不含optimization，不涉及决策变量
+    confidence: 0.5 - 部分对标：1天检验点精确吻合，其余检验点偏差源于1885原始数据样本量为1，代表性有限，已在理由中注明
   tags: [psychology, memory, forgetting-curve, validation, literature-benchmark, cross-domain]
-  references:
-    - "Ebbinghaus H (1885) Über das Gedächtnis. Duncker & Humblot, Leipzig."
-    - "Murre JMJ, Dros J (2015) Replication and Analysis of Ebbinghaus' Forgetting Curve. PLOS ONE 10(7):e0120644"
 
 variables:
   time_since_learning:
@@ -85,3 +82,7 @@ simulation:
     - id: "single_study_session"
       label: "单次学习后遗忘曲线追踪（无输入事件，纯时钟驱动的静态曲线评估）"
       regimens: []
+
+references:
+  - "Ebbinghaus H (1885) Über das Gedächtnis. Duncker & Humblot, Leipzig."
+  - "Murre JMJ, Dros J (2015) Replication and Analysis of Ebbinghaus' Forgetting Curve. PLOS ONE 10(7):e0120644"

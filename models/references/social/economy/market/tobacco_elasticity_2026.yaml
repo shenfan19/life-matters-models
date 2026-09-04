@@ -15,17 +15,13 @@ metadata:
     limitations: |
       本案例同 education_classsize，是效应量编码正确性展示，不是独立预测检验，-0.4 和 -0.44 本身就是要验证的目标数字，不是外推后与另一个独立来源比较。短期与长期之间的具体调整速度，即多久从短期弹性过渡到长期弹性，文献未给出可直接复用的单一数字，本文件不建模这一过渡过程，只展示两个端点弹性各自的静态预测。
   ratings:
-    topic_importance: 1 - 方法论验证展示，非独立研究案例
-    framework_demand: 1 - 纯验证用途，不被其他论文import
-    evidence_quality: 5 - 多个独立meta分析收敛到同一共识值，证据质量在本报告所有案例中最高
-    paper_value: 2 - 一般性参考组件，可作为公共卫生政策/税收类场景的需求响应子模型
-    innovation: 1 - 纯文献效应量复现，无原创建模贡献
-    validation_confidence: 4 - 效应量编码正确性展示(非独立预测)，-0.4/-0.44为多个独立meta分析收敛的共识值，evidence换算结果精确一致
+    importance: 0.25 - 方法论验证展示，可作为公共卫生政策/税收类场景的需求响应子模型
+    variable: 1.0 - 多个独立meta分析收敛到同一共识值，证据质量在本库所有案例中最高
+    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
+    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
+    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
+    confidence: 0.75 - 效应量本身来自高质量独立来源(多个meta分析收敛共识值)，Loader正确编码展示，非独立预测已在理由中注明
   tags: [economics, public-health, tobacco, elasticity, evidence, validation, literature-benchmark, cross-domain]
-  references:
-    - "Gallet CA, List JA (2003) Cigarette demand: a meta-analysis of elasticities. Health Econ 12(10):821-835"
-    - "Chaloupka FJ, Warner KE (2000) The economics of smoking. Handbook of Health Economics 1B:1539-1627"
-    - "IARC (2011) Effectiveness of Tax and Price Policies for Tobacco Control. IARC Handbooks of Cancer Prevention, Vol 14"
 
 variables:
   price_increase_pct:
@@ -91,3 +87,8 @@ simulation:
     - id: "price_increase_20pct"
       label: "香烟价格上涨20%的短期/长期消费量响应展示"
       regimens: []
+
+references:
+  - "Gallet CA, List JA (2003) Cigarette demand: a meta-analysis of elasticities. Health Econ 12(10):821-835"
+  - "Chaloupka FJ, Warner KE (2000) The economics of smoking. Handbook of Health Economics 1B:1539-1627"
+  - "IARC (2011) Effectiveness of Tax and Price Policies for Tobacco Control. IARC Handbooks of Cancer Prevention, Vol 14"

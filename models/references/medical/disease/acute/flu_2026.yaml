@@ -18,11 +18,12 @@ metadata:
     limitations: >
       参数尚无正式文献来源，机制为定性近似，不适合用于临床预测。模型未区分流感与普通感冒，也未包含肺炎、心肌炎等并发症风险。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 4 - 感冒是最常见急性感染，免疫-病毒动力学有广泛复用价值
-    framework_demand: 1 - noref + 未被其他模型引用，复用价值极低
-    evidence_quality: 2 - noref标记，参数无文献来源，机制为定性近似
-    popularity: 3 - 感冒模型常见但非教科书经典基准
+    importance: 0.5 - 感冒是最常见急性感染，免疫-病毒动力学有广泛复用价值；noref + 未被其他模型引用，复用价值极低
+    variable: 0.25 - noref标记，参数无文献来源，机制为定性近似
+    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [medical, physiological, flu]
 
 variables:
@@ -75,7 +76,7 @@ simulation:
   end_date: "2026-01-25"
   output_variables: [viral_load, body_temperature, vitality]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: vitality

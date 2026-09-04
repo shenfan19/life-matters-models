@@ -15,19 +15,13 @@ metadata:
     limitations: >
       未区分控卫、前锋、中锋位置的代谢负荷和跳跃频次差异；决策质量模型为认知负荷的简化近似。未包含暂停和犯规停钟期间的部分恢复动力学；参数基于 NBA 男子精英运动员水平。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 篮球精英分析有价值，但认知衰减-生理疲劳联合建模较专项
-    framework_demand: 2 - 团队运动专项模型，上层引用预期低
-    evidence_quality: 3 - 引用McInnes/Ben Abdelkrim等文献，参数覆盖基本
-    popularity: 3 - 篮球在全球主流运动中有地位，进阶模型受众比基础版更小
+    importance: 0.25 - 篮球精英分析有价值，但认知衰减-生理疲劳联合建模较专项；团队运动专项模型，上层引用预期低
+    variable: 0.5 - 引用McInnes/Ben Abdelkrim等文献，参数覆盖基本
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [basketball, advanced, NBA, decision_making, jump_fatigue, shot_accuracy, fast_break, VO2max]
-  references:
-    - citation: "McInnes SE et al. (1995) The physiological load imposed on basketball players during competition. J Sports Sci 13(5):387-397."
-      description: "提供比赛整体生理负荷数据，心率维持在约 165-180 bpm，热量消耗约 400-600 kcal，是心率和热量消耗动力学的参数来源。"
-    - citation: "Ben Abdelkrim N et al. (2010) Activity profile and physiological requirements of junior elite basketball players in relation to aerobic-anaerobic fitness. J Strength Cond Res 24(9):2330-2342."
-      description: "提供 VO2max 数据及有氧-无氧混合供能特征，是摄氧量动力学和跳跃疲劳积累机制的参数来源。"
-    - citation: "Scanlan AT et al. (2011) Muscle activity and physiological responses of helpside defenders during basketball. Int J Sports Physiol Perform 6(2):168-182."
-      description: "提供防守活动下的生理响应数据，是决策质量随生理疲劳和认知负荷下降这一机制的参数来源。"
 
 variables:
   defensive_intensity:
@@ -147,7 +141,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "快攻频率（2次/min，NBA中等节奏）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: shot_accuracy
@@ -193,3 +187,11 @@ optimizer:
     recommended:
       x: [2.0]
       f: [-45.2, 0.42]
+
+references:
+  - citation: "McInnes SE et al. (1995) The physiological load imposed on basketball players during competition. J Sports Sci 13(5):387-397."
+    description: "提供比赛整体生理负荷数据，心率维持在约 165-180 bpm，热量消耗约 400-600 kcal，是心率和热量消耗动力学的参数来源。"
+  - citation: "Ben Abdelkrim N et al. (2010) Activity profile and physiological requirements of junior elite basketball players in relation to aerobic-anaerobic fitness. J Strength Cond Res 24(9):2330-2342."
+    description: "提供 VO2max 数据及有氧-无氧混合供能特征，是摄氧量动力学和跳跃疲劳积累机制的参数来源。"
+  - citation: "Scanlan AT et al. (2011) Muscle activity and physiological responses of helpside defenders during basketball. Int J Sports Physiol Perform 6(2):168-182."
+    description: "提供防守活动下的生理响应数据，是决策质量随生理疲劳和认知负荷下降这一机制的参数来源。"

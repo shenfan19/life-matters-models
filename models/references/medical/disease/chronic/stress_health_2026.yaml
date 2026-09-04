@@ -15,18 +15,13 @@ metadata:
     limitations: >
       HPA轴的详细神经内分泌机制高度简化，个体差异，例如性格类型、既往健康史、遗传易感性，未建模。未包含降压药、抗焦虑药等药物干预对各状态变量的独立效应。
   ratings:
-    validation_confidence: 2 - 未发现阻断性todo，但未与独立文献目标数值比对
-    topic_importance: 5 - 慢性压力-健康影响是跨学科普适机制，HPA轴是核心生理通路
-    framework_demand: 3 - 跨学科复用潜力强，可被工作/历史场景使用
-    evidence_quality: 4 - 引用McEwen 1998、Kivimäki 2012等经典文献，机制有据
-    popularity: 4 - 压力-皮质醇-健康模型是心身医学教科书标准内容
+    importance: 0.75 - 慢性压力-健康影响是跨学科普适机制，HPA轴是核心生理通路；跨学科复用潜力强，可被工作/历史场景使用
+    variable: 0.75 - 引用McEwen 1998、Kivimäki 2012等经典文献，机制有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
   tags: [stress, cortisol, cardiovascular, immune, mental_health, HPA_axis, lifestyle]
-  references:
-  - "McEwen BS (1998) Stress, adaptation, and disease: Allostasis and allostatic load. Ann NY Acad Sci 840(1):33-44."
-  - "Kivimäki M et al. (2012) Job strain as a risk factor for coronary heart disease. Lancet 380(9852):1491-1497."
-  - "Mayer-Davis EJ et al. (1998) Intensity and amount of physical activity in relation to insulin sensitivity. JAMA 279(9):669-674."
-  - "Walker A et al. (2020) Chronic stress and immune function. Brain Behav Immun 84:1-11."
-  - "Steptoe A & Kivimäki M (2012) Stress and cardiovascular disease. Nat Rev Cardiol 9(6):360-370."
 variables:
   cortisol_level:
     description: |
@@ -235,7 +230,7 @@ simulation:
       date_range: ["2026-01-01", "2026-07-01"]
       label: "每日睡眠质量"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: cvd_risk
@@ -290,3 +285,10 @@ optimizer:
     recommended:
       x: [5.0, 1.5]
       f: [0.108, -0.834, -79.6]
+
+references:
+  - "McEwen BS (1998) Stress, adaptation, and disease: Allostasis and allostatic load. Ann NY Acad Sci 840(1):33-44."
+  - "Kivimäki M et al. (2012) Job strain as a risk factor for coronary heart disease. Lancet 380(9852):1491-1497."
+  - "Mayer-Davis EJ et al. (1998) Intensity and amount of physical activity in relation to insulin sensitivity. JAMA 279(9):669-674."
+  - "Walker A et al. (2020) Chronic stress and immune function. Brain Behav Immun 84:1-11."
+  - "Steptoe A & Kivimäki M (2012) Stress and cardiovascular disease. Nat Rev Cardiol 9(6):360-370."

@@ -15,19 +15,13 @@ metadata:
     limitations: >
       模型使用通用参数，未区分前锋与后卫位置；肌肉损伤（CK）动力学为比赛内近似，实际 CK 峰值出现在赛后 24-48 小时，无法在仿真时间范围内准确捕捉。碰撞时的骨骼应力和神经肌肉震荡效应未建模。
   ratings:
-    validation_confidence: 2 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    topic_importance: 3 - 橄榄球冲撞-疲劳模型有专项运动医学价值，受众较集中
-    framework_demand: 2 - 团队运动专项模型，上层引用预期低
-    evidence_quality: 3 - 引用Duthie/Cunniffe等文献，参数基本有据
-    popularity: 2 - 橄榄球在特定国家主流，全球通用度有限
+    importance: 0.25 - 橄榄球冲撞-疲劳模型有专项运动医学价值，受众较集中；团队运动专项模型，上层引用预期低
+    variable: 0.5 - 引用Duthie/Cunniffe等文献，参数基本有据
+    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
+    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
+    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
   tags: [rugby, team, contact, collision, sprint, muscle_damage, CK, VO2max]
-  references:
-    - citation: "Duthie G et al. (2003) Applied physiology and game analysis of rugby union. Sports Med 33(13):973-991."
-      description: "提供按位置划分的 VO2max 和跑动距离数据，是摄氧量动力学和跑动距离积累机制的参数来源。"
-    - citation: "Cunniffe B et al. (2009) An evaluation of the physiological demands of elite rugby union using global positioning system tracking software. J Strength Cond Res 23(4):1195-1203."
-      description: "基于 GPS 追踪提供心率、冲刺占比和跑动距离数据，是心率动力学和跑动距离积累机制的参数来源。"
-    - citation: "Austin DJ et al. (2011) Physiological response to tackling in rugby league. J Strength Cond Res 25(4):1038-1042."
-      description: "提供擒抱冲撞的生理响应数据，是碰撞应激积累机制的参数来源。"
 
 variables:
   tackle_frequency:
@@ -147,7 +141,7 @@ simulation:
         date_range: ["2026-01-01", "2026-01-01"]
         label: "冲刺比例（15%，后卫典型值）"
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: distance_covered
@@ -193,3 +187,11 @@ optimizer:
     recommended:
       x: [0.15]
       f: [-7300.0, 16.5]
+
+references:
+  - citation: "Duthie G et al. (2003) Applied physiology and game analysis of rugby union. Sports Med 33(13):973-991."
+    description: "提供按位置划分的 VO2max 和跑动距离数据，是摄氧量动力学和跑动距离积累机制的参数来源。"
+  - citation: "Cunniffe B et al. (2009) An evaluation of the physiological demands of elite rugby union using global positioning system tracking software. J Strength Cond Res 23(4):1195-1203."
+    description: "基于 GPS 追踪提供心率、冲刺占比和跑动距离数据，是心率动力学和跑动距离积累机制的参数来源。"
+  - citation: "Austin DJ et al. (2011) Physiological response to tackling in rugby league. J Strength Cond Res 25(4):1038-1042."
+    description: "提供擒抱冲撞的生理响应数据，是碰撞应激积累机制的参数来源。"

@@ -80,7 +80,7 @@ per_step_value = value / N_steps
 
 ## 迁移：5 个受影响文件的 value/optimize.value
 
-审计范围：`simulation.plans[*].regimens` + `optimizer.startpoint.regimens` 中，
+审计范围：`simulation.plans[*].regimens` + `optimization.startpoint.regimens` 中，
 `time_start != time_end`（sustained，非 pulse）且旧规则下"匹配天数 > 1"的条目。
 
 **核心判断标准**（逐条目核实，不是无脑除以旧活跃天数）：条目的 `label`/注释是否有
@@ -91,10 +91,10 @@ per_step_value = value / N_steps
 
 | 文件 | 处理 | 备注 |
 |---|---|---|
-| `models/test/valid/test_sustained_mode.yaml` | plan 级 `sustained.work_rate/recovery_rate` **不变**（60.0/24.0）；`optimizer.startpoint` 两条目除以旧活跃天数 5（`[60,600]→[12,120]`，`120→24`） | plan 级注释("5/hour"、"same daily totals")证明 60/24 本来就是日速率，是 ADR 0099 的 bug 一直在稀释它，不是作者预乘过；optimizer 部分注释明确写着"old per-hour bounds x 60"，证明是预乘过的，要除回来 |
+| `models/test/valid/test_sustained_mode.yaml` | plan 级 `sustained.work_rate/recovery_rate` **不变**（60.0/24.0）；`optimization.startpoint` 两条目除以旧活跃天数 5（`[60,600]→[12,120]`，`120→24`） | plan 级注释("5/hour"、"same daily totals")证明 60/24 本来就是日速率，是 ADR 0099 的 bug 一直在稀释它，不是作者预乘过；optimization 部分注释明确写着"old per-hour bounds x 60"，证明是预乘过的，要除回来 |
 | `models/papers/s3/burnout_allostatic/burnout_allostatic_sim.yaml` | 6 个 plan、21 处 `value` 全部除以各自旧活跃天数（86/62/24） | 每处 label 都带"×2064"/"×1488"/"×576"字样，直接证明是"日速率×旧N_steps"手算出来的总量；除以旧活跃天数后数值验证（见下）与旧引擎+旧值完全一致 |
 | `models/papers/s3/sleep_schedule/sleep_schedule_sim.yaml` | 7 个 plan、22 处 `value` 除以各自旧活跃天数（28/20/8） | 同上，label 带"×672"/"×480"/"×192" |
-| 内部另一个场景文件 | `optimizer.startpoint.regimens` 4 处 `optimize.value` 除以各自旧活跃天数（6/11/15） | 注释"= [0,3] × 144"等直接证明预乘过 |
+| 内部另一个场景文件 | `optimization.startpoint.regimens` 4 处 `optimize.value` 除以各自旧活跃天数（6/11/15） | 注释"= [0,3] × 144"等直接证明预乘过 |
 | `models/test/valid/test_opt_t2.yaml` | **不改**，从"受影响文件"名单中移除 | 初次审计脚本对这两个 T2 条目误判：YAML 里没写 `time_start`/`time_end`，静态看是"全天默认"，但这两条目都配了 `optimize.time_start` 区间搜索；`optimizer_engine._build_regimen_events` 解码时按条目自身 `_width_min`（用同一个默认全天窗口算出的 1440 分钟）重新推算 `time_end`，正好整圈绕回 `time_start`，运行时实际总是退化成 pulse（`time_start==time_end`），从未真正走过 sustained 的 `N_steps` 除法，从来不受 ADR 0099 影响 |
 
 **双重验证方法**：对 `burnout_allostatic_sim.yaml`/`sleep_schedule_sim.yaml` 的迁移，用

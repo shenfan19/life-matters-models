@@ -1,0 +1,103 @@
+metadata:
+  name: ckd_protein_opt_renal
+  lm_format_version: "1.0"
+  description:
+    problem: "Nephrology single-discipline optimization: maximizes only GFR at week 52, without regard to muscle mass. It represents what the single-discipline optimum would push toward if only the nephrology guideline were followed and rehabilitation's concerns ignored, and comparing it side by side with the rehabilitation single-discipline ckd_protein_opt_muscle.yaml and the joint multidisciplinary ckd_protein_opt_joint.yaml is what reveals the trade-off range exposed by joint optimization. The complete physical mechanism and comparison simulations are in the imported ckd_protein_sim."
+    method: "The mechanism is identical to ckd_protein_sim.yaml, see that file's description.method for the full list; this file narrows the optimization objective to a single-discipline perspective, maximizing only GFR, with decision variables and search space identical to ckd_protein_opt_muscle.yaml and ckd_protein_opt_joint.yaml, so the three can be compared side by side."
+  log:
+    "2026-08-05_00-00-00":
+      change: "results was trimmed to the final converged result from 2026-08-02, after the adherence dimension was added; earlier repeated rerun records were migrated to history/2026-08-05_ckd_protein_opt_renal.yaml"
+      reason: "Implementing ADR 0141, the main file retains only currently valid results."
+
+imports:
+  - ./ckd_protein_sim
+
+optimization:
+  method: nsga2
+  start_date: "2026-01-01"
+  end_date: "2026-12-31"
+  step_size:
+    value: 1
+    unit: hour
+
+  objectives:
+    - variable: GFR
+      metric: final
+      direction: maximize
+      description: "Nephrology single-discipline objective: maximize GFR at week 52, without weighing muscle mass"
+
+  constraints:
+    - variable: BUN
+      condition: "<= 20"
+      type: hard
+      description: "Blood urea nitrogen constraint: BUN ≤ 20 mg/dL"
+    - variable: GFR
+      condition: ">= 30"
+      type: hard
+      description: "GFR lower bound: must not enter CKD stage 4"
+    # Removed on 2026-06-20: the dietary_protein>=0.10 constraint was checked by default at every time step
+    # across the whole run (no metric field), but dietary_protein is a pulse input that is zero except at
+    # meal times, so the constraint was violated at nearly every one of the 8736 steps in the trajectory.
+    # This was the second root cause of all three opt scenarios persistently showing 0% feasible (the first
+    # was the beta0/mu_d/mu_u unit bug, already fixed). The constraint was also redundant: the three-meal
+    # search lower bound of 0.15 (see startpoint) already satisfies its original intent of "at least 0.10
+    # per meal," so it was removed outright rather than fixed with a metric setting. See the resolved item
+    # in ckd_protein_sim.yaml metadata.todo for details.
+
+  startpoint:
+    regimens:
+      # Identical decision-variable structure to ckd_protein_opt_joint.yaml, only the objective function
+      # differs, so the search space is the same across all three scenarios and their results are comparable.
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Breakfast protein amount"
+        optimize:
+          value: [0.15, 0.45]
+
+      - variable: dietary_protein
+        time_start: "12:00"
+        time_end: "12:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Lunch protein amount"
+        optimize:
+          value: [0.15, 0.40]
+
+      - variable: dietary_protein
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Dinner protein amount and meal timing (chrononutrition optimization)"
+        optimize:
+          value: [0.15, 0.45]
+          time_start: ["17:00", "22:00"]
+
+      - variable: dietary_protein
+        time_start: "08:00"
+        time_end: "08:00"
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        label: "Standard-period start timing (restricted-to-standard switch day)"
+        optimize:
+          value: [0.27, 0.42]
+          date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
+
+  mc:
+    runs: 5
+    seed: 19
+
+  algorithm:
+    population_size: 100
+    n_generations: 200
+    seed: 19
+
+  results:
+    generated_at: "2026-08-02"
+    method: nsga2
+    population_size: 40
+    n_generations: 9
+    recommended:
+      x: [0.17034158265832083, 0.2011356318541333, 0.21493407351689733, 1.6161215907770923, 0.29198668610123946, 181.2374732878789]
+      f: [43.04589305458764]
+    note: "Decoding: breakfast 0.170 g/kg (08:00, near the lower bound), lunch 0.201 g/kg (12:00), dinner 0.215 g/kg (18:37), standard-period addition 0.292 g/kg (starting 08:00 on 2026-06-30, week 26). The GFR objective is insensitive to both the dietary-adherence dimension and the inner MC resampling, in contrast to the muscle_mass objective, further supporting that the GFR dynamics, the beta0 parameter, has low sensitivity to these kinds of perturbations. The renal_optimized plan in ckd_protein_sim.yaml has been updated with this decoded result. Earlier repeated rerun records are in history/2026-08-05_ckd_protein_opt_renal.yaml."
+
+references:
+  - "See ./ckd_protein_sim.yaml"
