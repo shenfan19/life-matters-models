@@ -29,7 +29,9 @@ metadata:
   tags: [banister, pointer, no_content]
   todo:
     - type: nosim
-      issue: "This file is not runnable by design (no variables, equations, or simulation) and is a pointer entry with no content, see the 6 file paths in description.result."
+      severity: resolved
+      issue: "[Not applicable, confirmed 2026-09-04] This file is not runnable by design, no variables, equations, or simulation, and is a pointer entry with no content, see the 6 file paths in description.result."
+      resolution: "2026-09-04 pre-translation TODO review: confirmed this file is intentionally content-free navigation, not an unverified model. There is nothing to run and nothing to fix. The 6 files it points to under test_fixtures/valid/ carry their own verification status independently."
 
 references:
   - "See test_verification/verification_report.md protocol V2"
