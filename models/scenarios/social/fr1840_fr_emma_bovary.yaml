@@ -25,11 +25,13 @@ metadata:
       仿真预期显示 60 个月内心理满足感、债务积累和社会声誉的月动态，以及崩溃轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 3 - 包法利夫人是抑郁、浪漫幻觉与债务螺旋的经典文学案例
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将浪漫主义追求强度与心理健康、债务动力学结合的建模意图存在，但尚未完善
-    social_value: 4 - 探索社会期望与个人欲望的冲突及其代价，是女性主义文学的重要文本
+    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，纯文学设定无客观数据
+    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - psychological_health与social_reputation经方程追踪无对立驱动，romantic_pursuit同时损害两目标
+    importance: 0.25 - 包法利夫人是经典文学案例，但相对小众受众，且为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - depression
     - romantic-delusion

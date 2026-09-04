@@ -25,11 +25,13 @@ metadata:
       仿真预期显示 52 周内海德人格控制时间比例、身份稳定性和解药研究进度的轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；成瘾耐受动力学参数需参考神经科学文献。
   ratings:
-    topic_importance: 3 - 杰基尔博士是成瘾动力学和自我实验伦理的最著名文学隐喻
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将成瘾失控过程（从自控到被控）转化为可优化动力学的意图极具创意，但尚未完善
-    social_value: 5 - 探索人格双重性、成瘾机制和科学伦理，是维多利亚时代心理学的文学先驱
+    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，成瘾耐受动力学参数未锚定神经科学文献
+    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - self_control与antidote_progress经方程追踪无对立驱动，research_rigor同时有利两目标
+    importance: 0.25 - 杰基尔博士是成瘾动力学和自我实验伦理的著名文学隐喻，但相对小众受众，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - addiction
     - self-experimentation

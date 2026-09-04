@@ -24,11 +24,13 @@ metadata:
     limitations: >
       具体登陆波次时刻表、Omaha、Utah、Juno、Gold、Sword 五个海滩分区各自的伤亡率差异，以及个体急性应激生理参数化均尚未完成，需参考 Ambrose 1994 和 Beevor 2009。
   ratings:
-    topic_importance: 4 - 诺曼底战役是二战关键战役，战斗应激与生存概率建模有重要历史与生理学价值
-    framework_demand: 1 - TODO 存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
-    innovation: 3 - 战斗应激（急性应激反应）驱动的生理-心理联合动力学建模意图存在，与已有 HPA 轴压力模型互补，但尚未实现
-    social_value: 3 - 触及战斗环境下的生理应激机制，历史与教育价值明确，不涉及族群/道德归责争议
+    variable: 0.0 - TODO存根，variables为空未定义任何参数
+    equation: 0.0 - TODO存根，equations为空未定义任何方程
+    simulation: 0.0 - TODO存根，无可用方程与输出变量，无法产生仿真轨迹
+    optimization: 0.0 - 无optimization块，模型设计上尚不含决策变量
+    importance: 0.5 - 诺曼底战役是二战关键战役，战斗应激与生存概率建模有历史与生理学价值，但为TODO存根，非框架依赖模块
+    innovation: 0.25 - 战斗应激驱动的生理-心理联合建模与已有HPA轴压力模型互补的意图存在，但尚未实现无法评估实际创新程度
+    confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [war, combat, wwii, normandy, survival, TODO]
   references:
     - "Ambrose SE (1994) D-Day: June 6, 1944: The Climactic Battle of World War II. Simon & Schuster."

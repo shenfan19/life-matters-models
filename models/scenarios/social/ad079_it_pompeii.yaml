@@ -18,11 +18,13 @@ metadata:
     limitations: 聚合个体逃离动力学，未建模人群拥挤和恐慌的社会动力学；路线精度，即庞贝至 Stabiae 约 8 km 的测算，影响结果；参数基于火山学重建，逃离时间线参考小普林尼书信记录。
 
   ratings:
-    topic_importance: 4 - 庞贝是人类最著名的自然灾难之一，全球家喻户晓
-    framework_demand: 1 - 历史叙事场景，不被其他模型引用
-    evidence_quality: 4 - 基于火山学重建研究，灰层积累速率和坍塌阈值有地质文献支撑
-    innovation: 3 - 逃离动力学建模较直观，创新点在于将火山学参数引入个体决策
-    social_value: 4 - 文化记忆深厚，极端环境下理性决策的教学案例
+    variable: 0.75 - 灰层/岩浆涌参数据多篇火山学文献重建，速率系数为合理估算
+    equation: 0.5 - 分段线性动力学自建，锚定灰层/岩浆涌历史时间线文献估计
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - movement_speed对escape_distance与health方向性权衡合理，未数值复现
+    importance: 0.5 - 庞贝是人类最著名的自然灾难之一，但为历史叙事场景，非框架依赖模块
+    innovation: 0.5 - 将火山学参数引入个体逃离决策的建模视角有新意，核心逃离动力学结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags: [historical, disaster, volcanic, survival, ancient-rome, 1st-century]
   period: "79-08-24 13:00 ~ 79-08-25 08:00"
   location: "Pompeii, Roman Empire (modern-day Campania, Italy)"

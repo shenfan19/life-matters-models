@@ -24,11 +24,13 @@ metadata:
     limitations: >
       "预期未来科研贡献"变量的构造方式存在方法论争议，需谨慎处理反事实推断的不确定性；通讯军官岗位的暴露强度量化尚未完成；需参考 Heilbron 1974。
   ratings:
-    topic_importance: 4 - Moseley 之死是"科学人才战时保护政策"最常被引用的历史起点，政策与教育价值高
-    framework_demand: 1 - TODO 存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO 存根，变量和方程未实现，无法评估参数质量
-    innovation: 4 - 与 ad1940_fr_doeblin 构成"死亡概率 × 预期未来贡献"联合建模的第二个案例，意图明确但尚未实现
-    social_value: 4 - 触及科研人才保护政策的现实议题，教育与政策讨论价值高，不涉及军事道德评判
+    variable: 0.0 - TODO存根，variables为空未定义任何参数
+    equation: 0.0 - TODO存根，equations为空未定义任何方程
+    simulation: 0.0 - TODO存根，无可用方程与输出变量，无法产生仿真轨迹
+    optimization: 0.0 - 无optimization块，模型设计上尚不含决策变量
+    importance: 0.5 - Moseley之死是"科学人才战时保护政策"常被引用的历史起点，但为TODO存根，非框架依赖模块
+    innovation: 0.25 - 与ad1940_fr_doeblin构成"死亡概率×预期未来贡献"联合建模系列的意图明确，但尚未实现无法评估实际创新程度
+    confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [war, physicist, wwi, gallipoli, sacrifice, TODO]
   references:
     - "Heilbron JL (1974) H.G.J. Moseley: The Life and Letters of an English Physicist, 1887-1915. University of California Press."

@@ -22,11 +22,13 @@ metadata:
     limitations: 历史辐射剂量难以精确重建，居里夫人时代尚无个人剂量计；辐射健康损耗使用现代 ICRP 框架，可能低估当时未知危害；性别歧视对机构支持的量化为模型假设。
 
   ratings:
-    topic_importance: 5 - 居里夫人是全球最知名女科学家，辐射与性别权衡具有普世意义
-    framework_demand: 1 - 历史叙事场景，不被其他模型引用
-    evidence_quality: 3 - 辐射暴露动力学基础较好，历史细节估算成分中等
-    innovation: 4 - 辐射累积 × 性别压制 × 研究节律三维权衡建模，视角独特
-    social_value: 5 - 科学史最具代表性的性别与健康权衡案例，兼具科学教育和社会正义价值
+    variable: 0.5 - 辐射损伤锚定现代ICRP框架，历史剂量与性别歧视量化为模型假设
+    equation: 0.5 - 辐射与研究产出方程自建，锚定ICRP辐射损伤框架点估计
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.5 - research_intensity对progress与radiation/health方向性权衡由方程内生，未数值验证
+    importance: 0.5 - 居里夫人是全球最知名女科学家之一，但为历史叙事场景，非框架依赖模块
+    innovation: 0.5 - 辐射累积×性别压制×研究节律三维权衡视角独特，核心辐射暴露机制沿用现代框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags: [historical, curie, radiation, research, 19th-century, france, women-in-science]
   period: "1898-1906"
   location: "Paris, France"

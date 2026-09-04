@@ -25,11 +25,13 @@ metadata:
       仿真预期显示 30 个月内弗兰肯斯坦的身体状态、精神崩溃程度和造物的复仇强度轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 4 - 弗兰肯斯坦是科学伦理和创造者责任的最经典文学隐喻
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未完善，且为文学设定
-    innovation: 2 - 将逃避责任的心理代价和身体崩溃转化为动力学系统意图清晰，但尚未完善
-    social_value: 5 - 触及科学伦理、造物者责任和现代技术隐患的普世主题，社会价值极高
+    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
+    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - relationships_intact与health经方程追踪无对立驱动，confrontation_willingness同向有利两目标
+    importance: 0.5 - 弗兰肯斯坦是科学伦理和创造者责任的最经典文学隐喻，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - science
     - ethics

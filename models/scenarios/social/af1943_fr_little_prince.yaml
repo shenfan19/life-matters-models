@@ -25,11 +25,13 @@ metadata:
       仿真预期比较修飞机为主、深度聆听为主、两者均衡分配三种策略下，小王子留下概率与飞行员存活概率的轨迹。当前为草案状态，参数待校准。
     limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
   ratings:
-    topic_importance: 4 - 小王子是最广泛阅读的文学作品之一，沙漠生存+哲学对话有独特展示价值
-    framework_demand: 1 - TODO存根，尚未被其他模型引用
-    evidence_quality: 1 - TODO草案，参数未实现，且为文学设定
-    innovation: 2 - 将叙事选择（聆听vs修飞机）转化为可优化动力学意图存在，但尚未实现
-    social_value: 5 - 触及人与人之间联系、意义和告别的普世主题，文学价值极高
+    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，文学设定无客观数据支撑
+    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
+    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
+    optimization: 0.0 - connection_depth与understanding两目标由方程驱动同向，未见结构性权衡
+    importance: 0.5 - 小王子是最广泛阅读的文学作品之一，但为文学设定，非框架依赖模块
+    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
+    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
   tags:
     - desert
     - meaning
