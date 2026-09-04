@@ -29,7 +29,6 @@ metadata:
     limitations: Linear bang-bang toy thermostat; for engine validation only, not a real thermal model.
     limitations_cn: 线性 bang-bang 玩具级温控器；仅用于引擎验证，非真实热力学模型。
   tags: [test, equations, condition]
-  references: ["TEST: equations[].condition mutually-exclusive branching"]
 variables:
   room_temp:
     type: state
@@ -79,3 +78,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-03"
   output_variables: [room_temp]
+
+references: ["TEST: equations[].condition mutually-exclusive branching"]

@@ -35,7 +35,6 @@ metadata:
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
     limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, rr]
-  references: ["TEST: rr evidence subtype isolation"]
 
 variables:
   rr_display:
@@ -101,3 +100,5 @@ simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-31"
   output_variables: [rr_display, smoker_cvd_risk, smoker_cvd_risk_auto]
+
+references: ["TEST: rr evidence subtype isolation"]

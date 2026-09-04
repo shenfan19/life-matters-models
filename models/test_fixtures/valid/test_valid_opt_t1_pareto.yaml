@@ -20,8 +20,7 @@ metadata:
       生物利用度最高，高疗效解应更倾向于将剂量分配给早晨。
     limitations: Value-only search; does not cover time-of-day, weekly pattern, or date-range tiers.
     limitations_cn: 仅做数值搜索；不覆盖时间窗、每周模式或日期范围等更高档位。
-  tags: [test, optimizer, t1, pareto, nsga2, multi-objective, constraint]
-  references: ["TEST: T1 multi-variable Pareto with hard constraint"]
+  tags: [test, optimization, t1, pareto, nsga2, multi-objective, constraint]
 variables:
   plasma_conc:
     type: state
@@ -141,7 +140,7 @@ simulation:
       label: "Evening dose (mg)"
   output_variables: [plasma_conc, liver_load, total_daily_dose, morning_dose, noon_dose, evening_dose]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: plasma_conc
@@ -178,3 +177,5 @@ optimizer:
     population_size: 30
     n_generations: 40
     seed: 19
+
+references: ["TEST: T1 multi-variable Pareto with hard constraint"]

@@ -23,7 +23,8 @@ metadata:
       root-boundary check.
     limitations_cn: 并非真实模型；仅用于验证导入路径的根目录边界检查。
   tags: [test, error-detection, import, path-escape]
-  references: ["TEST(error-detection): relative imports must stay inside models/"]
 
 imports:
 - ../../../outside_models_root
+
+references: ["TEST(error-detection): relative imports must stay inside models/"]

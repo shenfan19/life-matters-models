@@ -9,7 +9,7 @@ metadata:
         同时默认 plan（50mg/80mg）使 sbp 单调趋向 60 的下限，从未接近 220 的 stroke 阈值，
         problem 中描述的 "Latch mode" 在 sim 和 opt 输出中均未被实际验证。
       next: >
-        本次已调整：(1) optimizer 第二目标改为 minimize antihypertensive(mean)，与
+        本次已调整：(1) optimization 第二目标改为 minimize antihypertensive(mean)，与
         maximize lm_score 形成真实的"用药量 vs 健康天数"权衡；(2) 提高 bp_natural_rise
         并调整默认 plan（前 ~235 天停药）使 sbp 在默认仿真中越过 220 触发 latch。
         重新跑 --sim/--opt 后验证：Pareto 前沿应出现多点解；默认 sim 中 lm_alive 应在约
@@ -19,7 +19,7 @@ metadata:
   log:
     "2026-06-14_20-57-26":
       change: >
-        optimizer 第二目标 sbp(mean,minimize) -> antihypertensive(mean,minimize)；
+        optimization 第二目标 sbp(mean,minimize) -> antihypertensive(mean,minimize)；
         bp_natural_rise 0.05 -> 0.3 mmHg/day；默认 plan 第一段改为停药(0mg)
         覆盖 2026-01-01~2026-08-23（约235天），第二段(80mg)覆盖其后至 2027-12-31。
       reason: >
@@ -50,7 +50,7 @@ metadata:
       ends near ~520) while lm_score_irreversible stays frozen at ~234 -- the two
       counters visibly diverge, demonstrating cumulative (recoverable) vs latch
       (irreversible) semantics. Exact day counts to be confirmed by re-running --sim.
-      Optimizer: maximize lm_score (final) vs minimize antihypertensive (mean) now form
+      optimization: maximize lm_score (final) vs minimize antihypertensive (mean) now form
       a genuine trade-off bounded by the sbp<=220 / sbp>=90 hard constraints, so the
       Pareto front should contain multiple solutions (not collapse to one point).
     result_cn: >
@@ -66,7 +66,6 @@ metadata:
     limitations: Simplified first-order BP dynamics; not validated clinically.
     limitations_cn: 简化的一阶血压动力学；未经临床验证。
   tags: [test, lm_score, latch, cumulative, hypertension, irreversible]
-  references: ["TEST: lm_score cumulative and latch modes"]
 
 variables:
   # --- Blood pressure dynamics ---
@@ -197,7 +196,7 @@ simulation:
           label: "Antihypertensive 30 mg/day from day 1"
   output_variables: [sbp, lm_score, lm_score_irreversible, lm_alive, antihypertensive]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
     # Maximize cumulative lm_score (healthy days with controlled SBP),
@@ -234,3 +233,5 @@ optimizer:
     population_size: 30
     n_generations: 50
     seed: 19
+
+references: ["TEST: lm_score cumulative and latch modes"]

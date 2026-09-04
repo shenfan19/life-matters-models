@@ -3,7 +3,7 @@ metadata:
   lm_format_version: "1.0"
   description:
     problem: >
-      Validates all four optimizer tiers simultaneously in one model: value-only search (insulin
+      Validates all four optimization tiers simultaneously in one model: value-only search (insulin
       dose), value + time-window search (meal timing), value + weekly-pattern search (exercise
       days), and value + date-start search (metformin start date). A fifth input is fixed
       background (no optimize block). Total decision vector is 7 dimensions (mixed types),
@@ -24,8 +24,7 @@ metadata:
       索引错误或档位解码不匹配的问题。
     limitations: Diabetes dynamics are intentionally simplified; not clinically validated.
     limitations_cn: 糖尿病动力学经过刻意简化，未经临床验证。
-  tags: [test, optimizer, t1, t2, t3, t4, all-tiers, mixed-integer, nsga2]
-  references: ["TEST: all four optimizer tiers combined in one model"]
+  tags: [test, optimization, t1, t2, t3, t4, all-tiers, mixed-integer, nsga2]
 variables:
   blood_glucose:
     type: state
@@ -232,7 +231,7 @@ simulation:
       label: "Background drug 10 mg/day"
   output_variables: [blood_glucose, glucose_peak, lm_score, insulin_dose, meal_carbs, exercise_minutes, metformin_dose]
 
-optimizer:
+optimization:
   method: nsga2
   start_date: "2026-01-01"
   end_date: "2026-06-30"
@@ -288,8 +287,10 @@ optimizer:
       time_start: "08:00"
       value: 10.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-      label: "Background drug (fixed in optimizer)"
+      label: "Background drug (fixed in optimization)"
   algorithm:
     population_size: 30
     n_generations: 50
     seed: 19
+
+references: ["TEST: all four optimization tiers combined in one model"]

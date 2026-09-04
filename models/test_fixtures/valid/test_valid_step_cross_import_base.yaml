@@ -22,7 +22,6 @@ metadata:
     limitations: No physiological meaning; purely a numeric correctness fixture.
     limitations_cn: 不具有生理学意义，纯粹是数值正确性测试用例。
   tags: [test, step_size, cross_import, day, multi_scale]
-  references: ["TEST: cross-step-size import — base component (1-day step)"]
 variables:
   body_mass:
     type: state
@@ -46,3 +45,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-03"
   output_variables: [body_mass]
+
+references: ["TEST: cross-step-size import — base component (1-day step)"]

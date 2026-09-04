@@ -21,7 +21,6 @@ metadata:
     limitations: Not physiologically calibrated; for feature-coverage testing only.
     limitations_cn: 未经生理学标定；仅用于功能覆盖测试。
   tags: [test, step_size, minute, glucose, meal, output_types]
-  references: ["TEST: minute-level step size with three-meal intra-day schedule"]
 variables:
   blood_glucose:
     type: state
@@ -87,3 +86,5 @@ simulation:
       value: 70.0
       label: "Dinner 70 g carbs"
   output_types: [state, input]
+
+references: ["TEST: minute-level step size with three-meal intra-day schedule"]

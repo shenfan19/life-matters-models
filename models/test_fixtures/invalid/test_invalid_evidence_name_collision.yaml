@@ -35,7 +35,6 @@ metadata:
     limitations: Not a real model; exists only to exercise this one loader check.
     limitations_cn: 并非真实模型；仅用于验证这一项加载器检查。
   tags: [test, error-detection, evidence, evidence-type-role-mismatch]
-  references: ["TEST(error-detection): evidence_type requires type: parameter"]
 
 variables:
   baseline_rate:
@@ -54,3 +53,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-31"
   output_variables: [baseline_rate]
+
+references: ["TEST(error-detection): evidence_type requires type: parameter"]

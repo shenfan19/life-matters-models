@@ -29,7 +29,6 @@ metadata:
       date-range check.
     limitations_cn: 并非真实模型；仅用于验证运行前的日期范围检查。
   tags: [test, error-detection, date, schedule]
-  references: ["TEST(error-detection): simulation.end_date must not precede start_date"]
 
 variables:
   x:
@@ -53,3 +52,5 @@ simulation:
   start_date: "2026-06-30"
   end_date: "2026-01-01"
   output_variables: [x]
+
+references: ["TEST(error-detection): simulation.end_date must not precede start_date"]

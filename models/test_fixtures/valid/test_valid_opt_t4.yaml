@@ -20,8 +20,7 @@ metadata:
       结果 regimen 中的日偏移必须能从索引正确解码回具体日历日期。
     limitations: Linear weight dynamics only; no metabolic adaptation or seasonal compliance modelled.
     limitations_cn: 仅采用线性体重动力学，未建模代谢适应或季节性依从性。
-  tags: [test, optimizer, t4, date-start, intervention-timing, mixed-integer]
-  references: ["TEST: T4 date-start window optimization"]
+  tags: [test, optimization, t4, date-start, intervention-timing, mixed-integer]
 variables:
   body_weight:
     type: state
@@ -98,7 +97,7 @@ simulation:
       label: "500 kcal/day deficit starting May 31"
   output_variables: [body_weight, cumulative_deficit, caloric_restriction]
 
-optimizer:
+optimization:
   method: nsga2
   objectives:
   - variable: body_weight
@@ -119,3 +118,5 @@ optimizer:
     population_size: 25
     n_generations: 40
     seed: 19
+
+references: ["TEST: T4 date-start window optimization"]

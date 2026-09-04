@@ -24,7 +24,6 @@ metadata:
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
     limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, cohens_d]
-  references: ["TEST: cohens_d evidence subtype isolation"]
 
 variables:
   cohens_d_display:
@@ -56,3 +55,5 @@ simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-31"
   output_variables: [cohens_d_display]
+
+references: ["TEST: cohens_d evidence subtype isolation"]

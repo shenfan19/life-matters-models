@@ -27,7 +27,6 @@ metadata:
     limitations: Not a real model; exists only to exercise this one loader check.
     limitations_cn: 并非真实模型；仅用于验证这一项加载器检查。
   tags: [test, error-detection, evidence, baseline_ref]
-  references: ["TEST(error-detection): rr/or applies_to requires baseline_ref"]
 
 variables:
   smoker_cvd_risk_auto:
@@ -52,3 +51,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-31"
   output_variables: [smoker_cvd_risk_auto]
+
+references: ["TEST(error-detection): rr/or applies_to requires baseline_ref"]

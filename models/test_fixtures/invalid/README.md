@@ -20,7 +20,7 @@
 | 文件 | 触发的校验 | 校验位置 |
 |------|-----------|---------|
 | `test_invalid_step_size.yaml` | `simulation.step_size` 必须为正数 | `validator.py` `Validator.validate_model` |
-| `test_invalid_optimizer_missing_method.yaml` | `optimizer.method` 必填 | `validator.py` `Validator.validate_model` |
+| `test_invalid_optimization_missing_method.yaml` | `optimization.method` 必填 | `validator.py` `Validator.validate_model` |
 | `test_invalid_equation_undefined_var.yaml` | `dynamics` 引用未声明变量 | `validator.py` `validate_equations`（AST 提取变量） |
 | `test_invalid_equation_deprecated_dt.yaml` | `dynamics` 使用废弃符号 `dt`，应改用 `step` | `validator.py` `validate_equations` |
 | `test_invalid_import_circular_a.yaml` + `_b.yaml` | 循环 import 检测（a↔b 互相导入） | `loader.py` `Loader._load_model_data` |

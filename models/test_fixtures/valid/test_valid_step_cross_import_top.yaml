@@ -25,9 +25,10 @@ metadata:
     limitations: Purely a numeric engine-correctness fixture; no physiological meaning.
     limitations_cn: 纯粹是引擎数值正确性测试用例，不具有生理学意义。
   tags: [test, step_size, cross_import, hour, multi_scale]
-  references: ["TEST: cross-step-size import — top model (1-hour step)"]
 imports:
 - test_fixtures/valid/test_valid_step_cross_import_base
+
+references: ["TEST: cross-step-size import — top model (1-hour step)"]
 
 variables:
   plasma_drug:

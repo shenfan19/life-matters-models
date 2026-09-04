@@ -27,7 +27,6 @@ metadata:
     limitations: Not a physiological model; exists only to pin same-day duration handling.
     limitations_cn: 不是生理模型；仅用于固定同日时长的处理逻辑。
   tags: [test, same-day, duration, regression]
-  references: ["TEST: start_date == end_date must simulate the full 24h, not a 0/1h stub"]
 
 variables:
   dose:
@@ -67,3 +66,5 @@ simulation:
       time_start: "18:00"
       value: 5.0
       label: "Evening dose (au)"
+
+references: ["TEST: start_date == end_date must simulate the full 24h, not a 0/1h stub"]

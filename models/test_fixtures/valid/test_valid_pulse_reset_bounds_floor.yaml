@@ -24,7 +24,6 @@ metadata:
     limitations: Not a physiological model; exists only to pin the reset/bounds interaction.
     limitations_cn: 不是生理模型；仅用于固定（pin住）重置与边界交互这一行为。
   tags: [test, pulse, bounds, regression]
-  references: ["TEST: pulse reset must not be clamped to bounds[0]"]
 
 variables:
   dose:
@@ -64,3 +63,5 @@ simulation:
       time_start: "08:00"
       value: 0.8
       label: "Daily dose (au)"
+
+references: ["TEST: pulse reset must not be clamped to bounds[0]"]

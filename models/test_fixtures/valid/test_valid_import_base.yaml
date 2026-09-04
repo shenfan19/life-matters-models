@@ -21,7 +21,6 @@ metadata:
     limitations: Purely structural; parameters are not clinically calibrated.
     limitations_cn: 纯结构性测试；参数未经过临床校准。
   tags: [test, import, base, component, no-input]
-  references: ["TEST: base component for import chain test"]
 variables:
   heart_rate:
     type: state
@@ -82,3 +81,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-30"
   output_types: [state]
+
+references: ["TEST: base component for import chain test"]

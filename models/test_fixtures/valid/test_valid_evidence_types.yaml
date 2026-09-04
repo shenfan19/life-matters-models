@@ -30,7 +30,6 @@ metadata:
     limitations: Values are illustrative; no clinical interpretation intended.
     limitations_cn: 数值仅为示意，不作临床解读。
   tags: [test, evidence, rr, or, hr, ard, cohens_d, ir, beta, pk]
-  references: ["TEST: evidence subtype coverage test"]
 
 variables:
   # --- States that accumulate or display evidence effective values ---
@@ -246,3 +245,5 @@ simulation:
     - or_adjusted_prob
     - ard_annual_benefit
     - vo2max_shift
+
+references: ["TEST: evidence subtype coverage test"]

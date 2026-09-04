@@ -23,7 +23,6 @@ metadata:
     limitations: Training adaptation parameters are simplified estimates; not validated.
     limitations_cn: 训练适应性参数为简化估计值，未经验证。
   tags: [test, schedules, date_range, days, phased, periodization]
-  references: ["TEST: phased schedules with date_range and days filters"]
 variables:
   fitness:
     type: state
@@ -168,3 +167,5 @@ simulation:
       label: "Constant: 5 sets Tue/Thu/Sat, all 4 months"
 
   output_variables: [fitness, fatigue, aerobic_minutes, strength_sets]
+
+references: ["TEST: phased schedules with date_range and days filters"]

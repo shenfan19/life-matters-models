@@ -27,7 +27,6 @@ metadata:
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
     limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, beta]
-  references: ["TEST: beta evidence subtype isolation"]
 
 variables:
   beta_display:
@@ -71,3 +70,5 @@ simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-31"
   output_variables: [beta_display, systolic_bp]
+
+references: ["TEST: beta evidence subtype isolation"]

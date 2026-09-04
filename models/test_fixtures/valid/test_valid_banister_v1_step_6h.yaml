@@ -38,7 +38,6 @@ metadata:
     limitations: No physiological meaning beyond reproducing the closed-form solution; purely a numeric engine-correctness fixture.
     limitations_cn: 除了重现解析闭式解之外不具有生理学意义；纯粹是一个数值引擎正确性测试夹具。
   tags: [test, banister, numerical_precision, engine_correctness, step_convergence]
-  references: ["Morton RH, Fitz-Clarke JR, Banister EW (1990) J Appl Physiol 69(3):1171-1177"]
 
 variables:
   fitness:
@@ -128,3 +127,5 @@ simulation:
       label: "Constant training_load=50 AU/day for 60 days (Protocol V4, step_size=6h)"
       regimens:
         - {variable: training_load, time_start: "00:00", time_end: "24:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-03-02"], label: "constant load (ADR 0131/0132: value is the per-day rate, independent of step_size or how many days date_range covers)"}
+
+references: ["Morton RH, Fitz-Clarke JR, Banister EW (1990) J Appl Physiol 69(3):1171-1177"]

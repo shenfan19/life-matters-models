@@ -32,7 +32,6 @@ metadata:
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
     limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, pk]
-  references: ["TEST: pk evidence subtype isolation"]
 
 variables:
   pk_display:
@@ -91,3 +90,5 @@ simulation:
           time_start: "08:00"
           value: 100.0
           label: "Daily drug dose 100 mg"
+
+references: ["TEST: pk evidence subtype isolation"]

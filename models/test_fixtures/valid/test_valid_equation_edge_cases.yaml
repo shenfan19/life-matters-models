@@ -68,13 +68,12 @@ metadata:
     limitations: >
       Pure engine-validation toy; level/countdown/risky_ratio have no physical meaning.
       Only covers the `dynamics:` evaluation path, not `equations[].condition` (see
-      test_valid_equation_condition.yaml) or optimizer-side expression evaluation.
+      test_valid_equation_condition.yaml) or optimization-side expression evaluation.
     limitations_cn: >
       纯引擎验证用玩具模型；level/countdown/risky_ratio 没有物理意义。仅覆盖
       `dynamics:` 求值路径，不覆盖 `equations[].condition`（见
       test_valid_equation_condition.yaml）或优化器侧的表达式求值。
   tags: [test, equations, edge-case, asteval, error-handling]
-  references: ["TEST: equation expression edge cases - chained comparison, ternary, short-circuit, runtime ZeroDivisionError per-step catch"]
   notes: |
     覆盖了 4 类边界情况：
     链式比较+三元表达式：1.0 if 0 < level < 10 else 0.0
@@ -158,3 +157,5 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-02"
   output_variables: [level, zone_flag, countdown, risky_ratio, short_circuit_flag]
+
+references: ["TEST: equation expression edge cases - chained comparison, ternary, short-circuit, runtime ZeroDivisionError per-step catch"]

@@ -3,13 +3,13 @@ metadata:
   lm_format_version: "1.0"
   description:
     problem: >
-      Tests three features together: (1) optimizer evaluation window shorter than simulation
-      (6-month eval vs 2-year visualisation); (2) pre-populated optimizer.results block with
+      Tests three features together: (1) optimization evaluation window shorter than simulation
+      (6-month eval vs 2-year visualisation); (2) pre-populated optimization.results block with
       5 Pareto solutions from a prior run — the GUI must show historical results and offer
       warm-start at load time; (3) combined hard and soft constraint handling.
     problem_cn: >
       同时测试三个功能：（1）优化器评估窗口短于仿真窗口（6 个月评估 vs 2 年可视化）；
-      （2）预填充的 optimizer.results 块，包含一次先前运行得到的 5 个 Pareto 解——GUI
+      （2）预填充的 optimization.results 块，包含一次先前运行得到的 5 个 Pareto 解——GUI
       必须在加载时展示历史结果并提供热启动（warm-start）选项；（3）硬约束与软约束的
       组合处理。
     result: >
@@ -24,7 +24,6 @@ metadata:
     limitations: Nutrient dynamics are simplified; parameters chosen for numeric clarity only.
     limitations_cn: 营养动力学经过简化，参数选取仅为了数值清晰，不代表真实生理值。
   tags: [test, opt_results, eval-window, warm-start, pareto, hard-soft-constraint]
-  references: ["TEST: optimizer evaluation window + pre-filled results block"]
 variables:
   muscle_mass:
     type: state
@@ -157,7 +156,7 @@ simulation:
       label: "Carbs 320 g/day"
   output_variables: [muscle_mass, fat_mass, cholesterol, energy_balance, protein_intake, carb_load]
 
-optimizer:
+optimization:
   method: nsga2
 
   # Evaluation window shorter than simulation (6 months vs 2 years → faster search)
@@ -219,3 +218,5 @@ optimizer:
     recommended:
       x: [1.10, 240.0]
       f: [-31.1, 20.2]
+
+references: ["TEST: optimization evaluation window + pre-filled results block"]
