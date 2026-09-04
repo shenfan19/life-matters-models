@@ -1,13 +1,4 @@
 metadata:
-  todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: adherence_decay
   lm_format_version: "1.0"
   updated: 2026-06-09
@@ -27,7 +18,10 @@ metadata:
     simulation: >
       无内置仿真配置，为纯组件模型。引用方在宿主模型的simulation.schedules中设置life_stress和reminder_intervention，典型对比为无干预基线、每周提醒一次、每日数字提醒三种方案。
     result: >
-      典型12个月轨迹，中等复杂方案、无提醒：第1月~0.80 → 第3月~0.65 → 第6月~0.52 → 第12月~0.40，据DiMatteo 2004均值校准。每周提醒可将6个月依从率提升约+0.12，据Haynes 2008的提醒有效性上限估算。
+      2026-09-04用--sim-only复现三方案12个月轨迹（life_stress=0.4、regimen_complexity=0.4）：
+      无干预基线第1月0.786 → 第3月0.673 → 第6月0.533 → 第12月0.330，6个月值落在DiMatteo 2004均值0.50附近，12个月值略低于早前估计的0.40；
+      每周SMS提醒（强度0.5）6个月末0.582，较基线+0.049，低于Haynes 2008提醒效应上限估算的+0.12；
+      每日APP提醒（强度1.0）在约第2月即收敛至0.85附近的稳态并全程维持，恢复效应明显强于每周提醒。
     limitations: >
       单一依从性变量代替"哪些剂次被跳过"的具体行为；
       副作用与依从性耦合为线性近似，真实关系为非线性；
@@ -48,9 +42,9 @@ metadata:
     importance: 0.25 - 设计为供多个慢病模型import的依从性组件，目前尚无实际import记录
     variable: 0.75 - WHO 2003/Osterberg 2005/DiMatteo 2004/Haynes 2008 Cochrane/Horne 1999/Vrijens 2012等多篇文献支撑
     equation: 0.5 - 自建衰减方程，base_decay_rate/reminder_recovery_strength分别锚定DiMatteo与Haynes报告的效应量
-    simulation: 0.5 - 经验证可正常跑通产出三方案轨迹，与自身校准目标(DiMatteo 6个月均值0.50)方向一致，未与独立数据比对
+    simulation: 0.5 - 2026-09-04复验：三方案轨迹方向一致，6个月无干预值0.53接近DiMatteo均值0.50，12个月值0.33略低于早前估计的0.40，每周提醒效应(+0.049)弱于Haynes上限估算(+0.12)，未与独立数据逐点比对
     optimization: 0.0 - 本文件不含optimization，为纯组件模型，不涉及决策变量搜索
-    confidence: 0.25 - 可正常跑通，但未与独立文献目标数值比对
+    confidence: 0.25 - 2026-09-04复验：可正常跑通，6个月节点与文献均值接近，但12个月值及提醒效应量级与早前估计有差距，未做独立数据逐点比对
   tags: [adherence, non-adherence, medication_compliance, chronic_disease, behavioral_dynamics, reference_component]
 
 # ── 变量 ─────────────────────────────────────────────────────────────────────────

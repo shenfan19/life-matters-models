@@ -4,12 +4,12 @@ metadata:
   todo:
     - type: nosim
       issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+      evidence: "2026-09-04 用 --sim-only 复现：CSV正常产出无报错，但blood_ketones_mmol_l在day9即跌至声明下界0.05并全程停留，与预期的营养性酮症0.5-3.0 mmol/L方向相反。追查ketone_dynamics方程：ketone_production_rate(0.000007)*fat_intake(155)*适应因子(~1)≈0.00117/day产酮，减去carb_ketone_suppression(0.00004)*carb(20)≈0.0008/day，再减去0.001*protein_intake(105)*0.1≈0.0105/day——蛋白质抑制项系数比产酮项和碳水抑制项大一个数量级，主导整个方程使净变化持续为负，血酮被压至下界后不再回升。同时muscle_glycogen_g在day87升至声明上界600（严格生酮碳水20g/day下糖原理应耗竭而非升高），glycogen_dynamics方程中glycogen_carb_replenish(0.5)*carb(20)=10/day补充项，在当前系数下超过了max(0,600-carb*1.2)*0.01≈5.76/day的消耗项，两者净效应为正，与变量自身description声明的'低碳水限制后快速耗竭'方向相反。体重仅降至93.66kg（89天降1.34kg），远低于Volek 2004 12周降9.9kg的文献量级——因血酮被错误压低，未能触发体重方程中`min(1.5,1+ketones*0.1)`的加速因子。这些均为方程系数标定问题，不是引擎报错。"
+      next: "由建模者重新校准ketone_dynamics的蛋白质抑制系数（当前0.001*protein*0.1量级过大）和glycogen_dynamics的补充/消耗系数平衡，使血酮和肌糖原动态方向与自身variable description声明的文献机制一致后重新验证。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+      evidence: "2026-09-04 用 --opt-only 复现：60个体×100代（6000次评估）全程feasible=0%，输出opt.csv仅1行（carb_intake_g_day≈39.4，body_weight_kg≈93.66，muscle_glycogen_g=600贴着上界）。除上述nosim记录的血酮/糖原方程系数问题外，追查reference_engine源码确认：optimizer_engine.py第80行`constraints = list(opt_block.get('constraints', []))`和optimizer_eval.py的`_eval_G`均未按`type: hard/soft`过滤，声明为soft的约束被当作hard强制执行；`_eval_G`对未声明`metric`字段的约束默认按整条轨迹每个时间步校验。本文件blood_ketones_mmol_l>=0.5声明type:soft但未加metric，baseline初始值0.1本就低于0.5，且如nosim所述血酮方程会把值进一步压向下界而非升向0.5，在soft被当hard执行+全程逐步校验的组合下从day1起持续违反，导致全区间0%可行，与carb_intake_g_day取值无关。此外optimization.startpoint.regimens仅声明carb_intake_g_day一个决策变量，fat_intake_g_day/protein_intake_g_day在优化上下文中未被任何regimen设置，回落到变量声明的基础value（各80g），与--sim baseline plan的155g/105g不同。"
+      next: "engine层面：_eval_G需要区分type:hard/soft；model层面：blood_ketones_mmol_l约束需补充metric（或改为达到诱导期后生效）；两处方程系数问题修复后一并重新验证。此为reference_engine已知设计缺口，非本文件独有，同批多个reference/medical文件的0%可行同样源于此，见本次任务报告。"
   name: ketogenic_diet
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,16 +20,17 @@ metadata:
     problem: >
       碳水摄入低于50g/天的生酮饮食通过肝糖原耗竭触发脂肪动员和酮体生成，但为期2到7天的酮症诱导期伴随电解质紊乱引起的酮症流感和初期肌糖原下降，个体差异显著。核心张力是：碳水限制越严格，酮体生成越充分，但同时营养充足性和肌肉保留面临的压力也越大，最优碳水摄入量和蛋白质分配难以从静态数据推断。
     result: >
-      文献结果：12周生酮方案体重降低9.9kg，同期低脂组仅降低5.1kg，甘油三酯降低33%（Volek 2004）；24 周生酮可使 2 型糖尿病患者 HbA1c 降低 1.5%（Westman 2008）。仿真预期呈现酮体从0升至营养性酮症水平0.5到3.0 mmol/L的诱导动态曲线，仿真尚未运行。
+      文献结果：12周生酮方案体重降低9.9kg，同期低脂组仅降低5.1kg，甘油三酯降低33%（Volek 2004）；24 周生酮可使 2 型糖尿病患者 HbA1c 降低 1.5%（Westman 2008）。
+      --sim-only以严格生酮碳水20g/day+脂肪155g/day+蛋白质105g/day验证：血酮不升反降，day9即跌至声明下界0.05并全程停留，未形成预期的0.5-3.0 mmol/L营养性酮症；肌糖原不降反升，day87升至声明上界600g；体重89天仅降1.34kg，远低于Volek 2004对应周期约9.9kg的量级。方程追查显示血酮方程中蛋白质抑制项系数比产酮项和碳水抑制项大一个数量级，是方向与预期相反的根本原因，详见nosim todo。--opt-only以碳水摄入为决策变量求解体重/肌糖原双目标，60个体×100代全程0%可行，未产出可用Pareto前沿，详见noopt todo。
     limitations: >
       未建模肾脏酮体清除和尿酮动态，以及Na、K、Mg丢失导致的电解质紊乱机制；超过1年的长期代谢灵活性提升和平台期尚未纳入。
   ratings:
     importance: 0.5 - 生酮饮食在糖尿病/减重领域证据强，是当前营养学热点；饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
     variable: 0.75 - 引用Volek/Westman等高质量RCT，酮症动力学参数有据
     equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.25 - 2026-09-04验证：跑通无报错，但血酮方程被蛋白质抑制项主导压至下界（应升反降）、肌糖原方程净效应为正（应降反升），两项均与自身variable description声明的文献机制方向相反，需重新校准系数
+    optimization: 0.0 - 2026-09-04验证：血酮约束soft未被engine区别对待而被当作hard强制、且未加metric默认逐时间步校验，叠加血酮方程本身把血酮压向下界，全区间0%可行，无可用前沿
+    confidence: 0.0 - 2026-09-04验证：--sim/--opt均跑通但核心机制（血酮生成、肌糖原耗竭）方向与文献基础相反，需先修正方程系数才能重新评估
   tags: [nutrition, ketogenic, ketosis, blood_glucose, weight_loss, fat_oxidation, diabetes]
 
 variables:
@@ -318,21 +319,6 @@ optimization:
     population_size: 60
     n_generations: 100
     seed: 19
-  results:
-    generated_at: "2026-05-17"
-    method: nsga2
-    n_solutions: 6
-    elapsed_seconds: 58.4
-    pareto_front:
-      - {x: [10.0], f: [82.3, 68.2]}
-      - {x: [20.0], f: [83.1, 92.4]}
-      - {x: [30.0], f: [84.5, 145.6]}
-      - {x: [50.0], f: [86.2, 230.1]}
-      - {x: [65.0], f: [87.4, 298.5]}
-      - {x: [80.0], f: [88.9, 352.3]}
-    recommended:
-      x: [20.0]
-      f: [83.1, 92.4]
 
 references:
   - "Volek JS et al. (2004) Comparison of energy-restricted very low-carbohydrate and low-fat diets on weight loss and body composition in overweight men and women. Nutr Metab 1:13."

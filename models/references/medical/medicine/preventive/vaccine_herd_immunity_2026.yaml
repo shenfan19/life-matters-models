@@ -2,14 +2,10 @@ category: physiological
 
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+      evidence: "2026-09-04 用 --opt-only 复现：60个体×100代（6000次评估）全程feasible=0%，无一解满足硬约束peak infected<=0.05；输出opt.csv仅1行（daily_vaccination_rate=0.015, immune_fraction=0.473, cumulative_infections=0.349），且该解本身仍违反约束，不构成可用Pareto前沿。根因：初始状态infected=0.05已等于约束上限，R0=4/infectious_period=5的SIR动力学在day 1即把infected推高至约0.062，daily_vaccination_rate在声明的[0.001,0.015]区间内均无法在约束窗口内把峰值感染压回5%以下。这是约束阈值与初始条件在当前搜索区间下的结构性不可行，不是引擎报错。原文件中此前手写的5解Pareto前沿（daily_vaccination_rate 0.003-0.015对应immune_fraction/cumulative_infections的伪渐变数值）与本次复现结果不符，已确认为未经实际运行的占位数据，已删除。"
+      next: "由建模者决定：调低初始infected、放宽约束阈值、缩短约束生效窗口（如仅在稳态而非全程施加），或扩大daily_vaccination_rate上界后重新验证可行性。"
   name: vaccine_herd_immunity
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,16 +16,16 @@ metadata:
     problem: >
       群体免疫阈值 p_c = 1 − 1/R₀ 是教科书方程，但它仅适用于完全有效疫苗和均匀混合人群。现实中，疫苗效力低于 100%，人群混合不均匀，例如存在超级传播者，且免疫会随时间衰退，使实际所需接种率远高于理论阈值。这个差距是公共卫生政策中真实存在的数量权衡。
     result: >
-      仿真预期呈现 1 年内易感、感染、康复人群在不同接种率和疫苗效力组合下的动态轨迹。优化预期揭示在峰值感染率不超过 5% 这一医疗容量约束下，接种率与副作用负担之间的前沿，仿真尚未运行。
+      --sim-only以每日0.5%人口接种率（持续半年）验证：感染率第2天升至峰值约7.6%后随接种和自然康复回落，年末immune_fraction因疫苗和自然免疫双重衰退降至约55.7%，cumulative_infections收敛于约37.3%。--opt-only以daily_vaccination_rate（[0.001, 0.015]区间）为决策变量求解immune_fraction/cumulative_infections双目标，60个体×100代全程0%可行：约束"峰值感染率不超过5%"与初始状态infected=0.05在R0=4的SIR动力学下结构性冲突，接种率上界0.015不足以在约束窗口内压制感染峰值，未产出可用Pareto前沿。
     limitations: >
       未包含年龄分层、超级传播者和变异株免疫逃逸机制；空间扩散需要网络模型扩展；参数基于通用类流感病原体，具体病原体须重新校准。
   ratings:
     importance: 0.75 - SIR群体免疫是公共卫生最核心模型，疫情防控基础理论；传染病专项模型，与其他场景交叉引用少
     variable: 0.75 - 引用Anderson & May教科书及Fine 2011等权威文献
     equation: 1.0 - SIR模型是流行病学被广泛引用且独立复现次数最多的标准方程形式之一
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.75 - 2026-09-04验证：--sim-only易感/感染/免疫轨迹方向和量级符合SIR预期，未逐点对比独立数据
+    optimization: 0.0 - 2026-09-04验证：peak infected<=0.05约束与初始infected=0.05在R0=4下结构性不可行，6000次评估0%可行解，无可用前沿；原手写Pareto前沿数据已确认为占位数据并删除
+    confidence: 0.25 - 2026-09-04验证：--sim跑通且方向符合SIR预期，但--opt因约束设计问题无法产出有效结果，整体未与独立文献数值比对
   tags: [epidemiology, vaccine, SIR, herd_immunity, preventive, public_health]
 
 variables:
@@ -258,20 +254,6 @@ optimization:
     population_size: 60
     n_generations: 100
     seed: 19
-  results:
-    generated_at: "2026-05-17"
-    method: nsga2
-    n_solutions: 5
-    elapsed_seconds: 72.3
-    pareto_front:
-      - {x: [0.003], f: [-0.61, 0.28]}
-      - {x: [0.005], f: [-0.68, 0.21]}
-      - {x: [0.008], f: [-0.74, 0.16]}
-      - {x: [0.010], f: [-0.78, 0.13]}
-      - {x: [0.015], f: [-0.82, 0.09]}
-    recommended:
-      x: [0.008]
-      f: [-0.74, 0.16]
 
 references:
   - "Anderson RM & May RM (1991) Infectious Diseases of Humans: Dynamics and Control. Oxford University Press."

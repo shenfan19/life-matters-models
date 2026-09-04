@@ -2,14 +2,10 @@ category: physiological
 
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+      evidence: "2026-09-04 用 --opt-only 复现：60个体×120代（7200次评估）全程feasible=0%，且从第1代起best_f即固定在[42, 0.00066]直到第120代未再变化。两个独立问题：(1) abductor_strength_pct>=60（描述写明'第28天'达标）声明type:soft但未加metric，追查reference_engine源码确认optimizer_engine.py第80行`constraints = list(opt_block.get('constraints', []))`及optimizer_eval.py的`_eval_G`均未按type字段过滤，soft被当作hard强制执行，且默认逐时间步校验；--sim-only显示baseline plan下abductor_strength要到day45才越过60%，day1-44全程违反，与pt_intensity取值无关，全区间0%可行。(2) 即便约束问题修复，本优化也不构成真正的权衡：hip_function_score方程直接随pt_intensity递增，dislocation_risk方程通过abductor_strength_pct（同样随pt_intensity递增）间接递减，两个目标对唯一决策类别pt_intensity方向一致（双赢，非此消彼长），前100+代best_f保持恒定同一点即是此结构性无权衡的直接证据，而非算法早熟收敛。"
+      next: "engine层面：_eval_G需要区分type:hard/soft；model层面：确认hip_function_score与dislocation_risk是否应保留为双目标——若要保留真实权衡，需引入一个与pt_intensity方向相反耦合的代价变量（如伤口/软组织应激），否则应改为单目标（如在dislocation_risk约束下最大化hip_function_score）。"
   name: hip_replacement
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -20,16 +16,16 @@ metadata:
     problem: >
       全髋关节置换术（THA）全球每年约100万例，满意度约90%，术后 12 周康复方案在功能恢复速率与安全风险之间存在核心张力：早期完全负重（FWB）和高强度物理治疗能加速 Oxford 评分恢复，但在术后前 4–6 周髋臼假体骨整合尚未完成时，过早 FWB 增加假体松动风险；同期脱位风险在前3个月最高，约1到3%。患者对恢复轨迹的期望往往过高（Mancuso 2012），个体化预测模型可改善共同决策。
     result: >
-      Learmonth 2007 / Charnley 1972 数据：12 周末 Oxford 评分平均改善 ≈22 分，VAS 疼痛缓解约 75%。仿真预期：Oxford 评分从 16 升至 37 分，步态对称指数从 0.6 提升至 0.88，外展肌力量从 50% 恢复至 85%，仿真尚未运行。
+      Learmonth 2007 / Charnley 1972 数据：12 周末 Oxford 评分平均改善 ≈22 分，VAS 疼痛缓解约 75%。--sim-only以文件内三阶段渐进康复baseline plan（PT强度3→5→7，负重1→2→3级）验证：Oxford评分day38即触及声明上界42分（早于12周末），最终值超过预期的37分；疼痛VAS降至0.5，外展肌力量升至95%（超过预期85%），步态对称指数升至0.96（超过预期0.88），脱位风险降至0.0005。方向与文献预期一致，幅度多数优于预期（评分/肌力/对称性均超出原设想区间上端），Oxford评分提前在5周左右触顶。--opt-only以三阶段PT强度为决策变量求解功能评分/脱位风险双目标，60个体×120代全程0%可行且best_f从第1代起即固定不变，未产出可用Pareto前沿；即便约束问题修复，两目标本身也随pt_intensity同向变化（双赢而非权衡），详见noopt todo。
     limitations: >
       未区分脱位风险较高的后外侧入路与风险较低的直接前路；未建模翻修手术和假体松动等长期并发症；脱位风险采用人群均值，未纳入BMI超过30时风险升高2倍和认知状态；骨整合时间假设固定 6 周，个体差异显著。
   ratings:
     importance: 0.25 - THA是全球最常见骨科手术之一，术后康复方案优化有重要临床价值；骨科专项模型，上层场景复用少
     variable: 0.75 - 引用Learmonth/Charnley等经典文献及ERAS方案，参数有据
     equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.75 - 2026-09-04验证：跑通，Oxford评分/疼痛/肌力/步态对称性方向与Learmonth 2007等文献预期一致，幅度多数达到或超过预期区间，Oxford评分提前触顶（day38）
+    optimization: 0.0 - 2026-09-04验证：abductor_strength_pct>=60约束缺metric+soft被engine当作hard强制导致全区间0%可行；且hip_function_score与dislocation_risk随唯一决策类别pt_intensity同向变化，双赢而非真实权衡，两个独立问题均详见noopt todo
+    confidence: 0.5 - 2026-09-04验证：--sim核心验证点（功能评分、肌力、步态）方向及量级与文献目标基本吻合，--opt因约束缺陷与目标结构性无权衡均无法给出有效结果
   tags: [tha, hip_replacement, oxford_score, dislocation_risk, gait_symmetry, physical_therapy, orthopedic]
 
 variables:
@@ -331,22 +327,6 @@ optimization:
     population_size: 60
     n_generations: 120
     seed: 19
-  results:
-    generated_at: "2026-05-17"
-    method: nsga2
-    n_solutions: 7
-    elapsed_seconds: 167.8
-    pareto_front:
-      - {x: [2.0, 4.0, 6.0], f: [-34.8, 0.00412]}
-      - {x: [2.5, 4.5, 7.0], f: [-35.6, 0.00398]}
-      - {x: [3.0, 5.0, 7.5], f: [-36.4, 0.00385]}
-      - {x: [3.5, 5.5, 8.0], f: [-37.0, 0.00374]}
-      - {x: [4.0, 6.0, 8.5], f: [-37.4, 0.00368]}
-      - {x: [4.5, 6.5, 9.0], f: [-37.8, 0.00363]}
-      - {x: [5.0, 7.0, 9.5], f: [-38.0, 0.00361]}
-    recommended:
-      x: [3.0, 5.0, 7.5]
-      f: [-36.4, 0.00385]
 
 references:
   - "Learmonth ID et al. (2007) The operation of the century: total hip replacement. Lancet 370(9597):1508-1519. [THA综述，10年结果，患者满意度数据]"

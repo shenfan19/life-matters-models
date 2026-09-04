@@ -2,14 +2,10 @@ category: physiological
 
 metadata:
   todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
     - type: noopt
       issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
+      evidence: "2026-09-04 用 --opt-only 复现：60个体×100代（6000次评估）全程feasible=0%，输出opt.csv仅1行（eating_window_hours=6.0贴着下界，insulin_sensitivity_index=1.0，lean_mass_kg≈69.1）。追查reference_engine源码确认两点：(1) optimizer_engine.py第80行`constraints = list(opt_block.get('constraints', []))`和optimizer_eval.py的`_eval_G`均未按`type: hard/soft`过滤或区别处理，声明为soft的约束被当作hard强制执行；(2) `_eval_G`对未声明`metric`字段的约束默认按整条轨迹（每个时间步）校验，而非取final值。本文件body_fat_percentage<=20声明type:soft但未加metric，baseline初始值28%（day1约27.96%）本就高于20，需数月才可能降到20%以下，在soft被当hard执行+全程逐步校验的组合下从day1起持续违反，导致全区间0%可行，与eating_window_hours取值无关。另外optimization.startpoint.regimens仅声明eating_window_hours一个决策变量，caloric_restriction_percent/exercise_timing在优化上下文中未被任何regimen设置，回落到变量声明的基础value（各为0），与--sim baseline plan的15%/禁食态运动设置不同，也印证优化情境下体脂下降路径比baseline更慢。"
+      next: "engine层面：optimizer_eval.py的_eval_G需要区分type:hard/soft（soft应计入惩罚而非阻断可行性）；model层面：body_fat_percentage约束需补充metric:final（或改为仅在窗口末尾生效）后重新验证。此为reference_engine已知设计缺口，非本文件独有，同批多个reference/medical文件的0%可行同样源于此，见本次任务报告。"
   name: intermittent_fasting
   lm_format_version: "1.0"
   updated: 2026-05-17
@@ -24,7 +20,8 @@ metadata:
     result: >
       文献结果：eTRF 5 周可使胰岛素敏感性升高、空腹胰岛素降低 3.4 μU/mL（Sutton 2018）；
       10 小时进食窗口 12 周可使体重降 2.6 kg、体脂率降低 3.3%（Wilkinson 2020）；
-      LC3-II 自噬标志物约在禁食 12 小时后显著升高。仿真尚未运行。
+      LC3-II 自噬标志物约在禁食 12 小时后显著升高。
+      --sim-only以16:8禁食+15%热量限制的baseline plan验证：胰岛素敏感性指数在day42即触及声明上界1.0（完全敏感），LC3比率在day72触及声明上界4.0，此后180天仿真剩余时间两者均贴着上界不再变化，体脂率180天末降至约19.97%（较基线28%降8个百分点，量级超过Wilkinson 2020的12周3.3%）。--opt-only以进食窗口时长为决策变量求解胰岛素敏感性/瘦体重双目标，60个体×100代全程0%可行：优化上下文中caloric_restriction_percent/exercise_timing未被任何regimen设置而回落到基础值0，体脂率下降路径比baseline更慢，soft约束body_fat_percentage<=20在被当作hard执行、且默认逐时间步校验的情况下从day1起持续违反，未产出可用Pareto前沿。
     limitations: >
       未建模昼夜节律调节，即eTRF与晚窗方案的差异，和女性月经周期对禁食响应的差异；
       超过1年的长期代谢适应与平台期尚未纳入。
@@ -32,9 +29,9 @@ metadata:
     importance: 0.75 - 间歇性禁食是当前代谢健康最热门干预，学术和公众需求均高；饮食干预常用背景组件，代谢/糖尿病场景引用预期中等
     variable: 0.75 - 引用Sutton 2018、Wilkinson 2020等Cell Metab高质量RCT
     equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.25 - 从未跑通--sim/--opt(nosim/noopt标记)
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.0 - 从未跑通--sim/--opt(nosim/noopt标记)
+    simulation: 0.5 - 2026-09-04验证：跑通且方向正确，但胰岛素敏感性/LC3比率分别在day42/72即触及声明上界并提前饱和，180天窗口后半段两指标失去区分度，幅度超出文献量级
+    optimization: 0.0 - 2026-09-04验证：body_fat_percentage<=20约束未加metric默认逐时间步校验，soft类型未被engine区别对待而被当作hard强制，baseline体脂28%需数月才可能降到20%以下，导致全区间0%可行；根因是reference_engine的soft约束处理缺口而非本文件方程设计，详见noopt todo
+    confidence: 0.25 - 2026-09-04验证：--sim方向正确但幅度提前触顶偏离文献量级，--opt因engine层约束处理缺口无法产出有效结果
   tags: [nutrition, intermittent_fasting, insulin_sensitivity, autophagy, body_composition, IGF1, time_restricted_eating]
 
 variables:
@@ -303,20 +300,6 @@ optimization:
     population_size: 60
     n_generations: 100
     seed: 19
-  results:
-    generated_at: "2026-05-17"
-    method: nsga2
-    n_solutions: 5
-    elapsed_seconds: 54.2
-    pareto_front:
-      - {x: [6.0], f: [0.748, 70.8]}
-      - {x: [7.0], f: [0.731, 71.2]}
-      - {x: [8.0], f: [0.713, 71.5]}
-      - {x: [10.0], f: [0.677, 71.8]}
-      - {x: [14.0], f: [0.605, 72.0]}
-    recommended:
-      x: [8.0]
-      f: [0.713, 71.5]
 
 references:
   - "Patterson RE et al. (2017) Intermittent fasting and human metabolic health. J Acad Nutr Diet 115(8):1203-1212."
