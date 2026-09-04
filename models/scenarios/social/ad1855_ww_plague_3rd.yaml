@@ -31,9 +31,6 @@ metadata:
     innovation: 0.25 - 鼠疫个人视角建模意图存在，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [plague, infectious-disease, 19th-century, pandemic, TODO]
-  references:
-    - "Benedict C (1996) Bubonic Plague in Nineteenth-Century China. Stanford University Press."
-    - "Echenberg M (2007) Plague Ports: The Global Urban Impact of Bubonic Plague 1894-1901. NYU Press."
 
 # TODO: 完整变量和方程待人物视角确定后填写
 variables: {}
@@ -46,3 +43,7 @@ simulation:
   start_date: "1855-01-01"
   end_date:   "1855-12-31"
   output_variables: []
+
+references:
+  - "Benedict C (1996) Bubonic Plague in Nineteenth-Century China. Stanford University Press."
+  - "Echenberg M (2007) Plague Ports: The Global Urban Impact of Bubonic Plague 1894-1901. NYU Press."

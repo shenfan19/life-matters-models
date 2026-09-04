@@ -39,8 +39,6 @@ metadata:
     - urbanization
     - health
     - literature
-  references:
-    - 骆驼祥子 (老舍, 1936)
 variables:
   work_intensity:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: savings
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - 骆驼祥子 (老舍, 1936)

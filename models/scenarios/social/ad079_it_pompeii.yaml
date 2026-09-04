@@ -250,7 +250,7 @@ simulation:
   - ash_depth
   - pyroclastic_intensity
 
-optimizer:
+optimization:
   method: multi_objective
   algorithm: nsga2
   population_size: 60

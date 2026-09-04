@@ -38,8 +38,6 @@ metadata:
     - physical-decline
     - social-ridicule
     - literature
-  references:
-    - Don Quixote (Cervantes, 1605)
 variables:
   quest_intensity:
     type: input
@@ -138,7 +136,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: ideal_strength
@@ -201,3 +199,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Don Quixote (Cervantes, 1605)

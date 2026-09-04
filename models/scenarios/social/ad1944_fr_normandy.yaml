@@ -32,9 +32,6 @@ metadata:
     innovation: 0.25 - 战斗应激驱动的生理-心理联合建模与已有HPA轴压力模型互补的意图存在，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [war, combat, wwii, normandy, survival, TODO]
-  references:
-    - "Ambrose SE (1994) D-Day: June 6, 1944: The Climactic Battle of World War II. Simon & Schuster."
-    - "Beevor A (2009) D-Day: The Battle for Normandy. Viking."
 
 variables: {}
 equations: {}
@@ -46,3 +43,7 @@ simulation:
   start_date: "1944-06-06"
   end_date:   "1944-06-30"
   output_variables: []
+
+references:
+  - "Ambrose SE (1994) D-Day: June 6, 1944: The Climactic Battle of World War II. Simon & Schuster."
+  - "Beevor A (2009) D-Day: The Battle for Normandy. Viking."

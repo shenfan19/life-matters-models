@@ -31,9 +31,6 @@ metadata:
     innovation: 0.25 - 人机融合与Cyberpsychosis的量化建模意图有趣，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [cyberpunk, fiction, 2077, transhumanism, TODO]
-  references:
-    - "CD Projekt Red (2020) Cyberpunk 2077 [Video Game]. CD Projekt."
-    - "Pondsmith M (1988) Cyberpunk 2013 Sourcebook. R. Talsorian Games."
 
 variables: {}
 equations: {}
@@ -45,3 +42,7 @@ simulation:
   start_date: "2077-01-01"
   end_date:   "2077-06-30"
   output_variables: []
+
+references:
+  - "CD Projekt Red (2020) Cyberpunk 2077 [Video Game]. CD Projekt."
+  - "Pondsmith M (1988) Cyberpunk 2013 Sourcebook. R. Talsorian Games."

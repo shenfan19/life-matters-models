@@ -39,8 +39,6 @@ metadata:
     - social-neglect
     - hallucination
     - literature
-  references:
-    - 卖火柴的小女孩 (Hans Christian Andersen, 1845)
 variables:
   match_selling_effort:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: coins_earned
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - 卖火柴的小女孩 (Hans Christian Andersen, 1845)

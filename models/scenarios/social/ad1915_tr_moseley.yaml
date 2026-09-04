@@ -32,8 +32,6 @@ metadata:
     innovation: 0.25 - 与ad1940_fr_doeblin构成"死亡概率×预期未来贡献"联合建模系列的意图明确，但尚未实现无法评估实际创新程度
     confidence: 0.0 - 仅有静态占位声明，未跑通--sim/--opt
   tags: [war, physicist, wwi, gallipoli, sacrifice, TODO]
-  references:
-    - "Heilbron JL (1974) H.G.J. Moseley: The Life and Letters of an English Physicist, 1887-1915. University of California Press."
 
 variables: {}
 equations: {}
@@ -45,3 +43,6 @@ simulation:
   start_date: "1915-08-06"
   end_date:   "1915-08-10"
   output_variables: []
+
+references:
+  - "Heilbron JL (1974) H.G.J. Moseley: The Life and Letters of an English Physicist, 1887-1915. University of California Press."

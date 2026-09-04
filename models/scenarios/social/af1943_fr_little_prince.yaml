@@ -39,8 +39,6 @@ metadata:
     - loss
     - philosophy
     - literature
-  references:
-    - Le Petit Prince (Antoine de Saint-Exupéry, 1943)
 variables:
   repair_effort:
     type: input
@@ -139,7 +137,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: connection_depth
@@ -202,3 +200,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Le Petit Prince (Antoine de Saint-Exupéry, 1943)

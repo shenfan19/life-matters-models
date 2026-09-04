@@ -39,8 +39,6 @@ metadata:
     - social-pretense
     - disease
     - literature
-  references:
-    - The Death of Ivan Ilyich (Tolstoy, 1886)
 variables:
   facade_maintenance:
     type: input
@@ -154,7 +152,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: inner_peace
@@ -217,3 +215,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - The Death of Ivan Ilyich (Tolstoy, 1886)

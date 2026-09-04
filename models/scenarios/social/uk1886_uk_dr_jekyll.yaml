@@ -38,8 +38,6 @@ metadata:
     - dual-personality
     - ethics
     - literature
-  references:
-    - Strange Case of Dr Jekyll and Mr Hyde (R.L. Stevenson, 1886)
 variables:
   drug_usage_frequency:
     type: input
@@ -153,7 +151,7 @@ simulation:
   output_types:
     - input
     - state
-optimizer:
+optimization:
   method: nsga2
   objectives:
     - variable: self_control
@@ -216,3 +214,6 @@ optimizer:
     population_size: 50
     n_generations: 80
     seed: 19
+
+references:
+  - Strange Case of Dr Jekyll and Mr Hyde (R.L. Stevenson, 1886)
