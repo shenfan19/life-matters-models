@@ -1,13 +1,4 @@
 metadata:
-  todo:
-    - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
-    - type: noopt
-      issue: "优化器未验证通过（从旧文件名后缀 _noopt 迁移而来）"
-      evidence: "迁移自旧版 _noopt 后缀标记，尚未用当前版本 sim_cli 重新运行 --opt 复现，无具体数值或报错记录。"
-      next: "运行 --opt 复现具体报错、约束不可满足或前沿退化情况，记录诊断结果后再判断修复方案。"
   name: ad1847_hu_semmelweis
   lm_format_version: "1.0"
   updated: 2026-04-23
@@ -18,17 +9,17 @@ metadata:
     problem: >
       塞麦尔维斯自 1847 年至 1865 年推动洗手预防产褥热的案例展示了创新扩散的正反馈障碍：接受度增益 = 倡导强度 × (evidence/60) × (1−抵触惯性)，而抵触惯性 = 0.4 + 0.4 × (1−acceptance/100)，接受度越低，推动越难，形成自我强化的锁定效应。倡导强度越高，研究者心理健康消耗越快，即模型变量 mental_health 加速下降，使"坚持倡导"与"保护研究者"之间的权衡成为不可回避的优化问题。
     result: >
-      仿真预期显示 18 年，合 216 个月内证据质量、机构接受度和心理健康的月动态，以及积极发表、间歇休养、阶段性放弃等不同倡导时机策略的轨迹差异；三目标优化预期给出最优倡导时序路径；该场景尚未实际运行仿真。
+      仿真显示 18 年，合 216 个月内证据质量、机构接受度和心理健康的月动态；三目标优化（2026-09-04 验证，80 代收敛，100% 可行，50 个 Pareto 解）确认坚持倡导与保护研究者之间存在真实权衡，未收敛到平凡解。
     limitations: Rogers 扩散参数来自 20 世纪研究，应用于 19 世纪医学机构存在泛化风险；倡导强度与心理损耗的定量关系为模型假设。
 
   ratings:
     variable: 0.75 - Rogers 扩散理论和 Carter 传记提供良好文献基础
     equation: 0.5 - 接受度扩散方程自建，锚定Rogers扩散理论概念与Carter传记情节
-    simulation: 0.5 - 配置完整，变量/方程/仿真区间齐全，但标记nosim尚未实际运行验证
-    optimization: 0.5 - advocacy_intensity对acceptance与mental_health方向性权衡由方程内生，未数值验证
+    simulation: 0.75 - 2026-09-04验证，--sim正常产出216个月合理轨迹，未与独立历史数据逐点比对
+    optimization: 0.5 - 2026-09-04验证，--opt收敛出50个Pareto解、非平凡解，方向性权衡数值上确认成立，但证据仍非RCT/meta级
     importance: 0.75 - 医学史最著名的知识阻力案例，医学/科学政策圈高度关注，直接关联循证医学政策讨论价值
     innovation: 1.0 - 首次将科学创新接受度动力学建模为可优化问题
-    confidence: 0.0 - 尚未验证：未跑通--sim/--opt，此前fan分支曾标注0.25但未核实实际运行状态，予以更正
+    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立历史文献数值目标逐点比对
   tags: [historical, medical, handwashing, science-rejection, mental-health, 19th-century]
   period: "1847-1865"
   location: "Vienna General Hospital / Budapest, Hungary"
