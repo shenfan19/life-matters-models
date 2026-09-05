@@ -17,7 +17,7 @@ metadata:
       A thiazide diuretic's blood-pressure-lowering effect and its uric-acid-raising side effect come from two independent measurements never jointly evaluated within the same framework, and loading both publications' dose-response coefficients into the same pharmacokinetic-pharmacodynamic model tests whether the joint feasible region is a contradiction, meaning no dose satisfies both objectives at once, or a tradeoff, meaning a continuous dose-response front exists with simply no free lunch.
       - Law et al. (2009)'s meta-analysis reports only HCTZ dose's effect on blood pressure, with no uric acid outcome.
       - Choi et al. (2012)'s cohort study reports only HCTZ dose's effect on gout or uric acid risk, with no blood pressure outcome.
-      This case is paired with homair_ogtt in the same directory to contrast two common joint-determination patterns: homair_ogtt shows a restricted joint feasible region, where some individuals get contradictory conclusions from the two standards, while this case shows the tradeoff-not-contradiction pattern, where the feasible region is non-empty and continuous.
+      This case contrasts with the homair_ogtt reverse-verification case's joint-determination pattern: homair_ogtt shows a restricted joint feasible region, where some individuals get contradictory conclusions from the two standards, while this case shows the tradeoff-not-contradiction pattern, where the feasible region is non-empty and continuous.
     method: |
       This file combines the following mechanisms:
       - HCTZ pharmacokinetics: a dosing pulse accumulates into a first-order-eliminating body-level state, thiazide_level, with a half-life of about 10 hours (Beermann and Groschinsky-Grind 1977).
