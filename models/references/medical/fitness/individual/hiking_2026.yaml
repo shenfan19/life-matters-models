@@ -9,18 +9,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      山地徒步的能量消耗由速度、坡度和背包重量共同决定，三者的交互关系高度非线性。Pandolf 经典代谢方程（1977）表明相同速度下坡度每增加 5% 代谢率上升 30-50%，背包每增加 10 kg 额外消耗约 10-15%。生物力学上存在一个反直觉现象：下坡时膝关节冲击力反而高于上坡，因此最大化行进距离与最小化关节累积损伤构成山地徒步规划的核心生理矛盾。军事行军和多日背包旅行场景对这一权衡尤为敏感。
+      Mountain hiking's energy cost is jointly determined by speed, slope, and pack weight, and
+      the three interact in a highly nonlinear way. Pandolf's classic metabolic equation (1977)
+      shows that at a given speed each 5% increase in slope raises metabolic rate by 30-50%, and
+      each additional 10 kg of pack weight adds about 10-15% to the cost. There is a counterintuitive
+      biomechanical fact: knee-joint impact force is actually higher going downhill than uphill, so
+      maximizing distance covered while minimizing cumulative joint damage forms the core
+      physiological tension in mountain-hiking planning. Military marching and multi-day backpacking
+      scenarios are especially sensitive to this tradeoff.
     result: >
-      仿真尚未运行。理论预期：4.5 km/h 中速平地行军 4 小时可完成约 18 km，关节应力指数稳步积累但不触发危险阈值；提速至 7 km/h 时距离增加约 55%，但关节应力因速度指数放大和下坡冲击上升 2 倍以上，疲劳在 3 小时前后明显加速。
+      Not yet run. Theoretical expectation: a 4-hour march at a moderate 4.5 km/h on flat terrain
+      covers about 18 km, with the joint-stress index accumulating steadily but not crossing a
+      dangerous threshold; raising speed to 7 km/h increases distance by about 55%, but joint stress
+      rises more than twofold from the speed exponent and downhill impact, and fatigue accelerates
+      markedly after about 3 hours.
     limitations: >
-      参数基于 70 kg 标准男性，不适用于体重差异显著的人群。海拔效应，即 3000 m 以上时 VO2max 每升高 1000 m 下降约 7%，采用简化线性校正；地形系数固定为丘陵值，η 为 1.2，未随地形实时变化；心理认知疲劳未建模。
+      Parameters are based on a standard 70 kg male and do not apply to populations with markedly
+      different body weight. The altitude effect, VO2max declining by about 7% per 1000 m above
+      3000 m, uses a simplified linear correction; the terrain factor is fixed at the hilly-terrain
+      value, eta equals 1.2, and does not vary with real-time terrain; psychological and cognitive
+      fatigue are not modeled.
   ratings:
-    importance: 0.25 - 山地徒步有军事/户外应用价值，但场景较专项；专项场景模型，上层引用预期低
-    variable: 0.75 - 基于Pandolf 1977经典方程及多篇军事医学文献，参数有据
-    equation: 0.75 - Pandolf 1977代谢方程是军事/户外生理学领域被广泛引用且独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Mountain hiking has military and outdoor application value, but the scenario is fairly specialized; a specialty-scenario model, expected to have low upstream citation
+    variable: 0.75 - Based on the classic Pandolf 1977 equation and multiple military-medicine publications, with well-documented parameters
+    equation: 0.75 - The Pandolf 1977 metabolic equation is a widely cited, independently reproduced standard form in military and outdoor physiology
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [hiking, Pandolf, energy_expenditure, joint_stress, backpack, slope, military, outdoor]
 
 variables:
@@ -29,116 +44,115 @@ variables:
     value: 4.5
     unit: km/h
     bounds: [1.0, 10.0]
-    description: "徒步速度（km/h）。休闲：3-4 km/h；标准行军：4.5-5 km/h；快速：6-8 km/h；竞速徒步：8-10 km/h"
+    description: "Hiking speed (km/h). Leisure: 3-4 km/h; standard march: 4.5-5 km/h; fast: 6-8 km/h; race walking: 8-10 km/h"
   slope_grade:
     type: input
     value: 0.0
     unit: "%"
     bounds: [-40.0, 60.0]
-    description: "坡度（%，正=上坡，负=下坡）。平地=0，缓坡=5-10，陡坡=20-30，极陡=40-60（Pandolf 1977）"
+    description: "Slope grade (%, positive=uphill, negative=downhill). Flat=0, gentle=5-10, steep=20-30, extreme=40-60 (Pandolf 1977)"
   pack_weight:
     type: input
     value: 15.0
     unit: kg
     bounds: [0.0, 50.0]
-    description: "背包重量（kg）。休闲日包：5-10 kg；多日徒步：15-25 kg；军事行军：30-50 kg（Knapik 2004）"
+    description: "Pack weight (kg). A casual day pack: 5-10 kg; multi-day hiking: 15-25 kg; a military march: 30-50 kg (Knapik 2004)"
   energy_expenditure_rate:
     type: state
     value: 5.0
     unit: kcal/min
     bounds: [1.0, 30.0]
-    description: "瞬时能量消耗率（kcal/min）。安静=1.2，平地轻松步行=3-5，山地负重行军=8-15（Pandolf 1977）"
+    description: "The instantaneous energy-expenditure rate (kcal/min). At rest=1.2, easy flat walking=3-5, loaded mountain marching=8-15 (Pandolf 1977)"
     io_role: output
   heart_rate:
     type: state
     value: 70.0
     unit: bpm
     bounds: [50.0, 200.0]
-    description: "心率（bpm）。安静 70，中等徒步 100-130，高强度山地行军 140-170"
+    description: "Heart rate (bpm). At rest 70, moderate hiking 100-130, high-intensity mountain marching 140-170"
     io_role: output
   cumulative_fatigue:
     type: state
     value: 0.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "累积疲劳积分（>60 明显影响步态稳定性，>80 受伤风险显著增加）"
+    description: "The cumulative-fatigue score (above 60 it markedly affects gait stability, above 80 injury risk rises sharply)"
     io_role: output
   joint_stress_index:
     type: state
     value: 0.0
     unit: score
     bounds: [0.0, 1000.0]
-    description: "累积关节应力指数（膝+踝关节，无量纲积分）。下坡和高背包重量显著增加膝关节冲击（Minetti 2002）"
+    description: "The cumulative joint-stress index (knee plus ankle, a dimensionless integral). Downhill terrain and heavier packs substantially raise knee impact (Minetti 2002)"
     io_role: output
   altitude:
     type: state
     value: 500.0
     unit: m
     bounds: [0.0, 8848.0]
-    description: "当前海拔高度（m）。通过积分坡度和速度得到高度变化；高海拔影响有效 VO2max"
+    description: "Current altitude (m). Obtained by integrating slope and speed to track elevation change; high altitude affects effective VO2max"
     io_role: output
   cumulative_distance:
     type: state
     value: 0.0
     unit: km
     bounds: [0.0, 200.0]
-    description: "累计徒步距离（km）"
+    description: "Cumulative hiking distance (km)"
 
-  # ── 参数 ──────────────────────────────────────────────────────────────────────
   body_weight:
     type: parameter
     value: 70.0
     unit: kg
-    description: "徒步者体重（kg）。Pandolf 方程中的 W 参数；标准男性 70 kg"
+    description: "The hiker's body weight (kg). The W parameter in the Pandolf equation; a standard male value of 70 kg"
     reference: "Pandolf KB et al. (1977) J Appl Physiol 43(4):577-581"
   terrain_factor:
     type: parameter
     value: 1.2
     unit: dimensionless
-    description: "地形系数 η（Pandolf 方程）。平整路面=1.0，丘陵小径=1.2，山地岩石=1.5，沙地=1.8（Pandolf 1977）"
+    description: "The terrain factor eta (the Pandolf equation). Smooth road=1.0, hilly trail=1.2, rocky mountain terrain=1.5, sand=1.8 (Pandolf 1977)"
     reference: "Pandolf KB et al. (1977) J Appl Physiol 43(4):577-581"
   kcal_per_watt_min:
     type: parameter
     value: 0.0144
     unit: kcal/W/min
-    description: "功率-热量换算系数（1 W = 1 J/s = 0.06 kJ/min ≈ 0.0144 kcal/min）"
+    description: "The power-to-calorie conversion factor (1 W = 1 J/s = 0.06 kJ/min, about 0.0144 kcal/min)"
 
 equations:
   pandolf_metabolic_rate:
     description: |
-      Pandolf 代谢方程（1977）：M = 1.5W + 2(W+L)(L/W)² + η(W+L)(1.5V² + 0.35VG)
-      M = 代谢率（W）；W = 体重（kg）；L = 背包（kg）；V = 速度（m/s）；G = 坡度（%）；η = 地形系数
-      换算为 kcal/min：kcal/min = M（W）× 0.0144
+      The Pandolf metabolic equation (1977): M = 1.5W + 2(W+L)(L/W)^2 + eta(W+L)(1.5V^2 + 0.35VG)
+      M = metabolic rate (W); W = body weight (kg); L = pack weight (kg); V = speed (m/s); G = slope grade (%); eta = terrain factor
+      Converted to kcal/min: kcal/min = M(W) x 0.0144
     condition: true
     priority: 10
     dynamics:
       energy_expenditure_rate: "max(1.2, (1.5 * body_weight + 2.0 * (body_weight + pack_weight) * (pack_weight / max(1.0, body_weight)) ** 2 + terrain_factor * (body_weight + pack_weight) * (1.5 * (hiking_speed / 3.6) ** 2 + 0.35 * (hiking_speed / 3.6) * slope_grade)) * kcal_per_watt_min)"
   heart_rate_response:
-    description: "心率随代谢率升高（线性近似，基于 ACSM 运动强度-心率关系）"
+    description: "Heart rate rises with the metabolic rate (a linear approximation, based on the ACSM exercise-intensity-versus-heart-rate relationship)"
     condition: true
     priority: 9
     dynamics:
       heart_rate: "min(200.0, 70.0 + energy_expenditure_rate * 8.0 + cumulative_fatigue * 0.2)"
   fatigue_accumulate:
-    description: "累积疲劳：代谢强度和背包重量共同驱动，高坡度加速疲劳"
+    description: "Cumulative fatigue: jointly driven by metabolic intensity and pack weight, with steep slope accelerating fatigue"
     condition: "hiking_speed > 0"
     priority: 8
     dynamics:
       cumulative_fatigue: "min(100.0, cumulative_fatigue + energy_expenditure_rate * 0.02 + abs(slope_grade) * 0.005 * (hiking_speed / 4.5))"
   joint_stress_accumulate:
-    description: "关节应力积累：下坡时膝关节冲击更大（Minetti 2002），高速+高背包指数级增加"
+    description: "Joint-stress accumulation: downhill terrain produces greater knee impact (Minetti 2002), rising exponentially with high speed and heavy pack weight combined"
     condition: "hiking_speed > 0"
     priority: 7
     dynamics:
       joint_stress_index: "joint_stress_index + (body_weight + pack_weight) * (hiking_speed / 4.5) ** 1.5 * (1.0 + max(0.0, -slope_grade) * 0.025)"
   altitude_update:
-    description: "海拔变化：速度 × 坡度 → 高度增减（每分钟爬升 = V × G / 100 × 1000 / 60 m）"
+    description: "Altitude change: speed times slope grade determines elevation gain or loss (climb per minute = V x G / 100 x 1000 / 60 m)"
     condition: true
     priority: 6
     dynamics:
       altitude: "max(0.0, altitude + (hiking_speed / 3.6) * (slope_grade / 100.0) * 60.0)"
   distance_accumulate:
-    description: "累计距离（km/min = speed/60）"
+    description: "Cumulative distance (km/min = speed/60)"
     condition: "hiking_speed > 0"
     priority: 5
     dynamics:
@@ -160,19 +174,19 @@ simulation:
         value: 4.5
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "标准行军速度（4.5 km/h）"
+        label: "Standard march speed (4.5 km/h)"
       - variable: slope_grade
         time_start: "07:00"
         value: 5.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "缓上坡（5% 坡度）"
+        label: "Gentle uphill (5% grade)"
       - variable: pack_weight
         time_start: "07:00"
         value: 15.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "多日徒步背包（15 kg）"
+        label: "Multi-day hiking pack (15 kg)"
 
 optimization:
   method: nsga2
@@ -180,26 +194,26 @@ optimization:
     - variable: cumulative_distance
       metric: final
       direction: maximize
-      description: "最大化 4 小时累计行程（移动距离）"
+      description: "Maximizing distance covered over a 4-hour march"
     - variable: joint_stress_index
       metric: final
       direction: minimize
-      description: "最小化累计关节应力（膝关节损伤风险）"
+      description: "Minimizing cumulative joint stress (knee-injury risk)"
   constraints:
     - variable: cumulative_fatigue
       condition: "<= 80"
       type: hard
-      description: "疲劳上限 80 分（超过此值步态失稳，受伤风险急剧增加）"
+      description: "A fatigue ceiling of 80 points (above this, gait becomes unstable and injury risk rises sharply)"
     - variable: heart_rate
       condition: "<= 170"
       type: soft
-      description: "心率目标上限 170 bpm（有氧-无氧阈值，维持可持续行军）"
+      description: "A target heart-rate ceiling of 170 bpm (the aerobic-anaerobic threshold, sustaining a viable march)"
   startpoint:
     regimens:
       - variable: hiking_speed
         time_start: "07:00"
         time_end: "07:00"
-        label: "徒步速度（km/h，2.5=慢速恢复，7.0=快速行军）"
+        label: "Hiking speed (km/h, 2.5=slow recovery, 7.0=fast march)"
         optimize:
           value: [2.5, 7.0]
   algorithm:

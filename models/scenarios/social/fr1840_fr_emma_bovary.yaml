@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: fr1840_fr_emma_bovary
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      艾玛·包法利（福楼拜《包法利夫人》1857）在婚后面临三重动态张力：浪漫主义追求强度，即带来短期精神满足但积累债务和道德代价；融入乡村现实生活，即能降低债务风险但会加剧抑郁和幻灭感；以及自我认知，即能减少幻觉与债务但需面对无法逃避的现实。每次幻灭后重新启动浪漫追求构成正反馈螺旋，最终以债务崩溃终结。
+      After marriage, Emma Bovary (Flaubert's Madame Bovary, 1857) faces a triple dynamic
+      tension: the intensity of pursuing romanticism brings short-term emotional satisfaction but
+      accumulates debt and moral cost; integrating into rural reality can lower debt risk but
+      deepens her depression and disillusionment; and self-awareness can reduce both hallucination
+      and debt but requires facing a reality she cannot escape. Restarting the romantic pursuit
+      after each disillusionment forms a positive-feedback spiral, ultimately ending in a debt
+      collapse.
     result: >
-      仿真预期显示 60 个月内心理满足感、债务积累和社会声誉的月动态，以及崩溃轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to show the monthly dynamics of psychological satisfaction, debt
+      accumulation, and social reputation across 60 months, and the collapse trajectory. This is
+      currently a draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出60个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - psychological_health与social_reputation经方程追踪无对立驱动，romantic_pursuit同时损害两目标；2026-09-04验证--opt收敛至单一前沿点(100,95)，数值确认无权衡
-    importance: 0.25 - 包法利夫人是经典文学案例，但相对小众受众，且为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 6 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 4 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 60-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - psychological_health and social_reputation show no opposing drive when traced through the equations, with romantic_pursuit harming both objectives at once; verified on 2026-09-04 that --opt converges to a single front point (100,95), numerically confirming no tradeoff
+    importance: 0.25 - Madame Bovary is a classic literary case, but with a relatively niche audience, and this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - depression
     - romantic-delusion
@@ -38,7 +46,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 浪漫主义追求强度：追求婚外情、华服、奢靡生活的强度
+    description: The intensity of pursuing romanticism, the intensity of pursuing affairs, fine clothes, and extravagant living
     reference: TODO:SOURCE
   social_conformity:
     type: input
@@ -47,7 +55,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 融入乡村生活：接受平庸现实、履行妻子母亲职责
+    description: Integrating into rural life, accepting a mundane reality and fulfilling the duties of wife and mother
     reference: TODO:SOURCE
   self_reflection:
     type: input
@@ -56,7 +64,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 自我认知：理解自身期望与现实差距的努力
+    description: Self-awareness, the effort to understand the gap between her own expectations and reality
     reference: TODO:SOURCE
   psychological_health:
     type: state
@@ -65,7 +73,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 心理健康：抑郁程度的反指标（高=健康，低=崩溃）
+    description: Psychological health, an inverse indicator of depression level (high=healthy, low=collapsed)
     reference: TODO:SOURCE
     io_role: output
   debt_level:
@@ -75,7 +83,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 债务积累：为追求浪漫主义生活欠下的债务
+    description: Debt accumulation, debt incurred pursuing a romanticized life
     reference: TODO:SOURCE
     io_role: output
   disillusionment:
@@ -85,7 +93,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 幻灭感：每次期待落空的累积失望
+    description: Disillusionment, the accumulated disappointment from each dashed expectation
     reference: TODO:SOURCE
     io_role: output
   social_reputation:
@@ -95,29 +103,29 @@ variables:
     bounds:
       - 0
       - 100
-    description: 社会声誉：在小镇的社会地位和他人评价
+    description: Social reputation, her social standing and how others regard her in the small town
     reference: TODO:SOURCE
     io_role: output
 equations:
   debt_growth:
     dynamics:
       debt_level: min(100, debt_level + romantic_pursuit * 2.5)
-    description: 浪漫追求累积债务
+    description: The romantic pursuit accumulates debt
     reference: TODO:SOURCE
   disillusionment_growth:
     dynamics:
       disillusionment: min(100, disillusionment + romantic_pursuit * 1.5 - self_reflection * 2.0)
-    description: 每次追求都有幻灭的反弹
+    description: Each pursuit rebounds into disillusionment
     reference: TODO:SOURCE
   mental_decay:
     dynamics:
       psychological_health: max(0, min(100, psychological_health - ((disillusionment / 100) * 2.5) - ((debt_level / 100) * 1.5) + (social_conformity * 1.0) + (self_reflection * 1.5)))
-    description: 幻灭+债务+压抑共同侵蚀心理健康
+    description: Disillusionment, debt, and repression together erode psychological health
     reference: TODO:SOURCE
   reputation_change:
     dynamics:
       social_reputation: max(0, min(100, social_reputation - (romantic_pursuit * 0.8) + social_conformity * 0.5))
-    description: 婚外情暴露降低声誉
+    description: Exposure of the affairs lowers her reputation
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -150,7 +158,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 浪漫主义追求强度
+        label: The intensity of pursuing romanticism
         optimize:
           value:
             - 0
@@ -166,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 融入乡村生活
+        label: Integrating into rural life
         optimize:
           value:
             - 0
@@ -182,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 自我认知
+        label: Self-awareness
         optimize:
           value:
             - 0

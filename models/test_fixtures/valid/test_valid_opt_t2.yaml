@@ -7,19 +7,11 @@ metadata:
       each meal. Breakfast window is 06:00–09:00 at 1-hour granularity (4 slots); lunch window
       is 11:30–13:00 at 15-minute granularity (7 slots). Tests that both step sizes are decoded
       correctly and that the hourly model step resolves sub-hour time slots.
-    problem_cn: >
-      验证时间窗优化：每餐的剂量数值和进食时刻均可作为搜索变量。早餐窗口为 06:00–09:00，粒度为
-      1 小时（4 个时隙）；午餐窗口为 11:30–13:00，粒度为 15 分钟（7 个时隙）。测试两种粒度（时间
-      步长）是否都能被正确解码，以及小时级模型步长能否正确解析低于小时的时间时隙。
     result: >
       Decision vector has 4 dimensions (breakfast_value, breakfast_slot, lunch_value, lunch_slot).
       Slot indices must decode to correct wall-clock times. Meal timing should appear as a
       meaningful axis in the Pareto front, not just dose magnitude.
-    result_cn: >
-      决策向量为 4 维（早餐剂量值、早餐时隙、午餐剂量值、午餐时隙）。时隙索引必须解码为正确的
-      实际时刻。进餐时间应在 Pareto 前沿中体现为有意义的一个维度，而不只是剂量大小在起作用。
     limitations: Glucose dynamics are simplified; not physiologically calibrated.
-    limitations_cn: 血糖动力学经过简化，未经生理学标定。
   tags: [test, optimization, t2, time-window, opt_step, chronobiology]
 variables:
   blood_glucose:

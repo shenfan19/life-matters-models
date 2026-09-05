@@ -7,20 +7,11 @@ metadata:
       by exactly 1% per day, giving a known analytical trajectory: day 0→100.0, day 1→99.0,
       day 2→98.01, day 3→97.03. These values are the ground truth that test_valid_step_cross_import_top
       (running at 1-hour steps) must reproduce at 24-hour boundaries.
-    problem_cn: >
-      跨步长 import 测试的基础组件（步长=1 天）。体重每天精确衰减 1%，得到已知的解析轨迹：
-      第 0 天→100.0，第 1 天→99.0，第 2 天→98.01，第 3 天→97.03。这些数值是
-      test_valid_step_cross_import_top（以 1 小时步长运行）必须在每 24 小时边界上重现的真值
-      （ground truth）。
     result: >
       When imported by an hourly model, body_mass at 24-hour marks should match the daily
       ground truth exactly. Any deviation indicates the engine is applying the wrong step size
       to this equation.
-    result_cn: >
-      当被小时级模型 import 时，body_mass 在每个 24 小时节点上应与逐日真值完全一致。任何偏差
-      都表明引擎对该方程使用了错误的步长。
     limitations: No physiological meaning; purely a numeric correctness fixture.
-    limitations_cn: 不具有生理学意义，纯粹是数值正确性测试用例。
   tags: [test, step_size, cross_import, day, multi_scale]
 variables:
   body_mass:

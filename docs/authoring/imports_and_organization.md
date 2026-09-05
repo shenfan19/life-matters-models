@@ -1,71 +1,71 @@
-# Imports 与模型组织
+# Imports and Model Organization
 
-## Imports 与输出选择
+## Import Merging and Output Selection
 
-`imports` 只支持显式路径：
+`imports` only supports explicit paths:
 
-- `papers/paper2/ckd_protein_a4_p2`：从 `models/` 根目录出发，省略 `.yaml`，不写 `models/` 前缀。
-- `references/medical/physiology/glucose_regulation_2026_mw`：同上，深层路径写全即可。
-- `./local_component`、`../paper1/foo`：从当前 YAML 所在目录出发。
+- `papers/paper2/ckd_protein_a4_p2`: starting from the `models/` root, omitting `.yaml` and the `models/` prefix.
+- `references/medical/physiology/glucose_regulation_2026_mw`: same convention, deep paths written out in full.
+- `./local_component`, `../paper1/foo`: relative to the directory the current YAML file is in.
 
-裸名字检索已禁用，例如 `imports: ckd_protein_a4_p2` 不递归搜索 `models/`，须写出完整相对路径。
+Bare-name lookup is disabled; `imports: ckd_protein_a4_p2` will not recursively search `models/`, so the full relative path must be written out.
 
-### 合并顺序与覆盖规则
+### Merge Order and Override Rules
 
-**合并顺序：**
+Merge order:
 
-1. imports 按列表顺序加载，**靠后的覆盖靠前的**
-2. **当前文件始终覆盖所有 imports**，无论 imports 列表怎么写
-3. 循环 import 自动报错（A → B → A 不允许）
-4. 同一文件被多次 import（菱形依赖：A → B、C，B → D，C → D）时只加载一次，不重复叠加
+1. Imports load in list order, and later entries override earlier ones.
+2. The current file always overrides every import, regardless of how the imports list is written.
+3. Circular imports are rejected automatically (A to B to A is not allowed).
+4. A file imported multiple times through diamond dependencies, such as A importing both B and C while both B and C import D, loads only once and is not stacked repeatedly.
 
-**覆盖机制（deep merge）：**
+Override mechanism (deep merge):
 
-合并算法是全字段递归深合并——**不只是 `simulation` 和 `optimization`，所有顶层块（`variables`、`equations`、`metadata`、`simulation`、`optimization`）都适用相同规则**：
+The merge algorithm is a full-field recursive deep merge. This is not limited to `simulation` and `optimization`; every top-level block, including `variables`, `equations`, `metadata`, `simulation`, and `optimization`, follows the same rule.
 
-| 情况 | 结果 |
+| Situation | Result |
 |------|------|
-| 根模型和 import 都定义了同名 variable/equation | **根模型的版本完全替换** import 的版本（深合并：子字段也按 root 优先） |
-| 只有 import 定义的 variable/equation | **保留**，根模型不影响它 |
-| 根模型和 import 都有 `simulation.start_date` | **根模型的值覆盖** import 的值 |
-| import 有 `simulation.plans`，根模型没有 | **保留** import 的 `plans` |
+| Both the root model and an import define the same variable or equation | The root model's version fully replaces the import's version (deep merge, with sub-fields likewise preferring root) |
+| Only an import defines the variable or equation | It is kept, unaffected by the root model |
+| Both the root model and an import define `simulation.start_date` | The root model's value overrides the import's value |
+| An import has `simulation.plans` and the root model does not | The import's `plans` is kept |
 
-典型用法：component 模型（`references/` 下）通常有自己的 `simulation` 块用于独立运行，import 后根模型的 `simulation` 会覆盖其起止日期和步长——这是预期行为，component 的仿真配置仅作组件独立运行用。
+Typical usage: a component model under `references/` usually has its own `simulation` block for standalone runs; after import, the root model's `simulation` overrides its start and end dates and step size, which is the expected behavior, since a component's simulation configuration is only meant for running the component standalone.
 
-**输出变量选择规则：**
+Output variable selection rules:
 
-- 根模型**未定义** `simulation.output_variables` 和 `output_types`：继承最后一个 import 的输出选择（与其他字段的 deep merge 行为一致）
-- 根模型**显式定义了任一**输出字段：根模型定义优先；若仅定义其中一个，另一个从 import 继承的值同时清除
-- 两个字段都不存在或都为空：输出所有变量
+- If the root model defines neither `simulation.output_variables` nor `output_types`, it inherits the output selection from the last import, consistent with the deep-merge behavior of other fields.
+- If the root model explicitly defines either output field, the root model's definition takes priority; if only one of the two is defined, the other field's value inherited from the import is cleared as well.
+- If neither field exists anywhere, or both are empty, all variables are output.
 
-GUI 读取模型时会显示 resolved model：变量、方程、输出变量、`simulation` 和 `optimization` 都包含 imports 合并后的结果。模型页会标出各字段来自哪个 YAML（provenance）。
-- `output_types` 只支持 `input`、`parameter`、`state`。
-- `output_variables` 中不存在的变量会被跳过，并在 API/GUI 中给出 warning；不会再生成零值曲线。
+When the GUI loads a model, it displays the resolved model: variables, equations, output variables, `simulation`, and `optimization` all reflect the result after merging imports. The model page marks which YAML file each field's value came from (provenance).
+- `output_types` only supports `input`, `parameter`, and `state`.
+- A variable named in `output_variables` that does not exist is skipped, with a warning surfaced in the API and GUI; a zero-value curve is no longer generated for it.
 
 ---
 
-## 模型分类体系
+## Model Classification System
 
-三层目录：`models/references/{L1}/{L2}/{L3}/file.yaml`
+A three-level directory: `models/references/{L1}/{L2}/{L3}/file.yaml`
 
-| L1 | L2 | 说明 |
+| L1 | L2 | Description |
 |----|----|----|
-| medical | physiology / nutrition / fitness / disease / medicine / surgery / psychology | 生理与医学 |
-| social | economy / conflict / law / psychology / technology / demography | 社会经济与社会学 |
-| environmental | climate | 环境科学 |
-| risk | actuarial | 精算与风险 |
+| medical | physiology / nutrition / fitness / disease / medicine / surgery / psychology | Physiology and medicine |
+| social | economy / conflict / law / psychology / technology / demography | Socioeconomics and sociology |
+| environmental | climate | Environmental science |
+| risk | actuarial | Actuarial science and risk |
 
-完整 L3 细分见 `docs/decisions/0022-models-three-level-taxonomy.md`。
+The full L3 breakdown is in `docs/decisions/0022-models-three-level-taxonomy.md`.
 
-### `references/` 目录约定
+### `references/` Directory Conventions
 
-`references/` 下的模型分两类，optimization 要求不同：
+Models under `references/` fall into two categories with different optimization requirements:
 
-| 类型 | 特征 | optimization 要求 |
+| Type | Characteristics | Optimization requirement |
 |------|------|--------------|
-| **可独立分析的参考模型**（fitness、disease、nutrition 等）| 有自己的 `input` 变量和 `simulation.plans[*].regimens`，可直接运行 | **应有** `optimization` 块 |
-| **深层生理组件**（physiology/ 下的 `_mw` 系列，如 `digestive_system`、`insulin_system`、`glucose_regulation` 等）| 无 `input` 变量，主要为 `import` 的积木，单独运行无生理意义 | **不需要** `optimization` |
+| Standalone reference model (fitness, disease, nutrition, etc.) | Has its own `input` variables and `simulation.plans[*].regimens`, and can run directly | Should have an `optimization` block |
+| Deep physiological component (the `_mw` series under physiology/, such as `digestive_system`, `insulin_system`, `glucose_regulation`) | Has no `input` variables and is mainly a building block for `import`; running it standalone has no physiological meaning | Does not need `optimization` |
 
-判断原则：若模型的 `variables` 中没有 `type: input` 的变量，说明它是纯组件，不需要 optimization。
+Rule of thumb: if a model's `variables` contains no variable of `type: input`, it is a pure component and does not need optimization.
 
 ---

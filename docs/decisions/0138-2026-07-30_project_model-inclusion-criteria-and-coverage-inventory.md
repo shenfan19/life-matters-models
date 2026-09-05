@@ -1,57 +1,57 @@
-# 0138 — 模型纳入标准（Inclusion Criteria）与学科覆盖盘点
+# 0138 - Model Inclusion Criteria and Discipline Coverage Inventory
 
-**日期**：2026-07-30
-**状态**：✅ 已接受
+**Date**: 2026-07-30
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-LM 项目此前没有明确的"纳入标准"，判断"要不要为某个学科/某个声称投入建模精力"这件事一直靠建模者临时判断，没有可复用的粗筛工具。写论文/报告时逐个案例讨论"哪里成功、哪里不足"容易失焦，既缺乏判断依据，也无法系统性回答"LM format 目前对哪些学科适用、对哪些学科还不清楚"这个更基础的问题。
+The LM project previously had no clear "inclusion criteria"; deciding whether a discipline or a claim is worth the modeling effort always relied on the modeler's ad hoc judgment, with no reusable screening tool. Discussing case by case, when writing a paper or report, which parts succeeded and which fell short easily loses focus, lacking both a judgment basis and a systematic way to answer the more basic question of which disciplines LM format currently applies to and which remain unclear.
 
-`models/test_validation/validation_report.md` 已有一套成熟的**评估**方法论，包含六阶段验证流程、四维归因分类、`validation_confidence` 量表，但评估发生在模型已经建成之后。纳入标准要解决的是评估之前的问题，同一套四维归因分类本身在"验证框架（导引）"一节已经提到可以用于预筛，但没有被提炼成一个独立的、可操作的判断工具，也没有对应的学科级盘点数据。
+`models/test_validation/validation_report.md` already has a mature evaluation methodology, including a six-stage validation process, a four-dimension attribution classification, and a `validation_confidence` scale, but evaluation happens after a model is already built. Inclusion criteria address the problem before that point; the same four-dimension attribution classification is already mentioned in the "Validation Framework (Guide)" section as usable for pre-screening, but it had not been distilled into an independent, actionable judgment tool, nor did it have corresponding discipline-level inventory data.
 
-## 决策
+## Decision
 
-采纳"纳入 → 评估 → 输出"三阶段框架，本 ADR 对应纳入阶段：
+Adopt a three-stage framework of inclusion, evaluation, and output; this ADR corresponds to the inclusion stage:
 
-### 1. 四问粗筛，映射到 LM 的四个使用位置
+### 1. A four-question screen, mapped to LM's four points of use
 
-- **var**，对应 `variables`/`evidence`：该学科声称是否有可迁移的具体数值，而不只是方向性描述？
-- **for**，对应 `formulas`：该机制是否存在公认的函数形式可以直接编码？
-- **sim**，对应 `simulation`：编码后能否产出可与独立数据点比对的轨迹？
-- **opt**，对应 `optimization`：决策空间是否存在真实的多目标权衡，值得跑 optimization？
+- **var**, corresponding to `variables`/`evidence`: does the discipline's claim carry a transferable, specific numeric value, rather than only a directional description?
+- **for**, corresponding to `formulas`: does the mechanism have a recognized functional form that can be encoded directly?
+- **sim**, corresponding to `simulation`: once encoded, can it produce a trajectory comparable against independent data points?
+- **opt**, corresponding to `optimization`: does the decision space contain a real multi-objective trade-off worth running an optimization over?
 
-前两问决定"值不值得编码进 LM"，后两问决定"编码完之后能用到什么程度"。var/for 通过但 sim/opt 用不上时，模型依然成立，只是使用方式受限于机制/引擎正对照展示。
+The first two questions decide whether it is worth encoding into LM at all; the latter two decide how far it can be used once encoded. When var/for pass but sim/opt cannot be used, the model still stands, only its use is limited to a mechanism/engine cross-check display.
 
-### 2. 四问的两个落点，职责分开
+### 2. The four questions land in two places, with separated responsibilities
 
-- `docs/LM_format_1.0.md` 的 Scope 一节新增 Inclusion Test 小节，承载四问的正式英文表述，作为格式规范本身对"什么话题落在 LM format 范围内"的操作化定义。这部分随格式规范一起版本化，内容稳定，不需要频繁更新。
-- `docs/model.md` 新增学科覆盖盘点表，承载四问在本项目模型库里的具体落地，即大学科/小学科按 var/for/sim/opt 四问的实际盘点结果，行取自 `models/references/` 现有目录结构。这部分是活文档，随每轮模型评估变化，不进版本化的格式规范。
+- A new Inclusion Test subsection is added to the Scope section of `docs/LM_format_1.0.md`, carrying the formal English statement of the four questions, as the format specification's own operational definition of what topics fall within LM format's scope. This part is versioned together with the format specification, with stable content that does not need frequent updates.
+- A new discipline coverage inventory table is added to `docs/model.md`, carrying the four questions' concrete application within this project's model library, that is, the actual inventory result for each major and minor discipline against the var/for/sim/opt four questions, with rows taken from the existing directory structure under `models/references/`. This part is a living document that changes with each round of model evaluation and is not part of the versioned format specification.
 
-两处刻意不合并：规范定义的稳定性和盘点数据的易变性是两种不同性质的内容，混在一起会让格式规范文件承担不该由它承担的维护频率。
+The two are deliberately kept separate: the specification definition's stability and the inventory data's volatility are two different kinds of content, and mixing them would saddle the format-specification file with a maintenance frequency it should not carry.
 
-### 3. 符号约定：四态，不是三态
+### 3. Notation convention: four states, not three
 
-复用 `validation_report.md` 已有的三态符号，即通过、不通过、不涉及，新增第四态"尚未评估"，并明确区分"不涉及"与"尚未评估"这两种情况：前者用符号 `-` 表示，指查过了确认没有可评判对象；后者用符号 `?` 表示，指还没查。这个区分本身是本次讨论的关键发现——`for` 列在盘点表中大量呈现 `?` 而非 `-`，说明目前的真实瓶颈是"没空验证"，不是"机制本身不存在"，这两种情况对应完全不同的后续动作：前者需要投入验证工作量，后者说明这条路子走不通。若不区分，会把项目自身尚未完成的工作误读成该领域本身缺乏可用素材，反之亦然。
+Reuses the three-state notation already in `validation_report.md`, pass, fail, and not applicable, and adds a fourth state, not yet evaluated, with an explicit distinction between "not applicable" and "not yet evaluated": the former is marked `-`, meaning checked and confirmed there is no evaluable object; the latter is marked `?`, meaning not yet checked. This distinction itself was the key finding of this discussion: the `for` column in the inventory table showed `?` far more often than `-`, indicating that the real bottleneck at present is a lack of time to verify, not the mechanism itself being nonexistent, and these two situations call for entirely different follow-on actions, the former needs validation effort invested, the latter means this direction does not work. Without this distinction, the project's own unfinished work could be misread as the field itself lacking usable material, and vice versa.
 
-### 4. 符号风格：纯文本符号，不用彩色 emoji
+### 4. Symbol style: plain text symbols, no colored emoji
 
-盘点表最初复用 `validation_report.md` 的 emoji 符号，即用绿色对勾、红色叉、灰色横杠标注通过、不通过、不涉及，后改为纯文本的 √、×、-，`validation_report.md` 全文的 emoji 符号也随之统一替换。emoji 在这类正式方法论文档里视觉上鲜艳但不专业，纯文本符号更符合科学文档的调性。
+The inventory table initially reused `validation_report.md`'s emoji symbols, a green checkmark, a red cross, and a gray dash for pass, fail, and not applicable, later changed to the plain-text √, ×, -, with `validation_report.md`'s emoji symbols throughout replaced to match. Emoji look vivid but unprofessional in a formal methodology document of this kind, and plain-text symbols better fit a scientific document's tone.
 
-## 影响范围
+## Scope of Impact
 
-- `docs/model.md`：新增「模型纳入标准（Inclusion Criteria）与学科覆盖盘点」一节，含四问、符号约定、大学科/小学科按 var/for/sim/opt 的盘点表。
-- `docs/LM_format_1.0.md`：Scope 一节新增「Inclusion Test」小节，承载四问的英文正式表述。过程中一并发现并修复了该文件多处滞后于当前实现的内容：`evidence:` 独立顶层块已被 ADR 0137 取代，`_nosim`/`_noopt`/`_noref` 文件名后缀已被 ADR 0120 取代，`simulation.schedules`/`optimization.inputs` 等字段名已被 ADR 0109/0088/0127 取代，详见该文件 Version History 2026-07-30 各条目。这些修复是本次工作中顺带发现的滞后维护问题，不属于本 ADR 的决策本身，但记录在此备查。
-- `models/test_validation/validation_report.md`：全文 emoji 符号统一替换为 √、×、-；顶部任务清单新增一条待办，要求每轮验证完成后同步更新 `docs/model.md` 的盘点表。
-- 移除了 `docs/LM_format_1.0.md` 中未实现的 §8 Game Conversion Block，即 `game:` 顶层字段和"Story"术语。审计确认 Reference Engine、GUI、任何模型 YAML 均未实现或使用此功能，写在规范里等同于对外承诺了一个不存在的特性。同时移除了 §9.3 Planned Extensions 中的 multi-individual simulation 一项，即户内多主体仿真设想，与 LM 个体尺度批次执行的既定范围不符，独立 MC 采样不涉及多主体互动，此前不应作为规划方向出现。
+- `docs/model.md`: a new "Model Inclusion Criteria and Discipline Coverage Inventory" section added, containing the four questions, the notation convention, and the major/minor discipline inventory table against var/for/sim/opt.
+- `docs/LM_format_1.0.md`: a new "Inclusion Test" subsection added to the Scope section, carrying the formal English statement of the four questions. In the process, several places where this file had fallen behind the current implementation were also found and fixed: the standalone top-level `evidence:` block had already been superseded by ADR 0137, the `_nosim`/`_noopt`/`_noref` filename suffixes had already been superseded by ADR 0120, and field names such as `simulation.schedules`/`optimization.inputs` had already been superseded by ADR 0109/0088/0127; see that file's Version History entries for 2026-07-30 for detail. These fixes were incidental findings of stale maintenance from this work and are not part of this ADR's own decision, but are recorded here for reference.
+- `models/test_validation/validation_report.md`: emoji symbols throughout replaced uniformly with √, ×, -; a new item added to the top task list requiring `docs/model.md`'s inventory table to be updated after each round of validation.
+- Removed the unimplemented section 8 Game Conversion Block from `docs/LM_format_1.0.md`, that is, the top-level `game:` field and the "Story" term. An audit confirmed that the Reference Engine, the GUI, and no model YAML implements or uses this feature, and leaving it in the specification amounted to externally promising a feature that does not exist. Also removed the multi-individual simulation item from section 9.3 Planned Extensions, that is, the idea of multi-agent simulation within a household, which does not match LM's established individual-scale, batch-execution scope; independent MC sampling does not involve multi-agent interaction, and this should not have appeared as a planning direction before now.
 
-## 结果
+## Result
 
-- 盘点表编制过程中发现了若干值得深入研究的初步模式，留待后续专门分析后再正式发表。
-- 纳入标准的应用不限于"新学科要不要建模"，也回溯性地暴露了盘点表编制过程中的方法论问题，例如已评估的少数案例不能代表整个小学科，倒逼盘点表本身加入"N/M 已评估"计数，避免以偏概全。
+- Several preliminary patterns worth further study surfaced while compiling the inventory table, left for later dedicated analysis before formal publication.
+- Applying the inclusion criteria was not limited to "should a new discipline be modeled"; it also retroactively exposed a methodological problem in how the inventory table itself was compiled, for example that a small number of evaluated cases cannot represent an entire minor discipline, which in turn forced the inventory table itself to add an "N/M evaluated" count to avoid overgeneralizing from a partial sample.
 
-## 未决
+## Open Questions
 
-- 盘点表目前只到小学科粒度，例如 `medical/disease` 这一层。未来如需要下探到三级学科，例如区分 `medical/disease/chronic` 与 `acute`，或需要按此表批量决定下一批建模优先级，属于该表的自然延伸使用场景，本 ADR 不预先设计。
-- `docs/model.md`「完整 YAML Schema」参考示例，约在第 255 至 468 行，仍使用 ADR 0109/0088 之前的旧字段名，即 `simulation.schedules`/`optimization.inputs`，与同文件后面的权威章节自相矛盾，是审计中顺带发现的独立文档 bug，不属于本 ADR 范围，留待后续处理。
+- The inventory table currently only goes down to the minor-discipline granularity, such as the `medical/disease` level. Whether it needs to go further, to a tertiary discipline level, for instance distinguishing `medical/disease/chronic` from `acute`, or whether it needs to be used to decide the next batch of modeling priorities in bulk, is a natural extension of this table's use and is not pre-designed by this ADR.
+- The "Complete YAML Schema" reference example in `docs/model.md`, around lines 255 to 468, still uses old field names from before ADR 0109/0088, namely `simulation.schedules`/`optimization.inputs`, contradicting the authoritative sections later in the same file; this is an independent documentation bug found incidentally during the audit, outside this ADR's scope, left for later handling.

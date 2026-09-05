@@ -9,31 +9,44 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      阿司匹林（乙酰水杨酸）在心血管预防和镇痛两种适应证中的剂量方案截然不同：心血管预防为低剂量75–100 mg/day的抗血小板方案，镇痛为标准325–650 mg方案。核心张力：维持治疗窗口所需的血浆水杨酸浓度越高，胃肠道出血风险越大。水杨酸在高剂量下呈现 Michaelis-Menten 非线性消除，半衰期从3小时延长至15小时以上，使剂量-浓度关系高度非线性，难以凭经验预判。
+      Aspirin (acetylsalicylic acid) uses starkly different dose regimens for its two indications:
+      cardiovascular prevention uses a low-dose 75-100 mg/day antiplatelet regimen, while analgesia
+      uses a standard 325-650 mg regimen. The core tension: the higher the plasma salicylate
+      concentration needed to stay within the therapeutic window, the greater the gastrointestinal
+      bleeding risk. Salicylate shows Michaelis-Menten nonlinear elimination at a high dose, with the
+      half-life extending from 3 hours to over 15 hours, making the dose-concentration relationship
+      highly nonlinear and hard to predict from experience.
     result: >
-      2026-09-04 用当前引擎重新验证：--sim-only 中血浆水杨酸浓度峰值约3.5 mg/L，落在
-      problem 描述的低剂量Cmax约2至4 mg/L区间内。--opt-only（population 60，
-      generations 100）搜索晨服剂量75至325mg，AUC/剂量比值从75mg时的34.0平滑上升到
-      325mg时的34.6，随剂量升高而增大，体现出problem强调的Michaelis-Menten饱和消除，
-      不再是旧版 optimization.results 记录的完全线性比例（115.2恒定）；60个前沿点沿剂量
-      区间连续分布，未见退化聚集。
+      Revalidated on 2026-09-04 with the current engine: in --sim-only, the plasma salicylate
+      concentration peaks at about 3.5 mg/L, falling within the low-dose Cmax range of about 2 to
+      4 mg/L described in problem. --opt-only (population 60, generations 100) searching the morning
+      dose from 75 to 325mg finds the AUC-to-dose ratio rising smoothly from 34.0 at 75mg to 34.6 at
+      325mg, increasing with dose, reflecting the Michaelis-Menten saturating elimination problem
+      emphasizes, no longer the fully linear proportion (a constant 115.2) the old
+      optimization.results once recorded; the 60 front points are distributed continuously along the
+      dose range, with no degenerate clustering seen.
     limitations: >
-      未包含血小板 TXA2 抑制的药效模型，未考虑肠溶片的延迟吸收；个体间差异，例如 CYP2C9 基因型和肾功能，可通过参数分布建模但尚未纳入。
+      Does not include a pharmacodynamic model of platelet TXA2 inhibition, and does not account for
+      an enteric-coated tablet's delayed absorption; individual variation, such as CYP2C9 genotype
+      and kidney function, could be modeled through a parameter distribution but has not been
+      included yet.
   ratings:
-    importance: 0.75 - 心血管预防最常用药物，被多个药理场景引用，框架内被依赖组件
-    variable: 0.75 - Rowland 1968/Levy & Giacomini 1978提供主要参数支撑，k12/k21为双室模型估算值
-    equation: 0.75 - 双室Michaelis-Menten非线性消除是被广泛引用的标准PK结构，非独立复现的命名模型
-    simulation: 0.75 - 2026-09-04验证：血浆水杨酸峰值约3.5mg/L落在problem所述Cmax 2-4mg/L区间，方向和量级符合预期，未逐点比对独立数据
-    optimization: 0.5 - 2026-09-04验证：60点前沿沿剂量75-325mg连续分布、非退化，AUC/剂量比值随剂量升高从34.0增至34.6，体现MM饱和消除的方向性权衡；GI出血风险未被显式建模为独立变量，权衡数值精确性有限
-    confidence: 0.5 - 2026-09-04验证：血浆浓度量级与problem所述Cmax区间部分吻合，MM非线性方向正确，但未与独立文献数值逐点比对
+    importance: 0.75 - The most commonly used cardiovascular-prevention drug, cited by several pharmacology scenarios, a component other parts of the framework depend on
+    variable: 0.75 - Rowland 1968/Levy & Giacomini 1978 supply the main parameter support; k12/k21 are two-compartment-model estimates
+    equation: 0.75 - Two-compartment Michaelis-Menten nonlinear elimination is a widely cited standard PK structure, not an independently reproduced named model
+    simulation: 0.75 - Validated on 2026-09-04, the plasma salicylate peak of about 3.5mg/L falls within problem's stated Cmax range of 2-4mg/L, matching the expected direction and magnitude, not compared point by point against independent data
+    optimization: 0.5 - Validated on 2026-09-04, the 60-point front is distributed continuously and non-degenerately across the 75-325mg dose range, with the AUC-to-dose ratio rising from 34.0 to 34.6 as dose increases, showing the directional tradeoff of MM saturating elimination; GI bleeding risk is not explicitly modeled as an independent variable, limiting the tradeoff's numeric precision
+    confidence: 0.5 - Validated on 2026-09-04, the plasma-concentration magnitude partly matches problem's stated Cmax range, with the MM nonlinearity's direction correct, but not compared point by point against independent literature values
   tags: [pharmacology, aspirin, salicylate, PK, cardiovascular, pain]
 
 variables:
-  # ── 状态变量 ──────────────────────────────────────────────────────────────────
+  # -- State variables ------------------------------------------------------------
   asa_gi:
     description: |
-      胃肠道中阿司匹林量（mg）。吸收阶段模拟一阶吸收（ka=0.033/min，Tmax≈30min）。
-      肠溶片 ka ≈ 0.012/min（Tmax≈60-90min），普通片 ka ≈ 0.033/min。
+      Aspirin remaining in the gastrointestinal tract (mg). The absorption stage is modeled as
+      first-order absorption (ka=0.033/min, Tmax approximately 30min). An enteric-coated tablet has
+      ka approximately 0.012/min (Tmax approximately 60-90min); a plain tablet has ka approximately
+      0.033/min.
     value: 0.0
     unit: mg
     type: state
@@ -41,8 +54,9 @@ variables:
 
   salicylate_plasma:
     description: |
-      血浆水杨酸浓度（mg/L）。水杨酸是阿司匹林的主要活性代谢物（t½=3.5h at 低浓度）。
-      治疗窗：抗血小板 1-2 mg/L；镇痛/解热 15-30 mg/L；中毒 >100 mg/L（耳鸣、酸中毒）。
+      Plasma salicylate concentration (mg/L). Salicylate is aspirin's main active metabolite
+      (t1/2=3.5h at a low concentration). The therapeutic window: antiplatelet 1-2 mg/L; analgesic
+      or antipyretic 15-30 mg/L; toxic above 100 mg/L (tinnitus, acidosis).
     value: 0.0
     unit: mg/L
     type: state
@@ -51,38 +65,40 @@ variables:
 
   salicylate_tissue:
     description: |
-      组织室水杨酸量（mg）。外周室包括肌肉、脂肪和其他组织。
-      分布容积 Vd ≈ 0.17 L/kg（Rowland 1968），对应70kg体重 Vd_central ≈ 12L。
+      Salicylate amount in the tissue compartment (mg). The peripheral compartment includes muscle,
+      fat, and other tissue. The volume of distribution Vd is approximately 0.17 L/kg
+      (Rowland 1968), corresponding to Vd_central approximately 12L for a 70kg body weight.
     value: 0.0
     unit: mg
     type: state
     bounds: [0.0, 2000.0]
 
   auc_salicylate:
-    description: 水杨酸AUC累积（mg·min/L），用于评估总暴露量。
+    description: Salicylate's accumulated AUC (mg*min/L), used to assess total exposure.
     value: 0.0
     unit: mg·min/L
     type: state
     bounds: [0.0, 1000000.0]
     io_role: output
 
-  # ── 输入变量 ──────────────────────────────────────────────────────────────────
+  # -- Input variables --------------------------------------------------------------
   aspirin_dose:
     description: |
-      口服阿司匹林剂量（mg）。典型值：
-      心血管预防：75-100 mg/day（推荐81mg，Patrono 2005）；
-      镇痛/解热：325-650 mg q4-6h（标准成人剂量）；
-      最大日剂量：4000 mg（超过此剂量毒性风险急剧增加）。
+      Oral aspirin dose (mg). Typical values:
+      Cardiovascular prevention: 75-100 mg/day (81mg recommended, Patrono 2005);
+      Analgesic or antipyretic: 325-650 mg every 4-6h (a standard adult dose);
+      Maximum daily dose: 4000 mg (toxicity risk rises sharply beyond this dose).
     value: 0.0
     unit: mg
     type: input
     bounds: [0.0, 1000.0]
 
-  # ── 参数（来自文献） ──────────────────────────────────────────────────────────
+  # -- Parameters (from the literature) ---------------------------------------------------
   ka:
     description: |
-      胃肠道吸收速率常数（/min）。普通阿司匹林片 ka ≈ 0.033/min（Tmax≈30min）。
-      来源：Rowland & Riegelman 1968；Levy & Giacomini 1978。
+      The gastrointestinal absorption rate constant (/min). A plain aspirin tablet has
+      ka approximately 0.033/min (Tmax approximately 30min).
+      Source: Rowland & Riegelman 1968; Levy & Giacomini 1978.
     value: 0.033
     unit: 1/min
     type: parameter
@@ -90,8 +106,9 @@ variables:
 
   bioavailability:
     description: |
-      口服生物利用度（F）。普通片 F ≈ 0.68（68%；Levy 1978）；
-      部分阿司匹林在肝脏首过效应中水解，总水杨酸生物利用度更高（F_sal ≈ 0.85）。
+      Oral bioavailability (F). A plain tablet has F approximately 0.68 (68%; Levy 1978); some
+      aspirin hydrolyzes into salicylate during first-pass hepatic metabolism, so total salicylate
+      bioavailability is higher (F_sal approximately 0.85).
     value: 0.68
     unit: fraction
     type: parameter
@@ -99,8 +116,9 @@ variables:
 
   vd_central:
     description: |
-      中央室（血浆）分布容积（L）。总Vd≈0.17L/kg × 70kg = 11.9L。
-      来源：Rowland 1968，标准70kg成人。
+      The central (plasma) compartment's volume of distribution (L). Total Vd is approximately
+      0.17L/kg times 70kg = 11.9L.
+      Source: Rowland 1968, a standard 70kg adult.
     value: 11.9
     unit: L
     type: parameter
@@ -108,8 +126,9 @@ variables:
 
   k_el_linear:
     description: |
-      水杨酸肾脏线性消除速率常数（/min）。肾脏清除约占总清除的30-50%（pH依赖）。
-      来源：Levy 1978，正常肾功能。
+      Salicylate's renal linear elimination rate constant (/min). Renal clearance accounts for about
+      30-50% of total clearance (pH-dependent).
+      Source: Levy 1978, normal kidney function.
     value: 0.0012
     unit: 1/min
     type: parameter
@@ -117,9 +136,11 @@ variables:
 
   vmax_hepatic:
     description: |
-      肝脏Michaelis-Menten消除最大速率（mg/min）。高剂量时肝脏消除饱和。
-      标准70kg：Vmax ≈ 1.1 mg/min（肝糖原合酶途径）。
-      来源：Levy & Giacomini 1978，双相消除模型。
+      The hepatic Michaelis-Menten elimination's maximum rate (mg/min). Hepatic elimination
+      saturates at a high dose.
+      A standard 70kg body weight: Vmax approximately 1.1 mg/min (via the hepatic glycine
+      conjugation pathway).
+      Source: Levy & Giacomini 1978, a biphasic elimination model.
     value: 1.1
     unit: mg/min
     type: parameter
@@ -127,10 +148,11 @@ variables:
 
   km_hepatic:
     description: |
-      Michaelis-Menten半饱和常数（mg/L）。Km ≈ 80 mg/L。
-      血药浓度远低于Km（<10 mg/L）时接近一阶动力学（t½ ≈ 3.5h）；
-      高浓度（>100 mg/L）时接近零级（t½ 可延长至15h以上）。
-      来源：Levy & Giacomini 1978。
+      The Michaelis-Menten half-saturation constant (mg/L). Km is approximately 80 mg/L.
+      When the blood concentration is far below Km (under 10 mg/L), elimination is close to
+      first-order (t1/2 approximately 3.5h); at a high concentration (above 100 mg/L), it approaches
+      zero-order (t1/2 can extend past 15h).
+      Source: Levy & Giacomini 1978.
     value: 80.0
     unit: mg/L
     type: parameter
@@ -138,40 +160,42 @@ variables:
 
   k12:
     description: |
-      中央室→外周室分布速率常数（/min）。
-      来源：估算自Rowland 1968双室模型，k12 ≈ 0.004/min。
+      The central-to-peripheral compartment distribution rate constant (/min).
+      Source: estimated from Rowland 1968's two-compartment model, k12 approximately 0.004/min.
     value: 0.004
     unit: 1/min
     type: parameter
 
   k21:
     description: |
-      外周室→中央室再分布速率常数（/min）。
-      k21 ≈ 0.002/min（再分布较慢）。
-      来源：估算自Rowland 1968双室模型。
+      The peripheral-to-central compartment redistribution rate constant (/min).
+      k21 is approximately 0.002/min (redistribution is slower).
+      Source: estimated from Rowland 1968's two-compartment model.
     value: 0.002
     unit: 1/min
     type: parameter
 
 equations:
-  # F1: GI吸收（一阶动力学）
-  # dASA_GI/dt = -ka × ASA_GI（吸收进入血浆）
+  # F1: GI absorption (first-order kinetics)
+  # dASA_GI/dt = -ka x ASA_GI (absorbed into the plasma)
   gi_absorption:
     description: |
-      口服阿司匹林在GI中的一阶吸收。剂量全部进入GI室，
-      随后以速率ka被吸收入中央室（同时水解为水杨酸）。
+      Oral aspirin's first-order absorption in the GI tract. The full dose enters the GI
+      compartment, then is absorbed into the central compartment at rate ka (and hydrolyzed into
+      salicylate along the way).
     step_unit: minute
     condition: true
     priority: 8
     dynamics:
       asa_gi: asa_gi + aspirin_dose - ka * asa_gi * step
 
-  # F2: 血浆水杨酸动力学（双室+M-M消除）
-  # dC/dt = (ka×F×ASA_GI)/Vd - k_el×C - Vmax×C/(Km+C) - k12×C + k21×(CT×Vt/Vd)
+  # F2: Plasma salicylate kinetics (two-compartment plus M-M elimination)
+  # dC/dt = (ka*F*ASA_GI)/Vd - k_el*C - Vmax*C/(Km+C) - k12*C + k21*(CT*Vt/Vd)
   salicylate_pk:
     description: |
-      血浆水杨酸：GI吸收输入 - 肾脏线性消除 - 肝脏M-M消除 - 双室分布。
-      Michaelis-Menten消除反映高剂量时的消除饱和（t½从3.5h延长至15h+）。
+      Plasma salicylate: GI absorption input, minus renal linear elimination, minus hepatic M-M
+      elimination, minus two-compartment distribution. Michaelis-Menten elimination reflects the
+      elimination saturation seen at a high dose (t1/2 extending from 3.5h to 15h or more).
     step_unit: minute
     condition: true
     priority: 7
@@ -184,18 +208,18 @@ equations:
         - k12 * salicylate_plasma
         + k21 * salicylate_tissue / vd_central) * step)
 
-  # F3: 外周室分布
+  # F3: peripheral compartment distribution
   tissue_distribution:
-    description: 水杨酸双室分布：血浆→组织（k12）和组织→血浆（k21）。
+    description: Salicylate's two-compartment distribution, plasma to tissue (k12) and tissue to plasma (k21).
     step_unit: minute
     condition: true
     priority: 6
     dynamics:
       salicylate_tissue: max(0.0, salicylate_tissue + (k12 * salicylate_plasma * vd_central - k21 * salicylate_tissue) * step)
 
-  # F4: AUC累积
+  # F4: AUC accumulation
   auc_accumulation:
-    description: 梯形法近似AUC（min精度下等同于直接积分）。
+    description: A trapezoidal approximation of AUC (equivalent to direct integration at minute precision).
     step_unit: minute
     condition: true
     priority: 2
@@ -221,7 +245,7 @@ simulation:
         value: 81.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-03"]
-        label: "低剂量阿司匹林（心血管预防）81mg 晨服"
+        label: "Low-dose aspirin (cardiovascular prevention), 81mg taken in the morning"
 
 optimization:
   method: nsga2
@@ -229,22 +253,22 @@ optimization:
     - variable: aspirin_dose
       metric: mean
       direction: minimize
-      description: "最小化每日阿司匹林总剂量（降低GI出血风险）"
+      description: "Minimizing the total daily aspirin dose (lowering GI bleeding risk)"
     - variable: auc_salicylate
       metric: final
       direction: maximize
-      description: "最大化24h水杨酸AUC（疗效暴露）"
+      description: "Maximizing the 24h salicylate AUC (therapeutic exposure)"
   constraints:
     - variable: salicylate_plasma
       condition: "<= 100"
       type: hard
-      description: "毒性约束：血浆水杨酸<100 mg/L（避免耳鸣、酸中毒）"
+      description: "A toxicity constraint: plasma salicylate under 100 mg/L (avoiding tinnitus and acidosis)"
   startpoint:
     regimens:
       - variable: aspirin_dose
         time_start: "08:00"
         time_end: "08:00"
-        label: "晨服阿司匹林剂量（mg）"
+        label: "The morning aspirin dose (mg)"
         optimize:
           value: [75, 325]
   algorithm:

@@ -1,203 +1,120 @@
-# 0100 — 统一 pulse/sustained 为时间区间 [start,end)；GUI 取消 full day / time / sustained 三态
+# 0100 - Unifying pulse/sustained into the Time Interval [start,end); the GUI Removes the Three-State full day / time / sustained Choice
 
-**日期**：2026-06-11（补充：2026-06-16）
-**状态**：✅ 已完成（schema/引擎/GUI/T2/CLI 路径全部实施；旧字段向下兼容已移除）
-**类别**：仿真引擎 / 优化器 schema / GUI
+**Date**: 2026-06-11 (supplemented 2026-06-16)
+**Status**: Complete (the schema/engine/GUI/T2/CLI paths are all implemented; backward compatibility with the old fields has been removed)
+**Category**: Simulation engine / optimizer schema / GUI
 
 ---
 
-## 背景
+## Background
 
-[0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) 引入 `mode: sustained` +
-`time_range` 作为 pulse（单点 `time`）之外的第二套机制。这带来三重冗余：
+[0098](0098-2026-06-11_sim_optimizer-schedule-sustained-mode.md) introduced `mode: sustained` plus `time_range` as a second mechanism alongside pulse (a single-point `time`). This created a triple redundancy:
 
-1. **schema 层**：一个 schedule 条目要在 `time` 单点 vs `mode:sustained`+`time_range` 区间
-   之间二选一，两套字段、两套校验逻辑。
-2. **GUI 层**：`SimSetupTab` 已有 `time` 开关（pulse 单点）、新增的 `sustained` 开关，
-   以及"不写 `time_range` = 全天生效"的隐式第三态——三者语义有重叠，用户需要先理解
-   "我要的是单点/区间/全天"这个分类，才能知道该开哪个开关。
-3. **K×4 理论**：iCal 式日历事件本质是 `[start, end)` 区间（两个时间点），pulse 把它
-   压缩成单点是一种特例化，但现状把"特例"和"通用形式"做成了两套并行字段。
+1. At the schema layer: a schedule entry had to choose between a single-point `time` and a `mode:sustained` plus `time_range` interval, two sets of fields, two sets of validation logic.
+2. At the GUI layer: `SimSetupTab` already had a `time` toggle (a pulse single point), plus the newly added `sustained` toggle, plus the implicit third state of "not writing `time_range` means in effect all day." The three overlapped in meaning, and a user had to first understand the classification of "do I want a single point, an interval, or all day" before knowing which toggle to flip.
+3. At the K×4 theory layer: an iCal-style calendar event is essentially a `[start, end)` interval (two time points), and a pulse compressing it to a single point is one special case, but the current state turned "the special case" and "the general form" into two parallel sets of fields.
 
-## 决策
+## Decision
 
-### Schema：单一字段对 `time_start` / `time_end`
+### Schema: a single pair of fields, `time_start` / `time_end`
 
-子日时间统一用一对 `"HH:MM"` 字段表示区间 `[time_start, time_end)`，取代 `time` + `mode` + `time_range`：
+Sub-day time is now uniformly expressed as a pair of `"HH:MM"` fields forming the interval `[time_start, time_end)`, replacing `time` plus `mode` plus `time_range`:
 
-| 取值 | 含义 |
+| Value | Meaning |
 |---|---|
-| `time_end == time_start` | **pulse**：零宽区间，`N_steps=1`（按 0099 公式，`value` 原样写入该 step） |
-| `time_end != time_start`（不跨越 00:00–24:00 全程） | **sustained**：区间内每个 step 按 `value/N_steps`（0099） |
-| `time_start="00:00", time_end="24:00"` | **全天**：`[0,24)` 全覆盖，是 sustained 的一个特定取值，不是单独状态 |
+| `time_end == time_start` | Pulse: a zero-width interval, `N_steps=1` (per the 0099 formula, `value` is written as-is into that step) |
+| `time_end != time_start` (not spanning the whole 00:00-24:00 day) | Sustained: each step in the interval gets `value/N_steps` (0099) |
+| `time_start="00:00", time_end="24:00"` | All day: `[0,24)` full coverage, a specific value sustained can take, not a separate state |
 
-三者是同一对字段在数轴上的不同位置，**不再是三个独立的开关/分支**——pulse、sustained、全天
-统一走 0099 的 `value/N_steps` 路径（pulse 是 `N_steps=1` 的特例）。
+The three are the same pair of fields taking different positions on the timeline, no longer three independent switches or branches; pulse, sustained, and all-day now uniformly go through 0099's `value/N_steps` path (pulse is simply the special case `N_steps=1`).
 
-`days`（星期几过滤）、`date_range`（日历区间）字段不变，与 `time_start/time_end` 正交。
+The `days` (day-of-week filter) and `date_range` (calendar interval) fields are unchanged, orthogonal to `time_start`/`time_end`.
 
-### 向下兼容（已废弃，2026-06-16 移除）
+### Backward compatibility (deprecated, removed 2026-06-16)
 
-旧字段（`time`、`mode: sustained`、`time_range`）**不再受支持**，引擎不再做字段映射。
-旧 YAML 文件须手动更新，对应关系如下：
+The old fields (`time`, `mode: sustained`, `time_range`) are no longer supported at all; the engine no longer maps them. An old YAML file must be updated manually, per this mapping:
 
-| 旧写法（不再支持） | 等价的新写法 |
+| Old form (no longer supported) | Equivalent new form |
 |---|---|
-| `time: "HH:MM"` | `time_start: "HH:MM"`（`time_end` 省略默认同值 = pulse） |
-| `mode: sustained` + `time_range: [a, b]` | `time_start: a, time_end: b` |
-| `mode: sustained`（无 `time_range`） | `time_start: "00:00", time_end: "24:00"` |
+| `time: "HH:MM"` | `time_start: "HH:MM"` (omitting `time_end` defaults to the same value, i.e. a pulse) |
+| `mode: sustained` plus `time_range: [a, b]` | `time_start: a, time_end: b` |
+| `mode: sustained` (with no `time_range`) | `time_start: "00:00", time_end: "24:00"` |
 
-### GUI：单一"起始时间"控件 + 可选"结束时间"
+### GUI: a single "start time" control plus an optional "end time"
 
-- 每个 input event 始终显示一个"起始时间"输入框（取代现有 `time` 开关）。
-- "结束时间"默认等于起始时间，视觉上折叠/灰显（呈现为单点，即 pulse）；
-  用户拖动/填写使其不同 → 自动展开为区间（即 sustained），无需单独勾选 "sustained" 开关。
-- 将结束时间设为跨越 `00:00–24:00`（即 `time_start="00:00", time_end="24:00"`）即表示"全天"，
-  不需要单独的"全天"勾选框——全天只是区间宽度的一种取值。
-- **取消**：`sustained` toggle、`time` 开关的"仅单点"含义、"不填 time_range = 全天"的隐式状态。
-  GUI 状态数从"3 种独立开关的组合"降为"1 对时间字段的相对关系"，理解负担降低一个维度。
+- Every input event always shows a "start time" input box (replacing the existing `time` toggle).
+- "End time" defaults to equal the start time, visually collapsed/greyed out (displayed as a single point, i.e. pulse); dragging or filling it in to a different value automatically expands it into an interval (i.e. sustained), with no separate "sustained" checkbox needed.
+- Setting the end time to span `00:00-24:00` (i.e. `time_start="00:00", time_end="24:00"`) represents "all day," with no separate "all day" checkbox needed; all day is simply one value the interval width can take.
+- Removed: the `sustained` toggle, the "single point only" meaning of the `time` toggle, and the implicit state of "leaving time_range blank means all day." The GUI's state count drops from "a combination of 3 independent toggles" to "the relative relationship between 1 pair of time fields," reducing the comprehension burden by one dimension.
 
-### K×4 / x 向量编码的影响
+### Impact on K×4 / x-vector encoding
 
-- T1（value）：不变，语义按 0099 改为"区间内总量"。
-- T2（时间）：从"单点 1 维 / sustained 的 `time_range` 2 维（不可优化）"统一为：
-  - 仅优化 `time_start`，`time_end - time_start`（区间宽度）固定不变 → **1 维**（最常见情况，
-    例如"诸葛亮今天几点开始工作"，工作时长固定）。
-  - `time_start`、`time_end` 独立优化 → **2 维**（例如"护理强度的起止时刻都待搜索"）。
-  - 两端都优化 + 各自上下界 → opt 输入侧为 4 个数（`start_lo,start_hi,end_lo,end_hi`），
-    对应用户描述的"4 个值"。
-- `docs/model.md` 的 x 向量编码表（927-938 行）需要新增"区间宽度是否参与优化"这一分支；
-  多数场景宽度固定，维度不增加，只有显式声明"优化时长"的条目才进入 2/4 维分支。
+- T1 (value): unchanged, its semantics changed by 0099 to "the total within the interval."
+- T2 (time): unified from "a single point, 1 dimension, versus sustained's `time_range`, 2 dimensions (not optimizable)" into:
+  - Optimizing only `time_start`, with `time_end - time_start` (the interval width) fixed: 1 dimension (the most common case, such as "what time does today's work start," with the work duration fixed).
+  - `time_start` and `time_end` optimized independently: 2 dimensions (such as "both the start and end of care intensity are to be searched").
+  - Both ends optimized, each with its own bounds: the opt input side becomes 4 numbers (`start_lo,start_hi,end_lo,end_hi`), corresponding to what the user described as "4 values."
+- `docs/model.md`'s x-vector encoding table (lines 927-938) needs a new branch for "whether the interval width itself participates in optimization"; most scenarios have a fixed width and add no dimensions, and only an entry explicitly declaring "optimize the duration" enters the 2/4-dimension branch.
 
-## 实施前提与范围
+## Implementation Precondition and Scope
 
-**依赖 0099 先实施**：`N_steps` 除法逻辑是本 ADR 的基础（pulse 复用 `N_steps=1` 路径），
-且 0099 已经要求"预计算 N_steps"的改动点（regimen_runner + 调用方），本 ADR 在此基础上
-只需把"区间从哪些字段读取"换成 `time_start/time_end`，不需要重新设计计算路径。
+Depends on 0099 being implemented first: the `N_steps` division logic is this ADR's foundation (pulse reuses the `N_steps=1` path), and 0099 has already required the "precompute N_steps" change points (regimen_runner plus its callers); this ADR only needs to switch "which fields the interval is read from" to `time_start`/`time_end` on top of that, with no need to redesign the computation path.
 
-涉及范围（实施时逐项处理）：
+Scope involved (handled item by item during implementation):
 
-- `sim_engine`：`regimen_runner.py`（区间解析）、`routes/simulation.py`（schema 字段）、
-  `optimizer_engine.py`（x 向量编码、`_build_regimen_events`）。
-- `sim_gui`：`types.ts`（`InputEvent` 字段）、`Simulator.tsx`（YAML↔state 映射）、
-  `SimSetupTab.tsx` / `OptSetupTab.tsx`（GUI 控件）、`optUtils.ts`（编码）、各语言 locale。
-- `docs/model.md`：K×4 章节、x 向量编码表、"mode: sustained" 小节（删除/合并为区间小节）。
-- `papers/s5`（K×4 控制理论）：术语从"K×4"调整为"K×(可变维度)"或保留 K×4 作为
-  "T1+T2(start only)"的常见情形说明。
+- `sim_engine`: `regimen_runner.py` (interval parsing), `routes/simulation.py` (schema fields), `optimizer_engine.py` (x-vector encoding, `_build_regimen_events`).
+- `sim_gui`: `types.ts` (the `InputEvent` fields), `Simulator.tsx` (YAML-to-state mapping), `SimSetupTab.tsx` / `OptSetupTab.tsx` (GUI controls), `optUtils.ts` (encoding), the various language locales.
+- `docs/model.md`: the K×4 chapter, the x-vector encoding table, the "mode: sustained" subsection (removed/merged into the interval subsection).
+- `papers/s5` (K×4 control theory): the terminology adjusted from "K×4" to "K×(a variable dimension)," or K×4 kept as the common-case description of "T1+T2 (start only)."
 
-## 不做的事
+## What Is Not Done
 
-- 不引入固定的"最小区间宽度"（如 30 分钟）。区间最小宽度按 `step_size` 自然定义
-  （`time_end == time_start` 即 `N_steps=1`），与"step 只管精度"的原则一致，
-  避免引入与 `step_size` 无关的第二套时间粒度。
-- 不引入 "intensity/rate" 概念——`value` 永远是"区间内总量"（同 0099），
-  与 ADR 0092 的裸单位规则一致。
+- No fixed "minimum interval width" (such as 30 minutes) is introduced. The interval's minimum width is naturally defined by `step_size` (`time_end == time_start` gives `N_steps=1`), consistent with the "step only affects precision" principle, avoiding introducing a second time granularity unrelated to `step_size`.
+- No "intensity/rate" concept is introduced; `value` is always "the total within the interval" (same as 0099), consistent with ADR 0092's bare-unit rule.
 
-## 实施记录（schema/引擎部分）
+## Implementation Record (Schema/Engine Part)
 
-- `regimen_runner.py`：新增 `_normalize_time_interval(ev) -> (time_start, time_end)`，
-  按本 ADR 的等价表把 `time` / `mode: sustained`+`time_range` / 显式 `time_start`+`time_end`
-  统一映射为一对 `"HH:MM"` 字符串；`_time_range_day_seconds` 改为接收
-  `(time_start, time_end)`；`precompute_sustained_divisors` 与 `apply_regimens`
-  均按 `time_start == time_end`（pulse）/ `!=`（sustained，含全天）分支，
-  不再依赖 `mode` 字段判断。
-- `routes/simulation.py`：`RegimenEventData` 新增 `time_start`/`time_end`
-  （`Optional[str]`），与 `time`/`mode`/`time_range` 并存，按解析优先级生效。
-- `optimizer_engine.py`：`fixed_events_map` 与 `_build_regimen_events` 的
-  `d0`/`ev2` 透传 `time_start`/`time_end`（若 YAML 条目提供）。
-- `docs/model.md`：新增"统一区间表示：time_start / time_end"小节（含等价表、
-  向后兼容映射），`mode: sustained` 小节标注为旧格式但仍受支持，x 向量编码
-  小节注明 T2 多维重设计未实施。
-- 验证：`models/test/test_sustained_mode.yaml`（`--sim`/`--opt`）、内部另一个场景文件
-  （`--opt`）数值结果与改动前一致；旧 YAML 无需修改。
+- `regimen_runner.py`: added `_normalize_time_interval(ev) -> (time_start, time_end)`, mapping `time` / `mode: sustained` plus `time_range` / an explicit `time_start` plus `time_end` uniformly into a pair of `"HH:MM"` strings per this ADR's equivalence table; `_time_range_day_seconds` changed to accept `(time_start, time_end)`; both `precompute_sustained_divisors` and `apply_regimens` now branch on `time_start == time_end` (pulse) versus `!=` (sustained, including all-day), no longer relying on the `mode` field.
+- `routes/simulation.py`: `RegimenEventData` gains `time_start`/`time_end` (`Optional[str]`), coexisting with `time`/`mode`/`time_range`, taking effect per parsing priority.
+- `optimizer_engine.py`: `fixed_events_map` and `_build_regimen_events`'s `d0`/`ev2` pass `time_start`/`time_end` through (when the YAML entry provides them).
+- `docs/model.md`: added the "unified interval representation: time_start / time_end" subsection (including the equivalence table and the backward-compatibility mapping); the `mode: sustained` subsection is marked as the old format but still supported; the x-vector encoding subsection notes that the T2 multi-dimensional redesign is not yet implemented.
+- Validated: `models/test/test_sustained_mode.yaml` (`--sim`/`--opt`) and another internal scenario file (`--opt`) give numeric results matching before the change; no old YAML needed modification.
 
-## 实施记录（GUI 部分）
+## Implementation Record (GUI Part)
 
-- `types.ts`：`InputEvent` 删除 `time`/`timeEnabled`/`sustained`/`timeRangeStart`/
-  `timeRangeEnd`，新增 `timeStart`/`timeEnd: string`（始终有值；相等=pulse，
-  不等=sustained，含 `"00:00"~"24:00"` 全天）。
-- `simUtils.ts`：新增 `normalizeTimeInterval(raw)`（镜像后端
-  `_normalize_time_interval` 的等价表，用于 YAML/会话 → `{timeStart, timeEnd}`）
-  与 `migrateInputEvent`/`migrateInputEvents`（旧版 localStorage 会话的
-  `time`/`timeEnabled`/`sustained`/`timeRangeStart/End` → `timeStart`/`timeEnd`
-  迁移，已迁移过的事件原样返回）；`xToInputEvents` 的事件匹配、新建、T2 slot
-  写回均改用 `timeStart`/`timeEnd`。
-- `Simulator.tsx`：YAML↔state 各映射点（`schedList`/`schedDict`/`plan.schedules`/
-  `optimization.schedules` 决策项匹配/会话恢复/新建事件默认值/Pareto 标签）统一改用
-  `normalizeTimeInterval`/`migrateInputEvents`/`timeStart`/`timeEnd`。
-- `optUtils.ts`：`buildOptSchedules` 用 `isPulse = ev.timeStart === ev.timeEnd`
-  统一三路 `mode='sustained'`/`time_range`/`time` 分支为 `entry.time_start`/
-  `entry.time_end`；T2（`isPulse && ev.optimizeTime`）分支保持 `optBlock.time`/
-  `time_step`，不发送 `time_start`/`time_end`（避免与后端区间解析优先级冲突）。
-- `useSimulation.ts`：regimen payload 三处统一为
-  `{ id, time: ev.timeStart, value, time_start: ev.timeStart, time_end: ev.timeEnd }`。
-- `SimSetupTab.tsx`/`OptSetupTab.tsx`：删除"时"/"续"开关与"每天"提示，新增
-  始终显示的"起始时间 → 结束时间"控件对；`timeStart===timeEnd` 时结束时间
-  灰显/虚线（pulse），编辑结束时间使其不同即变为 sustained，并提供折叠按钮
-  （×）重置回 pulse。`OptSetupTab.tsx` 中 T2（`opt` toggle + 时间窗 + step
-  选择器）仅在 pulse 态显示，逻辑与字段名不变。
-- 4 个 locale（en/zh-CN/zh-TW/fr）：删除 `tog.time`/`tog.time_tip`/
-  `tog.sustained`/`tog.sustained_tip`/`setup.daily`，新增
-  `time_start_tip`/`time_end_tip`/`time_collapse_tip`。
+- `types.ts`: `InputEvent` removed `time`/`timeEnabled`/`sustained`/`timeRangeStart`/`timeRangeEnd`, added `timeStart`/`timeEnd: string` (always has a value; equal means pulse, unequal means sustained, including `"00:00"~"24:00"` for all day).
+- `simUtils.ts`: added `normalizeTimeInterval(raw)` (mirroring the backend's `_normalize_time_interval` equivalence table, converting YAML/session data to `{timeStart, timeEnd}`) and `migrateInputEvent`/`migrateInputEvents` (migrating an old localStorage session's `time`/`timeEnabled`/`sustained`/`timeRangeStart/End` to `timeStart`/`timeEnd`, with an already-migrated event returned as-is); `xToInputEvents`'s event matching, creation, and T2 slot write-back all switched to `timeStart`/`timeEnd`.
+- `Simulator.tsx`: every YAML-to-state mapping point (`schedList`/`schedDict`/`plan.schedules`/`optimization.schedules` decision-item matching, session restoration, new-event defaults, Pareto labels) uniformly switched to `normalizeTimeInterval`/`migrateInputEvents`/`timeStart`/`timeEnd`.
+- `optUtils.ts`: `buildOptSchedules` uses `isPulse = ev.timeStart === ev.timeEnd` to unify the three branches `mode='sustained'`/`time_range`/`time` into `entry.time_start`/`entry.time_end`; the T2 branch (`isPulse && ev.optimizeTime`) keeps `optBlock.time`/`time_step`, without sending `time_start`/`time_end` (to avoid conflicting with the backend's interval-parsing priority).
+- `useSimulation.ts`: the regimen payload at all three sites unified as `{ id, time: ev.timeStart, value, time_start: ev.timeStart, time_end: ev.timeEnd }`.
+- `SimSetupTab.tsx`/`OptSetupTab.tsx`: removed the "time"/"sustained" toggles and the "daily" hint, added an always-shown pair of "start time -> end time" controls; when `timeStart===timeEnd`, the end time is greyed/dashed (pulse), and editing the end time to a different value switches it to sustained, with a collapse button (x) to reset back to pulse. In `OptSetupTab.tsx`, T2 (the `opt` toggle plus time window plus step selector) is shown only in the pulse state, with its logic and field names unchanged.
+- The 4 locales (en/zh-CN/zh-TW/fr): removed `tog.time`/`tog.time_tip`/`tog.sustained`/`tog.sustained_tip`/`setup.daily`, added `time_start_tip`/`time_end_tip`/`time_collapse_tip`.
 
-## 实施记录（T2 x 向量重设计）
+## Implementation Record (T2 x-Vector Redesign)
 
-- **schema**：`optimize.time` 改名为 `optimize.time_start`（旧名仍受支持，作为别名）。
-  仅写 `time_start` → 1 维（区间宽度固定，`time_end` = 搜索后 `time_start` + 原宽度）；
-  额外写 `optimize.time_end` → 2 维（起止独立搜索）。未实现"4 维（各自带独立上下界）"——
-  ADR 草案中的"4 个数"对应的就是 2 维场景下两个窗口各自的 `[lo,hi]`，并非额外维度。
-- `optimizer_engine.py`：新增 `_hhmm_to_min`/`_shift_time` 辅助函数；`var_specs`
-  的 `kind='time'` 拆分为 `'time_start'`/`'time_end'`；解码时 `d0` 预计算
-  `_width_min`（= 条目自身 `time_end - time_start`）与 `_time2dim`
-  （是否声明了 `optimize.time_end`）；`time_start` 解码后若非 2 维，
-  按 `_shift_time` 推算 `time_end`；输出 `ev2` 始终带 `time_start`/`time_end`
-  （及兼容字段 `time = time_start`）。
-- `optUtils.ts`：`buildOptSchedules` 始终透传 `entry.time_start`/`entry.time_end`
-  作为宽度模板；`ev.optimizeTime` → `optBlock.time_start`；sustained 事件下
-  新增 `ev.optimizeTimeEnd` → `optBlock.time_end`（2 维）。
-- `types.ts`：`InputEvent` 新增 `optimizeTimeEnd`/`timeEndWindowStart`/`timeEndWindowEnd`。
-- `OptSetupTab.tsx`：T2 `opt` toggle 对 pulse/sustained 均显示（不再仅限 pulse）；
-  sustained 且 `optimizeTime` 时新增"终"（`time_end`）toggle 行，控制是否独立搜索区间终点。
-- `simUtils.ts`：新增 `hhmmToMin`/`shiftTime`（镜像后端），`xToInputEvents` 的 T2
-  分支按 1/2 维分别消费 1/2 个 x 分量。
-- `Simulator.tsx`：YAML→state 的 `optimize.time_start`/`time_end` 解析（含
-  `optimize.time` 旧别名兼容）。
-- `docs/model.md`：T2 小节改写为 1/2 维 schema 说明，x 向量编码表新增对应分支。
-- 4 个 locale：新增 `sim.opt.tog.time_end`/`time_end_on_tip`/`time_end_off_tip`/
-  `time_end_fixed_hint`。
+- Schema: `optimize.time` renamed to `optimize.time_start` (the old name still supported as an alias). Writing only `time_start` gives 1 dimension (the interval width fixed, with `time_end` equal to the searched `time_start` plus the original width); additionally writing `optimize.time_end` gives 2 dimensions (start and end searched independently). A "4-dimensional (each with its own independent bounds)" form was not implemented; the "4 numbers" in the ADR draft correspond exactly to the two windows' respective `[lo,hi]` in the 2-dimensional scenario, not an additional dimension.
+- `optimizer_engine.py`: added the helper functions `_hhmm_to_min`/`_shift_time`; `var_specs`'s `kind='time'` split into `'time_start'`/`'time_end'`; during decoding, `d0` precomputes `_width_min` (equal to the entry's own `time_end - time_start`) and `_time2dim` (whether `optimize.time_end` is declared); after decoding `time_start`, if not 2-dimensional, `time_end` is derived via `_shift_time`; the output `ev2` always carries `time_start`/`time_end` (plus the compatibility field `time = time_start`).
+- `optUtils.ts`: `buildOptSchedules` always passes `entry.time_start`/`entry.time_end` through as the width template; `ev.optimizeTime` maps to `optBlock.time_start`; for a sustained event, a new `ev.optimizeTimeEnd` maps to `optBlock.time_end` (2 dimensions).
+- `types.ts`: `InputEvent` gains `optimizeTimeEnd`/`timeEndWindowStart`/`timeEndWindowEnd`.
+- `OptSetupTab.tsx`: the T2 `opt` toggle is shown for both pulse and sustained (no longer pulse-only); when sustained and `optimizeTime` is set, a new "end" (`time_end`) toggle row controls whether the interval's end is searched independently.
+- `simUtils.ts`: added `hhmmToMin`/`shiftTime` (mirroring the backend); `xToInputEvents`'s T2 branch consumes 1 or 2 x components depending on 1 or 2 dimensions.
+- `Simulator.tsx`: parses `optimize.time_start`/`time_end` from YAML to state (including compatibility with the old `optimize.time` alias).
+- `docs/model.md`: the T2 subsection rewritten as a 1/2-dimensional schema description, with the x-vector encoding table gaining the corresponding branch.
+- The 4 locales: added `sim.opt.tog.time_end`/`time_end_on_tip`/`time_end_off_tip`/`time_end_fixed_hint`.
 
-## 实施记录（papers 部分）
+## Implementation Record (Papers Part)
 
-- 经核查，S1 §3.2 的形式化定义 $R_j = \{(t_k, d_k, p_k, v_k)\}$、$4KM$ 维搜索空间表述
-  本身与本 ADR 兼容：$t_k$（开始时刻）即 `time_start`，子日生效宽度
-  $w_k$（`time_end - time_start`）多数场景固定不变，不增加决策变量数。
-  因此**未采用"K×4 → K×(可变维度)"的整体改名**，而是在 S1 §3.2 定义 1 后新增
-  "补充说明（子日生效区间）"段落：明确 $w_k$ 的语义，并说明仅当区间起止均独立
-  搜索时该分段贡献第 5 个决策变量（K×5 扩展，罕见情形）。S3 定义 2 同步加注指向
-  该补充说明。S2/S4 仅非形式化引用 K×4，无需改动。S5（尚未起草）写作时需纳入该扩展。
+- After review, S1 section 3.2's formal definition $R_j = \{(t_k, d_k, p_k, v_k)\}$ and the $4KM$-dimensional search-space statement are themselves compatible with this ADR: $t_k$ (the start moment) is exactly `time_start`, and the sub-day effective width $w_k$ (`time_end - time_start`) is fixed in most scenarios, adding no decision variables. So the full rename from "K×4" to "K×(a variable dimension)" was not adopted; instead, a "supplementary note (the sub-day effective interval)" paragraph was added after S1 section 3.2's Definition 1, clarifying $w_k$'s meaning and noting that only when both the interval's start and end are searched independently does that segment contribute a 5th decision variable (a K×5 extension, a rare case). S3's Definition 2 gains a matching annotation pointing to this note. S2/S4 only reference K×4 informally and need no change. S5 (not yet drafted) will need to incorporate this extension when written.
 
-旧字段移除后，旧 YAML 文件需手动更新（参见"向下兼容"映射表）。
+Once the old fields are removed, an old YAML file needs manual updating (see the "backward compatibility" mapping table above).
 
-## 实施记录（CLI 路径，2026-06-16 补充）
+## Implementation Record (the CLI Path, Supplemented 2026-06-16)
 
-原实施仅覆盖 API/GUI 路径（`apply_regimens`）；CLI 路径（YAML 文件直接跑仿真）的
-`_apply_schedules` + `InputSchedule`/`SchedulePoint` 机制不支持 `time_end` 和 sustained。
-本次补充将 CLI 路径对齐 GUI，两条路径均走 `apply_regimens`：
+The original implementation only covered the API/GUI path (`apply_regimens`); the CLI path (running a simulation directly from a YAML file) used `_apply_schedules` plus the `InputSchedule`/`SchedulePoint` mechanism, which did not support `time_end` or sustained. This supplement brings the CLI path in line with the GUI, with both paths now going through `apply_regimens`:
 
-- `model_structure/loader.py`：`_parse_schedule_entries` 不再展开绝对时间点
-  （`InputSchedule`/`SchedulePoint`），改为输出 regimen 兼容格式的 list，每条 entry
-  变成 `{variable, events: [{time_start, time_end, value, days?, valid_start?, valid_end?}]}`。
-  结果存入 `model.plans[plan_id]`（`List[dict]`）和第一个 plan 存入 `model.schedule_entries`。
-  旧字段 `time:` 的读取一并删除（不再向下兼容）。
-- `model_structure/core.py`：新增 `self.schedule_entries: list = []` 属性。
-- `simulator_engine.py`：`run_simulation` 在步进循环前调用
-  `precompute_sustained_divisors`，每步先调 `apply_regimens` 再调 `model.step()`，
-  与 `session_manager.py` 的 GUI 循环完全对称；`run_simulation_all_plans` 改为
-  设置 `model.schedule_entries` 而非 `model.schedules`。
-- `_apply_schedules` 保留，但仅处理 `daily_inputs`（绝对时间 `InputSchedule` 对象）；
-  plan-based schedule entries 已移出 `self.schedules`，不会双重计算。
-- `docs/model.md`：`mode: sustained` 小节标注为"已废弃（不再支持）"；
-  旧字段映射表措辞从"仍受支持"改为"旧写法（不再支持）"。
-- 验证：`test_plans`（三 plan、pulse）、`test_sustained_mode`（pulse + sustained，
-  含跨午夜窗口 `20:00~08:00`）两个测试模型通过 `run_simulation_all_plans`，
-  结果与 GUI 路径预期一致（pulse 5 天 cumulative_output=300；sustained 5 天=60）。
+- `model_structure/loader.py`: `_parse_schedule_entries` no longer expands absolute time points (`InputSchedule`/`SchedulePoint`), instead outputting a regimen-compatible list, with each entry becoming `{variable, events: [{time_start, time_end, value, days?, valid_start?, valid_end?}]}`. The result is stored into `model.plans[plan_id]` (a `List[dict]`), with the first plan also stored into `model.schedule_entries`. Reading of the old `time:` field is removed entirely (no longer backward-compatible).
+- `model_structure/core.py`: added the `self.schedule_entries: list = []` attribute.
+- `simulator_engine.py`: `run_simulation` calls `precompute_sustained_divisors` before the step loop, and each step calls `apply_regimens` before `model.step()`, fully symmetric with `session_manager.py`'s GUI loop; `run_simulation_all_plans` now sets `model.schedule_entries` instead of `model.schedules`.
+- `_apply_schedules` is kept, but now handles only `daily_inputs` (absolute-time `InputSchedule` objects); plan-based schedule entries have moved out of `self.schedules` and are no longer double-counted.
+- `docs/model.md`: the `mode: sustained` subsection marked "deprecated (no longer supported)"; the old-field mapping table's wording changed from "still supported" to "old form (no longer supported)."
+- Validated: two test models, `test_plans` (three plans, pulse) and `test_sustained_mode` (pulse plus sustained, including a window spanning midnight, `20:00~08:00`), passed through `run_simulation_all_plans`, with results matching the GUI path's expectation (pulse over 5 days gives `cumulative_output=300`; sustained over 5 days gives 60).

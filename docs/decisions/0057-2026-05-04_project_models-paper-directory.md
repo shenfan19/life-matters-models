@@ -1,63 +1,63 @@
-# 0057 — `models/published/` 论文专用场景目录
+# 0057 - A `models/published/` Paper-Specific Scenario Directory
 
-**日期**：2026-05-04（创建）；2026-05-05（更新：`researches/` → `papers/`）  
-**状态**：✅ 已实施
-
----
-
-## 背景
-
-随着论文写作推进，模型场景文件出现两种性质的混用：
-
-- **快速 CI 场景**（`test/`）：时长短（1 周）、参数精简，用于开发调试和快速验证引擎。
-- **论文正式场景**：完整时长（52 周 CKD、16 周 Banister）、完整 MC 设置、可复现论文数值。
-
-两类场景混在 `models/scenarios/test/` 下，命名以 `test_` 开头，无法体现与论文的对应关系。
+**Date**: 2026-05-04 (created); 2026-05-05 (updated: `researches/` to `papers/`)
+**Status**: Implemented
 
 ---
 
-## 决策
+## Background
 
-### 目录命名
+As paper writing progressed, model scenario files ended up mixing two different natures:
 
-初始命名为 `models/researches/`，后更名为 `models/published/`。
+- Fast CI scenarios (`test/`): short duration (1 week), stripped-down parameters, used for development debugging and quickly validating the engine.
+- Formal paper scenarios: full duration (52 weeks for CKD, 16 weeks for Banister), full MC settings, reproducing the paper's numbers.
 
-**更名理由**：`papers/` 比 `researches/` 更直接——子目录以论文名命名，发表后可改为论文标题；用户一眼可知这是已调试完成、与论文绑定的模型。
+The two kinds were mixed together under `models/scenarios/test/`, all named starting with `test_`, with no way to tell which corresponded to which paper.
 
-### 目录结构
+---
+
+## Decision
+
+### Directory naming
+
+Initially named `models/researches/`, later renamed to `models/published/`.
+
+Reason for the rename: `papers/` is more direct than `researches/`; a subdirectory named after a paper can be renamed to the paper's title once published, and a user can tell at a glance that this is a debugged, paper-bound model.
+
+### Directory structure
 
 ```
 models/published/
-  paper1/    # Paper 1 — JOSS 软件工具论文
+  paper1/    # Paper 1 - a JOSS software-tool paper
     fatty_liver_a1_p1.yaml
-    banister_b3_p1.yaml        ← 完整 16 周 V2 协议
-  paper2/    # Paper 2 — JAMIA 临床验证
-    ckd_protein_a4_p2.yaml     ← 52 周完整版（从 test/ 迁移）
+    banister_b3_p1.yaml        <- the full 16-week V2 protocol
+  paper2/    # Paper 2 - a JAMIA clinical validation
+    ckd_protein_a4_p2.yaml     <- the full 52-week version (migrated from test/)
     hypertension_gout_a5_p2.yaml
-  paper3/    # Paper 3 — JBI 优化方法
+  paper3/    # Paper 3 - a JBI optimization-methods paper
     ckd_protein_pareto_a4_p3.yaml
     hypertension_gout_3obj_a5_p3.yaml
     smoking_stress_a6_p3.yaml
 ```
 
-**文件命名规则**：`{topic}_{案例ID}_{论文ID}.yaml`，topic 排前使同主题文件（如 `ckd_protein`）在目录列表中自然聚拢。
+Filename rule: `{topic}_{case_id}_{paper_id}.yaml`, with the topic first so files on the same topic (such as `ckd_protein`) naturally cluster together in a directory listing.
 
-论文发表后，子目录（`paper1/`）可改名为论文短标题（如 `banister_fitness_2026/`），使 repo 对外部读者自文档化。
+Once a paper is published, its subdirectory (`paper1/`) can be renamed to the paper's short title (such as `banister_fitness_2026/`), making the repository self-documenting for external readers.
 
-**`test/` 目录保留**：`test_banister.yaml`（1 周快速 CI）和 `test_glucose_meal.yaml` 继续存在，作为引擎回归测试，不纳入论文范围。
-
----
-
-## 理由
-
-- 论文场景和 CI 测试场景目的不同，应明确分离。
-- `papers/paper1/b3_banister.yaml` 对应论文 §5.2，比 `test/test_banister.yaml` 更有可读性。
-- 每个 YAML 文件的 `metadata.paper` 和 `metadata.case_id` 字段直接映射到论文。
+The `test/` directory is kept: `test_banister.yaml` (a 1-week fast CI run) and `test_glucose_meal.yaml` continue to exist as engine regression tests, out of the paper's scope.
 
 ---
 
-## 后果
+## Reasoning
 
-- `models/in_process/test/test_ckd_protein.yaml` 迁移到 `models/published/paper2/ckd_protein_a4_p2.yaml`。
-- `docs/validation.md`、`models/source/README.md`、`models/scenarios/README.md` 中路径引用同步更新。
-- `models/published/` 通过 `scan_models` 递归发现（见 ADR 0058）自动出现在 GUI 模型列表中。
+- Paper scenarios and CI test scenarios serve different purposes and should be clearly separated.
+- `papers/paper1/b3_banister.yaml`, corresponding to the paper's section 5.2, is more readable than `test/test_banister.yaml`.
+- Each YAML file's `metadata.paper` and `metadata.case_id` fields map directly to the paper.
+
+---
+
+## Consequences
+
+- `models/in_process/test/test_ckd_protein.yaml` migrated to `models/published/paper2/ckd_protein_a4_p2.yaml`.
+- Path references in `docs/validation.md`, `models/source/README.md`, and `models/scenarios/README.md` updated accordingly.
+- `models/published/` is discovered automatically via `scan_models`'s recursive traversal (see ADR 0058) and shows up in the GUI's model list.

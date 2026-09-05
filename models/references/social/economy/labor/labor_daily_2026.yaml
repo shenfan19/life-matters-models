@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: labor
   lm_format_version: "1.0"
   updated: 2026-04-23
@@ -12,28 +12,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      劳动-储蓄-疲劳的日尺度权衡：工作时间增加收入但积累疲劳，休息恢复疲劳但停止收入，最优的工作和休息时序无法凭直觉给出。该组件为历史、文学或经济场景提供最简化的日经济基础层。
+      A day-scale tradeoff between labor, savings, and fatigue: more work hours raise income but
+      accumulate fatigue, while rest recovers fatigue but stops income, and the optimal work-and-rest
+      timing cannot be given by intuition alone. This component supplies a minimal daily economic
+      base layer for historical, literary, or economic scenarios.
     result: >
-      仿真预期呈现一日内储蓄随工作时段增长、疲劳在工作和休息交替下的锯齿形波动，仿真尚未运行，本文件为演示组件。
-    limitations: 极简演示模型，参数无文献来源；未建模通货膨胀、技能积累或社会保障，不适合长时间尺度分析。
+      The simulation is expected to show savings growing during work periods within a day and
+      fatigue oscillating in a sawtooth pattern as work and rest alternate; the simulation has not
+      been run yet, and this file is a demonstration component.
+    limitations: A minimalist demonstration model whose parameters have no literature source; inflation, skill accumulation, and social security are not modeled, and it is not suited to long-timescale analysis.
   ratings:
-    importance: 0.25 - 劳动-储蓄-疲劳日模型是场景驱动的基础组件，演示价值为主；noref，演示价值为主，框架复用预期极低
-    variable: 0.25 - noref标记，参数无文献来源，为极简演示模型
-    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.25 - The labor-savings-fatigue daily model is a scenario-driven base component intended mainly for demonstration; noref, mainly for demonstration, expected very low reuse within the framework
+    variable: 0.25 - noref marker, parameters lack a literature source, a minimalist demonstration model
+    equation: 0.25 - Parameters lack a literature source, the equation is a qualitative approximation with no independent reproduction
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [economic, social, labor]
 
 variables:
-  savings: {description: "个人储蓄", value: 500, unit: "元", type: state, bounds: [0, 1000000]}
-  fatigue: {description: "疲劳度", value: 0, unit: "分", type: state, bounds: [0, 100]}
-  work_intensity: {description: "工作强度", value: 0.0, unit: "系数", type: input, bounds: [0, 1]}
-  hourly_wage: {description: "时薪", value: 50, unit: "元/h", type: parameter}
+  savings: {description: "Personal savings", value: 500, unit: "yuan", type: state, bounds: [0, 1000000]}
+  fatigue: {description: "Fatigue level", value: 0, unit: "score", type: state, bounds: [0, 100]}
+  work_intensity: {description: "Work intensity", value: 0.0, unit: "coefficient", type: input, bounds: [0, 1]}
+  hourly_wage: {description: "Hourly wage", value: 50, unit: "yuan/h", type: parameter}
 
 equations:
   earning:
-    description: "劳动所得：根据工作强度和时薪增加储蓄"
+    description: "Labor income: savings rise with work intensity and hourly wage"
     step_unit: hour
     condition: work_intensity > 0
     dynamics:
@@ -42,7 +47,7 @@ equations:
     priority: 7
 
   resting:
-    description: "自然恢复：非工作时间疲劳度缓慢下降"
+    description: "Natural recovery: fatigue declines slowly during non-work time"
     step_unit: hour
     condition: work_intensity == 0
     dynamics:
@@ -83,7 +88,7 @@ optimization:
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "劳动强度（0=不工作，1=高强度）"
+        label: "Work intensity (0=not working, 1=high intensity)"
         optimize:
           value: [0, 1]
   algorithm:

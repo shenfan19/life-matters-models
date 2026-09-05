@@ -1,80 +1,80 @@
-# ADR 0053 — `date_range` 调度字段 & YAML Schedule 优先级修复
+# ADR 0053 - The `date_range` Scheduling Field and a Fix to YAML Schedule Priority
 
-**日期**：2026-05-03  
-**状态**：已实施
+**Date**: 2026-05-03
+**Status**: Implemented
 
 ---
 
-## 背景
+## Background
 
-ADR 0052 确立了 `simulation.schedules` 的扁平列表格式（HH:MM 时间 + `days` 星期掩码），但仍遗留三个问题：
+ADR 0052 established `simulation.schedules`'s flat-list format (an HH:MM time plus a `days` day-of-week mask), but three problems remained:
 
-### 问题一：每周逐条罗列的假循环
+### Problem 1: a false loop from listing entries week by week
 
-建模者为了表达"每周不同训练负荷"，在 YAML 里把 18 周的条目全部写出：
+To express "a different training load each week," a modeler would write out all 18 weeks' entries in the YAML:
 
 ```yaml
 schedules:
   - variable: training_load
     value: 50.0
     days: [Mon,Tue,Wed,Thu,Fri]
-    date_range: "2026-01-01 ~ 2026-01-07"   # 第1周
+    date_range: "2026-01-01 ~ 2026-01-07"   # week 1
   - variable: training_load
     value: 55.0
     days: [Mon,Tue,Wed,Thu,Fri]
-    date_range: "2026-01-08 ~ 2026-01-14"   # 第2周
-  # ... 重复 16 次
+    date_range: "2026-01-08 ~ 2026-01-14"   # week 2
+  # ... repeated 16 more times
 ```
 
-这产生大量冗余，且引擎并不限制条目数。
+This produces a large amount of redundancy, and the engine places no limit on the entry count.
 
-真正需要的是**一个条目只生效于指定日期区间**——即 `date_range` 字段。该字段在 ADR 0052 的 YAML 里已经存在，但前端和后端都没有完整实现它。
+What was actually needed was "one entry effective only within a specified date range," that is, the `date_range` field. This field already existed in ADR 0052's YAML, but neither the frontend nor the backend fully implemented it.
 
-### 问题二：前端未解析 `date_range`
+### Problem 2: the frontend does not parse date_range
 
-`Simulator.tsx` 读取调度条目时只认 `s.valid_start` / `s.valid_end`，不认 `date_range`：
+When `Simulator.tsx` reads a schedule entry, it only recognizes `s.valid_start` / `s.valid_end`, not `date_range`:
 
 ```typescript
-validRangeEnabled: !!(s.valid_start || s.valid_end),  // date_range 被忽略
+validRangeEnabled: !!(s.valid_start || s.valid_end),  // date_range is ignored
 ```
 
-结果：GUI 里日期范围列永远显示为空，用户无法看到或编辑有效期。
+Result: the date-range column in the GUI always displays empty, and the user cannot see or edit a validity period.
 
-### 问题三：YAML Schedule 被 GUI Regimen 值覆盖
+### Problem 3: a YAML Schedule is overridden by a GUI Regimen value
 
-每次批量步进时，前端把当前 `inputParams`（所有输入变量的 GUI 默认值）随 `input_changes` 一起发给后端：
+On every batch step, the frontend sends the current `inputParams` (every input variable's GUI default value) to the backend together with `input_changes`:
 
 ```python
-# batch_steps 旧代码
+# batch_steps, the old code
 if input_changes:
     for var_name, value in input_changes.items():
         model.set_variable_value(var_name, value)
-        model.manual_overrides[var_name] = value   # ← 写入 manual_overrides
+        model.manual_overrides[var_name] = value   # <- written into manual_overrides
 ```
 
-`model.manual_overrides` 会让 `_apply_schedules()` 跳过该变量的 YAML Schedule。结果：
+`model.manual_overrides` makes `_apply_schedules()` skip that variable's YAML Schedule. Result:
 
-- `test_ckd_protein`：三餐脉冲（0.27 + 0.27 + 0.26 = 0.80 g/kg/day）被覆盖为最后一个事件的值 0.26
-- `test_glucose_meal`：两餐之间 `carb_intake` 应归零（pulse 模式），实际保持上餐值持续累加，血糖立即冲上限
+- `test_ckd_protein`: the three-meal pulse (0.27 + 0.27 + 0.26 = 0.80 g/kg/day) gets overridden to the last event's value, 0.26.
+- `test_glucose_meal`: `carb_intake` should return to zero between meals (pulse mode), but instead the previous meal's value stayed and kept accumulating, sending blood glucose straight to its upper bound.
 
-### 问题四：`_apply_regimens` 的历元错误
+### Problem 4: an epoch error in `_apply_regimens`
 
-当 `valid_range_enabled=true` 时，后端用固定历元 1900-01-01 计算"仿真当前日期"：
+When `valid_range_enabled=true`, the backend used the fixed epoch 1900-01-01 to compute the "current simulation date":
 
 ```python
 _EPOCH = date(1900, 1, 1)
-sim_date = _EPOCH + timedelta(days=prev_day_idx)  # 最大到 1900+几十年
+sim_date = _EPOCH + timedelta(days=prev_day_idx)  # reaches at most 1900 plus a few decades
 ```
 
-而 `valid_start` 是 "2026-01-01"，`sim_date < date(2026, 1, 1)` 永远为真 → 所有有效期限制的事件全部跳过。
+But `valid_start` is "2026-01-01," so `sim_date < date(2026, 1, 1)` is always true, and every event with a validity restriction is skipped entirely.
 
 ---
 
-## 决策
+## Decision
 
-### 决策一：`date_range` 为调度条目的标准日期范围字段
+### Decision 1: date_range as the standard date-range field for a schedule entry
 
-格式：`date_range: "YYYY-MM-DD ~ YYYY-MM-DD"`（与全局日期输入规范一致，见 ADR 0006 / global_prompt）
+Format: `date_range: "YYYY-MM-DD ~ YYYY-MM-DD"` (consistent with the global date-input convention; see ADR 0006 / global_prompt)
 
 ```yaml
 simulation:
@@ -85,23 +85,23 @@ simulation:
       time: "09:00"
       value: 70.0
       days: [Mon, Tue, Wed, Thu, Fri]
-      date_range: "2026-01-01 ~ 2026-01-28"   # 只在第1-4周生效
-      label: "基础期训练"
+      date_range: "2026-01-01 ~ 2026-01-28"   # in effect only during weeks 1-4
+      label: "Base-phase training"
     - variable: training_load
       time: "09:00"
       value: 100.0
       days: [Mon, Tue, Wed, Thu, Fri]
-      date_range: "2026-01-29 ~ 2026-02-25"   # 只在第5-8周生效
-      label: "强化期训练"
+      date_range: "2026-01-29 ~ 2026-02-25"   # in effect only during weeks 5-8
+      label: "Build-phase training"
 ```
 
-**Python 引擎（loader.py）**已支持 `date_range`（ADR 0052 期间实现），本 ADR 补全前端和 regimen 端的实现。
+The Python engine (loader.py) already supports `date_range` (implemented during ADR 0052); this ADR completes its implementation on the frontend and the regimen side.
 
-`date_range` 缺席时：事件在整个仿真期间（`start_date` ~ `end_date`）每天生效。
+When `date_range` is absent: the event is in effect every day for the entire simulation period (`start_date` to `end_date`).
 
-### 决策二：前端解析 `date_range` → `validStart` / `validEnd`
+### Decision 2: the frontend parses date_range into validStart / validEnd
 
-`Simulator.tsx` 的调度条目解析新增回退逻辑：
+`Simulator.tsx`'s schedule-entry parsing gains a fallback:
 
 ```typescript
 let validStart = s.valid_start ?? '';
@@ -115,48 +115,48 @@ if (!validStart && !validEnd && s.date_range) {
 }
 ```
 
-`valid_start` / `valid_end` 仍作为向前兼容的等效别名保留。
+`valid_start` / `valid_end` are still kept as forward-compatible equivalent aliases.
 
-### 决策三：YAML Schedule 优先于 GUI Regimen
+### Decision 3: a YAML Schedule takes priority over a GUI Regimen
 
-**根本原则**：`simulation.schedules` 是模型的行为定义；GUI Regimen 是用户的交互覆盖。两者冲突时，前者优先。
+Core principle: `simulation.schedules` is the model's behavior definition; a GUI Regimen is the user's interactive override. When the two conflict, the former takes priority.
 
-**修复**：`batch_steps` 的 `input_changes` 处理不再写入 `manual_overrides`：
+Fix: `batch_steps`'s `input_changes` handling no longer writes to `manual_overrides`:
 
 ```python
-# 修复后：只更新初始值，不标记为手动覆盖
+# After the fix: only updates the initial value, without marking it as a manual override
 if input_changes:
     for var_name, value in input_changes.items():
         if var_name in model.variables:
             model.set_variable_value(var_name, value)
-            # 不写 manual_overrides → _apply_schedules 正常运行
+            # manual_overrides is not written -> _apply_schedules runs normally
 ```
 
-`manual_overrides` 仅保留两个写入路径：
-1. **优化器** `_run_sim()`：显式抑制 YAML Schedule，让优化器控制该变量
-2. 未来：用户在 GUI 中点击"锁定覆盖"（待实现）
+`manual_overrides` now has only two write paths:
+1. The optimizer's `_run_sim()`: explicitly suppresses the YAML Schedule, letting the optimizer control that variable.
+2. In the future: the user clicking "lock override" in the GUI (not yet implemented).
 
-### 决策四：`_apply_regimens` 使用模型实际 `start_date` 作为历元
+### Decision 4: `_apply_regimens` uses the model's actual start_date as its epoch
 
 ```python
-# 修复：从 session 读取 sim_start_date
+# Fix: reads sim_start_date from the session
 def _apply_regimens(model, regimens, prev_time, next_time, sim_start_date=''):
     try:
         _EPOCH = date.fromisoformat(sim_start_date) if sim_start_date else date(1900, 1, 1)
     except ValueError:
         _EPOCH = date(1900, 1, 1)
-    # sim_date = _EPOCH + timedelta(days=prev_day_idx) → 正确对应绝对日历日期
+    # sim_date = _EPOCH + timedelta(days=prev_day_idx) -> now correctly matches the absolute calendar date
 ```
 
-`sim_start_date` 由 `start_session()` 从 `base_model.simulator['start_date']` 读取并存入 session，再由 `batch_steps()` 传入。
+`sim_start_date` is read by `start_session()` from `base_model.simulator['start_date']` and stored into the session, then passed in by `batch_steps()`.
 
-### 决策五：测试场景用最短周期验证核心逻辑
+### Decision 5: test scenarios use the shortest cycle to validate the core logic
 
-`test_banister.yaml` 由 18 周（126 步）简化为 **1 周（6 步）**，与其他 5 个测试场景（`test_ckd_protein`、`test_glucose_meal`、L1/L2/L3）一致——测试文件只需验证链路正确性，不需要复现完整的临床方案。
+`test_banister.yaml` was simplified from 18 weeks (126 steps) to 1 week (6 steps), matching the other 5 test scenarios (`test_ckd_protein`, `test_glucose_meal`, L1/L2/L3); a test file only needs to verify the pipeline is correct, not reproduce a complete clinical protocol.
 
 ```yaml
-# 简化前：18 个 date_range 条目，126 天
-# 简化后：2 个条目，7 天
+# Before simplification: 18 date_range entries, 126 days
+# After simplification: 2 entries, 7 days
 simulation:
   start_date: "2026-01-01"
   end_date:   "2026-01-07"
@@ -175,43 +175,43 @@ simulation:
 
 ---
 
-## 优先级规则总结
+## Priority Rule Summary
 
-| 来源 | 写入路径 | 优先级 | 用途 |
+| Source | Write path | Priority | Purpose |
 |------|---------|--------|------|
-| YAML `simulation.schedules` | `loader.py` → `model.schedules` → `_apply_schedules()` | **最高** | 模型行为定义 |
-| GUI Regimen（`inputEvents`） | `batch_steps._apply_regimens()` | 中（被上层覆盖） | 用户交互预览 |
-| 优化器 Regimen | `_run_sim()` + `manual_overrides` | 最高（显式抑制 schedule） | 优化搜索空间 |
-| `input_changes`（GUI 默认值） | `batch_steps` 仅 `set_variable_value` | 仅初始化 | 不影响 schedule |
+| The YAML `simulation.schedules` | `loader.py` to `model.schedules` to `_apply_schedules()` | Highest | The model's behavior definition |
+| A GUI Regimen (`inputEvents`) | `batch_steps._apply_regimens()` | Medium (overridden by the layer above) | A user's interactive preview |
+| An optimizer Regimen | `_run_sim()` plus `manual_overrides` | Highest (explicitly suppresses the schedule) | The optimization search space |
+| `input_changes` (GUI default values) | `batch_steps`, only `set_variable_value` | Initialization only | Does not affect the schedule |
 
 ---
 
-## 变更文件
+## Files Changed
 
 ```
 sim_engine/src/simulator_engine.py
-  _apply_regimens(): 新增 sim_start_date 参数，历元由 1900-01-01 改为模型 start_date
-  start_session(): session 存储 sim_start_date
-  batch_steps(): input_changes 不再写 manual_overrides；传 sim_start_date 给 _apply_regimens
+  _apply_regimens(): a new sim_start_date parameter; the epoch changed from 1900-01-01 to the model's start_date
+  start_session(): the session now stores sim_start_date
+  batch_steps(): input_changes no longer writes manual_overrides; passes sim_start_date to _apply_regimens
 
 sim_gui/src/components/Simulator.tsx
-  调度条目解析：date_range → validStart/validEnd 回退解析
+  schedule-entry parsing: a date_range to validStart/validEnd fallback
 
 models/scenarios/test/test_banister.yaml
-  简化为 1 周（7 天，2 个调度条目）
+  simplified to 1 week (7 days, 2 schedule entries)
 
 docs/model_design.md
-  simulation.schedules 规范更新（见本 ADR）
+  the simulation.schedules specification updated (see this ADR)
 ```
 
 ---
 
-## 验证
+## Validation
 
-| 场景 | 预期 | 机制 |
+| Scenario | Expected | Mechanism |
 |------|------|------|
-| `test_ckd_protein` 运行 1 步 | `dietary_protein = 0.80` | 三餐脉冲 (0.27+0.27+0.26) 在 `_apply_schedules` 正确累加 |
-| `test_glucose_meal` 两餐之间 | `carb_intake = 0.0` | `_apply_schedules` pulse 模式无事件步返回 0 |
-| `test_banister` 全程 6 步 | Mon-Fri `training_load=70`，Sat=35，Sun=0 | `date_range` + `days` 限定正确 |
-| 加载含 `date_range` 的模型 | GUI 显示有效期起止日期 | 前端 `date_range` 解析为 `validStart/validEnd` |
-| 优化器运行 | YAML schedule 被抑制，optimization 控制变量 | `_run_sim` 显式写 `manual_overrides` |
+| `test_ckd_protein` runs 1 step | `dietary_protein = 0.80` | The three-meal pulse (0.27+0.27+0.26) accumulates correctly in `_apply_schedules` |
+| `test_glucose_meal` between two meals | `carb_intake = 0.0` | `_apply_schedules`'s pulse mode returns 0 on a step with no event |
+| `test_banister` for all 6 steps | Mon-Fri `training_load=70`, Sat=35, Sun=0 | `date_range` plus `days` restrict it correctly |
+| Loading a model with `date_range` | The GUI displays the validity period's start and end dates | The frontend parses `date_range` into `validStart`/`validEnd` |
+| Running the optimizer | The YAML schedule is suppressed, and optimization controls the variable | `_run_sim` explicitly writes `manual_overrides` |

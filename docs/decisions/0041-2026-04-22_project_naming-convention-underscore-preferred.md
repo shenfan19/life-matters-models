@@ -1,34 +1,30 @@
-# ADR 0041 — 项目命名规范：优先使用下划线 (snake_case)
-**日期**：2026-04-22  
-**状态**：已决策
+# ADR 0041 - Project Naming Convention: Underscores (snake_case) Preferred
+**Date**: 2026-04-22
+**Status**: Decided
 
 ---
 
-## 背景
+## Background
 
-项目目前同时包含 Python 后端 (`sim_engine`)、前端代码 (`sim_gui`, `game`) 以及 Markdown 文档 (`docs/game_design.md`)。
-在业界，前端项目、URL 和普通文件命名通常偏向使用中划线/连接线 (`kebab-case`，如 `sim-gui`)，而我们当前的文件和目录大多使用了下划线 (`snake_case`，如 `sim_engine`)。
+The project currently includes a Python backend (`sim_engine`), frontend code (`sim_gui`, `game`), and Markdown documentation (`docs/game_design.md`). In industry practice, frontend projects, URLs, and general file naming tend to favor hyphens (kebab-case, such as `sim-gui`), while most of our current files and directories use underscores (snake_case, such as `sim_engine`).
 
-开发过程中产生了疑问：是否应该将现有的下划线命名统一改为前端领域和 URL 规范中广泛推荐的中划线命名？
-
----
-
-## 决策
-
-**维持现状，拒绝全局改名。在整个项目代码库中，优先使用下划线（`snake_case`）作为目录和文件命名规范。**
-
-### 决策理由：
-
-1. **Python 模块导入的硬性限制**：
-   本项目包含 Python 核心逻辑 (`sim_engine`)。Python 的语法规定，如果一个目录或文件要被作为模块进行代码导入（例如 `import sim_engine`），其名称**必须且只能**包含字母、数字和下划线。使用中划线 (`-`) 会导致 Python 语法错误（会被解析为数学减号）。
-2. **保持项目全局的内部一致性**：
-   为了保持前端项目、后端项目和文档风格的统一，既然 Python 侧必须使用下划线，那么其他部分（包括 `sim_gui`、`game` 等前端目录、以及 `docs/` 下的 Markdown 文档）统一使用下划线，能避免同一个代码仓库中出现风格割裂。项目内的统一性高于外部某种特定语言的建议规范。
-3. **改名成本与收益失衡**：
-   目前系统整体运行良好，强行全局修改为中划线会导致：大量代码 Import 路径需重构、终端运行的开发服务失效、依赖相对路径的配置文件崩溃，且会在 Git 历史中产生大量无意义的重命名记录，得不偿失。
+A question came up during development: should the existing underscore naming be unified to the hyphenated style widely recommended in frontend and URL conventions?
 
 ---
 
-## 后续规范与影响
+## Decision
 
-* **新文件/目录命名**：未来在本项目内（包含前后端代码、Markdown 文档），如需使用单词分隔符，请统一继续使用下划线 `_`。
-* **特殊豁免情况**：遵循特定技术栈生态强制标准的文件名除外（如 Node.js 生态的 `package-lock.json`、持续集成的配置文件等），这类文件保持其本身要求的命名方式。
+**Keep the status quo and reject a project-wide rename. Across the entire codebase, underscores (snake_case) are the preferred convention for directory and file naming.**
+
+### Reasoning
+
+1. A hard constraint from Python module imports: this project includes core Python logic (`sim_engine`). Python's syntax requires that a directory or file name imported as a module (for example `import sim_engine`) contain only letters, digits, and underscores. Using a hyphen (`-`) causes a Python syntax error, since it would be parsed as a minus sign.
+2. Keeping the project internally consistent: to keep the frontend, backend, and documentation style unified, since the Python side must use underscores, having every other part (including frontend directories such as `sim_gui` and `game`, and the Markdown documents under `docs/`) also use underscores avoids a split style within the same code repository. Consistency within the project outweighs an external convention recommended by one particular language ecosystem.
+3. An imbalance between the cost and benefit of renaming: the system currently runs well overall, and forcing a project-wide switch to hyphens would require restructuring a large number of code import paths, break the development server run from the terminal, break configuration files that depend on relative paths, and produce a large number of meaningless rename entries in the git history, a poor trade.
+
+---
+
+## Follow-On Convention and Impact
+
+* New file/directory naming: going forward within this project (frontend and backend code, and Markdown documentation alike), whenever a word separator is needed, keep using an underscore `_`.
+* Special exemption: file names mandated by a specific technology ecosystem's own standard are exempt (such as Node.js's `package-lock.json`, or continuous-integration configuration files), and such files keep the naming their own ecosystem requires.

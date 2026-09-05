@@ -7,19 +7,11 @@ metadata:
       constraint. Three daily dose inputs (morning / noon / evening) each have different
       bioavailability; the hard constraint caps total daily dose at 45 mg. Two objectives:
       maximise mean plasma concentration (efficacy) and minimise final liver load (toxicity).
-    problem_cn: >
-      验证带 Pareto 目标和硬约束的多变量纯数值（value-only）优化。三个每日剂量输入（早晨/中午/晚上）
-      各自具有不同的生物利用度；硬约束将每日总剂量上限设为 45 mg。两个优化目标：最大化平均血浆
-      药物浓度（疗效）、最小化最终肝脏负荷（毒性）。
     result: >
       The Pareto front should show a monotone efficacy-toxicity tradeoff within the feasible
       region (total daily dose ≤ 45 mg). Morning bioavailability is highest, so high-efficacy
       solutions should weight morning doses more heavily.
-    result_cn: >
-      在可行域内（每日总剂量 ≤ 45 mg），Pareto 前沿应呈现单调的疗效-毒性权衡关系。由于早晨的
-      生物利用度最高，高疗效解应更倾向于将剂量分配给早晨。
     limitations: Value-only search; does not cover time-of-day, weekly pattern, or date-range tiers.
-    limitations_cn: 仅做数值搜索；不覆盖时间窗、每周模式或日期范围等更高档位。
   tags: [test, optimization, t1, pareto, nsga2, multi-objective, constraint]
 variables:
   plasma_conc:

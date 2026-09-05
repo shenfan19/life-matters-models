@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_pk
   lm_format_version: "1.0"
   description:
@@ -12,25 +12,13 @@ metadata:
       `drug_ke` must equal `value` (pk: effective = value, no auxiliary fields),
       and the effective value (in 1/hour) must be usable directly in an hour-step elimination
       equation (step_unit: hour, sim step_size: 1 hour → step=1, no extra conversion factor).
-    problem_cn: >
-      验证 Loader 对 `pk`（PK/PD 参数）证据子类型的独立处理。`drug_ke` 必须等于
-      `value`（pk 类型：有效值 = value，无需辅助字段），且该有效值（单位 1/hour）
-      必须能够直接用于以小时为步长的消除方程（step_unit: hour，仿真 step_size:
-      1 小时 → step=1，无需额外换算系数）。
     result: >
       `pk_display` = drug_ke = 0.0347 (constant, every step, 1/hour;
       t½ ≈ ln2 / 0.0347 ≈ 20 h).
       `drug_conc` rises by daily 100 mg oral dose pulses (80% bioavailability, Vd = 10 L)
       and decays at drug_conc × 0.0347 per hour between doses (t½ ≈ 20 h), settling into a
       daily peak-trough oscillation rather than decaying to ≈0 between doses.
-    result_cn: >
-      `pk_display` = drug_ke = 0.0347（每一步恒定，单位 1/hour；半衰期
-      t½ ≈ ln2 / 0.0347 ≈ 20 小时）。`drug_conc` 每日因 100 mg 口服剂量脉冲而上升
-      （生物利用度 80%，Vd = 10 L），并在两次给药之间以 drug_conc × 0.0347 每小时
-      的速率衰减（t½ ≈ 20 小时），最终形成每日的峰谷振荡，而不是在两次给药之间
-      衰减至约 0。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, pk]
 
 variables:

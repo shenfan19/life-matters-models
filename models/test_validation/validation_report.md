@@ -1,170 +1,170 @@
-# LM Reference Engine 验证报告
+# LM Reference Engine Validation Report
 
-本报告与其覆盖的模型均由 AI 辅助生成,正在持续验证中,不保证正确,每个模型当前的核验状态见其自身 `metadata.ratings.confidence` 字段。本报告内容仅供参考,欢迎相关领域专家指出错误。论文正文实际引用、因此被论文本身认定为验证结论支撑的模型,仅限 Banister、CKD 蛋白质与肌肉、机组跨时区排班,以及声明层的相对风险与 Cohen's d 效应量家族;本报告记录的其余模型,他汀剂量优化、CO2 Keeling 曲线、Gompertz 死亡率律、十三个药物的一阶消除正对照、EPOC、Ebbinghaus 遗忘曲线、HOMA-IR 与利尿剂两个反向验证案例、参考库里的运动项目与非医学模型,都是写作过程中考察过的候选或独立于论文之外的库内验证文档,出现在本报告里不等同于已被论文正文采信为验证结论,读者判断某个具体数字或结论是否支撑论文时,以论文正文实际引用的范围为准。
+This report and the models it covers were generated with AI assistance and are under continuous validation; correctness is not guaranteed, and each model's current verification status is given in its own `metadata.ratings.confidence` field. This report is for reference only, and domain experts are welcome to point out errors. The models actually cited in the paper's main text, and therefore treated by the paper itself as supporting a validation conclusion, are limited to Banister, CKD protein and muscle, aircrew cross-timezone scheduling, and the declarative-layer relative-risk and Cohen's d effect-size families; the remaining models recorded in this report, statin dose optimization, the CO2 Keeling curve, the Gompertz mortality law, first-order elimination positive controls for thirteen drugs, EPOC, the Ebbinghaus forgetting curve, HOMA-IR, and the two reverse-verification cases with diuretics, along with the sports and non-medical models in the reference library, are candidates examined during writing or in-library validation documents independent of the paper; their appearance in this report does not mean the paper's main text has adopted them as validation conclusions. Readers judging whether a specific number or conclusion supports the paper should go by what the paper's main text actually cites.
 
-本文件回答 validate 侧的问题,即模型和仿真结果本身是否可信,前提是引擎的数值算法实现正确。数值算法实现正确性属于 verify 侧的问题,见 `life-matters-reference-engine` 仓库的 `verification_report.md`,下文 Verify 前提一节摘录了支撑这个前提的最少证据。
+This file answers the validate-side question, whether the model and simulation results themselves are credible, on the premise that the engine's numerical-algorithm implementation is correct. The correctness of the numerical-algorithm implementation is a verify-side question, see `verification_report.md` in the `life-matters-reference-engine` repository; the "Verify premise" section below excerpts the minimal evidence supporting this premise.
 
-每个案例的文献目标值、实测仿真值、误差、判断和文献出处都直接写在正文里,不要求读者另开模型文件才能核实数字。模型文件自己的 `metadata.description` 与 `references` 是这些数字的原始来源和更完整的文献列表,含每个参数各自的出处,本文件摘录的是支撑判断所必需的最少数字与引用,两处如有出入以模型文件当前状态为准。
+Each case's literature target value, measured simulation value, error, verdict, and literature source are all written directly in the main text, so readers are not required to open a separate model file to check the numbers. A model file's own `metadata.description` and `references` are the original source of these numbers and a more complete literature list, including each parameter's individual source; this file excerpts the minimal numbers and citations needed to support the verdict, and where the two differ, the model file's current state governs.
 
-完整验证规范,即候选预筛、要素提取、机制映射、建模纪律、执行方式、打分规则、复现认定标准,见验证执行流程一节。每个模型的 `metadata.ratings.confidence` 字段标注当前验证程度,采用 0 到 1 连续量表,定义见 `docs/authoring/ratings.md`。论文引用模型时优先选 `confidence` 不低于 0.75 的,更低分数的适合展示方法论与框架能力,不宜作强定量结论支撑。
+The complete validation specification, that is, candidate pre-screening, element extraction, mechanism mapping, modeling discipline, execution mode, scoring rules, and the criteria for calling something reproduced, is in the "Validation execution workflow" section. Each model's `metadata.ratings.confidence` field marks its current level of verification, on a continuous 0-to-1 scale, defined in `docs/authoring/ratings.md`. When the paper cites a model, it prefers one with `confidence` no lower than 0.75; models scoring lower are suited to demonstrating methodology and framework capability, not to supporting a strong quantitative conclusion.
 
-本报告覆盖的模型大部分由 AI 辅助生成与初步复核,尚未经过相关领域专家核实。报告如实记录每个案例目前走到哪一步,是存在性展示、正对照、预测检验,还是尚未核对,不代表已发布等于已验证。完整责任边界声明见仓库 README「内容可信度声明」一节。
-
----
-
-## 目标
-
-本文件的目标是建立一套诊断框架,回答 LM format 能不能覆盖某类研究、什么条件下能验证成功,不是挑出若干个跑得通的模型案例。只展示精心挑选的成功案例无法证明框架被诚实地压力测试过,系统性地展示成功与失败,并对失败给出可归因的原因,才是让人相信这套验证方法论本身站得住的证据。这也是本文件保留不通过案例的原因,它们不是要被隐藏的失败,而是让框架诊断能力可信的必要数据点。
-
-以下框架评估的对象是论文或研究本身,证据等级、报告是否完整、方法学是否严谨:GRADE 医学证据分级、PRISMA 系统综述报告规范、ODD protocol 面向 agent-based model 的报告规范、TRIPOD 预测模型报告规范。
-
-本文件评估的对象不同,给定一个学科的声称,能不能被编码成一个可执行的 LM model,编码之后拿独立数据实际跑一遍,看是否复现得出来,评估的落点是模型,论文只是提供声称和数值的原始素材。某个验证点没通过,说明的是这批文献素材放进当前 LM model 的机制与参数设定后可复现程度如何,是文献内容在 LM 这个具体计算框架下的适用性问题,不是对论文科学价值的评判。
-
-## Verify 前提:引擎实现正确性
-
-本文件下面全部结论都建立在引擎数值实现本身没有算错这个前提之上。数字对不上时,第一件要排除的事永远是引擎本身是不是算错了,不能急着怀疑文献系数或模型假设。verify 查的是积分格式和代码,validate 查的是文献参数和机制假设,两者需要不同的知识去定位错误,混在一起看最终输出对不对会导致无法判断该往哪个方向排查。完整方法论、协议和数据见 `verification_report.md`,这里只摘录支撑可以信赖引擎往下走这个判断的最少证据。
-
-### 自动化实现正确性
-
-pytest 套件全量通过。CLI 与 GUI 走同一套核心代码路径,结果一致;蒙特卡洛在单次运行、固定种子下可复现;引擎能正确加载合法模型,也能在非法模型上可靠失败并报出具体原因。单个模型变量的数值行为回归,比例、单调性、符号断言,目前只覆盖少数模型,不是全部,这是已知覆盖缺口,如实标注。
-
-### 数值精度:解析解对比与步长收敛性检验
-
-采用计算科学通行的 Verification and Validation 框架的两个协议。协议 V1 用 Banister 模型的闭式解析解,逐日对比引擎输出与解析解;协议 V2 不依赖解析解,只看数值解是否随步长细化单调收敛。
-
-结果显示,`fitness` 和 `fatigue` 两个由欧拉直接积分的状态变量,在全部步长与区间组合下都单调收敛;`performance`,一个差值型指标,在步长不超过六小时时全部通过百分之二的误差阈值,步长为一天时仅在不小于三十天尺度的仿真才可靠,这是当前论文数值使用的步长下限。
+Most of the models this report covers were generated and given a first-pass review with AI assistance, and have not yet been checked by a domain expert. The report honestly records how far each case has gotten, whether that is an existence demonstration, a positive control, a prediction test, or not yet checked, and published does not mean validated. The complete statement of responsibility boundaries is in the "Content Reliability Statement" section of the repository README.
 
 ---
 
-## 验证框架
+## Goal
 
-本节回答用什么维度看问题,具体的操作步骤见下一节验证执行流程。
+This file's goal is to build a diagnostic framework answering whether the LM format can cover a given class of research, and under what conditions it validates successfully, not to cherry-pick a handful of model cases that happen to run. Showing only carefully chosen successes cannot prove the framework has been honestly stress-tested; systematically showing both successes and failures, and giving an attributable reason for each failure, is what makes this validation methodology itself credible. This is also why this file keeps cases that did not pass: they are not failures to be hidden, but necessary data points for making the framework's diagnostic capability credible.
 
-### 两个维度:model 与机制
+The following frameworks evaluate the paper or study itself, its evidence grade, whether the report is complete, and whether the methodology is rigorous: GRADE for medical evidence grading, PRISMA for systematic-review reporting standards, the ODD protocol for agent-based-model reporting standards, and TRIPOD for prediction-model reporting standards.
 
-验证案例在两个维度上定位。model 维度对应验证判定总表首列的学科分类,是横向比较不同学科通过率与失败模式的索引,LM format 覆盖多学科的行为干预决策问题,验证也要横向铺开多个学科做比较全面的测试,不能只深挖一两个学科就下结论。机制维度对应 LM format 的实际结构,`vars`、`equations` 即机制执行层、`optimization` 即搜索层、`imports` 即组合复用、`mc` 即概率采样。
+This file evaluates something different: given a discipline's claim, can it be coded into an executable LM model, and once coded, can running it against independent data actually reproduce the claim. The evaluation lands on the model; the paper is only the raw material supplying the claim and the numbers. When a given validation point fails, what that shows is how reproducible this batch of literature material is once placed into the current LM model's mechanism and parameter settings, a question of the literature content's applicability within this specific computational framework, not a judgment of the paper's scientific value.
 
-验证测到什么程度不单独成一根轴,而是在对应机制列内用文字标注。`vars` 天然只能到素材存在性,声明一个文献数值并用它做静态计算,通过只说明计算没算错,这是循环论证,被检查的数字和拿来对比的目标是同一个数,这类检查不构成复现,不参与归因分析。机制执行层跨度最大,从给定单一参数、检查点由数学推导的引擎正对照,测的是引擎工程正确性,同样不参与归因,到多点拟合加预测未参与拟合的独立数据点的真预测,第一次存在可能不通过的空间,再到跨研究或跨年代独立测量比对。搜索层测的是前沿本身是否自洽,是否非退化、guideline 点位置是否符合预期,不是复现了文献的优化结果,文献本身极少提供可比对的优化或 Pareto 研究,本报告目前所有 optimization 案例都是 LM 在已验证数据基础上新增的能力。`imports` 列标记一个 model 是否通过 `imports` 复用另一个 model,本身不是失败归因来源,但会传导被导入文件的归因。
+## Verify premise: engine implementation correctness
 
-### 四维归因分类
+Every conclusion below in this file rests on the premise that the engine's numerical implementation itself has no computational errors. Whenever numbers don't match, the first thing to rule out is always whether the engine itself computed something wrong, not rushing to suspect the literature coefficients or model assumptions. Verify checks the integration scheme and the code; validate checks the literature parameters and mechanism assumptions; the two require different knowledge to locate an error, and conflating them when looking only at whether the final output is right makes it impossible to know which direction to investigate. The complete methodology, protocol, and data are in `verification_report.md`; only the minimal evidence supporting the judgment that the engine can be trusted going forward is excerpted here.
 
-只有存在失败可能性的格子才谈归因,即机制执行层的真预测与跨研究比对、搜索层的自洽性检验。归因维度直接对应 LM 的四个结构位置,`vars` 含 evidence、`equations`、`imports`、`mc`,声明在 `vars` 条目的 `value` 里。
+### Automated implementation correctness
 
-| 维度 | 对应 LM 结构 | 检查或预筛问题 | 高风险信号 |
+The pytest suite passes in full. The CLI and GUI go through the same core code path and give consistent results; Monte Carlo runs are reproducible for a single run with a fixed seed; the engine correctly loads a valid model and reliably fails with a specific reason on an invalid one. Numerical-behavior regression for individual model variables, ratio, monotonicity, and sign assertions, currently covers only a handful of models, not all of them; this is a known coverage gap, honestly noted.
+
+### Numerical precision: analytical-solution comparison and step-size convergence testing
+
+Two protocols from the standard computational-science Verification and Validation framework are used. Protocol V1 uses the Banister model's closed-form analytical solution, comparing the engine's output against the analytical solution day by day; protocol V2 does not depend on an analytical solution, only checking whether the numerical solution converges monotonically as the step size is refined.
+
+The results show that `fitness` and `fatigue`, the two state variables integrated directly by Euler's method, converge monotonically across every step-size and interval combination; `performance`, a difference-type indicator, passes a 2% error threshold at every step size up to six hours, and at a one-day step size is only reliable for a simulation of at least thirty days, which is the current lower bound on step size used in the paper's numbers.
+
+---
+
+## Validation framework
+
+This section answers what dimensions are used to look at the problem; the concrete operating steps are in the next section, "Validation execution workflow."
+
+### Two dimensions: model and mechanism
+
+Validation cases are located along two dimensions. The model dimension corresponds to the discipline classification in the first column of the master validation-verdict table, an index for comparing pass rates and failure modes across disciplines horizontally; since the LM format covers behavioral-intervention decision problems across many disciplines, validation must likewise spread horizontally across multiple disciplines for a reasonably comprehensive test, not draw a conclusion from digging deep into just one or two disciplines. The mechanism dimension corresponds to the LM format's actual structure: `vars` and `equations`, the mechanism-execution layer; `optimization`, the search layer; `imports`, compositional reuse; and `mc`, probabilistic sampling.
+
+How far validation was tested does not form a separate axis of its own; instead it is noted in text within the corresponding mechanism column. `vars` can by nature only reach material existence, declaring a literature value and using it in a static calculation, passing only shows the calculation was not miscomputed, which is circular reasoning since the number being checked and the target being compared against are the same number; this kind of check does not constitute reproduction and is not included in attribution analysis. The mechanism-execution layer spans the widest range: from an engine positive control given a single parameter with a checkpoint derived mathematically, which tests engineering correctness and is likewise excluded from attribution, to a genuine prediction fitting multiple points and then predicting an independent data point not part of the fit, the first case where failure becomes possible, to a comparison against an independent measurement across studies or across eras. The search layer tests whether the front itself is self-consistent, whether it is non-degenerate, and whether the guideline point sits where expected; it does not reproduce a literature optimization result, since the original literature very rarely supplies a comparable optimization or Pareto study — every optimization case in this report so far is a new capability LM adds on top of already-validated data. The `imports` column marks whether a model reuses another model via `imports`; this is not itself a source of failure attribution, but it does carry forward the attribution of the imported file.
+
+### The four-dimensional attribution taxonomy
+
+Attribution is only discussed for cells where failure is even possible, that is, genuine prediction and cross-study comparison in the mechanism-execution layer, and the self-consistency check in the search layer. The attribution dimensions map directly onto LM's four structural locations: `vars`, including evidence, `equations`, `imports`, and `mc`, declared in a `vars` entry's `value`.
+
+| Dimension | Corresponding LM structure | Checks or pre-screening questions | High-risk signals |
 | --- | --- | --- | --- |
-| 数据可靠性 | `vars` | 文献给出的数值是否精确可迁移,还是只有方向性描述;结局变量本身是直接物理测量,还是依赖阈值或统计检验的操作性定义,如持续时间、缓解率 | 搜索结果反复出现因素相关、有影响这类定性表述,没有可迁移的具体系数;或者结局本身是缓解率、达标率、持续时间这类依赖阈值或统计检验方法定义的产出 |
-| 模型可靠性 | `equations` | 方程里的系数是否可追溯到同一处或同一批文献、单位换算有没有被追踪;这套函数形式在该学科是否有公认的方法论基础 | 需要拼接多篇文献的系数才能建完整模型;或目标学科被元科学文献明确点名复现率低 |
-| 数据加模型纯度 | `imports` | 引用或组合的多个 model 文件是否正交、有没有混杂不相关的东西,被导入的内容不只是数据,模型机制也一起继承 | 需要拼接明显不同源或不匹配的文献或模型才能凑齐一个决策场景;现实数据天然把多个干预混在一起,没有干净对照组 |
-| 数据加模型适用性 | `mc` | 声明成分布而非点值的参数,其分布宽窄是否匹配实际应用场景,范围定窄了精确但只对狭窄情境适用,定宽了覆盖面广但单次仿真精度打折扣 | 唯一可考的数据来自单个历史案例或样本量小于十的小样本,模型或参数的适用范围因此被限定在这个小样本的原始情境里,超出情境使用就是误用 |
+| Data reliability | `vars` | Whether the literature-given value is precisely transferable or only directionally described; whether the outcome variable itself is a direct physical measurement or an operational definition depending on a threshold or statistical test, such as duration or remission rate | Search results repeatedly turning up qualitative statements like "associated with" or "has an effect on" with no transferable specific coefficient; or the outcome itself being a remission rate, a rate of reaching a target, a duration, or another output defined by a threshold or statistical-test method |
+| Model reliability | `equations` | Whether the equation's coefficients can be traced to the same or the same batch of literature, and whether unit conversions have been tracked; whether this functional form has a recognized methodological basis in the discipline | Needing to stitch together coefficients from multiple papers to build a complete model; or the target discipline being explicitly named by meta-science literature as having a low reproducibility rate |
+| Data-plus-model purity | `imports` | Whether the multiple model files referenced or combined are orthogonal, without mixing in something unrelated; what is imported is not just data, the model mechanism is inherited along with it | Needing to stitch together clearly different-source or mismatched literature or models just to assemble one decision scenario; real-world data naturally mixing multiple interventions together with no clean control group |
+| Data-plus-model applicability | `mc` | For a parameter declared as a distribution rather than a point value, whether the distribution's width matches the actual application scenario; too narrow a range is precise but applies only to a narrow situation, too wide a range covers more ground but a single simulation's precision suffers | The only obtainable data comes from a single historical case or a small sample under ten, so the model's or parameter's applicable range is thereby confined to that small sample's original context, and using it beyond that context is a misuse |
 
-`imports` 归入数据加模型纯度、`mc` 归入数据加模型适用性,而不是各自单归数据或模型一侧,原因是两者都天然横跨数据和模型两个侧面。一个文件可以完全不声明自己的 `vars` 或 `equations`,只靠 `imports` 整体继承另一个文件的变量和机制,纯度问题因此必须同时管两边;`mc` 触发的随机性同样如此,声明的范围宽窄决定精度和适用范围哪个优先这个问题,在完全不用 `mc` 但整套机制从窄样本拟合出来的案例里以同一种形式出现,只是范围窄的对象从一个参数的分布换成了整套机制的验证范围。
+`imports` is grouped under data-plus-model purity and `mc` under data-plus-model applicability, rather than each being assigned solely to the data or the model side, because both naturally straddle the two sides. A file can declare no `vars` or `equations` of its own at all, inheriting another file's variables and mechanism wholesale purely through `imports`, so the purity question must manage both sides at once; the randomness `mc` triggers works the same way, since the declared range's width decides which of precision or scope takes priority, and this same question shows up, in the same form, in a case that uses no `mc` at all but whose entire mechanism was fit from a narrow sample, just with the object of "narrowness" shifted from a single parameter's distribution to the whole mechanism's validation scope.
 
-样本规模和适用性的关系不是越大越好、越小越差这种单调关系。大样本能降低随机误差,让采样出的分布在统计意义上更贴近总体平均,覆盖场景更广,但汇聚自异质人群的大样本在总体层面广泛适用的同时,可能对某些特定亚群系统性有偏,单次仿真的精度也会被拉低。小样本反而往往对其原始情境刻画得更精确,但适用范围天然狭窄,一旦被不加限定地外推到验证范围之外的情境,就容易被误用。真正决定适用性的是样本的代表性范围和实际应用场景是否匹配,不是样本量数字本身。
+The relationship between sample size and applicability is not a simple monotonic "bigger is better, smaller is worse." A large sample lowers random error, making the sampled distribution statistically closer to the population average and covering a broader range of scenarios, but a large sample pooled from a heterogeneous population, while broadly applicable at the population level, can be systematically biased for certain specific subgroups, and a single simulation's precision suffers too. A small sample, conversely, often characterizes its original context more precisely, but its applicable range is naturally narrow, and extrapolating it without qualification beyond the range it was validated on is easily misused. What actually determines applicability is whether the sample's representative range matches the actual application scenario, not the sample-size number itself.
 
-这套对应是概念对应,不是字面的字段使用记录,一个模型即便没有用 `mc` 字段,它的样本代表性问题仍按这套逻辑记在适用性一格,读表时不应理解成这个模型用了这个 LM 功能。
+This mapping is conceptual, not a literal record of field usage: even a model that never uses the `mc` field still has its sample-representativeness question recorded under applicability by this same logic, and reading the table should not be understood as "this model used this LM feature."
 
-预筛决策规则:四项里有两项以上呈现高风险信号,建议不建模或降低预期,提前标注预计只能做存在性或正对照展示,不做独立预测。
+Pre-screening decision rule: if two or more of the four items show a high-risk signal, it is advisable either not to model it, or to lower expectations and flag in advance that only an existence demonstration or a positive control is likely achievable, not an independent prediction.
 
-## 验证执行流程
+## Validation execution workflow
 
-每个阶段标注对应导引,说明它落实的是上一节两个维度里的哪一层,或四维归因分类里的哪几项。预筛通过之后,从提取文献要素到给出 `confidence` 分数,走以下六个阶段。
+Each stage is annotated with which layer of the two dimensions in the previous section, or which items of the four-dimensional attribution taxonomy, it implements. After pre-screening passes, the following six stages run from extracting literature elements through to assigning a `confidence` score.
 
-### 阶段一:从论文提取什么
+### Stage one: what to extract from the paper
 
-对每个候选文献或数据源,提取以下要素,缺任何一项,该案例能达到的验证程度就要相应下调:声称的函数形式,一阶或零阶动力学、相对风险或风险比、回归系数、标准化效应量、增长或衰减律;具体数值加单位加测量情境,样本量、人群特征、时间跨度、原始量纲;独立验证目标,一个不同于拟合锚点的数据点,可以是同一研究的另一个数据点、独立复现研究,或跨人群跨年代的另一批测量;完整引用,能定位到可查证原始来源。
+For each candidate publication or data source, extract the following elements; missing any one lowers the validation level this case can reach accordingly: the claimed functional form, first- or zero-order kinetics, relative risk or hazard ratio, a regression coefficient, a standardized effect size, a growth or decay law; the specific value plus units plus measurement context, sample size, population characteristics, time span, original dimensions; an independent verification target, a data point distinct from the fitting anchor, which can be another data point from the same study, an independent replication study, or another set of measurements across populations or eras; and a complete citation, one that can be located back to a verifiable original source.
 
-对应导引:为数据可靠性、模型可靠性、数据加模型适用性三项收集判断所需的原始信息,不涉及机制维度。
+Corresponding guidance: gathers the raw information needed to judge the three items data reliability, model reliability, and data-plus-model applicability; it does not involve the mechanism dimension.
 
-### 阶段二:声称类型到 LM 机制的映射
+### Stage two: mapping claim type onto LM mechanism
 
-相对风险、风险比、比值比、回归系数、标准化效应量、PK 速率常数这类声称都落在 `vars`,验证的是数值或效应量有没有被正确声明和读出,属于存在性检查。时间序列或增长衰减曲线落在机制执行层,`equations` 定义怎么变化,交给 `simulation` 跑出轨迹。多目标权衡落在搜索层,`optimization` 在同一套 equations 之上反复调用 simulation 做搜索,范畴独立于 `vars`。
+Claims such as relative risk, hazard ratio, odds ratio, a regression coefficient, a standardized effect size, or a PK rate constant all fall under `vars`, verifying whether a value or effect size has been correctly declared and read out, an existence check. A time series or a growth/decay curve falls under the mechanism-execution layer, where `equations` defines how it changes and `simulation` produces the trajectory. A multi-objective tradeoff falls under the search layer, where `optimization` repeatedly calls simulation on top of the same equations to search, a category independent of `vars`.
 
-四种相对效应量子类型,即相对风险、风险比、绝对风险差、发病率,的换算方程本身已由单元测试覆盖,计算正确性没有问题;但四类目前都没有对应一篇真实文献的独立验证案例,是本报告接受的已知覆盖缺口。
+The conversion equations for the four relative-effect-size subtypes, relative risk, hazard ratio, absolute risk difference, and incidence rate, are already covered by unit tests, so computational correctness is not in question; but none of the four currently has an independent validation case corresponding to a real publication, a known coverage gap this report accepts.
 
-对应导引:对应两个维度里的机制维度,回答的是这个声称该编码到哪个结构,不是这个声称可信不可信。
+Corresponding guidance: corresponds to the mechanism dimension of the two dimensions, answering which structure a claim should be coded into, not whether the claim is credible.
 
-### 阶段三:建模纪律
+### Stage three: modeling discipline
 
-每个系数必须在描述或变量的 `reference` 字段标注具体来源,不能笼统写文献支持。如果系数是拟合或反推得到的,不是文献直接给出的数字,必须在描述里明确标注作者拟合、非文献直接给出,且该模型的 `confidence` 存在上限,见阶段五。两个数据点做拟合、第三个数据点做预测时,必须明确写清楚哪些点是拟合用锚点、哪个点是留一法预测目标,不能让同一个点既当锚点又当验证证据。
+Every coefficient must note its specific source in the `reference` field of its description or variable; it cannot vaguely say "supported by the literature." If a coefficient is obtained by fitting or back-derivation, not a number the literature gives directly, this must be explicitly noted in the description as the author's own fit, not given directly by the literature, and the model's `confidence` has a ceiling, see stage five. When two data points are used for fitting and a third for prediction, it must be explicitly stated which points are the fitting anchors and which is the leave-one-out prediction target; the same point cannot serve as both an anchor and validation evidence.
 
-对应导引:数据可靠性对应拟合或反推系数的上限规则,模型可靠性对应来源标注。
+Corresponding guidance: data reliability corresponds to the ceiling rule for a fitted or back-derived coefficient; model reliability corresponds to source annotation.
 
-### 阶段四:执行方式选择
+### Stage four: choosing the execution mode
 
-论文声称是单一数值关系,衰减率、效应量、剂量反应曲线,用 `--sim` 即可。研究问题本身涉及在竞争性目标间找权衡,且原论文本身没做这个优化,加 `optimization`,跑 `--opt`,检查 Pareto 前沿是否非退化,多解连续分布而不是全部挤在一到两个点。这是 LM 新增的能力,不是复现原论文的优化结果,两者不应混为一谈,原论文自己报告 Pareto 或优化结果、LM 去复现那个结果是另一种更强的验证,目前没有案例。系数需要从数据反推而文献未直接给出时,目前只能人工拟合,未来应由参数拟合校准的内环优化器自动化,尚未实现。
+If the paper's claim is a single numeric relationship, a decay rate, an effect size, a dose-response curve, `--sim` alone suffices. If the research question itself involves finding a tradeoff among competing objectives, and the original paper itself did not perform this optimization, add `optimization` and run `--opt`, checking whether the Pareto front is non-degenerate, with multiple solutions continuously distributed rather than all crowded onto one or two points. This is a capability LM adds; it does not reproduce the original paper's optimization result, and the two should not be conflated — the original paper itself reporting a Pareto or optimization result, with LM reproducing that result, would be a different, stronger form of validation, and there is currently no such case. When a coefficient needs to be back-derived from data because the literature does not give it directly, this currently can only be fit by hand; in the future this should be automated by an inner-loop optimizer calibrated through parameter fitting, not yet implemented.
 
-对应导引:主要对应机制维度里机制执行层与搜索层的路由选择,系数需反推这一项同时触及数据可靠性。
+Corresponding guidance: mainly corresponds to routing the choice between the mechanism-execution layer and the search layer within the mechanism dimension; the item requiring a back-derived coefficient also touches data reliability.
 
-### 阶段五:打分规则
+### Stage five: scoring rules
 
-不同类型的声称,合理误差范围天差地别,用同一个百分比阈值打分是错的。
+Different types of claims have vastly different reasonable error ranges, and scoring them all against the same percentage threshold would be wrong.
 
-物理或化学直接测量类,PK 半衰期、浓度、体积、大气成分等,期望高精度:误差小于百分之二为满分,百分之二到十可用但需在描述里说明误差来源,百分之十到三十方向对但量级有问题,需要排查后才建议引用,大于百分之三十怀疑系数或结构有误,不建议作为独立证据引用。
+For direct physical or chemical measurement, PK half-life, concentration, volume, atmospheric composition, etc., high precision is expected: error under 2% scores full marks, 2% to 10% is usable but the source of error must be explained in the description, 10% to 30% is right in direction but has a magnitude problem, needing investigation before it is recommended for citation, and over 30% raises suspicion of a wrong coefficient or structure, not recommended as independent citable evidence.
 
-生物医学或流行病学效应量类,相对风险、风险比、比值比、Cohen's d,文献间正常存在跨研究异质性,不能用直接测量类的严格阈值:误差小于百分之十为满分,百分之十到三十良好,百分之三十到六十落在该类效应量常见异质性范围内,需人工判断是否可接受,大于百分之六十判定较低。
+For biomedical or epidemiological effect sizes, relative risk, hazard ratio, odds ratio, Cohen's d, cross-study heterogeneity is normal in the literature, so the strict thresholds for direct measurement do not apply: error under 10% scores full marks, 10% to 30% is good, 30% to 60% falls within this class of effect size's common heterogeneity range and requires human judgment on acceptability, and over 60% is judged low.
 
-操作性统计定义类,缓解率、达标率、持续时间等阈值或统计检验依赖型产出,不设自动化误差阈值打分,这类指标对简单函数外推天然不稳健,误差大小本身不能直接说明模型好坏,必须人工判断误差是否可以用结局定义本身不稳健解释,还是确实存在数据或模型可靠性问题。
+For operationally defined statistical outcomes, remission rate, rate of reaching a target, duration, and other threshold- or statistical-test-dependent outputs, no automated error-threshold score is set; this kind of metric is naturally not robust to simple functional extrapolation, so the size of the error cannot by itself say whether the model is good or bad, and a human must judge whether the error can be explained by the outcome definition's own lack of robustness, or whether there is a genuine data- or model-reliability problem.
 
-通用上限规则:任何系数标注为作者拟合或估计、非文献直接给出的案例,该项对应的 `confidence` 存在上限,满分保留给完全独立预测检验通过,即阶段一的验证目标必须是真正独立于建模过程之外的数据。只做存在性或正对照展示、无独立预测的案例同样存在上限,且必须在描述中注明非独立预测、是机制编码或引擎正确性展示。
+General ceiling rule: for any case where a coefficient is noted as the author's own fit or estimate, not given directly by the literature, the corresponding item's `confidence` has a ceiling, with full marks reserved for a fully independent prediction test that passes, meaning stage one's verification target must be data that is genuinely independent of the modeling process. A case that only does an existence demonstration or a positive control, with no independent prediction, likewise has a ceiling, and must note in the description that it is not an independent prediction, but a mechanism-encoding or engine-correctness demonstration.
 
-### 阶段六:可复现认定标准
+### Stage six: criteria for calling something reproduced
 
-存在性检查和引擎正对照不能被称为复现了某项研究的发现,前者只证明 LM 能正确编码一个声称的数字,后者只证明引擎正确执行已知数学,跟这个数字或机制本身对不对无关。只有留一法独立预测及以上,预测未参与拟合的独立数据点,且 `confidence` 达到较高分数,才能称为复现或独立验证通过。跨研究或跨时间复现如果失败,优先检查是否是模型可靠性或数据加模型适用性类问题,失败本身也是可发表的发现,不代表模型或方法论失败。
+An existence check and an engine positive control cannot be called a reproduction of some study's finding; the former only proves LM can correctly encode a claimed number, the latter only proves the engine correctly executes known mathematics, unrelated to whether that number or mechanism is itself correct. Only a leave-one-out independent prediction or better, predicting an independent data point not part of the fit, with `confidence` reaching a reasonably high score, can be called a reproduction or a passed independent verification. If a cross-study or cross-era reproduction fails, first check whether it is a model-reliability or data-plus-model-applicability problem; a failure itself is also a publishable finding, and does not mean the model or methodology has failed.
 
-已知空白:数据加模型纯度目前在这六个阶段里没有对应的主动检查步骤,现有案例里它是靠事后分析发现的,不是流程主动排查出来的,如实标注,留待后续迭代补充。
+Known gap: data-plus-model purity currently has no corresponding active check step among these six stages; in existing cases it is found through after-the-fact analysis, not actively screened for by the workflow, honestly noted, left for a future iteration to fill in.
 
 ---
 
-## 验证判定总表
+## Master validation-verdict table
 
-这张表回答模型覆盖哪些使用方式、覆盖到什么程度。列分两组,`vars`、`equations`、`imports`、`mc` 是输入结构,这个 model 声明了什么、机制怎么写的;`sim`、`opt` 是输出使用,这个 model 实际有没有用 `--sim` 或 `--opt` 跑过、能不能用,两组信息互相独立。综合判定为通过的模型可放心详细阅读原文件,综合判定为不通过时问题几乎总是出在 `equations` 或 `opt` 本身。
+This table answers which usage modes a model covers, and to what extent. The columns split into two groups: `vars`, `equations`, `imports`, `mc` are the input structure, what this model declares and how the mechanism is written; `sim`, `opt` are output usage, whether this model has actually been run with `--sim` or `--opt`, and whether it can be, two groups of information independent of each other. A model with an overall verdict of Pass can be read in the original file with confidence; when the overall verdict is Fail, the problem is almost always in `equations` or `opt` itself.
 
-同一 model 家族里 sim 和 opt 不单独开行,合并成一行。opt 靠 `imports` 复用 sim 的声明和机制,sim 不通过时,opt 自身的自洽性检验再干净也没有独立科学意义,两者的判定结构性地绑定。
+Within the same model family, sim and opt are not given separate rows; they are merged into one row. opt reuses sim's declarations and mechanism via `imports`, so when sim fails, opt's own self-consistency check, however clean, carries no independent scientific meaning, and the two verdicts are structurally tied together.
 
-`vars` 和 `equations` 列判定符号统一为三态,通过表示该层的检查点全部通过,不通过表示至少有一个检查点不通过,哪怕另一部分通过也按不通过计,不设中间态;不适用表示该层在这个 model 里没有可评判的内容。诊断细节、具体数字、归因标签不重复贴在表里,靠简述定位,需要完整数字时用 model 名去正文对应小节查找。
+The `vars` and `equations` columns use a uniform three-state verdict symbol: Pass means every checkpoint at that layer passed, Fail means at least one checkpoint failed, counted as Fail even if another part passed, with no intermediate state; N/A means there is nothing evaluable at that layer in this model. Diagnostic detail, specific numbers, and attribution labels are not repeated in the table; use the brief description to locate them, and look up the model name in the corresponding subsection of the main text when the full numbers are needed.
 
-`imports` 和 `mc` 两列标记的是结构性使用情况,是否用了这个 LM 机制,不是验证判定,不参与综合判定列的计算。`sim` 和 `opt` 两列是运行确认,已确认可运行只代表跑了、能出结果,不代表结果对不对。
+The `imports` and `mc` columns mark structural usage, whether this LM mechanism was used, not a validation verdict, and are not part of the overall-verdict computation. The `sim` and `opt` columns are a run confirmation; confirmed runnable only means it ran and produced a result, not that the result is correct.
 
-综合判定列回答一个窄问题,这个案例能不能被独立引用为已验证的定量科学结论,不是这个模型整体有没有价值。`vars`、`equations`、`opt` 三列里只要出现过一次不通过,综合判定就判不通过,即使 `opt` 自身的自洽性检验是通过,这不代表 `opt` 那一次通过被抹去或不算数,`opt` 列本身仍然如实保留前沿非退化、约束合理这个独立的机制能力结论,只是不能反过来把搜索层跑得干净当成文献对标其实也没问题的证据。全部通过或不适用的案例再细分两档,含至少一个预测级或跨研究级检查点的记为强验证,只停留在存在性或正对照的记为仅供参考,这两档都是通过,区别在于能不能单独作为定量证据支撑论文结论。
+The overall-verdict column answers a narrow question, whether this case can be independently cited as a validated quantitative scientific conclusion, not whether the model overall has value. If any of the three columns `vars`, `equations`, `opt` shows a Fail even once, the overall verdict is Fail, even if `opt`'s own self-consistency check passed; this does not erase or nullify that pass — the `opt` column still honestly retains its own independent mechanism-capability conclusion of a non-degenerate front with reasonable constraints, it just cannot be turned around to claim that a clean search layer means the literature benchmark is also fine. Cases that are entirely Pass or N/A are further split into two tiers: those containing at least one prediction-level or cross-study-level checkpoint are marked Strong validation, those that stop at existence or a positive control are marked Reference only; both tiers are a Pass, differing in whether they can stand alone as quantitative evidence supporting the paper's conclusion.
 
-| 学科 | Model | 简述 | vars | equations | imports | mc | sim | opt | 综合判定 |
+| Discipline | Model | Brief description | vars | equations | imports | mc | sim | opt | Overall verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 心血管药理学,血脂 | statin_ldl_doseresponse + statin_dose_myopathy_opt | 他汀类药物 LDL 剂量反应加 K×4 剂量优化,LDL 降幅与肌病风险的权衡 | 通过 | 通过,预测级,20mg 精确、40mg 偏差 3 个百分点 | 已使用 | 未使用 | 已确认 | 通过,自洽,60 解连续前沿,非退化 | 强验证,典范候选 |
-| 药代动力学 | caffeine_pk | 单次口服咖啡因,一阶消除血药浓度衰减 | 通过 | 通过,正对照 | 未使用 | 未使用 | 已确认 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 法医毒理学 | alcohol_elimination | 血液酒精零阶消除动力学 | 不适用 | 通过,正对照 | 未使用 | 未使用 | 已确认 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 药代动力学 | 十三个常用药物,批量 | 十三种常用药物一阶消除半衰期批量正对照 | 通过 | 通过,正对照,十三例 | 未使用 | 未使用 | 已确认 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 环境科学 | co2_keeling_curve | 大气二氧化碳浓度长期增长曲线,跨年份留一法预测 | 通过 | 通过,预测级,留一法,1990 年偏差 2.7% 可解释 | 未使用 | 未使用 | 已确认 | 不适用 | 强验证,典范候选 |
-| 精算与风险学 | gompertz_mortality | 年龄别死亡风险的 Gompertz 指数增长律 | 通过 | 通过,三个检查点全过 | 未使用 | 未使用 | 已确认 | 不适用 | 强验证,典范候选,锚点疑似同一教学示例而非独立队列,引用须加注局限 |
-| 运动生理学 | banister_validation + banister_opt | 训练负荷到表现的适应疲劳模型加 K×4 训练强度优化 | 不适用 | 通过,预测级,七个检查点逐位吻合 Morton 1990 原文 Fig.3/4,`confidence` 0.9 | 已使用 | 未使用 | 已确认 | 通过,自洽,非退化 | 强验证 |
-| 航空医学与时间生物学 | aircrew_circadian_sim + aircrew_circadian_opt | 机组跨时区排班,K×4 光疗时机加运营成本与在岗疲劳的联合优化 | 通过 | 通过,预测级,光疗时机推导逐句对应论文机制,前沿数字逐条吻合 | 未使用 | 未使用 | 已确认 | 通过,自洽,100 解连续前沿,无退化 | 强验证 |
-| 运动生理学 | epoc_recovery | 运动后过量氧耗强度与恢复关系,留一法预测中等强度 | 通过 | 不通过,持续时间未过、总量通过但持续时间不通过,取严格判定 | 未使用 | 未使用 | 已确认 | 不适用 | 存在不通过点,仅供参考 |
-| 肾脏营养学 | ckd_protein_sim + ckd_protein_opt_joint | 慢性肾病蛋白摄入与肌肉、肾功能联合模型加 K×4 蛋白摄入优化 | 不适用 | 通过,muscle_mass 方向与 BUN 清除系数均符合文献方向 | 已使用 | 已使用 | 已确认 | 通过,自洽,八解非退化 | 强验证 |
-| 认知心理学 | ebbinghaus_forgetting | 个体遗忘曲线拟合,跨一百三十年独立复现检验 | 通过 | 不通过,七个检查点仅一个吻合 | 未使用 | 未使用 | 已确认 | 不适用 | 存在不通过点,仅供参考 |
-| 流行病学 | 六个模型组成的相对风险效应量族 | 六组队列或 meta 分析相对风险效应量声明 | 通过 | 不适用 | 未使用 | 未使用 | 不适用 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 临床心理学 | 三个模型组成的 Cohen's d 族,含教育干预 class_size | 心理治疗与教育干预标准化效应量声明 | 通过 | 不适用 | 未使用 | 未使用 | 不适用 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 经济学 | tobacco_elasticity | 香烟价格弹性回归系数声明 | 通过 | 不适用 | 未使用 | 未使用 | 不适用 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 运动医学,参考库 | 二十个运动项目参考模型 | 二十类运动项目参考库 | 未核查 | 未核查 | 不涉及 | 不涉及 | 全部二十个确认可运行 | 抽查其中一例达到高可行率,其余十九个未逐个跑优化 | 未核对文献目标,暂不作为典范或参考依据 |
-| 社会科学与跨学科,参考库 | 十三个非医学模型,政治学、社会学、人口学、经济学、认知与社会心理学、技术安全 | 涵盖军备竞赛、相对剥夺论、群体恐慌、效率工资等经典理论的机制建模 | 未核查 | 未核查 | 不涉及 | 不涉及 | 全部十三个确认可运行 | 全部十三个在数代内达到完全可行,其中九个观察到非退化多解前沿,未跑满预算 | 未核对文献目标,暂不作为典范或参考依据 |
+| Cardiovascular pharmacology, lipids | statin_ldl_doseresponse + statin_dose_myopathy_opt | Statin LDL dose-response plus K x 4 dose optimization, the tradeoff between LDL reduction and myopathy risk | Pass | Pass, prediction-level, 20mg exact, 40mg off by 3 percentage points | Used | Not used | Confirmed | Pass, self-consistent, 60-solution continuous front, non-degenerate | Strong validation, an exemplar candidate |
+| Pharmacokinetics | caffeine_pk | Single oral caffeine dose, first-order-elimination plasma-concentration decay | Pass | Pass, positive control | Not used | Not used | Confirmed | N/A | Pass, positive control or existence demonstration, reference only |
+| Forensic toxicology | alcohol_elimination | Blood-alcohol zero-order elimination kinetics | N/A | Pass, positive control | Not used | Not used | Confirmed | N/A | Pass, positive control or existence demonstration, reference only |
+| Pharmacokinetics | Thirteen common drugs, batch | A batch of first-order-elimination half-life positive controls for thirteen common drugs | Pass | Pass, positive control, thirteen cases | Not used | Not used | Confirmed | N/A | Pass, positive control or existence demonstration, reference only |
+| Environmental science | co2_keeling_curve | The long-term growth curve of atmospheric CO2 concentration, a cross-year leave-one-out prediction | Pass | Pass, prediction-level, leave-one-out, the 1990 deviation of 2.7% is explicable | Not used | Not used | Confirmed | N/A | Strong validation, an exemplar candidate |
+| Actuarial science and risk studies | gompertz_mortality | The Gompertz exponential-growth law of age-specific mortality risk | Pass | Pass, all three checkpoints pass | Not used | Not used | Confirmed | N/A | Strong validation, an exemplar candidate; the anchors are suspected to be the same teaching example rather than an independent cohort, so citation needs a caveat on this limitation |
+| Exercise physiology | banister_validation + banister_opt | The training-load-to-performance adaptation-fatigue model plus K x 4 training-intensity optimization | N/A | Pass, prediction-level, seven checkpoints match Morton 1990's original Fig.3/4 point by point, `confidence` 0.9 | Used | Not used | Confirmed | Pass, self-consistent, non-degenerate | Strong validation |
+| Aviation medicine and chronobiology | aircrew_circadian_sim + aircrew_circadian_opt | Aircrew cross-timezone scheduling, K x 4 light-therapy timing plus joint optimization of operating cost and on-duty fatigue | Pass | Pass, prediction-level, the light-therapy-timing derivation corresponds sentence by sentence to the paper's mechanism, and the front's numbers match line by line | Not used | Not used | Confirmed | Pass, self-consistent, a 100-solution continuous front, no degeneration | Strong validation |
+| Exercise physiology | epoc_recovery | The relationship between excess post-exercise oxygen consumption intensity and recovery, a leave-one-out prediction at moderate intensity | Pass | Fail, duration fails, total passes but duration does not, taking the stricter verdict | Not used | Not used | Confirmed | N/A | Contains a failing point, reference only |
+| Renal nutrition | ckd_protein_sim + ckd_protein_opt_joint | A joint model of chronic-kidney-disease protein intake with muscle and renal function, plus K x 4 protein-intake optimization | N/A | Pass, both the muscle_mass direction and the BUN clearance coefficient match the literature direction | Used | Used | Confirmed | Pass, self-consistent, eight solutions, non-degenerate | Strong validation |
+| Cognitive psychology | ebbinghaus_forgetting | Fitting an individual forgetting curve, a cross-130-year independent-reproduction test | Pass | Fail, only one of seven checkpoints matches | Not used | Not used | Confirmed | N/A | Contains a failing point, reference only |
+| Epidemiology | Six models forming a relative-risk effect-size family | Six cohort or meta-analysis relative-risk effect-size declarations | Pass | N/A | Not used | Not used | N/A | N/A | Pass, positive control or existence demonstration, reference only |
+| Clinical psychology | Three models forming a Cohen's d family, including the education intervention class_size | Standardized effect-size declarations for psychotherapy and educational intervention | Pass | N/A | Not used | Not used | N/A | N/A | Pass, positive control or existence demonstration, reference only |
+| Economics | tobacco_elasticity | A cigarette-price-elasticity regression-coefficient declaration | Pass | N/A | Not used | Not used | N/A | N/A | Pass, positive control or existence demonstration, reference only |
+| Sports medicine, reference library | Twenty sports-reference models | A reference library of twenty sports categories | Not checked | Not checked | N/A | N/A | All twenty confirmed runnable | One spot-checked example reaches a high feasibility rate; the other nineteen have not each had optimization run | Literature target not checked, not currently used as an exemplar or reference basis |
+| Social science and cross-disciplinary, reference library | Thirteen non-medical models: political science, sociology, demography, economics, cognitive and social psychology, technology security | Mechanism modeling of classic theories including the arms race, relative deprivation, collective panic, and efficiency wages | Not checked | Not checked | N/A | N/A | All thirteen confirmed runnable | All thirteen reach full feasibility within a few generations; nine of them show a non-degenerate multi-solution front; the budget was not run to completion | Literature target not checked, not currently used as an exemplar or reference basis |
 
-这张表能直接看出的模式如下。
+The patterns directly visible from this table are as follows.
 
-落在强验证与典范候选的目前有五个,他汀含 K×4、CO2、Gompertz、banister、aircrew_circadian,是论文优先引用的候选池,其中他汀、banister、aircrew_circadian 三个同时具备预测级验证和 K×4 Pareto 前沿。Gompertz 虽然全部通过,但有适用性类局限,引用时须加注,不是无条件的典范。
+Five cases currently fall under Strong validation and exemplar candidate: statin, including K x 4, CO2, Gompertz, banister, and aircrew_circadian, forming the candidate pool the paper cites first; of these, statin, banister, and aircrew_circadian all combine prediction-level validation with a K x 4 Pareto front. Gompertz, though fully Pass, has an applicability limitation, so it needs a caveat when cited, not an unconditional exemplar.
 
-正对照或存在性展示、仅供参考的案例,药代动力学、法医毒理学、流行病学、临床心理学、经济学,机制或引擎没有算错,但检查点和目标值同源,不构成独立复现,不能单独作为定量证据支撑论文结论,只适合展示 LM format 的机制编码能力。
+The positive-control or existence-demonstration, reference-only cases, pharmacokinetics, forensic toxicology, epidemiology, clinical psychology, economics, have no computational error in the mechanism or the engine, but the checkpoint and the target value share the same source, so they do not constitute an independent reproduction and cannot alone stand as quantitative evidence supporting the paper's conclusion; they are only suited to demonstrating LM format's mechanism-encoding capability.
 
-`mc` 列的已使用只表示用了蒙特卡洛采样,不表示通过,用没用 `mc` 和验证通不通过是两回事,ckd_protein 是目前唯一同时用 `mc` 且机制层判定通过的家族。
+"Used" in the `mc` column only means Monte Carlo sampling was used, not that it passed; whether `mc` was used and whether validation passed are two separate questions, and ckd_protein is currently the only family that both uses `mc` and has a Pass verdict at the mechanism layer.
 
-evidence 八种子类型目前只覆盖相对风险、Cohen's d、回归系数、PK 速率常数四种,相对风险差和发病率两类仍是空白,详见验证执行流程阶段二。
+Of evidence's eight subtypes, only four are currently covered: relative risk, Cohen's d, a regression coefficient, and a PK rate constant; the absolute-risk-difference and incidence-rate subtypes remain a gap, see stage two of the validation execution workflow.
 
-下面按验证判定总表每一行展开对应的具体数字、误差和文献出处。
+The specific numbers, errors, and literature sources corresponding to each row of the master validation-verdict table are expanded below.
 
-### 训练适应疲劳,Banister
+### Training adaptation and fatigue, Banister
 
-模型 `banister_validation.yaml`,`ratings.confidence` 为 0.9,采用 0 到 1 量表。
+Model `banister_validation.yaml`, `ratings.confidence` 0.9, on a 0-to-1 scale.
 
-对照 Morton et al. 1990 发表于 *J Appl Physiol* 69(3):1171-1177 的 Fig.3/4 逐日报告数字。daily_training 方案设定训练负荷 100 AU、持续六十天后完全停训,逐日对比引擎输出与一个独立的连续时间闭式参考解:
+Benchmarked against the day-by-day reported numbers in Fig.3/4 of Morton et al. 1990, published in *J Appl Physiol* 69(3):1171-1177. The daily_training plan sets a training load of 100 AU sustained for sixty days followed by complete cessation, comparing the engine's output day by day against an independent continuous-time closed-form reference solution:
 
-| Day | 引擎 fitness | 引擎 fatigue | 引擎 performance | 参考解 fitness | 参考解 fatigue | 参考解 performance |
+| Day | Engine fitness | Engine fatigue | Engine performance | Reference-solution fitness | Reference-solution fatigue | Reference-solution performance |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 98.7 | 192.1 | -93.4 | 98.7 | 192.1 | -93.4 |
 | 5 | 472.0 | 840.7 | -368.7 | 472.0 | 840.7 | -368.7 |
@@ -174,43 +174,43 @@ evidence 八种子类型目前只覆盖相对风险、Cohen's d、回归系数�
 | 81 | 2049.3 | 665.9 | 1383.4 | 2049.3 | 665.9 | 1383.4 |
 | 119 | 871.8 | 48.4 | 823.4 | 871.8 | 48.4 | 823.4 |
 
-七个检查点逐位精确吻合。fitness 和 fatigue 两个状态变量各自的相对误差全程保持个位数百分比,第六十天分别为 0.82% 和 3.71%。performance 是二者之差,量级相近时差值对误差有放大效应,第三十天和第六十天的 performance 相对误差因此达到 15.83% 和 22.26%,这是二者差值本身接近零导致的数学放大,不是积分误差,第八十一天附近二者已充分分离,performance 误差回落到 2.33%,第一百一十九天进一步降到 1.45%。峰值方面,引擎在第八十一天报告 1383.4 AU,独立连续时间参考解峰值落在第八十二天,1353.0 AU,与 Morton et al. 原文正文直接报告的第八十三天、1353 AU 一致,差 2.33%。
+All seven checkpoints match exactly, point by point. The relative error of the two state variables fitness and fatigue each stays in the single-digit percentage range throughout, 0.82% and 3.71% respectively on day sixty. performance is the difference between the two, and when the two are of similar magnitude, their difference amplifies error, so performance's relative error reaches 15.83% and 22.26% on day thirty and day sixty respectively, a mathematical amplification from the difference itself being near zero, not an integration error; by around day eighty-one the two have separated enough that performance's error falls back to 2.33%, and further to 1.45% by day one hundred nineteen. As for the peak, the engine reports 1383.4 AU on day eighty-one, while the independent continuous-time reference solution's peak falls on day eighty-two at 1353.0 AU, matching what Morton et al.'s original text directly reports for day eighty-three, 1353 AU, a 2.33% difference.
 
-引用:模型形式最早见于 Banister EW, Calvert TW, Savage MV, Bach T (1975) *Aust J Sports Med* 7(3):57-61,参数标定取自 Morton RH, Fitz-Clarke JR, Banister EW (1990) *J Appl Physiol* 69(3):1171-1177,进一步验证见 Mujika I et al. (1996) *Can J Appl Physiol* 21(5):395-406。
+Citation: the model form was first proposed in Banister EW, Calvert TW, Savage MV, Bach T (1975) *Aust J Sports Med* 7(3):57-61, with parameters calibrated from Morton RH, Fitz-Clarke JR, Banister EW (1990) *J Appl Physiol* 69(3):1171-1177, and further validated in Mujika I et al. (1996) *Can J Appl Physiol* 21(5):395-406.
 
-### CKD 蛋白质与肌肉
+### CKD protein and muscle
 
-模型 `ckd_protein_sim.yaml`。案例定位、Pareto 前沿、外部文献核验、逐项局限与图表见同目录 `ckd.md`,本报告只保留索引指针,不重复维护案例详情。
+Model `ckd_protein_sim.yaml`. The case's positioning, Pareto front, external literature benchmark, itemized limitations, and figures are in `ckd.md` in the same directory; this report keeps only an index pointer here and does not duplicate the case's details.
 
-用六个方案重新运行仿真,GFR 与 muscle_mass 六行数字与论文正文的对应表格逐行吻合,偏差量级符合蒙特卡洛抽样正常波动;限制期到标准期切换的收敛周次、联合前沿的 muscle_mass 与 GFR 区间同样吻合。BUN 六方案实测范围为 10.36 到 19.33 mg/dL,全部落在小于等于 20 mg/dL 的临床安全约束内。
+Re-running the simulation across six arms gives GFR and muscle_mass numbers matching the paper's corresponding table row by row, with a deviation magnitude consistent with normal Monte Carlo sampling fluctuation; the switching cycle from the restriction phase to the standard phase, and the joint front's muscle_mass and GFR ranges, also match. BUN's measured range across the six arms is 10.36 to 19.33 mg/dL, entirely within the clinical safety constraint of 20 mg/dL or below.
 
-### 机组跨时区排班,Aircrew Circadian
+### Aircrew cross-timezone scheduling, Aircrew Circadian
 
-模型 `aircrew_circadian_sim.yaml` 加 `aircrew_circadian_opt.yaml`。案例定位、K×4 光疗时机推导、Pareto 前沿分解见同目录 `aircrew.md`,本报告同 CKD 一节,只保留索引指针。
+Model `aircrew_circadian_sim.yaml` plus `aircrew_circadian_opt.yaml`. The case's positioning, the K x 4 light-therapy-timing derivation, and the Pareto-front decomposition are in `aircrew.md` in the same directory; as with the CKD section, this report keeps only an index pointer.
 
-优化结果缓存了种群一百、二百代的一百个非支配解,`f[0] = x[0] + 2.0` 这一约束关系逐条精确成立,f 值域落在 [3.0, 6.99] 与 [0.583, 1.0] 区间。前沿上的代表点与推荐解在缓存结果里逐条能找到对应条目,与论文正文数字一致。`aircrew.md` 给出了完整的推导过程,包括固定停留时长分别代入不同光照时机、隔离出光照单独贡献约六成改善、增益因子跨度约 3.9 倍,是内部记录最详尽、可追溯性最好的一组。
+The cached optimization result holds 100 non-dominated solutions from populations of one hundred and two hundred generations, with the constraint relationship `f[0] = x[0] + 2.0` exactly holding for every one, and f's range falling within [3.0, 6.99] and [0.583, 1.0]. The representative points on the front and the recommended solution can each be found as a matching entry in the cached results, consistent with the numbers in the paper's main text. `aircrew.md` gives the complete derivation, including substituting different light-therapy timings at a fixed layover duration each, isolating light's standalone contribution at about 60% of the improvement, and a gain-factor span of about 3.9-fold, the most thoroughly documented and traceable group internally.
 
-### 他汀剂量优化,LDL 与肌病风险
+### Statin dose optimization, LDL and myopathy risk
 
-LDL 剂量反应部分,模型 `statin_ldl_doseresponse_2026.yaml`:
+For the LDL dose-response part, model `statin_ldl_doseresponse_2026.yaml`:
 
-| 剂量 | 预测降幅 | STELLAR trial 实测降幅 | 判断 |
+| Dose | Predicted reduction | STELLAR trial measured reduction | Verdict |
 | --- | --- | --- | --- |
-| 10mg,锚点 | 46% | 46% | 锚点 |
-| 20mg,一次翻倍 | 52% | 52% | 精确吻合 |
-| 40mg,两次翻倍 | 58% | 55% | 差 3 个百分点,在 rule-of-6 标准误可解释范围内 |
+| 10mg, anchor | 46% | 46% | Anchor |
+| 20mg, one doubling | 52% | 52% | Exact match |
+| 40mg, two doublings | 58% | 55% | Off by 3 percentage points, within the explicable standard-error range of the rule-of-6 |
 
-引用:Jones PH, Davidson MH, Stein EA et al. (2003) STELLAR Trial. *Am J Cardiol* 92(2):152-160;Law MR, Wald NJ, Rudnicka AR (2003) *BMJ* 326:1423。
+Citation: Jones PH, Davidson MH, Stein EA et al. (2003) STELLAR Trial. *Am J Cardiol* 92(2):152-160; Law MR, Wald NJ, Rudnicka AR (2003) *BMJ* 326:1423.
 
-肌病风险与剂量部分,采用 SEARCH trial 两点数据,20mg 时发生率 0.02%,80mg 时升至 0.9%,超过二十倍。引用:SEARCH Collaborative Group (2010) *Lancet* 376(9753):1658-1669。
+For the myopathy-risk-versus-dose part, two data points from the SEARCH trial are used: an incidence of 0.02% at 20mg, rising to 0.9% at 80mg, more than a twentyfold increase. Citation: SEARCH Collaborative Group (2010) *Lancet* 376(9753):1658-1669.
 
-K×4 优化结果,模型 `statin_dose_myopathy_opt_2026.yaml`,导入上述 LDL 剂量反应模型,NSGA-II 双目标,最大化 LDL 降幅同时最小化肌病风险,决策变量为剂量,搜索范围 10 到 80mg。六十个解连续分布于剂量区间,LDL 降幅从 46% 到 64%,肌病风险从 0.003% 到 0.9%,构成非退化真实 Pareto 前沿,独立复核端点与手算幂律预测精确一致。局限是 LDL 数据来自 rosuvastatin 试验、肌病数据来自 simvastatin 试验,两药并非同一个,是这一案例的方法论简化,引用时须注明。
+The K x 4 optimization result, model `statin_dose_myopathy_opt_2026.yaml`, imports the LDL dose-response model above, NSGA-II two-objective, maximizing LDL reduction while minimizing myopathy risk, with dose as the decision variable searched over a 10 to 80mg range. Sixty solutions are continuously distributed across the dose range, LDL reduction from 46% to 64% and myopathy risk from 0.003% to 0.9%, forming a non-degenerate genuine Pareto front, with an independent recheck of the endpoints matching a hand-computed power-law prediction exactly. The limitation is that the LDL data comes from a rosuvastatin trial while the myopathy data comes from a simvastatin trial, two different drugs, a methodological simplification in this case that must be noted when citing.
 
-### 药代动力学正对照,咖啡因,一阶消除
+### Pharmacokinetic positive control, caffeine, first-order elimination
 
-模型 `caffeine_pk_2026.yaml`,单次口服 200mg,半衰期 5 小时,取自 Institute of Medicine (2001) 与 Alsabri SG et al. (2018) *J Caffeine Adenosine Res* 8(1)。
+Model `caffeine_pk_2026.yaml`, a single 200mg oral dose, half-life 5 hours, taken from Institute of Medicine (2001) and Alsabri SG et al. (2018) *J Caffeine Adenosine Res* 8(1).
 
-| 给药后时间 | 理论衰减比例 | 实测比例 | 误差 |
+| Time after dosing | Theoretical remaining fraction | Measured fraction | Error |
 | --- | --- | --- | --- |
 | 5h | 50.00% | 49.97% | -0.06% |
 | 10h | 25.00% | 24.97% | -0.12% |
@@ -218,197 +218,197 @@ K×4 优化结果,模型 `statin_dose_myopathy_opt_2026.yaml`,导入上述 LDL �
 | 20h | 6.25% | 6.23% | -0.32% |
 | 24h | 3.59% | 3.58% | -0.28% |
 
-这几个检查点数值由声明的单一文献参数半衰期数学推导,不是独立文献数据点,属于引擎正对照,证明引擎正确实现一阶消除积分,不构成复现。
+These checkpoint values are derived mathematically from the single declared literature parameter, the half-life, not an independent literature data point; this is an engine positive control, proving the engine correctly implements first-order-elimination integration, not a reproduction.
 
-### 法医毒理学正对照,乙醇,零阶消除
+### Forensic toxicology positive control, ethanol, zero-order elimination
 
-模型 `alcohol_elimination_2026.yaml`,起始血药浓度 0.08 g/dL,零阶消除速率 0.015 g/dL 每小时,引用 Widmark EMP (1932) 与 StatPearls Physiology (2023)。理论浓度与实测浓度在两小时、四小时、五点三三小时三个检查点全部吻合。与咖啡因案例互为方法论对照,同一套引擎在一阶与零阶两种消除动力学下均能精确实现,说明积分机制本身可靠,这里的可靠指工程正确性,不是复现了某个独立研究。
+Model `alcohol_elimination_2026.yaml`, an initial blood concentration of 0.08 g/dL, a zero-order elimination rate of 0.015 g/dL per hour, citing Widmark EMP (1932) and StatPearls Physiology (2023). The theoretical and measured concentrations match at all three checkpoints, two hours, four hours, and 5.33 hours. This case is a methodological counterpart to the caffeine case: the same engine correctly implements both first-order and zero-order elimination kinetics precisely, showing the integration mechanism itself is reliable, "reliable" here meaning engineering correctness, not a reproduction of some independent study.
 
-### 环境科学,CO2 Keeling 曲线跨年份预测
+### Environmental science, the CO2 Keeling curve cross-year prediction
 
-模型 `co2_keeling_curve_2026.yaml`。用 1959 年 316ppm 与 2024 年 425ppm 两端点拟合恒定复合增长率,留一法预测 1990 年,不使用 1990 年数据参与拟合,预测值 364.0ppm,NOAA 与 NASA GISS 实测值 354.29ppm,误差 2.7%。偏差方向与二氧化碳年增速本身随时间加速,从上世纪六十年代约每年 0.7ppm 到本世纪二十年代约每年 2.5 到 3ppm,完全一致,恒定速率模型在早中期区间系统性高估是预期内的。
+Model `co2_keeling_curve_2026.yaml`. A constant compound growth rate is fit from the two endpoints, 316ppm in 1959 and 425ppm in 2024, and used for a leave-one-out prediction of 1990, without using 1990 data in the fit; the predicted value is 364.0ppm, against a NOAA and NASA GISS measured value of 354.29ppm, a 2.7% error. The deviation's direction is fully consistent with the fact that CO2's own annual growth rate has accelerated over time, from about 0.7ppm per year in the 1960s to about 2.5 to 3ppm per year in the 2020s, so a constant-rate model systematically overestimating in the early-to-middle period is expected.
 
-引用:Keeling CD et al., Scripps Institution of Oceanography 与 NOAA Global Monitoring Laboratory 的 Mauna Loa CO2 观测记录;NASA GISS Global Mean CO2 Mixing Ratios。
+Citation: Keeling CD et al., the Mauna Loa CO2 observational record from the Scripps Institution of Oceanography and the NOAA Global Monitoring Laboratory; NASA GISS Global Mean CO2 Mixing Ratios.
 
-### 运动生理学,EPOC 强度恢复关系
+### Exercise physiology, the EPOC intensity-recovery relationship
 
-模型 `epoc_recovery_2026.yaml`。用 Bahr and Sejersted (1991) 百分之二十九与百分之七十五 VO2max 强度数据拟合指数模型,留一法预测百分之五十强度,不使用该强度自身数据参与拟合。EPOC 总量预测 5.46L,文献实测 5.7 加减 1.71L,落在区间内;EPOC 持续时间预测 1.52h,文献实测 3.3 加减 0.7h,远低于下限。
+Model `epoc_recovery_2026.yaml`. An exponential model is fit to Bahr and Sejersted's (1991) 29% and 75% VO2max intensity data, and used for a leave-one-out prediction at 50% intensity, without using that intensity's own data in the fit. The predicted EPOC total is 5.46L against a literature-measured 5.7 plus or minus 1.71L, falling within the interval; the predicted EPOC duration is 1.52h against a literature-measured 3.3 plus or minus 0.7h, far below the lower bound.
 
-引用:Bahr R, Sejersted OM (1991) *Metabolism* 40(8):836-841。
+Citation: Bahr R, Sejersted OM (1991) *Metabolism* 40(8):836-841.
 
-总量是直接测量的耗氧体积积分,测量误差小;持续时间是恢复期耗氧量何时不再与静息值有统计学差异的操作性定义,更依赖统计方法和样本量,不必服从同一关系,归因为数据可靠性中结局定义稳健性这一子情况,不是拟合曲线形式错误。完整对比表见同目录 `epoc_recovery_2026.md`。
+The total is a direct integral of measured oxygen-consumption volume, with small measurement error; duration is an operational definition of when recovery-period oxygen consumption no longer differs statistically from the resting value, more dependent on the statistical method and sample size, and need not follow the same relationship — attributed to the outcome-definition-robustness sub-case within data reliability, not an error in the fitted curve's form. The full comparison table is in `epoc_recovery_2026.md` in the same directory.
 
-### 精算与风险学,Gompertz 死亡率定律
+### Actuarial science and risk studies, the Gompertz mortality law
 
-模型 `gompertz_mortality_2026.yaml`。用 58 岁锚点百分之一年死亡风险加八年倍增经验规律,预测五十八岁、六十六岁、七十四岁三个检查点,与常被引用的美国白人男性 2000 年数据分别相差 0.01、0.01、0.03 个百分点,三点全过。
+Model `gompertz_mortality_2026.yaml`. Using the age-58 anchor of a 1% annual mortality risk plus the 8-year doubling empirical rule, predictions at ages 58, 66, and 74 differ from the commonly cited 2000 US white male data by 0.01, 0.01, and 0.03 percentage points respectively; all three points pass.
 
-引用:Gompertz B (1825) *Phil Trans R Soc* 115:513-583。
+Citation: Gompertz B (1825) *Phil Trans R Soc* 115:513-583.
 
-限制是三个锚点本身很可能是同一八年倍增规律的教学式示例而非独立队列原始数据,验证性质更接近正确实现了 Gompertz 结构而非独立外推检验,`confidence` 因此不给满分。归因为适用性,不是样本量小所以不可信这么简单,是这个小样本本身覆盖的情境窄,用在超出其原始情境的人群或年龄段时容易被误用。
+The limitation is that the three anchors are very likely themselves a teaching-style illustration of the same 8-year doubling rule rather than independent cohort raw data, so the validation is closer in nature to correctly implementing the Gompertz structure than to an independent extrapolation test, and `confidence` is therefore not given full marks. The attribution is applicability, not simply "a small sample is untrustworthy" — this small sample's own coverage of context is narrow, and using it on a population or age range beyond its original context is easily a misuse.
 
-### 心理学,Ebbinghaus 遗忘曲线跨一百三十年预测
+### Psychology, the Ebbinghaus forgetting curve cross-130-year prediction
 
-模型 `ebbinghaus_forgetting_2026.yaml`。用 Ebbinghaus 1885 年原始七点数据拟合幂律曲线,预测 Murre and Dros 2015 年一百三十年后的独立复现实验:
+Model `ebbinghaus_forgetting_2026.yaml`. A power-law curve fit to Ebbinghaus's original 1885 seven data points is used to predict Murre and Dros's independent replication 130 years later, in 2015:
 
-| 时间点 | 1885 原始数据 | 模型预测 | 2015 独立实测 | 误差 |
+| Time point | 1885 original data | Model prediction | 2015 independent measurement | Error |
 | --- | --- | --- | --- | --- |
-| 20 分钟 | 58.2% | 54.1% | 47.2% | +14.5% |
-| 1 小时 | 44.2% | 48.9% | 37.3% | +31.2% |
-| 9 小时 | 35.8% | 37.0% | 27.6% | +33.9% |
-| 1 天 | 33.7% | 32.2% | 31.7% | +1.5% |
-| 2 天 | 27.8% | 29.2% | 23.0% | +26.7% |
-| 6 天 | 25.4% | 24.9% | 16.8% | +48.2% |
-| 31 天 | 21.1% | 19.7% | 4.1% | +379.3%,Murre 与 Dros 论文自述该点是复现实验中最异常的 |
+| 20 minutes | 58.2% | 54.1% | 47.2% | +14.5% |
+| 1 hour | 44.2% | 48.9% | 37.3% | +31.2% |
+| 9 hours | 35.8% | 37.0% | 27.6% | +33.9% |
+| 1 day | 33.7% | 32.2% | 31.7% | +1.5% |
+| 2 days | 27.8% | 29.2% | 23.0% | +26.7% |
+| 6 days | 25.4% | 24.9% | 16.8% | +48.2% |
+| 31 days | 21.1% | 19.7% | 4.1% | +379.3%, Murre and Dros's own paper describes this point as the most anomalous in the replication |
 
-引用:Ebbinghaus H (1885) *Über das Gedächtnis*;Murre JMJ, Dros J (2015) *PLOS ONE* 10(7):e0120644。
+Citation: Ebbinghaus H (1885) *Über das Gedächtnis*; Murre JMJ, Dros J (2015) *PLOS ONE* 10(7):e0120644.
 
-偏差源于 1885 年原始数据样本量为一,Ebbinghaus 本人,不足以代表群体,归因为适用性叠加模型可靠性,不是拟合曲线形式错误。风险不在样本小这个数字本身,而在这条曲线只精确刻画了 Ebbinghaus 一个人的遗忘特征,适用范围天然局限在他个人,一百三十年后被当作可以外推到独立个体或群体的通用规律去检验,本身就是把窄样本超范围使用。
+The deviation stems from the 1885 original data's sample size of one, Ebbinghaus himself, insufficient to represent a population; attributed to applicability compounded with model reliability, not an error in the fitted curve's form. The risk is not in the small-sample number itself, but in the fact that this curve precisely characterizes only Ebbinghaus's own forgetting trait, an applicable range naturally limited to him personally; testing it 130 years later as though it could be extrapolated as a general rule to an independent individual or population is itself using a narrow sample beyond its range.
 
-### 药代动力学族,十三个药物,一阶消除正对照
+### The pharmacokinetics family, thirteen drugs, first-order-elimination positive controls
 
-模型 `references/medical/medicine/pharmacology/` 下十三个同族文件,均为归一化浓度、单室一阶消除模型。全部检查点误差小于 1%,统一列半衰期检查点的实测偏差,均为 -0.81%,来自全族共用的欧拉步长设置,可接受。检查点数值由声明的半衰期数学推导,不是独立预测。
+Thirteen files of the same family under `references/medical/medicine/pharmacology/`, all normalized-concentration, single-compartment, first-order-elimination models. Every checkpoint's error is under 1%; the half-life checkpoint's measured deviation, listed uniformly, is -0.81% across the whole family, coming from the Euler step-size setting shared across the family, and is acceptable. The checkpoint values are derived mathematically from the declared half-life, not an independent prediction.
 
-| 药物 | 半衰期 | 引用 |
+| Drug | Half-life | Citation |
 | --- | --- | --- |
-| 布洛芬 | 2.0h | Davies NM (1998) *Clin Pharmacokinet* 34(2):101-154 |
-| 对乙酰氨基酚 | 2.5h | Forrest JA et al. (1982) *Clin Pharmacokinet* 7(2):93-107 |
-| 阿莫西林 | 1.0h | Sjovall J et al. (1985) *Antimicrob Agents Chemother* 27(2):207-215 |
-| 二甲双胍 | 6.0h | Graham GG et al. (2011) *Clin Pharmacokinet* 50(2):81-98 |
-| 地西泮 | 40h | Greenblatt DJ et al. (1980) *Clin Pharmacokinet* 5(6):505-514 |
-| 吗啡 | 3.0h | Lotsch J (2005) *J Pain Symptom Manage* 29(5 Suppl):S90-103 |
-| 华法林 | 40h | Holford NH (1986) *Clin Pharmacokinet* 11(6):483-504 |
-| 阿托伐他汀 | 14h | Lennernas H (2003) *Clin Pharmacokinet* 42(13):1141-1160 |
-| 美托洛尔 | 4.0h | Regardh CG, Johnsson G (1980) *Clin Pharmacokinet* 5(6):557-569 |
-| 奥美拉唑 | 1.0h | Andersson T (1996) *Clin Pharmacokinet* 31(1):9-28 |
-| 舍曲林 | 24h | DeVane CL et al. (2002) *Clin Pharmacokinet* 41(15):1247-1266 |
-| 加巴喷丁 | 6.0h | Bockbrader HN et al. (2010) *Clin Pharmacokinet* 49(10):661-669 |
-| 左甲状腺素 | 168h | Jonklaas J et al. (2014) *Thyroid* 24(12):1670-1751 |
+| Ibuprofen | 2.0h | Davies NM (1998) *Clin Pharmacokinet* 34(2):101-154 |
+| Acetaminophen | 2.5h | Forrest JA et al. (1982) *Clin Pharmacokinet* 7(2):93-107 |
+| Amoxicillin | 1.0h | Sjovall J et al. (1985) *Antimicrob Agents Chemother* 27(2):207-215 |
+| Metformin | 6.0h | Graham GG et al. (2011) *Clin Pharmacokinet* 50(2):81-98 |
+| Diazepam | 40h | Greenblatt DJ et al. (1980) *Clin Pharmacokinet* 5(6):505-514 |
+| Morphine | 3.0h | Lotsch J (2005) *J Pain Symptom Manage* 29(5 Suppl):S90-103 |
+| Warfarin | 40h | Holford NH (1986) *Clin Pharmacokinet* 11(6):483-504 |
+| Atorvastatin | 14h | Lennernas H (2003) *Clin Pharmacokinet* 42(13):1141-1160 |
+| Metoprolol | 4.0h | Regardh CG, Johnsson G (1980) *Clin Pharmacokinet* 5(6):557-569 |
+| Omeprazole | 1.0h | Andersson T (1996) *Clin Pharmacokinet* 31(1):9-28 |
+| Sertraline | 24h | DeVane CL et al. (2002) *Clin Pharmacokinet* 41(15):1247-1266 |
+| Gabapentin | 6.0h | Bockbrader HN et al. (2010) *Clin Pharmacokinet* 49(10):661-669 |
+| Levothyroxine | 168h | Jonklaas J et al. (2014) *Thyroid* 24(12):1670-1751 |
 
-### 流行病学相对风险效应量族,六例
+### The epidemiological relative-risk effect-size family, six cases
 
-| 关联 | 效应量 | 验证结果 | 引用 |
+| Association | Effect size | Verification result | Citation |
 | --- | --- | --- | --- |
-| 吸烟到肺癌死亡 | HR=17.85 | 基线 0.6% 乘 17.85 等于 10.71%,精确匹配 | 前瞻性队列 meta 分析,HR 17.85,95% CI 14.38 至 22.17 |
-| 加工肉类每天一份到全因死亡 | RR=1.15 | 基线 1.0% 乘 1.15 等于 1.15%,精确匹配 | Rohrmann S et al. (2013) *BMC Med* 11:63 |
-| 加工肉类每天 50g 到结直肠癌 | RR=1.17 | 基线 1.0% 乘 1.17 等于 1.17%,精确匹配 | WHO/IARC (2015) Monographs Vol 114 |
-| 缺乏运动加睡眠不足到全因死亡 | RR=1.42 | 基线 1.0% 乘 1.42 等于 1.42%,精确匹配 | 前瞻性队列 meta 分析 |
-| 慢性乙肝到肝细胞癌 | RR≈100 | 基线 0.3% 乘 100 等于 30%,精确匹配 | Beasley RP et al. (1981) *Lancet* 2(8256):1129-1133 |
-| 腰围增加 10cm 到肺癌 | RR=1.10 | 基线 0.6% 乘 1.10 等于 0.66%,精确匹配 | 前瞻性队列 meta 分析,腹型肥胖与肺癌风险 |
+| Smoking to lung-cancer mortality | HR=17.85 | Baseline 0.6% times 17.85 equals 10.71%, an exact match | A prospective-cohort meta-analysis, HR 17.85, 95% CI 14.38 to 22.17 |
+| Processed meat, one daily serving, to all-cause mortality | RR=1.15 | Baseline 1.0% times 1.15 equals 1.15%, an exact match | Rohrmann S et al. (2013) *BMC Med* 11:63 |
+| Processed meat, 50g daily, to colorectal cancer | RR=1.17 | Baseline 1.0% times 1.17 equals 1.17%, an exact match | WHO/IARC (2015) Monographs Vol 114 |
+| Physical inactivity plus insufficient sleep to all-cause mortality | RR=1.42 | Baseline 1.0% times 1.42 equals 1.42%, an exact match | A prospective-cohort meta-analysis |
+| Chronic hepatitis B to hepatocellular carcinoma | RR is about 100 | Baseline 0.3% times 100 equals 30%, an exact match | Beasley RP et al. (1981) *Lancet* 2(8256):1129-1133 |
+| Each additional 10cm of waist circumference to lung cancer | RR=1.10 | Baseline 0.6% times 1.10 equals 0.66%, an exact match | A prospective-cohort meta-analysis, abdominal obesity and lung-cancer risk |
 
-效应量本身是文献目标,不是独立预测,验证结果一列展示的是 evidence 换算加静态方程计算的正确性。这六个相对风险和风险比均来自大样本队列或 meta 分析,人群层面统计上可靠,但大样本不等于对任意个体都适用,meta 分析汇聚的通常是特定研究人群,套用到偏离这些特征的个体身上时同样可能有偏,这条风险不体现在样本量数字上,需要单独核查人群匹配度。
+The effect size itself is the literature target, not an independent prediction; the "verification result" column shows the correctness of the evidence conversion plus a static equation calculation. These six relative risks and hazard ratios all come from large cohorts or meta-analyses, statistically reliable at the population level, but a large sample does not mean it applies to any given individual; a meta-analysis typically pools a specific study population, and applying it to an individual who deviates from those characteristics can likewise be biased — this risk is not visible in the sample-size number and needs a separate check on population match.
 
-### 心理治疗 Cohen's d 族,三例
+### The psychotherapy Cohen's d family, three cases
 
-| 干预到结局 | 效应量 | 验证结果 | 引用 |
+| Intervention to outcome | Effect size | Verification result | Citation |
 | --- | --- | --- | --- |
-| CBT 到抑郁症 | d=0.79 | 输出精确等于 0.79 | Cuijpers P et al. 综合 meta 分析,409 项试验 52702 名患者,g=0.79,95% CI 0.70 至 0.89 |
-| 正念疗法到焦虑 | g=0.63 | 输出精确等于 0.63 | Hofmann SG et al. (2010) *J Consult Clin Psychol* |
-| 正念疗法到情绪 | g=0.59 | 输出精确等于 0.59 | Hofmann SG et al. (2010) *J Consult Clin Psychol* |
+| CBT to depression | d=0.79 | The output exactly equals 0.79 | Cuijpers P et al., a comprehensive meta-analysis, 409 trials, 52702 patients, g=0.79, 95% CI 0.70 to 0.89 |
+| Mindfulness-based therapy to anxiety | g=0.63 | The output exactly equals 0.63 | Hofmann SG et al. (2010) *J Consult Clin Psychol* |
+| Mindfulness-based therapy to mood | g=0.59 | The output exactly equals 0.59 | Hofmann SG et al. (2010) *J Consult Clin Psychol* |
 
-性质同上文流行病学相对风险效应量族,另需注明心理治疗效应量存在跨研究异质性。
+Of the same nature as the epidemiological relative-risk effect-size family above; additionally note that psychotherapy effect sizes carry cross-study heterogeneity.
 
-### 尝试但未构建的学科
+### Disciplines attempted but not built
 
-| 学科 | 候选算例 | 未构建原因 |
+| Discipline | Candidate case | Reason not built |
 | --- | --- | --- |
-| 流行病学 | 1978 年英国寄宿学校流感暴发,SIR 或 SEIR | Avilov et al. (2024, *Royal Society Interface*) 本身报告经典 SEIR 对此数据集拟合不佳 |
-| 睡眠科学 | Borbély 两过程模型 | 生态系统内已有另一篇论文独立完成校准,不重复建设 |
-| 社会学与市场学 | Bass 技术扩散模型 | 不同来源的参数估计彼此差异很大,未找到可信的逐年销量表 |
-| 战争学与历史学 | Lanchester 平方律,硫磺岛战役 | Engel (1954) 原始逐日兵力数据未能通过公开检索获取完整表格 |
-| 生态学 | Gause 草履虫竞争排斥实验 | 定性结论确认,逐日种群计数原始数据表未获取 |
-| 技术经济学 | 太阳能光伏成本学习曲线,Swanson's Law | 2006 年预测的原始计算基准无法精确重建,实测值与预测值偏差可解释但不够干净 |
+| Epidemiology | The 1978 UK boarding-school influenza outbreak, SIR or SEIR | Avilov et al. (2024, *Royal Society Interface*) itself reports that a classic SEIR fits this dataset poorly |
+| Sleep science | Borbély's two-process model | Another paper in the ecosystem has already independently completed calibration; not duplicated |
+| Sociology and marketing | The Bass technology-diffusion model | Parameter estimates from different sources vary widely from each other; no credible year-by-year sales table was found |
+| War studies and history | Lanchester's square law, the Battle of Iwo Jima | Engel's (1954) original day-by-day troop-strength data could not be obtained as a complete table through public search |
+| Ecology | Gause's paramecium competitive-exclusion experiment | The qualitative conclusion is confirmed, but the day-by-day population-count raw data table was not obtained |
+| Technology economics | The solar-photovoltaic cost learning curve, Swanson's Law | The original 2006 prediction's computational baseline could not be precisely reconstructed; the deviation between measured and predicted values is explicable but not clean enough |
 
-上表战争学一行指的是 Lanchester 平方律这一具体候选未能构建,战争学本身已有另一个采用不同理论框架、基于历史校准场景已建成的模型,只是仍处于探索阶段,尚未进入正式的论文序列。
+The "war studies" row above refers specifically to this candidate, Lanchester's square law, not having been built; war studies itself already has another model, built on a historically calibrated scenario using a different theoretical framework, though it remains at an exploratory stage and has not entered the formal paper sequence.
 
-优化合理性检验的具体数字已经在各案例小节和验证判定总表的搜索层列里逐案例给出,不再单独设一节重复陈述。API 与 IO 边界,包括数据格式往返、异常输入处理、数据导出,属于引擎实现正确性问题,不是模型验证问题,已归入 `verification_report.md` 的范畴。
+The specific numbers from optimization-plausibility testing have already been given case by case in each case's subsection and in the search-layer column of the master validation-verdict table; no separate section repeats them. The API and IO boundary, including data-format round-tripping, invalid-input handling, and data export, is an engine-implementation-correctness question, not a model-validation question, and is already covered under `verification_report.md`.
 
 ---
 
-## 按方法论类别归纳:各类擅长什么、可能缺什么
+## Summary by methodological category: what each kind is good at, what it may be missing
 
-把已跑通的案例按方法论特征相近的类别分组,逐类归纳这一类模型天然擅长验证什么、失败大概率出在哪。分类不逐一对应教科书学科名称,而按共享的方法论特征归并,临床治疗决策类关注给定一种干预、追踪一个临床结局这一共同结构,不管具体器官系统;环境科学与精算风险学虽然都涉及长期趋势外推,但监测记录的性质、样本独立性完全不同,分开单列。
+Cases that have run are grouped by methodologically similar category, then each category's natural strengths and likely failure points are summarized. The categories do not map one-to-one onto textbook discipline names, but are grouped by shared methodological features: clinical-treatment-decision cases are grouped by the shared structure of "given one intervention, tracking one clinical outcome," regardless of the specific organ system; environmental science and actuarial risk studies both involve long-term trend extrapolation, but the nature of the monitoring record and sample independence differ completely, so they are kept as separate rows.
 
-四维归因分别是数据可靠性、模型可靠性、数据加模型纯度、数据加模型适用性,完整推导见验证框架一节。符号沿用全文统一的三态,通过、不通过、不适用,一个类别下合并了判定不同的 model 时用斜线分隔,不强行压成一个符号。
+The four attribution dimensions are data reliability, model reliability, data-plus-model purity, and data-plus-model applicability; the full derivation is in the "Validation framework" section. The symbols follow the same three-state convention used throughout, Pass, Fail, N/A; when a category groups together models with different verdicts, a slash separates them rather than forcing a single symbol.
 
-| 编号 | 类别 | 数据可靠性 | 模型可靠性 | 数据加模型纯度 | 数据加模型适用性 | 优化层 | 综合判定 |
+| No. | Category | Data reliability | Model reliability | Data-plus-model purity | Data-plus-model applicability | Optimization layer | Overall verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 药代动力学与毒理学,caffeine_pk、alcohol_elimination、十三药物族 | 不适用 | 通过,系数溯源与学科成熟度都强 | 不适用 | 不适用 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 2 | 临床治疗决策类,他汀与 CKD 蛋白肌肉 | 不适用,CKD 侧,合成效率缺乏精确文献系数,被迫估计 | 通过,他汀,RCT 驱动学科成熟度高;通过,CKD,机制方向已修正符合文献 | 轻度不通过,他汀,LDL 数据来自 rosuvastatin、肌病数据来自 simvastatin,两药并非同一个 | 不适用 | 通过,自洽,他汀六十解非退化;通过,自洽,CKD 八解非退化 | 强验证,典范候选,两例 |
-| 3 | 运动生理学,banister、epoc_recovery | 不适用,banister;不通过,epoc,持续时间是操作性定义,总量通过 | 通过,banister,七个检查点吻合;不适用,epoc | 不适用 | 不适用 | 通过,自洽,banister | 强验证,banister;存在不通过点,epoc |
-| 4 | 心理学与认知科学,ebbinghaus、Cohen's d 族 | 不适用 | 不通过,ebbinghaus,个体自我实验,学科可复制性争议;不适用,Cohen's d 族,存在性展示不参与归因 | 不适用 | 不通过,ebbinghaus,1885 原始数据样本量为一,适用范围仅限他个人;不适用,Cohen's d 族 | 不适用 | 存在不通过点,ebbinghaus;通过,正对照或存在性展示,Cohen's d 族 |
-| 5 | 流行病学,相对风险族 | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 | 通过,正对照或存在性展示,仅供参考 |
-| 6 | 环境科学,co2_keeling_curve | 不适用 | 通过,机制形式本身站得住,恒定复合增长率 | 不适用 | 不适用 | 不适用 | 强验证,典范候选 |
-| 7 | 精算与风险学,gompertz_mortality | 不适用 | 通过,机制形式本身站得住,Gompertz 指数律 | 不适用 | 不通过,三锚点疑似同一教学示例而非独立队列,适用范围局限在这一示例 | 不适用 | 强验证,典范候选,需加注局限 |
+| 1 | Pharmacokinetics and toxicology, caffeine_pk, alcohol_elimination, the thirteen-drug family | N/A | Pass, both coefficient traceability and discipline maturity are strong | N/A | N/A | N/A | Pass, positive control or existence demonstration, reference only |
+| 2 | Clinical-treatment-decision cases, statin and CKD protein/muscle | N/A; on the CKD side, synthesis efficiency lacks a precise literature coefficient and had to be estimated | Pass, statin, an RCT-driven, mature discipline; Pass, CKD, the mechanism direction has been corrected to match the literature | Mildly Fail, statin, the LDL data comes from rosuvastatin while the myopathy data comes from simvastatin, two different drugs | N/A | Pass, self-consistent, statin's 60 solutions non-degenerate; Pass, self-consistent, CKD's 8 solutions non-degenerate | Strong validation, exemplar candidates, two cases |
+| 3 | Exercise physiology, banister and epoc_recovery | N/A, banister; Fail, epoc, duration is an operational definition, the total passes | Pass, banister, seven checkpoints match; N/A, epoc | N/A | N/A | Pass, self-consistent, banister | Strong validation, banister; contains a failing point, epoc |
+| 4 | Psychology and cognitive science, ebbinghaus and the Cohen's d family | N/A | Fail, ebbinghaus, an individual self-experiment, a discipline with reproducibility controversy; N/A, the Cohen's d family, an existence demonstration not included in attribution | N/A | Fail, ebbinghaus, the 1885 original data's sample size is one, applicable only to him personally; N/A, the Cohen's d family | N/A | Contains a failing point, ebbinghaus; Pass, positive control or existence demonstration, the Cohen's d family |
+| 5 | Epidemiology, the relative-risk family | N/A | N/A | N/A | N/A | N/A | Pass, positive control or existence demonstration, reference only |
+| 6 | Environmental science, co2_keeling_curve | N/A | Pass, the mechanism form itself is sound, a constant compound growth rate | N/A | N/A | N/A | Strong validation, an exemplar candidate |
+| 7 | Actuarial science and risk studies, gompertz_mortality | N/A | Pass, the mechanism form itself is sound, the Gompertz exponential law | N/A | Fail, the three anchors are suspected to be the same teaching example rather than an independent cohort, so the applicable range is confined to this example | N/A | Strong validation, an exemplar candidate, needs a limitation caveat |
 
-两条不适合塞进单个格子的跨维度观察单独列出。第三行,banister 和 epoc_recovery 的判定原因分属不同维度,不能因为都属于运动生理学就混为一谈,同一类别里总量类指标和过程或持续时间类指标也必须分开评估,不能因为类别相同就假设结论能互相套用。第四行,群体层面数据通常比较丰富,适合存在性声明或引入蒙特卡洛模拟群体分布;单一个体的孤立小样本时间序列不该期待精确外推到独立个体或独立年代,这是同一类别内群体与个体两种数据形态适用性差异巨大的典型例子。
+Two cross-dimensional observations that don't fit neatly into a single cell are listed separately. Row 3: banister and epoc_recovery's verdicts stem from different dimensions and should not be conflated just because both belong to exercise physiology; even within the same category, a total-quantity-type metric and a process- or duration-type metric must be evaluated separately, and a conclusion cannot be assumed to carry over just because the category is the same. Row 4: population-level data is usually fairly abundant, suited to an existence claim or to introducing a Monte Carlo simulation of a population distribution; an isolated small-sample time series from a single individual should not be expected to extrapolate precisely to an independent individual or an independent era — a typical example of how, within the same category, population-level and individual-level data forms can differ vastly in applicability.
 
-跨类别的通用判断参考,不是绝对规律,需结合具体案例复核。药代动力学、毒理学、大型 RCT 驱动的临床药理学,模型可靠性普遍高,是高确定性能通过的学科类型。依赖单一历史样本或孤立经典实验的心理学与行为科学,适用性风险高,外推到独立样本前应先确认样本量。需要精确定量机制系数而非方向性结论、但该机制本身研究不充分的学科,数据可靠性风险高,建模前应先摸底该系数在文献里到底有没有精确数值。目标产出是操作性统计定义,如缓解率、持续时间、达标率,而非直接物理量的学科,数据可靠性风险高,同一模型的总量类指标可能通过而过程类指标不通过,应分开评估。群体层面数据丰富但个体层面数据稀少的学科,存在性声明容易做,个体时间序列的独立预测难做,往这个方向扩展大概率需要蒙特卡洛模拟群体分布而不是单点拟合。
+General cross-category guidance for reference, not an absolute rule, needs rechecking against the specific case. Pharmacokinetics, toxicology, and large-RCT-driven clinical pharmacology generally have high model reliability, a discipline type that can reliably pass with high certainty. Psychology and behavioral science relying on a single historical sample or an isolated classic experiment carry high applicability risk, and their sample size should be checked before extrapolating to an independent sample. A discipline that needs a precise quantitative mechanism coefficient rather than a directional conclusion, but where the mechanism itself is under-researched, carries high data-reliability risk, so before modeling, first check whether the literature actually has a precise value for this coefficient. A discipline whose target output is an operationally defined statistical quantity, such as a remission rate, duration, or rate of reaching a target, rather than a direct physical quantity, carries high data-reliability risk, and the same model's total-quantity-type metric may pass while its process-type metric does not, so they should be evaluated separately. A discipline with abundant population-level data but scarce individual-level data can easily make an existence claim, but an independent prediction for an individual time series is hard; extending in this direction will very likely need a Monte Carlo simulation of the population distribution rather than a single-point fit.
 
 ---
 
-## 论文模型盘点:实际使用模型的现状
+## Paper model inventory: the current state of the models actually used
 
-本节收录论文实际用到的模型家族,按验证判定总表的格式列出。已经在验证判定总表里出现过的模型不重复贴方程细节,只保留判定结果。判定符号与验证判定总表一致,但这里的模型大多数还没有走完文献对标,会出现一个新状态,未核对文献目标,表示机制层没有被判定错误,只是还没有和独立文献数值比对过,不能默认当作已验证通过。
+This section catalogs the model families the paper actually uses, listed in the format of the master validation-verdict table. Models already appearing in the master table are not repeated with their equation details, only the verdict is kept. The verdict symbols match the master table, but most models here have not yet completed a literature benchmark, so a new state appears: literature target not checked, meaning the mechanism layer has not been judged wrong, only not yet compared against an independent literature value, and should not be assumed to have already passed validation.
 
-### 验证三阶段与案例分级框架
+### The three-stage validation and case-tiering framework
 
-本报告的验证工作分三个阶段。前两阶段对应模型与仿真领域检验计算机化模型的标准框架,Sargent (2013) 把 verification 定义为检验计算机化模型是否正确实现了概念模型本身,把 validation 定义为检验模型结构与参数是否在预期用途下足够准确地代表真实系统。本报告在这两阶段之后新增第三阶段,检验搜索层,即 K×4 联合优化,能否在已通过前两阶段检验的模型上产出对决策真正有用的结果,这一阶段面向决策支持工具这一定位新增。三阶段分别是 verify,即引擎数值精度,对应上文 Verify 前提一节;正确性验证,即判定符号里的 vars、equations、sim 几列;功能验证,即判定符号里的 opt 列,问 K×4 联合优化能否产出真实、有区分力、支持具体决策的 Pareto 前沿。
+This report's validation work runs in three stages. The first two correspond to the standard framework for checking a computerized model in modeling and simulation: Sargent (2013) defines verification as checking whether a computerized model correctly implements the conceptual model itself, and validation as checking whether the model's structure and parameters represent the real system accurately enough for the intended use. This report adds a third stage after these two, checking the search layer, that is, K x 4 joint optimization, whether it can produce a result genuinely useful for decision-making on top of a model that has already passed the first two stages; this stage is added specifically because of this project's positioning as a decision-support tool. The three stages are: verify, the engine's numerical precision, corresponding to the "Verify premise" section above; correctness validation, corresponding to the `vars`, `equations`, and `sim` columns in the verdict symbols; and functional validation, corresponding to the `opt` column, asking whether K x 4 joint optimization can produce a genuine, discriminating Pareto front that supports a specific decision.
 
-一个 K×4 联合优化案例即便正确性验证完全通过、约束完全可行,其 Pareto 前沿仍可能在功能验证阶段退化为单点或收窄成一条不需要优化就能看出的曲线。退化本身不等于案例概念无价值,需要从逻辑上判断这个案例对应的现实矛盾是否真实存在,据此把每个案例归入三层。Tier A 对应正确性验证,模型结构上是单一方程或方程组对观测数据点的直接拟合,或是跨文献反向验证,不涉及多个独立标定动力学的耦合演化,工作止于正确性验证阶段,增加维度这条补救路径对这类案例不适用,因为它们的本质就是一条曲线或一次反向核对,不是一个耦合系统,这类案例的定位本来就是做正确性验证,不是退化或失败。Tier B 对应功能验证未完成,案例对应真实存在的现实对立力,当前退化的原因是参数化或建模维度不足以显现这个对立力,而不是对立力本身不存在,这类案例保留在论文中,标注为未完成并附具体的待补维度路线图。Tier C 对应功能验证已通过,多个独立标定动力学通过真实联合仿真产生了有效 Pareto 前沿,且能得出建设性结论。
+Even a K x 4 joint-optimization case that fully passes correctness validation, with fully feasible constraints, can still have its Pareto front degenerate to a single point at the functional-validation stage, or narrow to a curve that needs no optimization to see. Degeneration itself does not mean the case's concept is worthless; what is needed is a logical judgment of whether the real-world tension this case corresponds to genuinely exists, and each case is sorted into one of three tiers on that basis. Tier A corresponds to correctness validation: the model's structure is a direct fit of a single equation or equation set to observed data points, or a cross-literature reverse verification, not involving the coupled evolution of multiple independently calibrated dynamics over time; the work stops at the correctness-validation stage, and the remedy of "add a dimension" does not apply to this kind of case, because their nature is inherently a single curve or a single reverse check, not a coupled system — this kind of case's positioning is correctness validation from the start, not degeneration or failure. Tier B corresponds to functional validation not yet complete: the case corresponds to a genuinely existing real-world opposing force, and the current degeneration's cause is that the parameterization or modeling dimensions are not yet sufficient to reveal this opposing force, not that the opposing force itself doesn't exist; this kind of case stays in the paper, marked incomplete, with a specific roadmap of dimensions still to add. Tier C corresponds to functional validation having passed: multiple independently calibrated dynamics, through a genuine joint simulation, have produced a valid Pareto front and yield a constructive conclusion.
 
-### 模型清单
+### Model list
 
-| 学科             | Model                                                                 | 简述                                               | vars | equations                                      | imports | mc  | sim | opt                                     | 综合判定                                   |
-| -------------- | --------------------------------------------------------------------- | ------------------------------------------------ | ---- | ---------------------------------------------- | ------- | --- | --- | --------------------------------------- | -------------------------------------- |
-| 运动生理学          | banister_validation + banister_opt                                    | 训练负荷到表现的适应疲劳模型加 K×4 训练强度优化,验证章节                  | 不适用  | 通过,预测级,七个检查点逐位吻合 Morton 1990 Fig.3/4           | 已使用     | 未使用 | 已确认 | 通过,自洽,六十解连续前沿                           | 强验证                                    |
-| 航空医学与时间生物学     | aircrew_circadian_sim + aircrew_circadian_opt                         | 机组跨时区排班,K×4 光疗时机加运营成本与在岗疲劳联合优化,案例章节              | 通过   | 通过,预测级,光疗时机推导逐句对应,前沿数字逐条吻合论文表格                 | 未使用     | 未使用 | 已确认 | 通过,自洽,一百解连续前沿,无退化                       | 强验证                                    |
-| 肾脏营养学          | ckd_protein_sim + opt_joint、opt_muscle、opt_renal、opt_joint_largepop   | 慢性肾病蛋白摄入到肌肉与肾功能的联合模型加 K×4 蛋白摄入优化,案例章节            | 不适用  | 通过,muscle_mass 方向与 BUN 清除系数均符合文献方向,新增患者饮食依从性维度 | 已使用     | 已使用 | 已确认 | 通过,自洽,八解非退化                             | 强验证                                    |
-| 肝病与运动医学        | fatty_liver_sim + opt_exercise、opt_hepatology、opt_joint               | 脂肪肝与运动周期化的 K×4 联合优化,导入 banister_validation 的疲劳机制 | 不适用  | 未核对文献目标,仅跑通                                    | 已使用     | 已使用 | 已确认 | 通过,自洽,liver_fat 与 fatigue 两轴连续分布        | 未核对文献目标,暂不建议作定量证据引用                    |
-| 儿科与母婴喂养        | infant_breastfeeding_sim + opt_infant、opt_maternal、opt_joint          | 新生儿九十天喂养节律加 K×4 联合优化,原始全周期模型                     | 不适用  | 未核对文献目标,且部分生理量落后世卫曲线的问题未解决                     | 已使用     | 未使用 | 已确认 | 不通过,前沿严重退化,五十解全收敛单点,婴儿与母亲目标间无权衡         | 存在已知问题,不建议继续作 K×4 权衡演示,论文改用独立演示场景,见下一行 |
-| 儿科与母婴健康        | infant_breastfeeding_night_tradeoff_demo 及三个对比变体                      | 夜间喂养节律加母亲职业心理的联合权衡演示场景,四案例对比矩阵                   | 不适用  | 未做预测级独立文献目标数值比对,衰减与恢复速率等系数标注为标定选择              | 未使用     | 未使用 | 已确认 | 通过,自洽,四案例对比呈现真实的母亲健康与总吸收奶量权衡,详见下方案例分级标注 | 功能验证通过                                 |
-| 内分泌与方法学        | homair_ogtt_sim,无优化变体                                                 | HOMA-IR 与 OGTT 跨文献联合可行域检验,属于仿真即验证范式              | 通过   | 通过,联合可行域自洽,四象限分布定稿,非文献目标匹配范式                   | 未使用     | 已使用 | 已确认 | 不适用,无 optimization                      | 反向验证概念验证,仅供参考                          |
-| 心血管与肾脏         | diuretic_tradeoff_sim + diuretic_tradeoff_opt                         | 利尿剂降压与痛风权衡的跨文献联合可行域检验                            | 通过   | 不适用,同上范式,不适用预测级判定                              | 已使用     | 未使用 | 已确认 | 通过,自洽,六十解连续,血压单调降、血尿酸单调升                | 反向验证概念验证,仅供参考                          |
-| 心血管药理学,血脂      | statin_ldl_doseresponse + statin_dose_myopathy_opt,参考库模型,替换候选         | 他汀 LDL 剂量反应加 K×4 剂量优化                            | 通过   | 通过,预测级,20mg 精确、40mg 偏差 3 个百分点                  | 已使用     | 未使用 | 已确认 | 通过,自洽,六十解连续前沿,无退化                       | 强验证,典范候选                               |
-| 政治学与国际关系,基础版   | `references/social/conflict/war/war_2026`                             | Richardson 军备竞赛,紧张度升级与外交疲劳或谈判降级的安全困境反馈           | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 不通过,默认场景收敛到平凡解,已记录为诚实的无权衡发现,非缺陷         | 未核对文献目标,仅适合机制编码正确性展示                   |
-| 社会学与政治心理学      | `references/social/conflict/civil/civil_unrest_2026`                  | Gurr 相对剥夺论,不平等积累到动员到镇压的反馈环                       | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,三十三解,非退化,未跑满预算                    | 未核对文献目标,候选                             |
-| 社会学与犯罪学        | `references/social/conflict/civil/gang_extortion_2026`                | 黑帮勒索博弈,支付、拒付、举证三选一困境                             | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,十三解,未跑满预算                         | 未核对文献目标,候选                             |
-| 社会学与灾害管理       | `references/social/conflict/disaster/disaster_2026`                   | 七级地震后七十二小时应急响应,损毁指数与救援资源注入后人群安全恢复                | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,五十一解                              | 未核对文献目标,候选                             |
-| 人口学            | `references/social/demography/population/population_growth_2026`      | 跨代际人口政策效应,如婴儿死亡率下降的短期与长期效应                       | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,六十一解                              | 未核对文献目标,候选                             |
-| 社会心理学          | `references/social/psychology/panic/collective_panic_2026`            | SEPA 群体恐慌模型,谣言传播与权威辟谣时机的竞争                       | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,六十一解,非退化                          | 未核对文献目标,候选                             |
-| 认知心理学          | `references/social/psychology/cognition/cognitive_performance_2026`   | Yerkes-Dodson 倒 U 律,压力与认知表现关系                    | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 未跑满预算,前沿多样性待复核                          | 未核对文献目标,候选                             |
-| 经济学与劳动经济学      | `references/social/economy/labor/labor_economic_2026`                 | Shapiro-Stiglitz (1984) 效率工资理论                   | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,五十一解,非退化                          | 未核对文献目标,候选                             |
-| 经济学与劳动经济学,日程尺度 | `references/social/economy/labor/labor_daily_2026`                    | 日尺度劳动、储蓄、疲劳权衡                                    | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,五十一解                              | 未核对文献目标,候选,偏工程演示                       |
-| 经济学与金融         | `references/social/economy/finance/predatory_lending_spiral_2026`     | 高利贷债务螺旋的临界还款速率                                   | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 未跑满预算,前沿多样性待复核                          | 未核对文献目标,候选                             |
-| 经济学与金融         | `references/social/economy/finance/pyramid_scheme_dynamics_2026`      | 传销欺骗动力学,早期采用者可信度陷阱                               | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 未跑满预算,前沿多样性待复核                          | 未核对文献目标,候选                             |
-| 历史经济学          | `references/social/economy/market/ancient_merchant_exploitation_2026` | 明代漕运商路系统性盘剥,行贿与护卫费用权衡                            | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 未跑满预算,前沿多样性待复核                          | 未核对文献目标,候选,历史参数为推算值                    |
-| 技术与网络安全        | `references/social/technology/digital/cybercrime_phishing_2026`       | 钓鱼诈骗损失与安全投资效益,基于 FBI IC3 2023 数据                 | 不适用  | 未核对文献目标                                        | 未使用     | 未使用 | 已确认 | 通过,自洽,五十一解                              | 未核对文献目标,候选                             |
+| Discipline             | Model                                                                 | Brief description                                               | vars | equations                                      | imports | mc  | sim | opt                                     | Overall verdict                                   |
+| -------------- | --------------------------------------------------------------------- | ------------------------------------------------ | ---- | ----------------------------------------------- | ------- | --- | --- | --------------------------------------- | -------------------------------------- |
+| Exercise physiology          | banister_validation + banister_opt                                    | The training-load-to-performance adaptation-fatigue model plus K x 4 training-intensity optimization, the validation section                  | N/A  | Pass, prediction-level, seven checkpoints match Morton 1990's Fig.3/4 point by point           | Used     | Not used | Confirmed | Pass, self-consistent, a 60-solution continuous front                           | Strong validation                                    |
+| Aviation medicine and chronobiology     | aircrew_circadian_sim + aircrew_circadian_opt                         | Aircrew cross-timezone scheduling, K x 4 light-therapy timing plus joint optimization of operating cost and on-duty fatigue, the case section              | Pass   | Pass, prediction-level, the light-therapy-timing derivation corresponds sentence by sentence, and the front's numbers match the paper's table line by line                 | Not used     | Not used | Confirmed | Pass, self-consistent, a 100-solution continuous front, no degeneration                       | Strong validation                                    |
+| Renal nutrition          | ckd_protein_sim + opt_joint, opt_muscle, opt_renal, opt_joint_largepop   | A joint model of chronic-kidney-disease protein intake with muscle and renal function plus K x 4 protein-intake optimization, the case section            | N/A  | Pass, both the muscle_mass direction and the BUN clearance coefficient match the literature direction, a new patient dietary-adherence dimension added | Used     | Used | Confirmed | Pass, self-consistent, eight solutions non-degenerate                             | Strong validation                                    |
+| Hepatology and sports medicine        | fatty_liver_sim + opt_exercise, opt_hepatology, opt_joint               | K x 4 joint optimization of fatty liver and exercise periodization, importing the fatigue mechanism from banister_validation | N/A  | Literature target not checked, only confirmed runnable                                    | Used     | Used | Confirmed | Pass, self-consistent, the liver_fat and fatigue axes continuously distributed        | Literature target not checked, not currently recommended as quantitative citable evidence                    |
+| Pediatrics and maternal-infant feeding        | infant_breastfeeding_sim + opt_infant, opt_maternal, opt_joint          | A ninety-day newborn feeding-rhythm model plus K x 4 joint optimization, the original full-cycle model                     | N/A  | Literature target not checked, and some physiological quantities lagging behind the WHO curve remain an unresolved issue                     | Used     | Not used | Confirmed | Fail, the front is severely degenerate, all 50 solutions converge to a single point, no tradeoff between infant and maternal objectives         | A known problem exists; not recommended for continued use as a K x 4 tradeoff demonstration; the paper switched to an independent demonstration scenario, see the next row |
+| Pediatrics and maternal-infant health        | infant_breastfeeding_night_tradeoff_demo and three comparison variants                      | A joint tradeoff demonstration scenario of night-feeding rhythm and maternal career psychology, a four-case comparison matrix                   | N/A  | No prediction-level independent literature-target-value comparison done; coefficients such as the decay and recovery rate are noted as calibrated choices              | Not used     | Not used | Confirmed | Pass, self-consistent, the four cases present a genuine tradeoff between maternal health and total milk intake, see the case-tiering note below | Functional validation passed                                 |
+| Endocrinology and methodology        | homair_ogtt_sim, no optimization variant                                                 | A cross-literature joint feasible-region check of HOMA-IR and OGTT, a simulation-as-verification paradigm              | Pass   | Pass, the joint feasible region is self-consistent, a four-quadrant distribution finalized, a paradigm not matching a literature target                   | Not used     | Used | Confirmed | N/A, no optimization                      | A reverse-verification proof of concept, reference only                          |
+| Cardiovascular and renal         | diuretic_tradeoff_sim + diuretic_tradeoff_opt                         | A cross-literature joint feasible-region check of the tradeoff between diuretic blood-pressure reduction and gout                            | Pass   | N/A, the same paradigm as above, not subject to a prediction-level verdict                              | Used     | Not used | Confirmed | Pass, self-consistent, 60 continuous solutions, blood pressure monotonically falling, blood uric acid monotonically rising                | A reverse-verification proof of concept, reference only                          |
+| Cardiovascular pharmacology, lipids      | statin_ldl_doseresponse + statin_dose_myopathy_opt, a reference-library model, a replacement candidate         | Statin LDL dose-response plus K x 4 dose optimization                            | Pass   | Pass, prediction-level, 20mg exact, 40mg off by 3 percentage points                  | Used     | Not used | Confirmed | Pass, self-consistent, a 60-solution continuous front, no degeneration                       | Strong validation, an exemplar candidate                               |
+| Political science and international relations, base version   | `references/social/conflict/war/war_2026`                             | The Richardson arms race, a security-dilemma feedback of tension escalation against diplomatic fatigue or negotiated de-escalation           | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Fail, the default scenario converges to a trivial solution, already recorded as an honest no-tradeoff finding, not a defect         | Literature target not checked, suited only to demonstrating mechanism-encoding correctness                   |
+| Sociology and political psychology      | `references/social/conflict/civil/civil_unrest_2026`                  | Gurr's relative-deprivation theory, a feedback loop from accumulating inequality to mobilization to repression                       | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 33 solutions, non-degenerate, budget not run to completion                    | Literature target not checked, a candidate                             |
+| Sociology and criminology        | `references/social/conflict/civil/gang_extortion_2026`                | A gang-extortion game, the pay/refuse/report three-way dilemma                             | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 13 solutions, budget not run to completion                         | Literature target not checked, a candidate                             |
+| Sociology and disaster management       | `references/social/conflict/disaster/disaster_2026`                   | Seventy-two-hour emergency response after a magnitude-7 earthquake, damage index against population safety recovering once rescue resources arrive                | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 51 solutions                              | Literature target not checked, a candidate                             |
+| Demography            | `references/social/demography/population/population_growth_2026`      | Intergenerational effects of population policy, such as the short- and long-term effects of a declining infant-mortality rate                       | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 61 solutions                              | Literature target not checked, a candidate                             |
+| Social psychology          | `references/social/psychology/panic/collective_panic_2026`            | The SEPA collective-panic model, the competition between rumor spread and the timing of authoritative debunking                       | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 61 solutions, non-degenerate                          | Literature target not checked, a candidate                             |
+| Cognitive psychology          | `references/social/psychology/cognition/cognitive_performance_2026`   | The Yerkes-Dodson inverted-U law, the relationship between stress and cognitive performance                    | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Budget not run to completion, front diversity needs rechecking                          | Literature target not checked, a candidate                             |
+| Economics and labor economics      | `references/social/economy/labor/labor_economic_2026`                 | Shapiro-Stiglitz's (1984) efficiency-wage theory                   | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 51 solutions, non-degenerate                          | Literature target not checked, a candidate                             |
+| Economics and labor economics, daily scale | `references/social/economy/labor/labor_daily_2026`                    | A day-scale tradeoff of labor, savings, and fatigue                                    | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 51 solutions                              | Literature target not checked, a candidate, leaning toward an engineering demonstration                       |
+| Economics and finance         | `references/social/economy/finance/predatory_lending_spiral_2026`     | The tipping repayment rate of a usurious debt spiral                                   | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Budget not run to completion, front diversity needs rechecking                          | Literature target not checked, a candidate                             |
+| Economics and finance         | `references/social/economy/finance/pyramid_scheme_dynamics_2026`      | Pyramid-scheme deception dynamics, the early-adopter credibility trap                               | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Budget not run to completion, front diversity needs rechecking                          | Literature target not checked, a candidate                             |
+| Historical economics          | `references/social/economy/market/ancient_merchant_exploitation_2026` | Systematic extraction along Ming-dynasty Grand Canal trade routes, the bribery-versus-guard-expense tradeoff                            | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Budget not run to completion, front diversity needs rechecking                          | Literature target not checked, a candidate, historical parameters are estimated values                    |
+| Technology and cybersecurity        | `references/social/technology/digital/cybercrime_phishing_2026`       | Phishing-fraud loss versus security-investment payoff, based on FBI IC3 2023 data                 | N/A  | Literature target not checked                                        | Not used     | Not used | Confirmed | Pass, self-consistent, 51 solutions                              | Literature target not checked, a candidate                             |
 
-### 案例分级标注
+### Case-tiering notes
 
-他汀剂量优化、CO2 Keeling 曲线、Gompertz 死亡率律三者归入 Tier A,剂量到 LDL 降幅、剂量到肌病风险都是剂量这同一个决策变量的静态单调函数,CO2 与 Gompertz 是两端点或单一经验规律的外推,三者都不涉及多个独立状态变量随时间耦合演化,它们的定位是预测级验证展示,不是 K×4 联合权衡的旗舰案例。homair_ogtt、diuretic_tradeoff 同样归入 Tier A,但角色不同,两者是跨文献反向验证,即仿真即验证,用一篇文献的数据反推出的联合可行域去核对另一篇文献的结论,这正是本报告体系里验证模型的正当位置,不是失败案例。
+Statin dose optimization, the CO2 Keeling curve, and the Gompertz mortality law are grouped into Tier A: dose to LDL reduction and dose to myopathy risk are both static monotonic functions of the same decision variable, dose; CO2 and Gompertz are extrapolations of two endpoints or a single empirical rule; none of the three involves the coupled evolution of multiple independent state variables over time, so their positioning is a prediction-level validation demonstration, not a flagship K x 4 joint-tradeoff case. homair_ogtt and diuretic_tradeoff are likewise grouped into Tier A, but with a different role: both are cross-literature reverse verifications, that is, simulation-as-verification, using data from one publication's back-derived joint feasible region to check another publication's conclusion, precisely the legitimate place for a validation model in this report's framework, not a failure case.
 
-fatty_liver 归入 Tier B,机制层已跑通、前沿本身非退化自洽,欠缺的只是补齐与独立文献目标的对标核查。
+fatty_liver is grouped into Tier B: the mechanism layer already runs, and the front itself is non-degenerate and self-consistent; what's missing is only completing the benchmark against an independent literature target.
 
-aircrew_circadian 归入 Tier C,K×4 光疗时机与运营及疲劳的联合优化都是真实存在、有独立文献支撑的对立,机组跨时区排班的运营成本与执勤疲劳安全从建成起就有真实非退化前沿。
+aircrew_circadian is grouped into Tier C: the K x 4 joint optimization of light-therapy timing against operations and fatigue is a genuinely existing opposition with independent literature support, and aircrew cross-timezone scheduling's operating cost versus on-duty fatigue safety has had a genuine non-degenerate front since it was built.
 
-ckd_protein 与 infant_breastfeeding 归入 Tier C,各自对应的现实对立力都真实存在,蛋白摄入与肌肉保持类比运动训练周期化里已知的负荷与恢复最优曲线,喂养频率与母亲职业心理和母婴身心结局是社会公认的真实对立。
+ckd_protein and infant_breastfeeding are grouped into Tier C: each corresponds to a genuinely existing real-world opposing force, protein intake versus muscle preservation is analogous to the known load-versus-recovery optimal curve in exercise-training periodization, and feeding frequency versus maternal career psychology and maternal-infant physical-and-mental outcomes is a socially recognized genuine opposition.
 
-ckd_protein 修正了 muscle_mass 方向与 BUN 清除系数两处文献对标问题,均已符合文献方向,新增患者饮食依从性维度,衰减速率锚定 Rizzetto et al. (2017) 的真实纵向随访数据,让限制期与标准期的切换时机与真实行为机制耦合。该案例已包含患者饮食依从性这一社会学行为维度,处方蛋白量与实际摄入量之间的落差随限制期时长连续衰减,驱动切换时机决策,不是外挂的修饰变量。
+ckd_protein has corrected two literature-benchmark issues, the muscle_mass direction and the BUN clearance coefficient, both now matching the literature direction, and has added a patient dietary-adherence dimension, with the decay rate anchored to Rizzetto et al.'s (2017) genuine longitudinal follow-up data, coupling the timing of the switch between the restriction and standard phases to a genuine behavioral mechanism. This case now includes patient dietary adherence, a sociological-behavioral dimension: the gap between the prescribed and actual protein amount decays continuously with the length of the restriction phase, driving the switch-timing decision, not a bolted-on decorative variable.
 
-infant_breastfeeding 的母亲侧睡眠债动态新增了碎片化质量折损,引用 Bonnet (1985);新增母亲职业发展心理维度,重返职场时点作为新的决策变量,驱动短假期抑郁风险与延长请假职业代价两条连续曲线,分别锚定 Chatterji and Markowitz (2012)、Whitney et al. (2023) 两篇真实文献。两个独立系统性扫描各自产出真实非支配前沿,夜间喂养次数的拐点在一次到两次之间,重返职场时点的拐点在产后十二周。夜间喂养这一子维度曾出现角点收敛,四个候选时段独立搜索时全部贴近上界,根因是睡眠债惩罚只判断某个时段有没有喂、不判断喂多少。修复方式是新增一条对夜间四个时段净吸收奶量之和的总预算约束,取自文献报告的三月龄纯母乳喂养婴儿日均摄入量乘以夜间占比估计,把该不该关闭某个时段从一个不改变收益的孤立跳变改造成固定预算内怎么分配这一连续可探索的权衡,角点收敛问题修复,六十个非支配解按激活时段数呈现真实的母亲健康与总吸收奶量权衡。
+infant_breastfeeding's maternal-side sleep-debt dynamics have added a fragmentation-quality penalty, citing Bonnet (1985); a maternal career-development psychological dimension has been added, with the return-to-work timing as a new decision variable, driving two continuous curves, short-leave depression risk and extended-leave career cost, anchored respectively to two genuine publications, Chatterji and Markowitz (2012) and Whitney et al. (2023). Two independent systematic sweeps each produced a genuine non-dominated front: the tipping point for the number of night feedings falls between one and two, and the tipping point for the return-to-work timing falls at twelve weeks postpartum. The night-feeding sub-dimension once showed corner-solution convergence, with all four candidate time slots independently searched clustering near the upper bound; the root cause was that the sleep-debt penalty only checked whether a given slot fed at all, not how much. The fix was adding a total-budget constraint on the sum of net milk intake across the four night slots, taken from the literature-reported daily intake of a three-month-old exclusively breastfed infant multiplied by an estimated nighttime share, converting whether to shut off a given slot from an isolated jump that didn't change the payoff into a continuously explorable tradeoff of how to allocate within a fixed budget; the corner-solution problem was fixed, and sixty non-dominated solutions now present a genuine tradeoff between maternal health and total milk intake by the number of active slots.
 
-进一步的对比变体把婴儿摄入量从最大化目标改成一个下限约束,用于检验婴儿目标该不该被无上限最大化这一更上游的框架问题,结果显示该变体的决策变量仍连续分布,但因为不再有多喂一点就能多得分的压力,前沿收敛到单一定性方案,母亲侧三个目标本身几乎不再变化,这是一个诚实的发现,把婴儿营养设为底线要求后,模型结构里能带来真实区分力的维度所剩不多。另有两个变体分别把夜间预算拉高到接近不绑定、以及在基线上限之外再加一个下限,前者重新出现更多时段规模的解,证明预算约束真正排除的是单维度最优但退化的解而不是简单压低婴儿一侧收益,后者的非支配解全部收窄为同一种时段规模,基线里的单时段满分方案未再出现,判断为搜索完整性问题而非真实排他效应,留待更大预算验证的开放问题。四个变体互补展示了多维权衡与收敛到单一可执行推荐两种不同的决策支持叙事。
+A further comparison variant changes the infant-intake objective from maximization to a lower-bound constraint, used to test the more upstream framing question of whether the infant objective should be maximized without an upper bound at all; the result shows this variant's decision variables are still continuously distributed, but because there is no longer pressure that feeding a little more always scores a little higher, the front converges to a single qualitative plan, and the maternal side's three objectives themselves barely change anymore — an honest finding that once infant nutrition is set as a baseline requirement, few dimensions remain in the model structure that can produce genuine discrimination. Two other variants respectively raise the nighttime budget to nearly unconstrained, and add a lower bound on top of the baseline upper bound; the former brings back solutions with a wider range of slot counts, proving the budget constraint genuinely excludes solutions that are single-dimension-optimal but degenerate, rather than simply suppressing the infant side's payoff, while the latter's non-dominated solutions all narrow to the same slot count, with the baseline's single-slot full-score plan no longer appearing, judged to be a search-completeness issue rather than a genuine exclusion effect, an open question left for verification with a larger budget. The four variants complementarily demonstrate two different decision-support narratives: a multidimensional tradeoff, and convergence to a single actionable recommendation.
 
-这批跨学科参考模型能补的是学科广度,政治学、社会学、人口学、经济学、认知心理学、网络安全,不是相对风险差或发病率这两个 evidence 子类型的空白,这两个缺口需要另找一个声明了绝对风险差或发病率的非医学模型,目前这批模型里没有。
+What this batch of cross-disciplinary reference models can fill in is discipline breadth, political science, sociology, demography, economics, cognitive psychology, cybersecurity, not the gap in the two evidence subtypes absolute risk difference and incidence rate; that gap needs a different non-medical model declaring an absolute risk difference or an incidence rate, which is not present in this batch.
 
-### 论文正文的模型选取
+### Model selection for the paper's main text
 
-论文正文只保留论证不可或缺的案例,其余模型继续留在本报告里备查,不改变任何模型文件本身,只是哪些内容写入正文的取舍。
+The paper's main text keeps only the cases indispensable to its argument; the remaining models stay in this report for reference, with no change to any model file itself, only a choice of what content goes into the main text.
 
-跨学科验证部分,正文最终只保留 Banister 数值精度验证与声明层的相对风险、Cohen's d 效应量核验。他汀剂量效应与风险曲线、CO2 Keeling 曲线、Gompertz 死亡率律三个案例都未写入正文,理由是三者验证的是同一件事,即机制执行层的预测级能力不局限于医学效应量,声明层核验已经从另一个角度证明框架能处理医学之外的效应量声明,三个额外的机制执行层例子不增加论证强度。CO2 Keeling 原本因为有真正独立、精确、长期的观测记录做留一法预测目标而被优先考虑保留,但重新评估后判断这层防御的必要性被高估,论文实际内容早已耦合了患者饮食依从性、母亲职业心理等社会心理与行为通路,不需要再靠一个单独的跨学科例子证明框架不局限于纯生物机制。他汀案例还有 LDL 数据取自 rosuvastatin、肌病数据取自 simvastatin 两种不同药物拼接的方法论简化;Gompertz 案例本身承认锚点疑似同源示例,可信度存在上限。三个案例均未删除,模型文件与本报告判定表格原样保留,仅未写入正文,供后续投稿修改意见征用。
+In the cross-disciplinary validation part, the main text ultimately keeps only Banister's numerical-precision validation and the declarative-layer relative-risk and Cohen's d effect-size checks. The three cases of the statin dose-effect and risk curve, the CO2 Keeling curve, and the Gompertz mortality law were not written into the main text, because all three validate the same thing, that the mechanism-execution layer's prediction-level capability is not confined to medical effect sizes, and the declarative-layer check already proves from another angle that the framework can handle effect-size claims outside medicine, so three additional mechanism-execution-layer examples add no argumentative strength. CO2 Keeling was originally prioritized for inclusion because it has a genuinely independent, precise, long-term observational record to use as a leave-one-out prediction target, but on reassessment this line of defense's necessity was judged overestimated: the paper's actual content already couples in social-psychological and behavioral pathways such as patient dietary adherence and maternal career psychology, and does not need a separate cross-disciplinary example to prove the framework isn't confined to purely biological mechanisms. The statin case also has the methodological simplification of stitching together LDL data from rosuvastatin and myopathy data from simvastatin, two different drugs; the Gompertz case itself acknowledges its anchors are suspected to share a common source, so its credibility has a ceiling. None of the three cases has been deleted; the model files and this report's verdict tables remain as they are, simply not written into the main text, available should future submission revisions call for them.
 
-正文进一步只保留 CKD、母婴健康两个联合仿真案例。脂肪肝运动周期化,以及 HOMA-IR/OGTT、利尿剂两个跨文献反向验证案例未写入正文。脂肪肝案例原本承担的论证是通过 `imports` 跨案例复用已验证子模型,但 `imports` 语法机制本身已在格式规范章节用 CKD 举例说明过,正文不需要再用一个完整案例重复证明语法可行,脂肪肝案例更适合放进未来以消化或内分泌代谢为主题的论文。跨文献反向验证两个案例的技术细节保留在本报告表格与案例分级标注中备查。
+The main text further keeps only two joint-simulation cases, CKD and maternal-infant health. Fatty-liver exercise periodization, along with the two cross-literature reverse-verification cases HOMA-IR/OGTT and diuretics, were not written into the main text. The fatty-liver case's original argumentative role was demonstrating cross-case reuse of an already-validated submodel via `imports`, but the `imports` syntax mechanism has already been illustrated with a CKD example in the format-specification chapter, and the main text does not need a full case repeating proof that the syntax works; the fatty-liver case is better suited to a future paper themed on digestive or endocrine metabolism. The two cross-literature reverse-verification cases' technical details remain in this report's tables and case-tiering notes for reference.
 
-声明层核验部分新增了九个薄封装文件,各自导入一个通用参考组件,不改动机制本身,建立原因是正文只在叙述中点名九个文件路径,读者若要直接确认这九个案例确实被引用、可运行,此前无法在不跳出案例目录的情况下完成这件事。技术上需要注意,六个相对风险或风险比案例的源文件全部复用同一组变量名,若把六个文件合并进同一个 `imports` 列表,按 LM 命名冲突规则后一个会覆盖前一个的声明,等于只测了一个而非六个,因此没有做成单个合并导入文件,而是九个案例各自一个独立薄封装文件,逐一导入单个源文件,互不合并,规避了这个陷阱。九个文件的实测引擎输出与手算期望值逐位一致,正文表格数字直接取自实测输出,非手算或估计值。
+The declarative-layer check part adds nine thin wrapper files, each importing one general-purpose reference component without altering the mechanism itself; the reason for creating them is that the main text names only these nine file paths in its narrative, and readers previously had no way to directly confirm these nine cases were actually cited and runnable without leaving the case directory. A technical note: the source files for the six relative-risk or hazard-ratio cases all reuse the same set of variable names, so merging all six into the same `imports` list would, under LM's naming-collision rule, have a later one override an earlier one's declaration, effectively testing only one instead of six; so rather than a single merged import file, nine cases each get their own independent thin wrapper file, each importing a single source file separately with no merging, avoiding this pitfall. The nine files' measured engine output matches the hand-computed expected value exactly, point by point, and the main text's table numbers are taken directly from the measured output, not a hand-computed or estimated value.
 
-术语说明:脂肪肝等待写入的案例类型曾用"假设生成性案例"一词指代,该词同时被论文局限性一节用作全篇统一声明,即所有优化结果为计算机仿真产出、属于假设生成、不构成临床建议,两处用法实际指向不同的判断,前者是案例级的证据强度分级,后者是全篇通用的未经 RCT 验证免责声明。同一措辞在同一论文两处出现会让读者误以为已写入正文的两个联合仿真案例因为未被贴上这个标签而豁免于需要 RCT 验证这条限制,这不成立,全篇声明对全部案例一视同仁。正文过渡句已改写,不再使用这一标签词,只客观描述仿真即验证这一用法本身。
+Terminology note: the case type awaiting inclusion, such as fatty liver, was once referred to with the term "hypothesis-generating case," a term also used elsewhere in the paper's limitations section as a blanket statement across the whole paper, that all optimization results are computer-simulation output, hypothesis-generating in nature, and do not constitute clinical advice; the two uses actually point to different judgments, the former a case-level evidence-strength grading, the latter a paper-wide disclaimer that nothing has been RCT-validated. The same wording appearing in two places in the same paper could mislead a reader into thinking the two joint-simulation cases already written into the main text are exempt from the RCT-validation limitation simply because they were not given this label — that does not hold, since the paper-wide statement applies equally to every case. The main text's transitional sentence has been rewritten to no longer use this label term, and now only objectively describes the simulation-as-verification usage itself.

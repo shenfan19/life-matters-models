@@ -10,24 +10,12 @@ metadata:
       `run_simulation`/`run_simulation_mc`/`start_session` (ADR 0118), not by
       `Validator.validate_model`. So the failure only surfaces when actually
       running the model, not merely loading it.
-    problem_cn: >
-      错误检测夹具（故意设计成非法）。`simulation.end_date`（"2026-01-01"）早于
-      `simulation.start_date`（"2026-06-30"）。该模型在结构上能正常加载和校验、不会报错——
-      这项检查位于 `validation.py::validate_simulator_dates`，由
-      `run_simulation`/`run_simulation_mc`/`start_session`（ADR 0118）在运行前调用，
-      而不是由 `Validator.validate_model` 调用。所以这个错误只有在实际运行模型时才会暴露，
-      仅加载模型是发现不了的。
     result: >
       Calling run_simulation()/run_simulation_mc()/start_session() on this
       model must raise/return an error containing "end_date" and
       "is before". See test_verification/errors/test_date_errors.py.
-    result_cn: >
-      对该模型调用 run_simulation()/run_simulation_mc()/start_session() 时，
-      必须抛出或返回一个包含 "end_date" 和 "is before" 的错误。
-      参见 test_verification/errors/test_date_errors.py。
     limitations: Not a real model; exists only to exercise the upfront
       date-range check.
-    limitations_cn: 并非真实模型；仅用于验证运行前的日期范围检查。
   tags: [test, error-detection, date, schedule]
 
 variables:

@@ -1,13 +1,13 @@
-# models/test_fixtures/valid — 仿真器功能测试用例（正确性）
+# models/test_fixtures/valid — Simulator functionality test cases (correctness)
 
-## 定位
+## Purpose
 
-`test_fixtures/valid/` 存放**结构合法、用于测试和解释仿真器各项功能的最小化示例**，每个文件聚焦 LM format 的一个特性（如 imports 组合、MC 分布、K×4 优化的各 Tier、方程条件、阶段性 schedule 等）。与故意写错、用于验证错误检测机制的 `test_fixtures/invalid/` 相对（见其 README）。
+`test_fixtures/valid/` holds **structurally valid, minimal examples used to test and explain each simulator feature**, each file focused on one LM format feature (such as imports composition, MC distributions, each tier of K x 4 optimization, equation conditions, phased schedules, etc.). This is the counterpart to `test_fixtures/invalid/` (deliberately broken, used to verify the error-detection mechanism, see its README).
 
-这些文件不代表真实临床或社会场景，主要用途是：
-- 验证仿真引擎/优化器对应功能正确工作
-- 作为该功能的最小可读示例，供开发者和模型作者参考
+These files do not represent a real clinical or social scenario; their main purposes are:
+- verifying that the corresponding simulation-engine/optimizer feature works correctly
+- serving as a minimal, readable example of that feature, for developers and model authors to reference
 
-与 `papers/`（论文场景）、`scenarios/`（客观可用仿真）、`references/`（基础子模型构件）不同，`test_fixtures/valid/` 不需要文献参数校准。
+Unlike `papers/` (paper scenarios), `scenarios/` (objectively usable simulations), and `references/` (base submodel components), `test_fixtures/valid/` needs no literature-parameter calibration.
 
-每个模型文件都欢迎任何用户参与编辑、补充测试用例或修复问题。
+Every model file welcomes edits, additional test cases, or bug fixes from any user.

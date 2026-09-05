@@ -9,29 +9,38 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      缺乏运动+睡眠不足-全因死亡率关联是流行病学里被反复独立测量、meta分析收敛的效应量。低身体活动水平叠加短睡眠对应的全因死亡率相对风险(RR)，联合暴露效应量
+      The physical-inactivity-plus-short-sleep to all-cause-mortality association is an effect
+      size in epidemiology that has been independently measured repeatedly and that meta-analyses
+      converge on. The relative risk (RR) of all-cause mortality from a low physical-activity level
+      combined with short sleep, a joint-exposure effect size.
     result: |
-      用 LM format 的 evidence 节中的 rr 子类型声明该效应量，代入示意性基线风险1.0%，验证 Loader 能正确读取、承载并展示这一效应量：暴露组风险等于基线风险乘以相对风险1.42。
+      This case declares the effect size using the rr subtype in the LM format's evidence block,
+      substituting an illustrative baseline risk of 1.0%, to verify that the loader correctly reads,
+      carries, and displays this effect size: the exposed-group risk equals the baseline risk times
+      the relative risk of 1.42.
     limitations: |
-      本案例是"效应量编码正确性"展示，不是独立预测检验，1.42这个数字本身就是要验证的目标，不是外推后与另一个独立来源比较。基线风险1.0%为示意性设定值，非任何具体人群的实测患病率。
+      This case demonstrates the correctness of effect-size encoding, not an independent prediction
+      test, and the number 1.42 is itself the target being verified, not a value extrapolated and
+      then compared against a separate independent source. The 1.0% baseline risk is an illustrative
+      setting, not a measured prevalence in any specific population.
   ratings:
-    importance: 0.25 - 流行病学效应量族案例之一，通用参考组件，尚未被具体论文import
-    variable: 1.0 - 效应量来自meta分析/大型队列研究的共识值，文献可直接追溯
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.75 - 效应量本身来自高质量独立来源，Loader正确编码展示，非独立预测已在理由中注明
+    importance: 0.25 - One case in the epidemiological-effect-size family, a general-purpose reference component not yet imported by a specific paper
+    variable: 1.0 - The effect size is a consensus value from a meta-analysis and large cohort studies, directly traceable to the literature
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.75 - The effect size itself comes from a high-quality independent source, and the loader's correct encoding is demonstrated; that this is not an independent prediction is noted in the rationale
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family]
 
 variables:
   baseline_risk_pct:
-    description: 示意性基线（未暴露组）风险（%）
+    description: An illustrative baseline (unexposed-group) risk (%)
     value: 1.0
     unit: "%"
     type: parameter
 
   exposed_risk_pct:
-    description: 暴露组预测风险（%）= 基线风险 × 相对风险
+    description: The predicted exposed-group risk (%) = baseline risk x relative risk
     value: 0.0
     unit: "%"
     type: state
@@ -41,12 +50,12 @@ variables:
     evidence_type: rr
     value: 1.42
     unit: "RR"
-    description: 低身体活动水平叠加短睡眠对应的全因死亡率相对风险(RR)，联合暴露效应量
+    description: The relative risk (RR) of all-cause mortality from a low physical-activity level combined with short sleep, a joint-exposure effect size
     reference: "Systematic review and meta-analysis of physical activity, sleep and all-cause mortality (prospective cohort studies)"
 
 equations:
   risk_calc:
-    description: "静态计算：exposed_risk_pct = baseline_risk_pct × exposure_rr"
+    description: "A static calculation: exposed_risk_pct = baseline_risk_pct x exposure_rr"
     condition: true
     priority: 3
     dynamics:
@@ -63,7 +72,7 @@ simulation:
     - exposed_risk_pct
   plans:
     - id: "exposure_scenario"
-      label: "暴露组 vs 基线风险效应量展示"
+      label: "Exposed-group versus baseline-risk effect-size demonstration"
       regimens: []
 
 references:

@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: ch1907_de_hans_castorp
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      汉斯·卡斯托普（托马斯·曼《魔山》1924）在瑞士达沃斯疗养院原计划停留 3 周，最终滞留 7 年，遵从疗养规程以恢复肺结核、通过与智识对话者塞滕布里尼和纳夫塔的哲学博弈进行思想探索、以及保持与外部世界联系以防止彻底沉溺于山上的时间感，三者构成核心张力。疾病令时间感扭曲，窗外欧洲正在滑向 1914 年一战。
+      Hans Castorp (Thomas Mann's The Magic Mountain, 1924) originally planned a 3-week stay at
+      the sanatorium in Davos, Switzerland, but ultimately remains for 7 years. The core tension is
+      among following the sanatorium regimen to recover from tuberculosis, pursuing intellectual
+      exploration through philosophical debate with his intellectual interlocutors Settembrini and
+      Naphta, and maintaining a connection to the outside world to prevent total absorption into the
+      mountain's altered sense of time. Illness distorts his sense of time, while beyond the window
+      Europe is sliding toward the 1914 outbreak of World War I.
     result: >
-      仿真预期显示 84 个月内肺结核恢复进度、思想成熟度和与现实世界连接度的月动态。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，肺结核疗养动力学参数需参考医学文献。
+      The simulation is expected to show the monthly dynamics of tuberculosis-recovery progress,
+      intellectual maturity, and connection to the real world across 84 months. This is currently a
+      draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting whose tuberculosis-recovery-dynamics parameters need grounding in medical literature.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，肺结核疗养参数未锚定医学文献
-    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出84个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - 2026-09-04人工复核：intellectual_engagement确实直接拉低health（-0.5/步）同时拉高intellectual_depth（+2.5/步），但另一决策变量treatment_adherence对health有更大的直接正向贡献（+1.5/步），即使intellectual_engagement打满，treatment_adherence打满仍能让health净值为正，两目标可同时逼近上限，可达空间内不存在真实权衡，--opt收敛至单一前沿点(100,100)与此一致，此前判断只看了intellectual_engagement单变量的系数符号，未核实存在可完全补偿的第三方变量
-    importance: 0.25 - 魔山是德国文学经典，但相对小众受众，且为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the tuberculosis-recovery parameters not anchored to medical literature
+    equation: 0.0 - All 4 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 84-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - Manual review on 2026-09-04, intellectual_engagement does directly lower health (-0.5/step) while raising intellectual_depth (+2.5/step), but the other decision variable treatment_adherence contributes a larger direct positive effect to health (+1.5/step), so even with intellectual_engagement maxed out, maxing out treatment_adherence still keeps health's net effect positive; both objectives can approach their upper bounds simultaneously, and no genuine tradeoff exists within the reachable space, consistent with --opt converging to a single front point (100,100); the earlier judgment only looked at the sign of the single intellectual_engagement coefficient and did not check for a third variable that could fully compensate
+    importance: 0.25 - The Magic Mountain is a German literary classic, but with a relatively niche audience, and this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - tuberculosis
     - sanatorium
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 遵从疗养规程：休息·日光浴·温度记录——疗养院的标准治疗
+    description: Following the sanatorium regimen, rest, sunbathing, temperature logging, the sanatorium's standard treatment
     reference: TODO:SOURCE
   intellectual_engagement:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 思想探索：与塞滕布里尼·纳夫塔等人的哲学辩论（刺激但消耗体力）
+    description: Intellectual exploration, philosophical debate with figures such as Settembrini and Naphta (stimulating but physically draining)
     reference: TODO:SOURCE
   world_engagement:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 与外部世界的联系：关注山下的新闻、写信、尝试下山
+    description: Connection to the outside world, following news from below the mountain, writing letters, attempting to leave
     reference: TODO:SOURCE
   health:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 肺结核状态：肺结核的恢复或进展（高=好转）
+    description: Tuberculosis state, the recovery or progression of the disease (high=improving)
     reference: TODO:SOURCE
     io_role: output
   time_sense:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 时间感知：对时间流逝的感知扭曲（高=时间静止，低=清醒回归）
+    description: Time perception, distortion in his sense of time passing (high=time frozen, low=a lucid return)
     reference: TODO:SOURCE
     io_role: output
   intellectual_depth:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 思想深度：在孤立中积累的哲学理解
+    description: Intellectual depth, the philosophical understanding accumulated in isolation
     reference: TODO:SOURCE
     io_role: output
   world_disconnect:
@@ -96,29 +104,29 @@ variables:
     bounds:
       - 0
       - 100
-    description: 与世界的疏离：与真实社会的脱节程度
+    description: Disconnection from the world, how detached he becomes from real society
     reference: TODO:SOURCE
     io_role: output
 equations:
   health_change:
     dynamics:
       health: min(100, max(0, health + (treatment_adherence * 1.5) - (intellectual_engagement * 0.5) - 0.3))
-    description: 结核病在疗养中缓慢改善，但智识消耗会抵消
+    description: Tuberculosis slowly improves under the sanatorium regimen, but intellectual exertion offsets it
     reference: TODO:SOURCE
   time_distortion:
     dynamics:
       time_sense: min(100, time_sense + (1 - world_engagement) * 1.5)
-    description: 疗养院的时间感扭曲随停留时间积累
+    description: The sanatorium's time distortion accumulates the longer he stays
     reference: TODO:SOURCE
   intellectual_growth:
     dynamics:
       intellectual_depth: min(100, intellectual_depth + intellectual_engagement * 2.5)
-    description: 智识深度随辩论探索增长
+    description: Intellectual depth grows through debate and exploration
     reference: TODO:SOURCE
   disconnect_growth:
     dynamics:
       world_disconnect: min(100, world_disconnect + (time_sense / 100) * 1.5 - world_engagement * 2.0)
-    description: 与世界的疏离随时间感扭曲加深
+    description: Disconnection from the world deepens with time-sense distortion
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -151,7 +159,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 遵从疗养规程
+        label: Following the sanatorium regimen
         optimize:
           value:
             - 0
@@ -167,7 +175,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 思想探索
+        label: Intellectual exploration
         optimize:
           value:
             - 0
@@ -183,7 +191,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 与外部世界的联系
+        label: Connection to the outside world
         optimize:
           value:
             - 0

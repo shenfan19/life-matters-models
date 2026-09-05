@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: fr1482_fr_quasimodo
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      卡西莫多（雨果《巴黎圣母院》1831）将艾丝美拉达藏入圣母院避难后面临三重权衡：防守强度，即能阻止追捕者入侵但会消耗体力且加剧冲突；对艾丝美拉达的照料，即能维持她的生存希望但会减少防守资源；以及与外界沟通尝试，即寻求援助但会暴露庇护位置的风险。卡西莫多的残障和语言障碍使外部沟通代价极高，圣母院的圣所豁免权是唯一法律屏障。
+      After hiding Esmeralda in Notre-Dame for sanctuary (Hugo's Notre-Dame de Paris, 1831),
+      Quasimodo faces a triple tradeoff: defense intensity can stop pursuers from breaking in but
+      depletes his strength and escalates the conflict; caring for Esmeralda sustains her will to
+      survive but draws away resources from defense; and attempting to communicate with the outside
+      world might seek help but risks exposing the sanctuary's location. Quasimodo's disability and
+      speech impairment make outside communication extremely costly, and the cathedral's right of
+      sanctuary is the only legal shield.
     result: >
-      仿真预期比较三种策略下艾丝美拉达存活概率与卡西莫多体力剩余的 30 天轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to compare Esmeralda's survival probability and Quasimodo's
+      remaining strength across a 30-day trajectory under three strategies. This is currently a
+      draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出30天合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - esmeralda_hope与sanctuary_integrity经方程追踪无对立驱动，两决策变量各自独立作用于单一目标；2026-09-04验证--opt收敛至单一前沿点(100,100)，数值确认无权衡
-    importance: 0.25 - 《巴黎圣母院》是雨果经典，但相对小众受众，且为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 6 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 30-day trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - esmeralda_hope and sanctuary_integrity show no opposing drive when traced through the equations, with the two decision variables each acting independently on a single objective; verified on 2026-09-04 that --opt converges to a single front point (100,100), numerically confirming no tradeoff
+    importance: 0.25 - Notre-Dame de Paris is a Hugo classic, but with a relatively niche audience, and this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - disability
     - isolation
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 防守强度：主动抵抗攻入圣母院的人群/骑兵的激烈程度
+    description: Defense intensity, how fiercely he resists the crowd/cavalry attacking the cathedral
     reference: TODO:SOURCE
   care_for_esmeralda:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 对艾丝美拉达的照料：提供食物·安慰·陪伴（减少她的恐惧与绝望）
+    description: Caring for Esmeralda, providing food, comfort, and companionship (lowering her fear and despair)
     reference: TODO:SOURCE
   negotiation_attempt:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 与外界沟通尝试：通过弗罗洛等人寻求政治解决（风险：被利用）
+    description: Attempting to communicate with the outside world, seeking a political solution through figures like Frollo (risk of being exploited)
     reference: TODO:SOURCE
   sanctuary_integrity:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 庇护所防守强度：圣母院能维持的安全屏障（物理+政治+宗教权威）
+    description: The strength of the sanctuary's defense, the safety shield the cathedral can maintain (physical, political, and religious authority)
     reference: TODO:SOURCE
     io_role: output
   esmeralda_hope:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 艾丝美拉达的希望：她在庇护所中的心理状态和对未来的信心
+    description: Esmeralda's hope, her psychological state in the sanctuary and confidence in the future
     reference: TODO:SOURCE
     io_role: output
   quasimodo_health:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 卡西莫多的体力：驼背+慢性疼痛+防守消耗的身体状态
+    description: Quasimodo's strength, his bodily state, a composite of his hunched back, chronic pain, and defense exertion
     reference: TODO:SOURCE
     io_role: output
   external_pressure:
@@ -96,7 +104,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 外部威胁压力：王室·教会·民众对驱逐艾丝美拉达的压力
+    description: External threat pressure, pressure from the crown, church, and populace to expel Esmeralda
     reference: TODO:SOURCE
     io_role: output
   frollo_betrayal_risk:
@@ -106,34 +114,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 弗罗洛背叛风险：卡西莫多对弗罗洛的信任被利用的程度
+    description: The risk of Frollo's betrayal, how much Quasimodo's trust in Frollo is being exploited
     reference: TODO:SOURCE
     io_role: output
 equations:
   sanctuary_defense:
     dynamics:
       sanctuary_integrity: max(0, min(100, sanctuary_integrity + (defense_intensity * 5.0) - ((external_pressure / 100) * 4.0)))
-    description: 防守力度vs外部压力
+    description: Defense effort versus external pressure
     reference: TODO:SOURCE
   esmeralda_mood:
     dynamics:
       esmeralda_hope: max(0, min(100, esmeralda_hope + (care_for_esmeralda * 3.0) - ((external_pressure / 100) * 2.0)))
-    description: 希望感随照料和防守成功增加，随外部压力降低
+    description: Hope rises with care and successful defense, and falls with external pressure
     reference: TODO:SOURCE
   health_decay:
     dynamics:
       quasimodo_health: max(0, quasimodo_health - (1.0) - (defense_intensity * 1.5) + care_for_esmeralda * 0.3)
-    description: 体力随防守强度和慢性疼痛消耗
+    description: Strength is depleted by defense intensity and chronic pain
     reference: TODO:SOURCE
   pressure_growth:
     dynamics:
       external_pressure: min(100, max(0, external_pressure + (2.5) - (negotiation_attempt * 2.0)))
-    description: 外部压力随时间自然增长；谈判可部分缓解
+    description: External pressure grows naturally over time; negotiation can partly ease it
     reference: TODO:SOURCE
   frollo_risk:
     dynamics:
       frollo_betrayal_risk: min(100, frollo_betrayal_risk + negotiation_attempt * 4.0)
-    description: 与弗罗洛的沟通越多，被其利用艾丝美拉达的风险越高
+    description: The more he communicates with Frollo, the higher the risk Frollo exploits it against Esmeralda
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 防守强度
+        label: Defense intensity
         optimize:
           value:
             - 0
@@ -182,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 对艾丝美拉达的照料
+        label: Caring for Esmeralda
         optimize:
           value:
             - 0
@@ -198,7 +206,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 与外界沟通尝试
+        label: Attempting to communicate with the outside world
         optimize:
           value:
             - 0

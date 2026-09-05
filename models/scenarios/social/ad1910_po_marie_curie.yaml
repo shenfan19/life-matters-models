@@ -7,84 +7,96 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      居里夫人自 1898 年至 1906 年在巴黎开展的放射性研究中，辐射积累量 radiation 随实验强度线性增长，radiation += research_intensity × exposure_factor，同时辐射和过劳共同降低健康并抑制研究产出，progress += research_intensity × (1−radiation/120)。授课与经费申请是维持研究经费的必要来源，使实验时间受限；性别歧视导致机构支持更少，加剧了辐射-健康-财务的三角约束。
+      In Marie Curie's radioactivity research in Paris from 1898 to 1906, accumulated radiation
+      exposure, the radiation variable, rises linearly with experimental intensity, radiation +=
+      research_intensity x exposure_factor, while radiation and overwork together lower health and
+      suppress research output, progress += research_intensity x (1 minus radiation/120). Teaching
+      and grant applications are necessary sources of research funding, limiting time available for
+      experiments; gender discrimination reduces institutional support, worsening the triangular
+      constraint among radiation, health, and finances.
     result: >
-      仿真显示 8 年，合 96 个月内辐射积累、健康损耗、研究进度和经费的月动态；三目标优化（2026-09-04 验证，60 代收敛，100% 可行，46 个 Pareto 解）确认 research_intensity 对 research_progress 存在真实权衡（6.28–100 分布），health 目标在前沿上几乎恒定（99.3 附近），radiation 目标在全部解中收敛为 0，后两者的权衡结构未在数值上得到确认，需人工复核。
-    limitations: 历史辐射剂量难以精确重建，居里夫人时代尚无个人剂量计；辐射健康损耗使用现代 ICRP 框架，可能低估当时未知危害；性别歧视对机构支持的量化为模型假设。
+      The simulation shows the monthly dynamics of accumulated radiation, health depletion,
+      research progress, and funding across 8 years, 96 months; a three-objective optimization
+      (verified on 2026-09-04, converging over 60 generations, 100% feasible, 46 Pareto solutions)
+      confirms a genuine tradeoff for research_intensity against research_progress (spanning 6.28 to
+      100), while the health objective stays nearly constant across the front (around 99.3), and the
+      radiation objective converges to 0 across all solutions; the tradeoff structure for the latter
+      two has not been confirmed numerically and requires manual review.
+    limitations: Historical radiation dose is difficult to reconstruct precisely, since personal dosimeters did not yet exist in Curie's time; the radiation health-damage model uses the modern ICRP framework, which may understate hazards unknown at the time; the quantification of gender discrimination's effect on institutional support is a model assumption.
 
   ratings:
-    variable: 0.5 - 辐射损伤锚定现代ICRP框架，历史剂量与性别歧视量化为模型假设
-    equation: 0.5 - 辐射与研究产出方程自建，锚定ICRP辐射损伤框架点估计
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出96个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.5 - 2026-09-04验证，--opt收敛46个Pareto解，research_progress维度权衡数值确认成立，但health/radiation两目标在前沿上近乎恒定，权衡未获数值支撑
-    importance: 0.5 - 居里夫人是全球最知名女科学家之一，但为历史叙事场景，非框架依赖模块
-    innovation: 0.5 - 辐射累积×性别压制×研究节律三维权衡视角独特，核心辐射暴露机制沿用现代框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立历史文献数值目标逐点比对
+    variable: 0.5 - Radiation damage is anchored to the modern ICRP framework, with historical dose and gender discrimination quantified as model assumptions
+    equation: 0.5 - The radiation-and-research-output equations are self-built, anchored to point estimates from the ICRP radiation-damage framework
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 96-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.5 - Verified on 2026-09-04, --opt converges to 46 Pareto solutions, with the research_progress-dimension tradeoff numerically confirmed, but the health/radiation objectives stay nearly constant across the front, so the tradeoff there is not numerically supported
+    importance: 0.5 - Marie Curie is one of the world's most famous female scientists, but this is a historical-narrative scenario, not a module the framework depends on
+    innovation: 0.5 - The three-way tradeoff perspective of radiation accumulation, gender suppression, and research rhythm is a distinctive angle, with the core radiation-exposure mechanism carried over from the modern framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared point-by-point against an independent historical-literature target value
   tags: [historical, curie, radiation, research, 19th-century, france, women-in-science]
   period: "1898-1906"
   location: "Paris, France"
 variables:
-  # 输入变量（玩家每月可调整）
+  # Input variables (adjustable monthly by the player)
   research_intensity:
     type: input
     value: 0.6
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 1.0]
-    description: "实验室研究强度（0=不做实验, 1=全力投入）；辐射主要来源"
+    description: "Laboratory-research intensity (0=no experiments, 1=full commitment); the main source of radiation"
 
   rest_time:
     type: input
     value: 0.2
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 1.0]
-    description: "休养与郊外疗养时间比例；降低辐射，恢复健康"
+    description: "The proportion of time spent on recuperation and countryside rest; lowers radiation, restores health"
 
   teaching_load:
     type: input
     value: 0.3
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 0.8]
-    description: "授课负荷（巴黎高等师范学校）；主要稳定收入来源，消耗健康"
+    description: "Teaching load (at the Ecole Normale Superieure); the main stable income source, depletes health"
 
   fundraise_effort:
     type: input
     value: 0.1
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 0.6]
-    description: "经费申请投入（撰写报告、游说委员会）；大额收入但成功率低"
+    description: "Effort spent applying for funding (writing reports, lobbying committees); a large payoff but a low success rate"
 
-  # 状态变量
+  # State variables
   health:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "身体健康（辐射损伤、过劳、营养不足的综合体现）"
+    description: "Physical health (a composite of radiation damage, overwork, and malnutrition)"
 
   radiation:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 120]
     io_role: output
-    description: "辐射积累量（不可逆；>60时急性症状；>90时危及生命）"
+    description: "Accumulated radiation (irreversible; acute symptoms above 60; life-threatening above 90)"
 
   research_progress:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "研究进度（目标100=完成钋和镭的发现与提炼）"
+    description: "Research progress (target 100 = completing the discovery and isolation of polonium and radium)"
 
   money:
     type: state
     value: 40.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "研究经费（<10时无法维持实验室运转）"
+    description: "Research funding (below 10, the laboratory cannot keep running)"
 
 simulation:
   step_size:
@@ -98,9 +110,9 @@ simulation:
     - research_progress
     - money
 equations:
-  # 研究产出洞见，同时积累辐射
+  # Research yields insight while accumulating radiation
   research_gain:
-    description: "实验室研究推进科学进展，同时辐射不可避免地积累"
+    description: "Laboratory research advances scientific progress, while radiation accumulates unavoidably"
     condition: research_intensity > 0
     priority: 10
     dynamics:
@@ -108,61 +120,61 @@ equations:
       radiation: "min(120, radiation + research_intensity * 4.0)"
       money: "max(0, money - research_intensity * 2.0)"
 
-  # 休养恢复健康，缓慢降低辐射（不可逆，只能减缓）
+  # Rest restores health and slowly lowers radiation (irreversible, only slowed)
   rest_recovery:
-    description: "休养恢复健康，新鲜空气和休息能轻微减缓辐射损伤"
+    description: "Rest restores health; fresh air and rest can slightly slow radiation damage"
     condition: rest_time > 0
     priority: 9
     dynamics:
       health: "min(100, health + rest_time * 10.0)"
       radiation: "max(0, radiation - rest_time * 1.5)"
 
-  # 授课带来稳定收入，消耗健康
+  # Teaching brings stable income, depletes health
   teaching_income:
-    description: "教学维持经费，但占用时间和精力，轻度损耗健康"
+    description: "Teaching sustains funding, but takes time and energy, mildly depleting health"
     condition: teaching_load > 0
     priority: 8
     dynamics:
       money: "min(100, money + teaching_load * 8.0)"
       health: "max(0, health - teaching_load * 2.0)"
 
-  # 申请经费（高收益，低概率成功）
+  # Applying for funding (high payoff, low success probability)
   fundraise_income:
-    description: "游说科学委员会申请经费；时间消耗大，成功带来较大资助"
+    description: "Lobbying the science committee for funding; consumes much time, and success brings a substantial grant"
     condition: fundraise_effort > 0
     priority: 7
     dynamics:
       money: "min(100, money + fundraise_effort * 20.0)"
       health: "max(0, health - fundraise_effort * 3.0)"
 
-  # 辐射持续损害健康（慢性，不可逆）
+  # Radiation continually damages health (chronic, irreversible)
   radiation_damage:
-    description: "长期辐射暴露对健康的慢性侵蚀"
+    description: "Long-term radiation exposure's chronic erosion of health"
     condition: radiation > 0
     priority: 6
     dynamics:
       health: "max(0, health - radiation * 0.04)"
 
-  # 辐射超阈值：急性症状
+  # Radiation exceeding threshold: acute symptoms
   acute_radiation:
-    description: "辐射积累超过60分后出现急性症状，健康加速恶化"
+    description: "Once accumulated radiation exceeds 60, acute symptoms appear and health deteriorates faster"
     condition: radiation >= 60
     priority: 11
     dynamics:
       health: "max(0, health - (radiation - 60) * 0.08)"
 
-  # 经费不足无法维持实验室
+  # Insufficient funding halts the laboratory
   funding_crisis:
-    description: "经费严重不足时实验室无法运转，研究进度停滞"
+    description: "When funding is severely short, the laboratory cannot operate and research progress stalls"
     condition: money < 10
     priority: 5
     dynamics:
       research_progress: "max(0, research_progress - 3.0)"
       health: "max(0, health - 2.0)"
 
-  # 学术歧视：常态压力（每回合）
+  # Academic discrimination: a constant pressure (every step)
   discrimination_pressure:
-    description: "作为女性科学家承受的持续性学术偏见压力"
+    description: "The sustained academic-prejudice pressure borne as a female scientist"
     condition: true
     priority: 4
     dynamics:
@@ -189,10 +201,10 @@ optimization:
   constraints:
     - variable: health
       condition: ">= 30"
-      description: "健康不能低于30（历史约束：居里夫人坚持工作至生命最后阶段）"
+      description: "Health should not fall below 30 (a historical constraint: Marie Curie kept working until the final stage of her life)"
     - variable: money
       condition: ">= 5"
-      description: "最低经费维持实验室基本运转"
+      description: "A minimum funding level needed to keep the laboratory running at all"
 
   startpoint:
     regimens:
@@ -200,27 +212,27 @@ optimization:
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "实验室研究强度"
+        label: "Laboratory-research intensity"
         optimize:
           value: [0.0, 1.0]
       - variable: rest_time
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "休养时间比例"
+        label: "The proportion of time spent resting"
         optimize:
           value: [0.0, 0.5]
       - variable: teaching_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "授课负荷"
+        label: "Teaching load"
         optimize:
           value: [0.0, 0.7]
       - variable: fundraise_effort
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "经费申请投入"
+        label: "Effort spent applying for funding"
         optimize:
           value: [0.0, 0.5]

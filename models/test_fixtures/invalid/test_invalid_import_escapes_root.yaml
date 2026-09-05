@@ -8,20 +8,11 @@ metadata:
       `models/test_fixtures/invalid/` — one level further than `models/` itself —
       which `Loader._load_model_data` (loader.py) must reject as escaping
       the models root, regardless of whether a file happens to exist there.
-    problem_cn: >
-      错误检测夹具（故意设计成非法）。相对导入路径 `../../../outside_models_root`
-      从 `models/test_fixtures/invalid/` 向上跳了三级——比 `models/` 本身还多跳一级——
-      `Loader._load_model_data`（loader.py）必须将其判定为逃出了 models 根目录并拒绝，
-      不论该路径下是否碰巧存在文件。
     result: >
-      Loading this model must raise ValueError containing "超出 models 目录".
+      Loading this model must raise ValueError containing "escapes the models directory".
       See test_verification/errors/test_import_errors.py.
-    result_cn: >
-      加载该模型时必须抛出 ValueError，错误信息须包含 "超出 models 目录"。
-      参见 test_verification/errors/test_import_errors.py。
     limitations: Not a real model; exists only to exercise the import-path
       root-boundary check.
-    limitations_cn: 并非真实模型；仅用于验证导入路径的根目录边界检查。
   tags: [test, error-detection, import, path-escape]
 
 imports:

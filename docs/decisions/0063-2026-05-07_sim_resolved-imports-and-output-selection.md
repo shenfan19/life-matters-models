@@ -1,53 +1,53 @@
-# ADR 0063 — Resolved imports 与仿真输出选择规则
+# ADR 0063 - Resolved Imports and the Simulation Output-Selection Rule
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-05-07
 
-## 背景
+## Background
 
-Paper3 这类模型会通过 `imports` 复用 Paper2 的变量、方程和仿真配置。但 GUI 过去主要展示当前 YAML 的原始内容，导致导入变量没有出现在模型页和报告页；仿真端也只读取简单的 `output_variables`，当变量名不存在时会输出零值曲线，容易把“配置错误”误看成“变量真实为 0”。
+A model like Paper3 reuses Paper2's variables, equations, and simulation configuration through `imports`. But the GUI used to display mainly the current YAML's raw content, so imported variables did not show up on the model page or the report page; the simulation side also only read the plain `output_variables`, and when a variable name did not exist it generated a zero-value curve, making a configuration error easy to mistake for the variable genuinely being 0.
 
-同时，旧 loader 曾支持裸名字递归检索 import。这个机制不透明，遇到同名模型时不稳定，不适合继续保留。
+At the same time, the old loader supported recursively looking up an import by a bare name. This mechanism was opaque and became unstable whenever two models shared the same name, and was not worth keeping.
 
-## 决策
+## Decision
 
-1. `imports` 只支持显式路径：
-   - `published/paper2/foo` 表示从 `models/` 根目录出发。
-   - `models/published/paper2/foo` 作为兼容写法保留。
-   - `./foo`、`../foo` 表示相对当前 YAML 文件。
-   - 裸名字递归检索删除。
+1. `imports` only supports explicit paths:
+   - `published/paper2/foo` means starting from the `models/` root.
+   - `models/published/paper2/foo` is kept as a compatible form.
+   - `./foo`, `../foo` are relative to the current YAML file.
+   - Bare-name recursive lookup is removed.
 
-2. Loader 在合并 imports 后记录 provenance：
-   - `provenance.variables[var]` 标出变量来源 YAML。
-   - `provenance.formulas[formula]` 标出方程来源 YAML。
-   - GUI 的模型页使用 resolved model 展示变量、方程、输出变量，并显示来源。
-   - 报告页使用 resolved model 的内容和仿真结果，但不显示 import/source provenance，避免报告被内部组装细节污染。
+2. After merging imports, the loader records provenance:
+   - `provenance.variables[var]` marks a variable's source YAML.
+   - `provenance.formulas[formula]` marks an equation's source YAML.
+   - The GUI's model page uses the resolved model to display variables, equations, and output variables, and shows their source.
+   - The report page uses the resolved model's content and simulation results, but does not show import/source provenance, to keep the report free of internal assembly detail.
 
-3. 输出选择由后端统一解释：
-   - 本模型未定义 `simulation.output_variables` 和 `simulation.output_types` 时，继承 imports 的输出选择并集。
-   - 本模型显式定义任一输出字段时，本模型定义优先，不再混入 imports 的输出字段。
-   - `output_variables` 与 `output_types` 同时存在时取并集。
-   - 两者都不存在或为空时，输出所有变量。
-   - `output_types` 只接受 `input`、`parameter`、`state`。
-   - 不存在的 `output_variables` 跳过并 warning，不生成零值曲线。
+3. Output selection is interpreted uniformly by the backend:
+   - When the current model defines neither `simulation.output_variables` nor `simulation.output_types`, it inherits the union of the imports' output selections.
+   - When the current model explicitly defines either output field, the current model's definition takes priority and the imports' output fields are no longer mixed in.
+   - When both `output_variables` and `output_types` are present, their union is taken.
+   - When neither exists, or both are empty, all variables are output.
+   - `output_types` only accepts `input`, `parameter`, and `state`.
+   - An `output_variables` entry that does not exist is skipped with a warning, and no zero-value curve is generated for it.
 
-## 影响
+## Impact
 
-- Builder 直接复制内容进模型时，不需要写 `imports`，行为仍然完整。
-- Published 模型需要复用前序论文模型时，可以保留强定位路径 import。
-- GUI 看到的模型内容与 sim 实际运行内容一致。
-- 来源追踪集中在模型页，报告页保持为面向结果的干净输出。
-- 错误输出变量会暴露为 warning，避免静默产生误导性零值曲线。
+- When the Builder copies content directly into a model, no `imports` is needed, and behavior is still complete.
+- A Published model that needs to reuse an earlier paper's model can keep a strongly located import path.
+- What the GUI shows for a model matches what the sim actually runs.
+- Source tracing is concentrated on the model page, and the report page stays a clean, result-facing output.
+- A bad output variable surfaces as a warning, avoiding a silently generated, misleading zero-value curve.
 
-## 后续
+## Follow-On
 
-如后续需要更完整的 provenance，可把来源信息扩展到 `simulation`、`optimization` 的每个子字段，并在 GUI 中增加专门的 import/source summary。
+If more complete provenance is needed later, source information can be extended to every sub-field of `simulation` and `optimization`, with a dedicated import/source summary added to the GUI.
 
-## 修订（2026-06-16，ADR 0107）
+## Revision (2026-06-16, ADR 0107)
 
-决策 3 中"继承 imports 输出选择并集"规则已修订：`output_variables` 和 `output_types` 改为与其他字段统一行为——遵循 deep merge（后 import 覆盖前），根模型覆盖 imports。不再特殊收集并集。详见 [ADR 0107](0107-2026-06-16_model_output-variables-import-overwrite.md)。
+Decision 3's "inherit the union of the imports' output selection" rule has been revised: `output_variables` and `output_types` now follow the same behavior as other fields, a deep merge (a later import overrides an earlier one), with the root model overriding the imports. A union is no longer specially collected. See [ADR 0107](0107-2026-06-16_model_output-variables-import-overwrite.md) for detail.

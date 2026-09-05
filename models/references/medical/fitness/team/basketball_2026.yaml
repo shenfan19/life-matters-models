@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: basketball
   lm_format_version: "1.0"
   updated: 2026-04-23
@@ -12,18 +12,30 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      篮球是典型的间歇性高强度团队运动，48 分钟比赛中冲刺、跳跃等爆发动作与中低强度跑动交替出现。核心生理特征是乳酸的波动积累：每次冲刺和变向触发无氧代谢，乳酸在 2-8 mmol/L 区间波动，间歇期有氧代谢可部分清除但不能完全恢复。随着疲劳积累，敏捷性和投篮命中率系统性下降，形成比赛强度与运动表现维持之间的权衡。
+      Basketball is a classic intermittent, high-intensity team sport, with explosive actions such
+      as sprints and jumps alternating with low-to-moderate-intensity running across a 48-minute
+      game. Its core physiological feature is fluctuating lactate accumulation: every sprint and
+      change of direction triggers anaerobic metabolism, with lactate fluctuating in the
+      2-8 mmol/L range; aerobic metabolism during a lull can partially clear it but cannot fully
+      recover. As fatigue accumulates, agility and shooting accuracy decline systematically,
+      forming a tradeoff between game intensity and sustained performance.
     result: >
-      仿真尚未运行。理论预期：RPE=6、冲刺频率 3 次/分钟的 48 分钟比赛中，疲劳在 35-45 分钟后超过 60 分，敏捷性从 90 分降至约 70-75 分，投篮命中率从 45% 降至约 35-40%；整场热量消耗约 650-800 kcal。
+      Not yet run. Theoretical expectation: in a 48-minute game at RPE=6 with a sprint frequency of
+      3 per minute, fatigue exceeds 60 points after 35-45 minutes, agility falls from 90 to about
+      70-75, and shooting accuracy falls from 45% to about 35-40%; the game burns roughly
+      650-800 kcal overall.
     limitations: >
-      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分控卫、前锋、中锋等位置的代谢负荷差异；未建模暂停和犯规停钟期间的恢复动力学。
+      This file is marked noref, and its model parameters lack a formal literature source, with the
+      mechanism a qualitative approximation not suited to high-precision quantitative prediction.
+      Metabolic-load differences between positions such as point guard, forward, and center are not
+      distinguished; recovery dynamics during a timeout or a foul-clock stoppage are not modeled.
   ratings:
-    importance: 0.25 - 篮球是全球主流运动，间歇高强度特征有研究价值；noref，复用价值极低
-    variable: 0.25 - noref标记，参数无文献来源，机制为定性描述
-    equation: 0.25 - 方程结构存在但为定性描述，无文献依据，未见独立复现
-    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
-    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
-    confidence: 0.0 - 参数无文献来源，未跑通独立验证
+    importance: 0.25 - Basketball is a globally mainstream sport, and its intermittent high-intensity character has research value; noref, so reuse value is very low
+    variable: 0.25 - Marked noref, with parameters having no literature source and the mechanism a qualitative description
+    equation: 0.25 - An equation structure exists but is a qualitative description with no literature basis and no independent reproduction seen
+    simulation: 0.25 - No blocking todo found, but not confirmed to actually run, and not compared against an independent literature target value
+    optimization: 0.25 - A decision-variable search structure exists, but lacks literature-backed tradeoff evidence
+    confidence: 0.0 - Parameters have no literature source, and no independent validation has been run
   tags: [sport, basketball, interval, explosive]
 
 variables:
@@ -32,95 +44,95 @@ variables:
     value: 6.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "当前比赛强度（攻防节奏；timeout=0，全场紧逼=9）"
+    description: "The current game intensity (offense/defense pace; timeout=0, full-court press=9)"
   sprint_frequency:
     type: input
     value: 3.0
-    unit: "次/分"
+    unit: "per minute"
     bounds: [0.0, 8.0]
-    description: "冲刺/变向频率（快攻/防守反击时增加）"
+    description: "Sprint/direction-change frequency (rises on a fast break or a defensive scramble)"
   heart_rate:
     type: state
     value: 75.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "心率（篮球平均165-180bpm）"
+    description: "Heart rate (basketball averages 165-180bpm)"
   calories_burned:
     type: state
     value: 0.0
     unit: "kcal"
     bounds: [0.0, 1200.0]
-    description: "累计热量消耗（约600-900kcal/场）"
+    description: "Cumulative calories burned (about 600-900kcal per game)"
   fatigue:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "综合疲劳（>60影响投篮精度和防守覆盖范围）"
+    description: "Overall fatigue (above 60 affects shooting precision and defensive coverage range)"
   lactate:
     type: state
     value: 1.5
     unit: "mmol/L"
     bounds: [0.5, 18.0]
-    description: "血乳酸（间歇性运动区间内波动2-8mmol/L）"
+    description: "Blood lactate (fluctuates 2-8mmol/L within intermittent-exercise range)"
   agility:
     type: state
     value: 90.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "敏捷性（疲劳下急停变向能力下降）"
+    description: "Agility (a fatigued player's stop-and-cut ability declines)"
   shot_accuracy:
     type: state
     value: 45.0
     unit: "%"
     bounds: [0.0, 100.0]
-    description: "投篮命中率（疲劳和乳酸影响上肢控制精度）"
+    description: "Shooting accuracy (fatigue and lactate affect upper-limb control precision)"
   performance:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "综合场上表现"
+    description: "Overall on-court performance"
 
 equations:
   heart_rate_response:
-    description: "间歇性运动心率（冲刺时飙高，间歇时部分回落）"
+    description: "Heart rate during intermittent exercise (spikes on a sprint, partly falls back during a lull)"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(200, 80 + game_intensity * 10 + sprint_frequency * 5)"
   calorie_burn:
-    description: "热量消耗（约10-15kcal/min，强度调整）"
+    description: "Calories burned (about 10-15kcal/min, adjusted by intensity)"
     condition: "game_intensity > 0"
     priority: 8
     dynamics:
       calories_burned: "calories_burned + 7.0 + game_intensity * 0.8 + sprint_frequency * 0.5"
   fatigue_accumulate:
-    description: "疲劳由强度和冲刺共同驱动"
+    description: "Fatigue is driven jointly by intensity and sprinting"
     condition: "game_intensity > 0"
     priority: 8
     dynamics:
       fatigue: "min(100, fatigue + game_intensity * 0.09 + sprint_frequency * 0.05)"
   lactate_interval:
-    description: "乳酸在冲刺时积累，低强度期缓慢清除"
+    description: "Lactate accumulates on a sprint and clears slowly during a low-intensity period"
     condition: true
     priority: 8
     dynamics:
       lactate: "max(0.5, min(18, lactate + sprint_frequency * 0.3 - (1 - game_intensity / 10) * 0.1))"
   agility_decay:
-    description: "敏捷性随疲劳下降"
+    description: "Agility declines with fatigue"
     condition: true
     priority: 7
     dynamics:
       agility: "max(0, 90 - fatigue * 0.5 - max(0, lactate - 5) * 2)"
   shot_accuracy_decay:
-    description: "投篮命中率受疲劳和乳酸影响（手臂控制能力下降）"
+    description: "Shooting accuracy is affected by fatigue and lactate (declining arm-control ability)"
     condition: true
     priority: 7
     dynamics:
       shot_accuracy: "max(0, 45 - fatigue * 0.25 - max(0, lactate - 6) * 2)"
   performance_update:
-    description: "综合表现"
+    description: "Overall performance"
     condition: true
     priority: 6
     dynamics:
@@ -147,25 +159,25 @@ optimization:
     - variable: fatigue
       condition: "<= 9.0"
       type: soft
-      description: "疲劳感不超过9"
+      description: "Perceived fatigue should not exceed 9"
     - variable: lactate
       condition: "<= 12.0"
       type: hard
-      description: "血乳酸不超过12 mmol/L"
+      description: "Blood lactate should not exceed 12 mmol/L"
   startpoint:
     regimens:
       - variable: game_intensity
         time_start: "19:00"
         time_end: "19:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "比赛强度（RPE 0-10）"
+        label: "Game intensity (RPE 0-10)"
         optimize:
           value: [0.0, 10.0]
       - variable: sprint_frequency
         time_start: "19:00"
         time_end: "19:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "冲刺频率（次/分）"
+        label: "Sprint frequency (per minute)"
         optimize:
           value: [0.0, 8.0]
   algorithm:

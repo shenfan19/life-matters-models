@@ -7,19 +7,11 @@ metadata:
       (heart_rate, cardiac_output, systemic_resistance) and dynamics intended only for
       import by other test models. Tests the base layer of the import chain and diamond
       deduplication — both test_valid_import_layer and test_valid_import_top import this file.
-    problem_cn: >
-      纯组件模型（无 input 变量）：提供心血管相关状态变量（heart_rate、cardiac_output、
-      systemic_resistance）及动力学，仅供其他测试模型导入使用。测试 import 链的基础层
-      以及菱形依赖去重——test_valid_import_layer 和 test_valid_import_top 均导入本文件。
     result: >
       The Loader should include this file's variables and equations exactly once in any
       composite model, regardless of how many importers reference it. No standalone
       simulation or optimisation is expected.
-    result_cn: >
-      无论有多少个导入方引用本文件，Loader 在任何组合模型中都应恰好包含一次本文件的
-      变量与方程。不需要独立运行仿真或优化。
     limitations: Purely structural; parameters are not clinically calibrated.
-    limitations_cn: 纯结构性测试；参数未经过临床校准。
   tags: [test, import, base, component, no-input]
 variables:
   heart_rate:

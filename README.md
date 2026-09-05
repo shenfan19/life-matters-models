@@ -1,103 +1,103 @@
 <img src="icon.svg" width="48" height="48" alt="Life Matters icon" />
 
-# Life Matters · 模型库
+# Life Matters · Model Library
 
-Life Matters 这个名字兼取四层含义：
+The name Life Matters carries four layers of meaning at once:
 
-- Life matters，生命本身很重要，生命里的事情因此也重要，值得认真对待
-- life's matters，生命与生活里的种种决策，是这个项目要建模和优化的对象
-- life-matter，参照 dark matter、condensed matter 的命名方式，指现代生命科学对生命物质本身的研究成果，是建模的依据
-- make life matter，用这些研究帮助人们的生活过得更有意义
+- Life matters — life itself matters, and so do the things within it; they deserve to be taken seriously
+- life's matters — the various decisions within life and living are what this project models and optimizes
+- life-matter — following the naming pattern of dark matter and condensed matter, referring to modern life science's research findings about life's substance itself, the basis for the modeling
+- make life matter — using this research to help people live a more meaningful life
 
-LM 基于现代生命科学的研究成果做系统科学建模，对生命与生活中的决策进行多目标优化，当优化不存在唯一最优解时，以 Pareto 前沿呈现结果，把所有较优的可能组合完整交给使用者评估和参考。
+LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference.
 
-> Life Matters（LM）项目的模型内容库，是整个项目的根基：LM format 格式规范与基于公开文献的模型内容都发布于此。  
-> 仿真与优化引擎见 → **[life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)**（LM Reference Engine，LM format 的参考实现）
-
----
-
-## 免责声明
-
-本项目中的历史与医学场景基于公开学术文献，仅用于健康决策教育目的。所有模拟内容不代表对历史人物的道德评判；历史数据经简化处理，不构成医学建议；仿真结果为模型推演，非历史事实重现。
+> The content library of models for the Life Matters (LM) project, the foundation of the whole project: the LM format specification and models based on published literature are both published here.  
+> For the simulation and optimization engine, see → **[life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)** (the LM Reference Engine, a reference implementation of the LM format)
 
 ---
 
-## 这是什么
+## Disclaimer
 
-本仓库是 Life Matters 项目的根基仓库，收录 LM format 格式规范本身，以及基于公开文献的生理、营养、疾病和社会动力学模型。  
-每个模型是一个 YAML 文件，按 LM format 格式编写，可由 LM Reference Engine 直接运行和优化。
-
-LM format 是一种开放的 YAML 格式标准，类似 SBML / CellML，但专注于：
-- **个体尺度**的健康与行为动力学（分钟～年）
-- **行为干预调度**（饮食、运动、用药时序）
-- **多目标 Pareto 优化**（搜索最优干预方案）
-
-核心能力：
-
-1. 把医学/社会学文献里的统计结论（OR、HR、Cohen's d 等）转化为可运行的 YAML 动力学模型
-2. 在统一框架内同时运行异尺度模型（分钟–小时–天–年）
-3. 对行为干预方案（Regimen）做多目标 Pareto 优化
-4. 把多篇文献的参数装进同一框架，检验它们是否互相自洽（Simulation-as-Validation）
-
-一个 LM file 由四个顶层机制组成，合起来读作 V.E.S.O.：`variables`（可迁移的数值证据）、`equations`（把证据接成随时间演化的动力学）、`simulation`（跑出轨迹）、`optimizer`（在决策空间里搜索权衡）。四问判断一个候选话题是否落在这个范围内，详见 [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md) Scope 一节的 Inclusion Test。
-
-本仓库的模型不是逐篇复现单一研究结论，而是把多篇独立文献各自验证过的机制放进同一个模型，让原本互不知晓彼此存在的机制产生真实的相互作用，显现出单篇论文各自的建模范围内看不到的权衡。判断一个模型该纳入哪些机制、又该剔除哪些机制的方法论详见 [`docs/authoring/methodology.md`](docs/authoring/methodology.md) 开篇的"LM 的核心方法论：耦合，不是堆叠"一节。
+The historical and medical scenarios in this project are based on published academic literature and are intended solely for health-decision education. None of the simulated content represents a moral judgment of any historical figure; historical data has been simplified and does not constitute medical advice; simulation results are model projections, not a reconstruction of historical fact.
 
 ---
 
-## 内容可信度声明
+## What this is
 
-本仓库的定位接近一个面向 AI 时代的、可计算的科学参考库：模型内容由 AI 大量参与生成，这是这个时代无法回避的现实，让这类内容变得可核对、可纠错，是这个仓库存在的意义之一。为此明确两条边界：
+This repository is the foundation repository of the Life Matters project, holding the LM format specification itself along with physiological, nutritional, disease, and social-dynamics models based on published literature.  
+Each model is a YAML file written in the LM format, directly runnable and optimizable by the LM Reference Engine.
 
-- **作者本人负责**：LM format 格式规范，即 [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md)；配套仿真与优化引擎，见 [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)；以及少数已标注为"强验证"的核心示范模型，判定标准为 `confidence` 不低于 0.75，完整名单见 [`docs/authoring/methodology.md`](docs/authoring/methodology.md) 的纳入标准盘点表与 [`models/test_validation/validation_report.md`](models/test_validation/validation_report.md)。
-- **模型库其余内容**：大部分模型文件由 AI 辅助生成与初步复核，**尚未经过相关领域专家核实**，仅供方法论演示与测试参考，不构成临床或科学结论。每个模型 `metadata.ratings.confidence` 字段标注当前验证程度，0-1 连续量表，定义见 [`docs/authoring/ratings.md`](docs/authoring/ratings.md)；纳入标准盘点表和验证报告如实记录了哪些学科、哪些模型已验证，哪些仍待评估，请据此判断可信度，不要默认已发布的模型就是已核实的。
+LM format is an open YAML format standard, similar to SBML / CellML, but focused on:
+- **Individual-scale** health and behavioral dynamics (minutes to years)
+- **Behavioral-intervention scheduling** (diet, exercise, medication timing)
+- **Multi-objective Pareto optimization** (searching for an optimal intervention plan)
 
-如果你是相关领域的专家，发现某个模型的参数、机制或结论有误，欢迎提交 issue 或 PR 指出——这正是模型以开放、可核对的 YAML 格式发布而非锁在私有工具里的原因。
+Core capabilities:
+
+1. Converting statistical conclusions from medical/social-science literature (OR, HR, Cohen's d, etc.) into a runnable YAML dynamics model
+2. Running models at different scales (minute-hour-day-year) simultaneously within a unified framework
+3. Multi-objective Pareto optimization of a behavioral-intervention plan (Regimen)
+4. Putting parameters from multiple publications into the same framework, testing whether they are mutually self-consistent (Simulation-as-Validation)
+
+An LM file is made of four top-level mechanisms, read together as V.E.S.O.: `variables` (transferable numerical evidence), `equations` (wiring the evidence into dynamics that evolve over time), `simulation` (running out a trajectory), and `optimizer` (searching the decision space for tradeoffs). Four questions decide whether a candidate topic falls within this scope; see the Inclusion Test in the Scope section of [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md).
+
+The models in this repository do not reproduce a single study's conclusion paper by paper; instead, they place mechanisms each independently validated by separate publications into the same model, letting mechanisms that would otherwise never have known of each other genuinely interact, revealing tradeoffs invisible within any single paper's own modeling scope. The methodology for deciding which mechanisms a model should include, and which it should exclude, is detailed in the opening section "LM's core methodology: coupling, not stacking" of [`docs/authoring/methodology.md`](docs/authoring/methodology.md).
 
 ---
 
-## 仓库结构
+## Content Reliability Statement
+
+This repository's positioning is close to a computable scientific reference library for the AI era: the model content is generated with substantial AI participation, an unavoidable reality of this era, and making this kind of content checkable and correctable is part of the reason this repository exists. Two boundaries are stated explicitly for this purpose:
+
+- **The author's own responsibility**: the LM format specification, [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md); the accompanying simulation and optimization engine, see [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine); and a small number of core exemplar models already marked "Strong validation," with the criterion `confidence` no lower than 0.75; the complete list is in the inclusion-criteria table in [`docs/authoring/methodology.md`](docs/authoring/methodology.md) and in [`models/test_validation/validation_report.md`](models/test_validation/validation_report.md).
+- **The rest of the model library**: most model files are generated and given a first-pass review with AI assistance, and **have not yet been checked by a domain expert**; they are for methodology demonstration and testing reference only, and do not constitute a clinical or scientific conclusion. Each model's `metadata.ratings.confidence` field marks its current level of verification, a continuous 0-1 scale, defined in [`docs/authoring/ratings.md`](docs/authoring/ratings.md); the inclusion-criteria table and the validation report honestly record which disciplines and models have been validated and which are still pending assessment — judge credibility from these, and do not assume a published model has already been verified.
+
+If you are an expert in a relevant field and find a parameter, mechanism, or conclusion wrong in some model, please submit an issue or PR pointing it out — this is exactly why the models are published in an open, checkable YAML format rather than locked inside a private tool.
+
+---
+
+## Repository structure
 
 ```
 models/
-  references/     基于文献的参考组件模型
-    medical/        生理、营养、疾病、药理
-    social/         经济、冲突、心理、人口
-    environmental/  环境科学
-    risk/           精算与风险
-  papers/         与论文绑定的完整场景（含优化结果）
-  scenarios/      组合场景（开发中）
-  test_fixtures/  仿真器功能测试用例
-  test_validation/ 模型验证报告与结果
-  temp/           未验证草稿（gitignore）
-output/           批量测试输出（gitignore）
+  references/     Literature-based reference component models
+    medical/        Physiology, nutrition, disease, pharmacology
+    social/         Economics, conflict, psychology, demography
+    environmental/  Environmental science
+    risk/           Actuarial science and risk
+  papers/         Complete scenarios tied to a paper (including optimization results)
+  scenarios/      Composed scenarios (under development)
+  test_fixtures/  Simulator functionality test cases
+  test_validation/ Model validation reports and results
+  temp/           Unvalidated drafts (gitignored)
+output/           Batch-test output (gitignored)
 docs/
-  LM_format_1.0.md   格式规范全文
-  authoring/    建模实践指南，索引见 authoring/README.md（方法论、写作规范、评分、regimens/optimizer 等）
-  quickstart.md 30 分钟写出第一个模型
-  decisions/    YAML 格式和模型库结构的架构决策记录（ADR）
+  LM_format_1.0.md   The complete format specification
+  authoring/    A modeling-practice guide, indexed at authoring/README.md (methodology, writing conventions, ratings, regimens/optimizer, etc.)
+  quickstart.md Write your first model in 30 minutes
+  decisions/    Architecture decision records (ADRs) for the YAML format and model-library structure
 ```
 
-每个模型目录的具体内容、验证状态和贡献规范见各自的 README：[`models/references/README.md`](models/references/README.md)、[`models/papers/README.md`](models/papers/README.md)、[`models/scenarios/README.md`](models/scenarios/README.md)。
+The specific content, validation status, and contribution conventions for each model directory are in its own README: [`models/references/README.md`](models/references/README.md), [`models/papers/README.md`](models/papers/README.md), [`models/scenarios/README.md`](models/scenarios/README.md).
 
 ---
 
-## 状态标记
+## Status markers
 
-模型是否"可发布"只看 `metadata.todo` 字段，与文件名无关：
+Whether a model is "publishable" depends only on the `metadata.todo` field, independent of the filename:
 
-- **无 `metadata.todo`（或为空）= 已确认通过、可发布**：sim ✓、opt ✓（或无 `optimizer` 块）、所有参数有文献来源。
-- **有 `metadata.todo`** = 存在待处理事项，详情见 [docs/authoring/bookkeeping.md](docs/authoring/bookkeeping.md)「状态标记」一节（`type: nosim/noopt/noref/quality/other` + 诊断证据）。
+- **No `metadata.todo` (or empty) = confirmed passing, publishable**: sim OK, opt OK (or no `optimizer` block), all parameters have a literature source.
+- **A `metadata.todo` present** = there is a pending item; for details see the "Status markers" section of [docs/authoring/bookkeeping.md](docs/authoring/bookkeeping.md) (`type: nosim/noopt/noref/quality/other` plus diagnostic evidence).
 
 ---
 
-## 快速开始
+## Quick start
 
-**阅读格式规范**：[docs/quickstart.md](docs/quickstart.md) → [docs/LM_format_1.0.md](docs/LM_format_1.0.md) → [docs/authoring/README.md](docs/authoring/README.md)
+**Read the format specification**: [docs/quickstart.md](docs/quickstart.md) → [docs/LM_format_1.0.md](docs/LM_format_1.0.md) → [docs/authoring/README.md](docs/authoring/README.md)
 
-**运行模型**：需要配套的 LM Reference Engine，见 [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)
+**Run a model**: requires the accompanying LM Reference Engine, see [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)
 
-**批量测试**（在 life-matters-reference-engine 仓库下执行，详见 [cli.md](https://github.com/shenfan19/life-matters-reference-engine/blob/main/docs/cli.md)）：
+**Batch testing** (run from within the life-matters-reference-engine repository, see [cli.md](https://github.com/shenfan19/life-matters-reference-engine/blob/main/docs/cli.md) for detail):
 
 ```bash
 python cli/batch.py --input-dir models/references
@@ -105,21 +105,21 @@ python cli/batch.py --input-dir models/references
 
 ---
 
-## 文档索引
+## Documentation index
 
-| 文档 | 内容 |
+| Document | Content |
 |------|------|
-| [docs/LM_format_1.0.md](docs/LM_format_1.0.md) | LM format 格式规范全文（学术版） |
-| [docs/authoring/README.md](docs/authoring/README.md) | 建模实践指南索引（写作规范、评分、regimens/optimizer 等） |
-| [docs/quickstart.md](docs/quickstart.md) | 入门指南：30 分钟写出第一个模型 |
-| [docs/authoring/ratings.md](docs/authoring/ratings.md) | 模型质量评分体系（metadata.ratings 字段说明） |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | 格式与库结构架构决策索引 |
+| [docs/LM_format_1.0.md](docs/LM_format_1.0.md) | The complete LM format specification (the academic edition) |
+| [docs/authoring/README.md](docs/authoring/README.md) | An index of the modeling-practice guide (writing conventions, ratings, regimens/optimizer, etc.) |
+| [docs/quickstart.md](docs/quickstart.md) | A getting-started guide: write your first model in 30 minutes |
+| [docs/authoring/ratings.md](docs/authoring/ratings.md) | The model-quality rating system (the metadata.ratings field explained) |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | An index of architecture decisions for the format and library structure |
 
 ---
 
-## 贡献
+## Contributing
 
-见 [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 

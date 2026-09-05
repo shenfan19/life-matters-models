@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: diabetes
   lm_format_version: "1.0"
   updated: 2026-04-23
@@ -12,45 +12,60 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      2型糖尿病的核心病理是胰岛素分泌不足与胰岛素敏感性下降的双重缺陷，导致餐后血糖长期偏高。血糖控制目标与饮食摄入之间存在直接张力：减少碳水化合物摄入可降低血糖峰值，但过度限制影响能量供应；运动可提升胰岛素敏感性并即时消耗葡萄糖，但与饮食、药物的时序配合至关重要。本模型将血糖调节、胰岛素响应、并发症累积与系统炎症整合在单文件中，描述各机制之间的耦合动态。
+      Type 2 diabetes' core pathology is a dual deficit of insufficient insulin secretion and
+      declining insulin sensitivity, causing chronically elevated postprandial blood glucose. There
+      is a direct tension between the blood-glucose control target and dietary intake: reducing
+      carbohydrate intake lowers the glucose peak, but overly restricting it affects energy supply;
+      exercise raises insulin sensitivity and immediately consumes glucose, but its timing relative to
+      diet and medication is critical. This model integrates glucose regulation, insulin response,
+      complication accumulation, and systemic inflammation in a single file, describing the coupled
+      dynamics among these mechanisms.
     result: >
-      默认90天仿真，采用三餐碳水配合隔日有氧运动的方案，显示：在早50g、午70g、晚60g碳水的标准饮食方案下，平均血糖维持在约108 mg/dL，并发症累积评分保持在较低水平。优化结果表明，降低餐食碳水摄入可同时减少平均血糖和并发症评分，但需权衡热量摄入的充足性。
+      A default 90-day simulation, using a three-meal carbohydrate schedule paired with alternate-day
+      aerobic exercise, shows: under a standard dietary plan of 50g carbohydrate at breakfast, 70g at
+      lunch, and 60g at dinner, mean blood glucose is maintained at about 108 mg/dL, with the
+      complication-accumulation score staying at a low level. The optimization result shows that
+      lowering meal carbohydrate intake reduces mean blood glucose and the complication score
+      simultaneously, but requires balancing against sufficient caloric intake.
     limitations: >
-      参数尚无正式文献来源，12个状态变量的机制系数均为估算值，需要校准。胰岛素动力学高度简化，未包含β细胞功能的不可逆性衰退、黎明现象等临床复杂因素。
+      The parameters have no formal literature source yet, and the mechanism coefficients for all 12
+      state variables are estimated values requiring calibration. The insulin dynamics are highly
+      simplified and do not include clinically complex factors such as the irreversible decline of
+      beta-cell function or the dawn phenomenon.
   ratings:
-    importance: 0.75 - 糖尿病是全球最重大代谢流行病，综合动力学模型复用价值极高；noref，有import记录但参数质量限制广泛复用
-    variable: 0.25 - noref标记，12个变量均无文献来源，参数需校准
-    equation: 0.25 - 参数缺乏文献来源，方程为定性近似，未见独立复现
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.75 - Diabetes is the world's most significant metabolic epidemic, and an integrated dynamics model has very high reuse value; noref, with an import record but parameter quality limits broader reuse
+    variable: 0.25 - noref marker, all 12 variables lack a literature source, parameters need calibration
+    equation: 0.25 - Parameters lack a literature source, the equation is a qualitative approximation with no independent reproduction
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [medical, physiological, core]
 
 variables:
   # R1: Glucose Regulation
-  blood_glucose: {description: "血糖浓度", value: 95, unit: "mg/dL", type: state, bounds: [30, 600]}
-  fasting_glucose: {description: "空腹血糖", value: 85, unit: "mg/dL", type: state, bounds: [50, 300]}
+  blood_glucose: {description: "Blood glucose concentration", value: 95, unit: "mg/dL", type: state, bounds: [30, 600]}
+  fasting_glucose: {description: "Fasting blood glucose", value: 85, unit: "mg/dL", type: state, bounds: [50, 300]}
   # R2: Insulin & Beta Cells
-  plasma_insulin: {description: "血浆胰岛素", value: 8, unit: "μU/mL", type: state, bounds: [1, 300]}
-  insulin_sensitivity: {description: "胰岛素敏感性", value: 0.75, unit: "指数", type: state, bounds: [0.1, 1.0]}
-  beta_cell_function: {description: "β细胞功能", value: 0.8, unit: "系数", type: state, bounds: [0, 1.0]}
+  plasma_insulin: {description: "Plasma insulin", value: 8, unit: "μU/mL", type: state, bounds: [1, 300]}
+  insulin_sensitivity: {description: "Insulin sensitivity", value: 0.75, unit: "index", type: state, bounds: [0.1, 1.0]}
+  beta_cell_function: {description: "Beta-cell function", value: 0.8, unit: "coefficient", type: state, bounds: [0, 1.0]}
   # R3: Complications (Indices)
-  complication_score: {description: "并发症综合指数", value: 0, unit: "分", type: state, bounds: [0, 100]}
-  kidney_function: {description: "肾功能", value: 1.0, unit: "系数", type: state, bounds: [0.1, 1.0]}
+  complication_score: {description: "The composite complication index", value: 0, unit: "score", type: state, bounds: [0, 100]}
+  kidney_function: {description: "Kidney function", value: 1.0, unit: "coefficient", type: state, bounds: [0.1, 1.0]}
 
   # R4: Systemic State
-  inflammation_level: {description: "炎症水平", value: 1.0, unit: "指数", type: state, bounds: [0.5, 5.0]}
-  health_score: {description: "总体健康评估", value: 100, unit: "分", type: state, bounds: [0, 100]}
+  inflammation_level: {description: "Inflammation level", value: 1.0, unit: "index", type: state, bounds: [0.5, 5.0]}
+  health_score: {description: "Overall health assessment", value: 100, unit: "score", type: state, bounds: [0, 100]}
   # P1: External Inputs (Card Inputs)
-  carb_intake: {description: "碳水摄入", value: 0, unit: "g", type: input}
-  insulin_injection: {description: "胰岛素注射", value: 0, unit: "U", type: input}
-  exercise_intensity: {description: "运动强度", value: 0, unit: "MET", type: input}
+  carb_intake: {description: "Carbohydrate intake", value: 0, unit: "g", type: input}
+  insulin_injection: {description: "Insulin injection", value: 0, unit: "U", type: input}
+  exercise_intensity: {description: "Exercise intensity", value: 0, unit: "MET", type: input}
 
 equations:
   # Dynamics Equations
   # F1: Glucose Update
   glucose_dynamics:
-    description: "血糖受摄入与代谢影响"
+    description: "Blood glucose is affected by intake and metabolism"
     step_unit: minute
     condition: true
     dynamics:
@@ -59,7 +74,7 @@ equations:
 
   # F2: Insulin Secretion
   insulin_secret_dynamics:
-    description: "胰岛素随血糖升高而分泌"
+    description: "Insulin secretion rises with blood glucose"
     step_unit: minute
     condition: blood_glucose > 100
     dynamics:
@@ -68,7 +83,7 @@ equations:
 
   # F3: Systemic Damage
   damage_dynamics:
-    description: "高血糖累积损伤"
+    description: "Cumulative damage from hyperglycemia"
     step_unit: minute
     condition: blood_glucose > 180
     dynamics:
@@ -78,7 +93,7 @@ equations:
 
   # F4: Health Calculation
   health_calc:
-    description: "综合健康指数"
+    description: "The composite health index"
     condition: true
     dynamics:
       health_score: "max(0, 100 - complication_score - abs(blood_glucose - 95) * 0.2 - (5 - inflammation_level * 10))"
@@ -100,25 +115,25 @@ simulation:
         value: 50.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-04-01"]
-        label: "早餐碳水（g）"
+        label: "Breakfast carbohydrate (g)"
       - variable: carb_intake
         time_start: "12:00"
         value: 70.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-04-01"]
-        label: "午餐碳水（g）"
+        label: "Lunch carbohydrate (g)"
       - variable: carb_intake
         time_start: "18:00"
         value: 60.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-04-01"]
-        label: "晚餐碳水（g）"
+        label: "Dinner carbohydrate (g)"
       - variable: exercise_intensity
         time_start: "07:00"
         value: 3.0
         days: [Mon, Wed, Fri]
         date_range: ["2026-01-01", "2026-04-01"]
-        label: "有氧运动（MET）"
+        label: "Aerobic exercise (MET)"
 
 optimization:
   method: nsga2
@@ -126,31 +141,31 @@ optimization:
     - variable: blood_glucose
       metric: mean
       direction: minimize
-      description: "最小化90天平均血糖（目标<140 mg/dL餐后2h）"
+      description: "Minimizing 90-day mean blood glucose (target <140 mg/dL at 2h postprandial)"
     - variable: complication_score
       metric: final
       direction: minimize
-      description: "最小化90天末并发症累积评分"
+      description: "Minimizing the complication-accumulation score at the end of 90 days"
   constraints:
     - variable: blood_glucose
       condition: ">= 70"
       type: hard
-      description: "低血糖安全约束：血糖≥70 mg/dL"
+      description: "A hypoglycemia safety constraint: blood glucose >=70 mg/dL"
   startpoint:
     regimens:
       - variable: carb_intake
         time_start: "08:00"
-        label: "早餐碳水（g）"
+        label: "Breakfast carbohydrate (g)"
         optimize:
           value: [20, 100]
       - variable: carb_intake
         time_start: "12:00"
-        label: "午餐碳水（g）"
+        label: "Lunch carbohydrate (g)"
         optimize:
           value: [30, 120]
       - variable: carb_intake
         time_start: "18:00"
-        label: "晚餐碳水（g）"
+        label: "Dinner carbohydrate (g)"
         optimize:
           value: [20, 100]
   algorithm:

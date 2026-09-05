@@ -1,40 +1,31 @@
-# models/test_fixtures/invalid — 错误检测测试用例
+# models/test_fixtures/invalid — Error-detection test cases
 
-## 定位
+## Purpose
 
-`test_fixtures/invalid/` 下每个文件都**故意写错**，专门用来验证引擎的错误检测机制：不只是能正确加载
-结构合法的模型（见 `test_fixtures/valid/`），还要能在遇到结构错误、循环 import、evidence 配置错误、
-非法日期等情况时**可靠地失败**，并把具体原因通过正常调用路径（`ReferenceEngine.load_models()` /
-`run_simulation()` 等，而不是只写日志）暴露给调用方。
+Every file under `test_fixtures/invalid/` is **deliberately broken**, specifically to verify the engine's error-detection mechanism: not only must it correctly load a structurally valid model (see `test_fixtures/valid/`), it must also **fail reliably** when it encounters a structural error, a circular import, a misconfigured evidence block, an invalid date, and the like, and expose the specific reason to the caller through a normal call path (`ReferenceEngine.load_models()` / `run_simulation()`, etc., not just a log line).
 
-**每个文件只故意写错一处**，其余部分保持结构合法——这样一个文件对应一个明确的校验分支，
-改动校验逻辑时，只需要看这一个文件的测试是否还按预期失败（与 `test_verification/models/README.md` 的
-"每个变量单独一个文件夹"原则同源）。
+**Each file deliberately breaks exactly one thing**, keeping everything else structurally valid, so each file corresponds to one clear validation branch; when validation logic changes, you only need to check whether this one file's test still fails as expected (the same principle as "one folder per variable" in `test_verification/models/README.md`).
 
-对应的 pytest 断言在 `test_verification/errors/`，每个文件在其 `metadata.description.result` 里注明了
-预期的错误信息片段和对应的测试文件。**这些模型永远不会、也不应该被修复成能跑通**——
-`--sim`/`--opt` 失败或 `cli/batch.py` 报 FAIL 是设计如此，不是回归。
+The corresponding pytest assertions are in `test_verification/errors/`, and each file notes in its `metadata.description.result` the expected error-message substring and the corresponding test file. **These models will never, and should never, be fixed to run successfully** — a `--sim`/`--opt` failure or a FAIL reported by `cli/batch.py` is by design, not a regression.
 
-## 文件清单
+## File list
 
-| 文件 | 触发的校验 | 校验位置 |
+| File | Validation triggered | Validation location |
 |------|-----------|---------|
-| `test_invalid_step_size.yaml` | `simulation.step_size` 必须为正数 | `validator.py` `Validator.validate_model` |
-| `test_invalid_optimization_missing_method.yaml` | `optimization.method` 必填 | `validator.py` `Validator.validate_model` |
-| `test_invalid_equation_undefined_var.yaml` | `dynamics` 引用未声明变量 | `validator.py` `validate_equations`（AST 提取变量） |
-| `test_invalid_equation_deprecated_dt.yaml` | `dynamics` 使用废弃符号 `dt`，应改用 `step` | `validator.py` `validate_equations` |
-| `test_invalid_import_circular_a.yaml` + `_b.yaml` | 循环 import 检测（a↔b 互相导入） | `loader.py` `Loader._load_model_data` |
-| `test_invalid_import_escapes_root.yaml` | 相对 import 越出 `models/` 根目录 | `loader.py` `Loader._load_model_data` |
-| `test_invalid_evidence_name_collision.yaml` | `evidence` 名称与 `variables` 重名 | `loader.py` `Loader._apply_model_data` |
-| `test_invalid_evidence_missing_baseline_ref.yaml` | `rr`/`or` evidence 用 `applies_to` 时缺 `baseline_ref` | `loader.py` `Loader._apply_model_data` |
-| `test_invalid_yaml_not_dict.yaml` | 顶层 YAML 必须是 mapping，不能是 list/标量 | `loader.py` `Loader._load_model_data` |
-| `test_invalid_date_range.yaml` | `end_date` 不能早于 `start_date` | `validation.py` `validate_simulator_dates`（仅在 run 时校验，加载/`validate_model()` 不检查，见文件内 description） |
+| `test_invalid_step_size.yaml` | `simulation.step_size` must be a positive number | `validator.py` `Validator.validate_model` |
+| `test_invalid_optimization_missing_method.yaml` | `optimization.method` is required | `validator.py` `Validator.validate_model` |
+| `test_invalid_equation_undefined_var.yaml` | `dynamics` references an undeclared variable | `validator.py` `validate_equations` (extracts variables via AST) |
+| `test_invalid_equation_deprecated_dt.yaml` | `dynamics` uses the deprecated symbol `dt`, should use `step` instead | `validator.py` `validate_equations` |
+| `test_invalid_import_circular_a.yaml` + `_b.yaml` | Circular-import detection (a and b import each other) | `loader.py` `Loader._load_model_data` |
+| `test_invalid_import_escapes_root.yaml` | A relative import climbs above the `models/` root | `loader.py` `Loader._load_model_data` |
+| `test_invalid_evidence_name_collision.yaml` | An `evidence` name collides with `variables` | `loader.py` `Loader._apply_model_data` |
+| `test_invalid_evidence_missing_baseline_ref.yaml` | An `rr`/`or` evidence entry using `applies_to` is missing `baseline_ref` | `loader.py` `Loader._apply_model_data` |
+| `test_invalid_yaml_not_dict.yaml` | The top-level YAML must be a mapping, not a list/scalar | `loader.py` `Loader._load_model_data` |
+| `test_invalid_date_range.yaml` | `end_date` must not be earlier than `start_date` | `validation.py` `validate_simulator_dates` (checked only at run time; loading/`validate_model()` does not check this, see the description inside the file) |
 
-## 新增一个错误检测用例
+## Adding a new error-detection case
 
-1. 先确认目标校验分支在引擎代码里存在（`validator.py` / `loader.py` / `validation.py`），
-   不要为不存在的校验写 fixture。
-2. 复制 `test_invalid_*.yaml` 里结构最接近的一个作为模板，只改动触发目标校验所需的最小字段。
-3. 在 `metadata.description` 里写清楚：故意写错的是什么、预期报错信息包含什么子串、对应哪个
-   `test_verification/errors/*.py` 文件。
-4. 在 `test_verification/errors/` 对应文件里加断言，并在上表补一行。
+1. First confirm the target validation branch exists in the engine code (`validator.py` / `loader.py` / `validation.py`); do not write a fixture for a validation that doesn't exist.
+2. Copy the structurally closest existing `test_invalid_*.yaml` as a template, changing only the minimal fields needed to trigger the target validation.
+3. In `metadata.description`, clearly state: what was deliberately broken, what substring the expected error message contains, and which `test_verification/errors/*.py` file it corresponds to.
+4. Add the assertion in the corresponding file under `test_verification/errors/`, and add a row to the table above.

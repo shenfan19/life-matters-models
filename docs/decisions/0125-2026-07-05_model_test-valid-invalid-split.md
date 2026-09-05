@@ -1,71 +1,44 @@
-# 0125 — `models/test/` 拆分为 `valid/` + `invalid/`：新增错误检测 fixture
+# 0125 - Splitting models/test/ into valid/ + invalid/: Adding Error-Detection Fixtures
 
-**日期**：2026-07-05
-**状态**：✅ 已接受
+**Date**: 2026-07-05
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-`models/test/` 原本只放结构合法的引擎功能示例（imports 组合、MC 分布、K×4 优化各 Tier 等
-31 个文件），验证的是"引擎能正确加载/跑通合法模型"。但错误检测机制审查发现，引擎对
-**结构错误的模型**——循环 import、evidence 名称冲突、公式引用未声明变量等——完全没有
-测试覆盖：既没有故意写错的 fixture，也没有断言"加载这类模型必须失败、且报出具体原因"
-的测试（见 †0124，life-matters-reference-engine 仓库，那次审查同时发现 `LoaderEngine.fetch()` 会把具体
-错误信息吞掉，只记日志）。
+`models/test/` originally held only structurally valid engine-feature examples (31 files covering import combinations, MC distributions, each K×4 optimization tier, etc.), validating that "the engine correctly loads and runs a valid model." But a review of error detection found the engine had no test coverage at all for a structurally broken model, a circular import, an evidence name conflict, a formula referencing an undeclared variable, and so on: there was neither a deliberately broken fixture nor a test asserting that loading such a model must fail, and fail with a specific reported reason (see reference 0124 in the life-matters-reference-engine repository; that same review also found that `LoaderEngine.fetch()` swallows the specific error message, logging it only).
 
-## 决策
+## Decision
 
-### 1. 按"结构合法 / 故意写错"拆成两个子目录，而不是混放或建新顶层目录
+### 1. Split into two subdirectories by "structurally valid" versus "deliberately broken," rather than mixing them together or creating a new top-level directory
 
-- `models/test/valid/` — 原有 31 个文件原样迁移，用途不变（功能示例，非真实场景）。
-- `models/test/invalid/` — 新增 11 个 fixture，每个只故意写错一处（simulation.step_size、
-  optimization.method、公式引用未声明变量、废弃符号 `dt`、循环 import、import 越出 models
-  根目录、evidence 名称冲突、evidence 缺 baseline_ref、顶层 YAML 非 mapping、
-  `end_date` 早于 `start_date`），覆盖 `validator.py`/`loader.py`/`validation.py` 四类
-  校验分支。
+- `models/test/valid/`: the original 31 files, migrated as-is, purpose unchanged (functional examples, not real scenarios).
+- `models/test/invalid/`: 11 new fixtures added, each deliberately breaking exactly one thing (`simulation.step_size`, `optimization.method`, a formula referencing an undeclared variable, the deprecated symbol `dt`, a circular import, an import reaching outside the models root, an evidence name conflict, evidence missing `baseline_ref`, a top-level YAML that is not a mapping, `end_date` earlier than `start_date`), covering four categories of checks across `validator.py`/`loader.py`/`validation.py`.
 
-**放在 `test/` 下而不是新建顶层目录**：两者都不是真实场景，都是"引擎测试基础设施"，与
-既有 `test/` 的定位一致，只是补上"负面"一半；新建顶层目录会制造第二套顶层分类
-（`papers/`/`scenarios`/`references/`/`test/`），增加认知负担。
+Placed under `test/` rather than a new top-level directory: neither kind is a real scenario, and both are engine-test infrastructure, consistent with `test/`'s existing purpose, just filling in its "negative" half; a new top-level directory would create a second top-level classification (alongside `papers/`/`scenarios`/`references/`/`test/`), adding cognitive load.
 
-**每个 invalid fixture 只错一处**：与 `tests/models/README.md`"每个变量单独一个文件夹"
-的隔离原则同源——改动某个校验分支的逻辑时，只需要看对应的一个文件是否还按预期失败，
-不用担心一个 fixture 里多个错误互相干扰、掩盖回归。
+Each invalid fixture breaks exactly one thing: this shares its rationale with `tests/models/README.md`'s isolation principle of one variable per folder; when changing the logic of a given validation branch, it is enough to check whether the one corresponding file still fails as expected, with no worry that multiple errors in one fixture could interfere with each other and mask a regression.
 
-### 2. 影响范围：3 处内部 `imports:` 路径 + 5 处外部引用需要同步改
+### 2. Scope of impact: 3 internal `imports:` paths plus 5 external references need updating
 
-`test_import_layer.yaml`/`test_import_top.yaml`/`test_step_cross_import_top.yaml` 内部的
-`imports: [test/test_import_base]` 改为 `test/valid/test_import_base`（沿用 ADR 0120 的
-教训：改名会破坏其他文件的 `imports:` 路径，必须逐一核对，不能只做文件系统移动）。
+The internal `imports: [test/test_import_base]` in `test_import_layer.yaml`/`test_import_top.yaml`/`test_step_cross_import_top.yaml` changes to `test/valid/test_import_base` (learning from ADR 0120's lesson that a rename breaks other files' `imports:` paths and must be checked one by one, not just moved on the filesystem).
 
-life-matters-reference-engine 仓库 5 处引用旧路径的代码同步更新：`cli/batch.py` 文档字符串、
-`docs/reference_engine/cli.md`、`gui/src/components/sim_tab/optUtils.test.ts` 的
-`FIXTURES_DIR`、`gui/e2e/specs/run-simulation.spec.ts`、`tests/test_sim_cli_consistency.py`
-里 `test/test_opt_t1_single` → `test/valid/test_opt_t1_single`。
+5 places in the life-matters-reference-engine repository referencing the old path are updated accordingly: the docstring in `cli/batch.py`, `docs/reference_engine/cli.md`, the `FIXTURES_DIR` in `gui/src/components/sim_tab/optUtils.test.ts`, `gui/e2e/specs/run-simulation.spec.ts`, and `test/test_opt_t1_single` to `test/valid/test_opt_t1_single` in `tests/test_sim_cli_consistency.py`.
 
-### 3. 已知副作用：整库/`--input-dir test` 批量测试会把 invalid fixture 报成 FAIL
+### 3. Known side effect: a whole-library or `--input-dir test` batch run reports the invalid fixtures as FAIL
 
-`cli/batch.py` 目前没有排除目录的机制（`rglob('*.yaml')` 无过滤），扫描整个模型库或
-`--input-dir test`（不指定到 `valid` 子目录）时，`invalid/` 下的模型会被跑一遍
-`--sim`/`--opt` 并且预期 FAIL——这是设计如此（fixture 本来就该失败），已在
-`cli/batch.py`、`docs/reference_engine/cli.md` 里加注释说明，但**没有**给 `batch.py`
-加排除机制，也没有实跑一次整库 batch 确认这些 FAIL 行渲染正常、不会因为
-`test_invalid_yaml_not_dict.yaml`（顶层是 list）之类的极端结构导致 batch.py 自身崩溃
-而不是走正常的 FAIL 记录路径——这条留作未决事项，不阻塞本次决策。
+`cli/batch.py` currently has no directory-exclusion mechanism (`rglob('*.yaml')` applies no filter), so scanning the entire model library or `--input-dir test` (without pointing specifically at the `valid` subdirectory) runs `--sim`/`--opt` over the models under `invalid/` too, and they are expected to FAIL, which is by design (a fixture is supposed to fail). A comment has been added in `cli/batch.py` and `docs/reference_engine/cli.md` explaining this, but no exclusion mechanism has been added to `batch.py`, and a full-library batch run has not actually been executed to confirm these FAIL lines render normally and that an extreme structure such as `test_invalid_yaml_not_dict.yaml` (a top-level list) does not crash `batch.py` itself instead of going through the normal FAIL-recording path. This is left as an open item and does not block this decision.
 
-## 结果
+## Result
 
-- 新增：`models/test/invalid/`（11 个 yaml + README.md）
-- 迁移：`models/test/*.yaml` → `models/test/valid/`（31 个文件 + README.md，3 个内部
-  import 路径同步更新）
-- 新增：`models/test/README.md`（顶层导览，说明两个子目录的定位）
-- 同步：life-matters-reference-engine 仓库 5 处外部路径引用（见上）
-- 回归锁定：`tests/errors/`（life-matters-reference-engine 仓库，11 个 pytest，见 †0124）
+- Added: `models/test/invalid/` (11 YAML files plus README.md)
+- Migrated: `models/test/*.yaml` to `models/test/valid/` (31 files plus README.md, with 3 internal import paths updated accordingly)
+- Added: `models/test/README.md` (a top-level overview explaining the two subdirectories' purposes)
+- Updated accordingly: 5 external path references in the life-matters-reference-engine repository (see above)
+- Regression lock-in: `tests/errors/` (in the life-matters-reference-engine repository, 11 pytest cases, see reference 0124)
 
-## 未决
+## Open Questions
 
-- `cli/batch.py` 是否需要排除目录机制，避免整库/宽泛 `--input-dir` 批量测试的报告里
-  混入预期之内的 FAIL：未决定，需要单独评估。
-- `gui/e2e/specs/run-simulation.spec.ts` 里"点击 `test` → `test/valid` 两级文件夹"的改动
-  只依据 `SimModelTree.tsx` 代码走读推断，未启动实际 GUI 验证。
+- Whether `cli/batch.py` needs a directory-exclusion mechanism to keep expected FAILs out of a whole-library or broad `--input-dir` batch report: undecided, needs separate evaluation.
+- The change to "clicking `test` then `test/valid` as two folder levels" in `gui/e2e/specs/run-simulation.spec.ts` is inferred only from reading `SimModelTree.tsx`'s code, without having actually launched the GUI to verify it.

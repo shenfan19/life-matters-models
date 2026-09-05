@@ -7,18 +7,40 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      跑步是最普及的有氧耐力运动，其生理响应的核心在于配速与代谢负荷的关系。基于 Daniels 跑步方程，VO2 随配速非线性增加，当超过乳酸阈值，约 RPE 6-7、乳酸 2-4 mmol/L，后乳酸快速积累，导致疲劳加速和运动表现下降。如何在 60 分钟训练课内选择既能产生足够有氧训练刺激、又不因乳酸过高导致疲劳过度积累的最佳配速，是跑步训练处方的经典生理问题。
+      Running is the most popular aerobic endurance sport, and its physiological response centers on
+      the relationship between pace and metabolic load. Based on Daniels' running equations, VO2
+      increases nonlinearly with pace, and once it passes the lactate threshold (around RPE 6-7,
+      lactate 2-4 mmol/L), lactate accumulates rapidly, accelerating fatigue and degrading
+      performance. Choosing the optimal pace within a 60-minute training session, one that produces
+      enough aerobic training stimulus without excessive fatigue from too-high lactate, is a classic
+      physiological problem in running training prescription.
     result: >
-      三方案 60 分钟仿真：恢复慢跑，RPE=2、9 min/km，心率维持约 86-89 bpm，疲劳仅升至约 9.8，表现保持 94.1；标准方案，RPE=5、6 min/km，疲劳升至 25.5，表现降至 84.7；阈值强度方案，RPE=8、4.5 min/km，乳酸飙升至 18.5 mmol/L，远超 4 mmol/L 阈值区，疲劳达 42.3，表现在 60 分钟末从 100 分崩溃至 2.1 分，与高强度下表现在 40-50 分钟后明显下降的预期一致。三方案共同显示配速-乳酸-疲劳-表现耦合机制的方向符合预期。优化（NSGA-II，7 解）给出消耗热量与疲劳积累的权衡：配速统一收敛至最快允许值 3 min/km，因配速不直接影响疲劳而无代价；训练强度从 0 到 RPE≈7.05 对应热量 1200 到 1623 kcal、疲劳 0 到 36.8。
+      A 60-minute simulation of three plans: a recovery jog (RPE=2, 9 min/km) keeps heart rate around
+      86-89 bpm, with fatigue rising only to about 9.8 and performance staying at 94.1; a standard
+      plan (RPE=5, 6 min/km) raises fatigue to 25.5 and drops performance to 84.7; a threshold-
+      intensity plan (RPE=8, 4.5 min/km) sends lactate soaring to 18.5 mmol/L, far past the
+      4 mmol/L threshold zone, with fatigue reaching 42.3 and performance collapsing from 100 to 2.1
+      by the end of 60 minutes, consistent with the expectation that high-intensity performance
+      declines markedly after 40-50 minutes. All three plans together show the pace-lactate-fatigue-
+      performance coupling mechanism behaving as expected in direction. Optimization (NSGA-II,
+      7 solutions) produces a tradeoff between calories burned and fatigue accumulation: pace
+      converges uniformly to the fastest allowed value, 3 min/km, since pace has no direct effect on
+      fatigue and so carries no cost, while training intensity ranges from 0 to about RPE=7.05,
+      corresponding to calories from 1200 to 1623 kcal and fatigue from 0 to 36.8.
     limitations: >
-      参数基于 70 kg 成年男性，不适用于体重或有氧能力差异较大的人群。未包含气温、坡度、海拔等环境因素；疲劳模型未区分神经主导的中枢疲劳与肌肉主导的外周疲劳机制；fatigue 方程不依赖 pace，故优化前沿中配速恒为最快值，未体现配速本身也有代价的真实约束。
+      The parameters are based on a 70 kg adult male and do not apply to a population with
+      substantially different body weight or aerobic capacity. Environmental factors such as
+      temperature, gradient, and altitude are not included; the fatigue model does not distinguish
+      neurally driven central fatigue from muscle-driven peripheral fatigue; the fatigue equation
+      does not depend on pace, so pace stays at its fastest value throughout the optimization front,
+      not reflecting the real constraint that pace itself also carries a cost.
   ratings:
-    importance: 0.5 - 跑步是最普及的有氧运动，配速-心率-乳酸动力学是运动医学核心；最通用有氧运动模型，被多个场景使用预期
-    variable: 0.75 - 引用Daniels方程/ACSM指南等经典来源，参数有据可查
-    equation: 0.75 - Daniels跑步方程是运动科学教科书最常见基准模型，被广泛引用且独立复现
-    simulation: 0.5 - 2026-07-22实测--sim与--opt均可正常跑通(opt在gen1后即100%feasible)，但未与独立文献目标数值比对
-    optimization: 0.5 - 消耗热量与疲劳积累呈现真实权衡前沿，但配速因不影响疲劳而收敛至边界值，未体现配速本身的代价
-    confidence: 0.25 - 可正常跑通，但未与独立文献目标数值比对
+    importance: 0.5 - Running is the most popular aerobic sport, and pace-heart-rate-lactate kinetics are core to sports medicine; the most general aerobic-exercise model, expected to be used by several scenarios
+    variable: 0.75 - Cites classic sources such as Daniels' equations and ACSM guidelines, with traceable parameters
+    equation: 0.75 - Daniels' running equations are the most common benchmark model in exercise-science textbooks, widely cited and independently reproduced
+    simulation: 0.5 - Confirmed runnable on 2026-07-22, with both --sim and --opt running normally (opt reaches 100% feasible after generation 1), but not yet compared against an independent literature target value
+    optimization: 0.5 - Calories burned and fatigue accumulation show a genuine tradeoff front, but pace converges to its boundary value since it does not affect fatigue, not reflecting pace's own cost
+    confidence: 0.25 - Runs normally, but not yet compared against an independent literature target value
   tags: [sport, running, aerobic, endurance, VO2max, Daniels, lactate]
 
 variables:
@@ -27,95 +49,95 @@ variables:
     value: 5.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "运动感知强度（5=中等有氧，7=乳酸阈值，9=极重）"
+    description: "The rating of perceived exertion (5=moderate aerobic, 7=lactate threshold, 9=very heavy)"
   pace:
     type: input
     value: 6.0
     unit: "min/km"
     bounds: [3.0, 15.0]
-    description: "跑步配速（3=精英，6=中等有氧，10=慢跑恢复）"
+    description: "Running pace (3=elite, 6=moderate aerobic, 10=recovery jog)"
   heart_rate:
     type: state
     value: 70.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "运动心率"
+    description: "Exercise heart rate"
   vo2:
     type: state
     value: 10.0
     unit: "mL/kg/min"
     bounds: [5.0, 80.0]
-    description: "摄氧量（安静=5，最大有氧=50-70）"
+    description: "Oxygen uptake (resting=5, maximal aerobic=50-70)"
   distance:
     type: state
     value: 0.0
     unit: "km"
     bounds: [0.0, 100.0]
-    description: "累计跑步距离"
+    description: "Cumulative running distance"
   calories_burned:
     type: state
     value: 0.0
     unit: "kcal"
     bounds: [0.0, 3000.0]
-    description: "累计热量消耗"
+    description: "Cumulative calories burned"
   fatigue:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "肌肉与心肺疲劳（>70影响配速，>90需停止）"
+    description: "Muscular and cardiorespiratory fatigue (above 70 affects pace, above 90 requires stopping)"
   lactate:
     type: state
     value: 1.0
     unit: "mmol/L"
     bounds: [0.5, 20.0]
-    description: "血乳酸（<2=有氧区，2-4=阈值区，>4=无氧区）"
+    description: "Blood lactate (under 2 is the aerobic zone, 2-4 the threshold zone, above 4 the anaerobic zone)"
   performance:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "运动表现系数（受疲劳和乳酸抑制）"
+    description: "A performance coefficient (suppressed by fatigue and lactate)"
 
 equations:
   heart_rate_response:
-    description: "心率随配速和强度升高，疲劳加重心脏负担"
+    description: "Heart rate rises with pace and intensity, with fatigue adding to cardiac load"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(200, 70 + (10 - pace) * 8 + training_intensity * 4 + fatigue * 0.3)"
   vo2_update:
-    description: "摄氧量随配速升高（Daniels方程简化）"
+    description: "Oxygen uptake rises with pace (a simplification of Daniels' equations)"
     condition: "training_intensity > 0"
     priority: 9
     dynamics:
       vo2: "min(80, 3.5 + (10 - pace) * 6 + training_intensity * 2.5)"
   distance_accumulate:
-    description: "每分钟累计距离（km）"
+    description: "Distance accumulated each minute (km)"
     condition: "training_intensity > 0"
     priority: 8
     dynamics:
       distance: "distance + (1.0 / max(1.0, pace))"
   calorie_burn:
-    description: "热量消耗（约60kcal/km，强度系数加成）"
+    description: "Calories burned (about 60kcal/km, with an intensity bonus)"
     condition: "training_intensity > 0"
     priority: 8
     dynamics:
       calories_burned: "calories_burned + (1.0 / max(1.0, pace)) * 60 * (1 + training_intensity * 0.05)"
   fatigue_accumulate:
-    description: "疲劳随强度积累，高强度非线性加速"
+    description: "Fatigue accumulates with intensity, accelerating nonlinearly at a high intensity"
     condition: "training_intensity > 0"
     priority: 7
     dynamics:
       fatigue: "min(100, fatigue + training_intensity * 0.08 * (1 + fatigue * 0.005))"
   lactate_dynamics:
-    description: "乳酸在阈值强度以上快速积累"
+    description: "Lactate accumulates rapidly above the threshold intensity"
     condition: true
     priority: 7
     dynamics:
       lactate: "max(0.5, min(20, lactate + (training_intensity - 6) * 0.15))"
   performance_update:
-    description: "运动表现受疲劳和高乳酸双重抑制"
+    description: "Performance is suppressed by both fatigue and high lactate"
     condition: true
     priority: 6
     dynamics:
@@ -128,9 +150,11 @@ simulation:
   start_date: "2026-01-01"
   end_date: "2026-01-01"
   output_variables: [heart_rate, vo2, distance, calories_burned, fatigue, lactate, performance]
-  # 60分钟持续训练课：sustained 区间 07:00~08:00。training_intensity/pace 在方程里都是被当
-  # 瞬时读数直接用（heart_rate_response/vo2_update 等），不随时间累加，属于"恒定水平"语义，
-  # 用 delivery: level（ADR 0132）——value 直接就是目标读数，不需要再乘 N_steps。
+  # A 60-minute continuous training session: a sustained interval, 07:00~08:00. Both
+  # training_intensity/pace are read directly as instantaneous values in the equations
+  # (heart_rate_response/vo2_update, etc.), not accumulated over time, a "constant level"
+  # semantics, using delivery: level (ADR 0132), so value is directly the target reading with
+  # no need to multiply by N_steps.
   plans:
   - id: default
     label: "Baseline plan"
@@ -142,7 +166,7 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "中等有氧强度跑步（RPE=5，约6 min/km，60分钟）"
+        label: "Moderate aerobic intensity running (RPE=5, about 6 min/km, 60 minutes)"
       - variable: pace
         time_start: "07:00"
         time_end: "08:00"
@@ -150,10 +174,10 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "配速6分/公里（中等有氧区，60分钟）"
+        label: "A pace of 6 min/km (the moderate aerobic zone, 60 minutes)"
 
   - id: recovery_jog
-    label: "恢复慢跑（低强度对照）"
+    label: "A recovery jog (a low-intensity control)"
     regimens:
       - variable: training_intensity
         time_start: "07:00"
@@ -162,7 +186,7 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "恢复性慢跑（RPE=2，约9 min/km，60分钟）"
+        label: "A recovery jog (RPE=2, about 9 min/km, 60 minutes)"
       - variable: pace
         time_start: "07:00"
         time_end: "08:00"
@@ -170,10 +194,10 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "配速9分/公里（恢复区，60分钟）"
+        label: "A pace of 9 min/km (the recovery zone, 60 minutes)"
 
   - id: threshold_intervals
-    label: "乳酸阈值强度（高强度对照）"
+    label: "Lactate-threshold intensity (a high-intensity control)"
     regimens:
       - variable: training_intensity
         time_start: "07:00"
@@ -182,7 +206,7 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "阈值强度跑步（RPE=8，约4.5 min/km，60分钟）"
+        label: "Threshold-intensity running (RPE=8, about 4.5 min/km, 60 minutes)"
       - variable: pace
         time_start: "07:00"
         time_end: "08:00"
@@ -190,41 +214,46 @@ simulation:
         delivery: level
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "配速4.5分/公里（阈值/无氧区，60分钟）"
+        label: "A pace of 4.5 min/km (the threshold/anaerobic zone, 60 minutes)"
 
 optimization:
   method: nsga2
-  # 原用 performance(final) 作为 maximize 目标：60分钟单次训练课内 performance 只会
-  # 从基线100单调下降（无长期适应效应可体现），与 fatigue(minimize) 无真实冲突，
-  # 导致"零强度"trivially同时最优、Pareto前沿退化为单点。改为 calories_burned（训练收益，
-  # 随强度单调增加）与 fatigue 竞争，二者构成本模型实际的"练多狠 vs 多累"权衡。
+  # Originally used performance(final) as a maximize objective, but within one 60-minute
+  # training session, performance can only decline monotonically from its baseline of 100
+  # (with no long-term adaptation effect to show), creating no real conflict with
+  # fatigue(minimize) and letting "zero intensity" become trivially optimal on both, degenerating
+  # the Pareto front to a single point. Changed to calories_burned (the training benefit, rising
+  # monotonically with intensity) competing against fatigue, forming this model's real
+  # train-harder-versus-get-more-tired tradeoff.
   objectives:
     - variable: calories_burned
       metric: final
       direction: maximize
-      description: "最大化60分钟末累计消耗热量（训练收益）"
+      description: "Maximizing the cumulative calories burned at the end of 60 minutes (the training benefit)"
     - variable: fatigue
       metric: final
       direction: minimize
-      description: "最小化60分钟末疲劳积累"
+      description: "Minimizing fatigue accumulation at the end of 60 minutes"
   constraints:
     - variable: lactate
       condition: "<= 10.0"
       type: hard
-      description: "血乳酸不超过10 mmol/L（安全上限）"
+      description: "Blood lactate should not exceed 10 mmol/L (a safety ceiling)"
     - variable: fatigue
       condition: "<= 80.0"
       type: soft
       description: >
-        疲劳感不超过80（fatigue自身文档：>70开始影响配速，>90需停止；原阈值9.0与0-100量表不符，
-        已按变量自身描述的臨界值改正）。
+        Perceived fatigue should not exceed 80 (per fatigue's own documentation: above 70 starts
+        affecting pace, above 90 requires stopping; the original threshold of 9.0 did not match the
+        0-100 scale and has been corrected to the critical value the variable's own description
+        states).
   startpoint:
     regimens:
       - variable: training_intensity
         time_start: "07:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "训练强度（RPE 0-10，delivery: level，恒定水平不摊分）"
+        label: "Training intensity (RPE 0-10, delivery: level, a constant level not split)"
         delivery: level
         optimize:
           value: [0.0, 10.0]
@@ -232,7 +261,7 @@ optimization:
         time_start: "07:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "配速（min/km，delivery: level，恒定水平不摊分）"
+        label: "Pace (min/km, delivery: level, a constant level not split)"
         delivery: level
         optimize:
           value: [3.0, 15.0]

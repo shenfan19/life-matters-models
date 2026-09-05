@@ -1,109 +1,69 @@
-# 0126 — regimen 语义完备性讨论：三处范围拍板（不改引擎，划清模型/文档/未来改进的边界）
+# 0126 - The Regimen-Semantics-Completeness Discussion: Three Scope Rulings (No Engine Change, Drawing the Line Between Model, Documentation, and Future Improvement)
 
-**日期**：2026-07-09
-**状态**：✅ 已接受；⚠️ 第3条（sustained value = 整个生效窗口总量）已被
-[0131](0131-2026-07-13_model_sustained-value-per-day-not-per-span.md)（2026-07-13）取代——
-改为"每个匹配日独立满额"，该条文字描述的正是 0131 现在改掉的旧规则。第1/2/4条不受影响。
-**类别**：建模规范 / regimen 语义
+**Date**: 2026-07-09
+**Status**: Accepted; item 3 (sustained value equals the total across the whole effective window) has been superseded by [0131](0131-2026-07-13_model_sustained-value-per-day-not-per-span.md) (2026-07-13), changed to "each matching day independently delivers the full amount"; that item's text describes exactly the old rule 0131 now changes. Items 1/2/4 are unaffected.
+**Category**: Modeling specification / regimen semantics
 
 ---
 
-## 背景
+## Background
 
-内部任务记录 `task_regimen-semantics.md` 记录了四个 regimen 相关的待决问题
-（pulse-decay 要不要做成引擎特性、同一变量多条 regimen 覆盖/累加、sustained vs 脉冲+衰减态
-的选择规则、`valid_range` 日期对齐）。触发案例是内部模型库排查中发现的一处三阶段叠加 bug
-（见内部任务记录 `2026-07-07_issue_ibs_regimen_phase_stacking.md`）。
+The internal task record `task_regimen-semantics.md` recorded four pending regimen-related questions (whether pulse-decay should become an engine feature, override versus accumulation for several regimen entries on the same variable, the decision rule for choosing between sustained and pulse-plus-decaying-state, and `valid_range` date alignment). The trigger case was a three-phase stacking bug found during an internal model-library review (see the internal task record `2026-07-07_issue_ibs_regimen_phase_stacking.md`).
 
-本 ADR 记录 2026-07-09 的讨论结论：其中一个问题根本不属于 regimen 设计范畴，一个问题
-明确不做引擎/schema 改动，一个问题在实际核对代码后确认是纯文档收尾。
+This ADR records the conclusions from a discussion on 2026-07-09: one of these questions turns out not to belong to regimen design at all, one is explicitly ruled out as an engine or schema change, and one, after actually checking the code, turns out to be a pure documentation wrap-up.
 
-## 决策
+## Decision
 
-### 1. "pulse-decay 第三种语义"不是 regimen/引擎问题，是模型完备性问题
+### 1. "A third pulse-decay semantics" is not a regimen/engine problem, it is a model-completeness problem
 
-核对内部模型库一处已知正确案例证实：衰减完全由 `type: state` 变量自己的
-`dynamics` 公式实现（形如 `X + eta_abs*input - k*X*step`），
-regimen 只负责把 `input` 变量按 pulse 写常量，跟衰减无关。引擎早就支持任意状态变量写自己的
-一阶 ODE。
+Checking a known-correct case in the internal model library confirmed: decay is entirely implemented by the `type: state` variable's own `dynamics` formula (of the form `X + eta_abs*input - k*X*step`), with the regimen only responsible for writing a constant via a pulse for the `input` variable, unrelated to decay. The engine has long supported any state variable writing its own first-order ODE.
 
-**结论**：需要衰减效果的模型，照抄这个模式补 `type: state` + `dynamics` 即可，不涉及
-schema/引擎改动，不再作为"regimen 语义"的待决问题。原方向"引擎新增 `mode: pulse_decay` +
-`half_life`"不采纳。
+Conclusion: a model that needs a decay effect just needs to copy this pattern, adding `type: state` plus `dynamics`; no schema or engine change is involved, and this is no longer treated as a pending "regimen semantics" question. The original direction, adding an engine `mode: pulse_decay` plus `half_life`, is not adopted.
 
-**已知先例**：内部模型库排查中确认已有多个模型采用了正确模式（脉冲 input + 独立衰减
-state），不再逐一列出具体文件。
+Known precedent: the internal model-library review confirmed several models already use the correct pattern (a pulse input plus an independent decaying state), not individually listed here.
 
-**排查内部模型库后新发现的同类缺口**（不是"要不要加衰减公式"这个设计问题本身，而是
-具体模型该修的 bug，记录在内部任务
-`2026-07-09_issue_pulse-fed-instantaneous-formula-audit.md`）：
+Newly found gaps of the same kind after reviewing the internal model library (not the design question of "should a decay formula be added" itself, but a bug that needs fixing in a specific model, recorded in the internal task `2026-07-09_issue_pulse-fed-instantaneous-formula-audit.md`):
 
-- 一处降压效果项直接读瞬时脉冲输入而非累计状态，与此前已修复的同类 bug 同源，当时漏改。
-  **已修复**——改读对应的累计 state。
-- 另一处"进度类"指标项直接读瞬时输入，`step_size` 为 1 hour、跑数年，绝大多数小时读到 0，
-  可能系统性拉高该指标。**记录未修复**（影响论文数字，需要单独决定修法）。
-- 第三处结构上是"生效那一小时"而非"之后"生效，量级很小。**记录未修复，优先级低**。
+- A blood-pressure-lowering effect term read the instantaneous pulse input directly instead of the accumulated state, sharing the same root cause as a previously fixed bug of the same kind, missed at the time. Fixed: changed to read the corresponding accumulated state.
+- Another "progress-type" metric term read the instantaneous input directly, with a `step_size` of 1 hour running over several years, so the vast majority of hours read 0, possibly systematically inflating that metric. Recorded, not fixed (affects a paper's numbers, and needs a separate decision on the fix).
+- A third case is structurally "in effect during the one hour it fires" rather than afterward, at a very small magnitude. Recorded, not fixed, low priority.
 
-### 2. 同一变量多条 regimen 的"覆盖 vs 累加"：不改引擎，只改具体触发文件
+### 2. Override versus accumulation for several regimen entries on the same variable: no engine change, only the specific triggering file fixed
 
-讨论过三个投入级别：(a) 仅装载期校验（强制"同变量多条目要么全不写 date_range，要么全写且
-互不重叠"）、(b) 新增显式 `phases` schema 结构（引擎保证分区）、(c) 整体重新设计输入时间轴
-表达（放弃"date_range 缺省=全程"这类隐式默认）。
+Three levels of investment were discussed: (a) load-time validation only (requiring that multiple entries for the same variable either all omit `date_range` or all declare it with no overlap), (b) a new explicit `phases` schema structure (with the engine guaranteeing partitioning), (c) a full redesign of how the input timeline is expressed (dropping implicit defaults such as "date_range omitted means the whole run").
 
-**结论：三者都不做。** 项目刚起步，优先稳固 sim 基准，不为 opt 端的便利性/防呆做大投入的
-引擎或 schema 改动，这类工作留给未来的改进或 plugin。维持现状：引擎"每步清零后逐条累加"
-不变（这本身是对的——三餐累加是设计意图，不是 bug）。
+Conclusion: none of the three is done. The project is just getting started and prioritizes stabilizing the sim baseline over a large engine or schema investment for the opt side's convenience or foolproofing; this kind of work is left for a future improvement or plugin. The status quo is kept: the engine's "reset to zero each step, then accumulate entry by entry" behavior is unchanged (this is correct as it stands; the three-meals accumulation is the intended design, not a bug).
 
-`ibs_diet_opt_joint.yaml` 的具体 bug（T1 限制期条目缺 `date_range`，全程叠加进 T3/T4）只改
-那一个文件，不算模型特化——采用下面的通用建模惯例，任何模型都能用：
+The specific bug in `ibs_diet_opt_joint.yaml` (the T1 restriction-phase entry missing `date_range`, stacking across the whole run into T3/T4) is fixed only in that one file, and this is not treated as a model-specific special case; the general modeling convention below is used, applicable to any model:
 
-**baseline + 增量惯例**（写入 `docs/model.md`，非强制规则）：优先设计"一条不写 `date_range`
-的 baseline 条目（本来就该全程生效）+ 若干条限定 `date_range` 的增量条目（值是相对
-baseline 的差量）"，而不是"每个阶段各写一条完整目标值 + 靠 `date_range` 首尾相接互斥"。
-前者唯一"无 date_range"的条目本身就该全程生效，不存在"忘记设终止日期"的陷阱；后者每加
-一个阶段都要求该阶段的 `date_range` 与其余阶段精确不重叠，容易漏写。
+Baseline-plus-increment convention (written into `docs/model.md`, not a mandatory rule): prefer designing "one baseline entry with no `date_range` (which should be effective for the whole run anyway) plus several increment entries scoped by `date_range` (whose value is the difference relative to baseline)," rather than "a complete target value written for each phase, with mutual exclusivity achieved end-to-end via `date_range`." In the former, the one entry with no `date_range` is meant to be effective the whole run anyway, with no "forgot to set an end date" trap; in the latter, every added phase requires that phase's `date_range` to not overlap the rest exactly, which is easy to get wrong.
 
-**已知局限，接受为受控成本**：如果某个阶段的切换时机本身是优化器搜索变量（如 T4），增量
-条目的 `date_range` 端点需要跟 T4 的搜索值联动，引擎目前不支持"一个 regimen 的 `date_range`
-端点 = 另一个决策变量的解码值"。opt 端这类日期联动需求，退回手动限定固定搜索窗，由建模者
-在 Sim 侧确认结果、必要时手动调整后重新搜索。不追求"一次优化自动联动所有阶段边界"。
+A known limitation, accepted as a controlled cost: if a phase's switch timing is itself an optimizer search variable (such as T4), an increment entry's `date_range` endpoint needs to track T4's search value, and the engine currently does not support "one regimen's `date_range` endpoint equals another decision variable's decoded value." This kind of date-linkage need on the opt side falls back to manually fixing the search window, letting the modeler confirm the result on the Sim side and manually adjust it before re-searching if needed. There is no pursuit of "one optimization run automatically linking every phase boundary."
 
-### 3. sustained vs 脉冲+衰减态的选择规则：纯文档收尾，不再等待问题1
+### 3. The decision rule for sustained versus pulse-plus-decaying-state: a pure documentation wrap-up, no longer waiting on question 1
 
-问题1 已确认不涉及引擎改动，不存在"若问题1选方向A、这条规则要跟着改"的耦合，可以直接把
-S3 session（2026-07-07）已经摸出的判断规则写进文档，不需要额外设计讨论。
+Question 1 has been confirmed to involve no engine change, so there is no coupling of "if question 1 chooses direction A, this rule needs to change accordingly," and the decision rule already worked out in the S3 session (2026-07-07) can be written directly into the documentation, with no further design discussion needed.
 
-规则本身（核对 `schedule_runner.py` 坐实的原理）：sustained 的 `value` 表示"整个生效窗口内
-的总量"，引擎在**装载阶段**（不是运行时）预计算 `N_steps = 生效窗口总时长 / step_size`，
-运行时每个命中 step 写入 `value / N_steps`。这要求生效窗口总时长（`date_range` 覆盖天数 ×
-`days` 过滤 × 每日时段）在装载阶段就是确定数字。
+The rule itself (confirmed against `schedule_runner.py`'s actual logic): sustained's `value` represents the total quantity across the whole effective window; the engine precomputes, at load time (not at run time), `N_steps = the effective window's total duration / step_size`, and at run time each hit step is written as `value / N_steps`. This requires the effective window's total duration (the days `date_range` covers, times the `days` filter, times the daily time segment) to already be a determinate number at load time.
 
-**判断规则**：这个输入的生效窗口长度，在写 YAML/装载阶段是否已经是确定值？
-- 是（不依赖优化器搜索结果就能算出准确天数，如固定的"周一到周五"）→ 用 sustained。
-- 否（窗口长度本身是 T3/T4 搜索变量，或依赖运行时状态）→ sustained 无法工作（`N_steps`
-  在装载时算不出来），改用"脉冲触发 → 写入 `type: state` 衰减态变量 → 下游公式读衰减态"
-  （这是纯局部的、逐步递推的机制，不需要预先知道未来会有多少步）。
+The decision rule: is this input's effective-window length already a determinate value at the time the YAML is written or loaded?
+- Yes (an accurate day count can be computed without depending on the optimizer's search result, such as a fixed "Monday through Friday"): use sustained.
+- No (the window length itself is a T3/T4 search variable, or depends on runtime state): sustained cannot work (`N_steps` cannot be computed at load time); switch to "a pulse trigger, feeding into a `type: state` decaying variable, read by a downstream formula" (a purely local, step-by-step recurrence mechanism that does not need to know in advance how many steps there will be).
 
-### 4. `valid_range` 日期对齐：维持原判断，独立处理
+### 4. `valid_range` date alignment: keep the original judgment, handled independently
 
-`_EPOCH = 1900-01-01` 与 scenario 自己 `start_date` 不对齐的问题，优先级低、影响面小
-（非论文的历史/游戏场景模型），继续独立处理，不纳入本次讨论范围。**本 ADR 不实施这条**。
+The mismatch between `_EPOCH = 1900-01-01` and a scenario's own `start_date` is low priority and narrow in impact (non-paper historical/game scenario models), and continues to be handled independently, out of this discussion's scope. This ADR does not implement this item.
 
-## 结果
+## Result
 
-- 已修复：内部模型库某案例的降压效果公式（见该文件 `metadata.todo`/`log` 2026-07-09 条目）。
-  **待重新跑 `--sim`/`--opt`**（sim 及其 opt 文件均 import 本文件），相关论文数字待更新。
-- 待更新：`docs/model.md` 补充 baseline+增量惯例、opt 端日期联动局限性（举例）、sustained
-  判断规则三处文档内容（本 ADR 落地后的下一步，不在本 ADR 文件内展开）。
-- 记录：内部任务 `2026-07-09_issue_pulse-fed-instantaneous-formula-audit.md`
-  （两处待决 bug）。
-- 触发案例的具体修复**未实施**，等建模者按上面的 baseline+增量惯例动手修，修完重新验证
-  `--opt` 数字再更新对应论文。
+- Fixed: the blood-pressure-lowering-effect formula in a case in the internal model library (see that file's `metadata.todo`/`log` entry dated 2026-07-09). `--sim`/`--opt` still needs to be rerun (both the sim file and its opt files import this file), and the corresponding paper numbers need updating.
+- To be updated: `docs/model.md` needs the baseline-plus-increment convention, the opt-side date-linkage limitation (with an example), and the sustained decision rule added in three places (the next step after this ADR lands, not expanded within this ADR file).
+- Recorded: the internal task `2026-07-09_issue_pulse-fed-instantaneous-formula-audit.md` (two pending bugs).
+- The triggering case's specific fix is not implemented; it awaits the modeler applying the baseline-plus-increment convention above, after which the `--opt` numbers need re-validating and the corresponding paper updating.
 
-## 未决
+## Open Questions
 
-- 一处"进度类"指标的修法未选定，需要单独决定（见上面链接的 task 文件）。
-- 触发案例相关文件的实际修复未实施。
-- 问题4（`valid_range` 日期对齐）未实施，仍是独立的低优先级待办。
-- paper 写作原则：这次的判断过程/bug 修复不写进论文，只记录在 ADR 和对应模型的
-  `metadata.todo`；论文只呈现修正、重新验证后的最终数字。
+- The fix for one "progress-type" metric has not been chosen and needs a separate decision (see the linked task file above).
+- The actual fix for the triggering case's file has not been implemented.
+- Item 4 (`valid_range` date alignment) is not implemented and remains an independent, low-priority pending item.
+- Paper-writing principle: this round's decision process and bug fix are not written into the paper, only recorded in the ADR and the corresponding model's `metadata.todo`; the paper presents only the corrected, revalidated final numbers.

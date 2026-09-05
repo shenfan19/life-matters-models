@@ -7,85 +7,96 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      塞麦尔维斯自 1847 年至 1865 年推动洗手预防产褥热的案例展示了创新扩散的正反馈障碍：接受度增益 = 倡导强度 × (evidence/60) × (1−抵触惯性)，而抵触惯性 = 0.4 + 0.4 × (1−acceptance/100)，接受度越低，推动越难，形成自我强化的锁定效应。倡导强度越高，研究者心理健康消耗越快，即模型变量 mental_health 加速下降，使"坚持倡导"与"保护研究者"之间的权衡成为不可回避的优化问题。
+      Semmelweis's case, advocating handwashing to prevent puerperal fever from 1847 to 1865,
+      demonstrates a positive-feedback barrier to innovation diffusion: acceptance gain = advocacy
+      intensity x (evidence/60) x (1 minus resistance inertia), where resistance inertia = 0.4 +
+      0.4 x (1 minus acceptance/100), so the lower the acceptance, the harder it is to advance,
+      forming a self-reinforcing lock-in effect. The higher the advocacy intensity, the faster the
+      researcher's mental health depletes, that is, the model variable mental_health falls faster,
+      making the tradeoff between "persisting with advocacy" and "protecting the researcher" an
+      unavoidable optimization problem.
     result: >
-      仿真显示 18 年，合 216 个月内证据质量、机构接受度和心理健康的月动态；三目标优化（2026-09-04 验证，80 代收敛，100% 可行，50 个 Pareto 解）确认坚持倡导与保护研究者之间存在真实权衡，未收敛到平凡解。
-    limitations: Rogers 扩散参数来自 20 世纪研究，应用于 19 世纪医学机构存在泛化风险；倡导强度与心理损耗的定量关系为模型假设。
+      The simulation shows the monthly dynamics of evidence quality, institutional acceptance, and
+      mental health across 18 years, 216 months; a three-objective optimization (verified on
+      2026-09-04, converging over 80 generations, 100% feasible, 50 Pareto solutions) confirms a
+      genuine tradeoff between persisting with advocacy and protecting the researcher, not
+      converging to a trivial solution.
+    limitations: The Rogers diffusion parameters come from 20th-century research, and applying them to a 19th-century medical institution carries a generalization risk; the quantitative relationship between advocacy intensity and mental depletion is a model assumption.
 
   ratings:
-    variable: 0.75 - Rogers 扩散理论和 Carter 传记提供良好文献基础
-    equation: 0.5 - 接受度扩散方程自建，锚定Rogers扩散理论概念与Carter传记情节
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出216个月合理轨迹，未与独立历史数据逐点比对
-    optimization: 0.5 - 2026-09-04验证，--opt收敛出50个Pareto解、非平凡解，方向性权衡数值上确认成立，但证据仍非RCT/meta级
-    importance: 0.75 - 医学史最著名的知识阻力案例，医学/科学政策圈高度关注，直接关联循证医学政策讨论价值
-    innovation: 1.0 - 首次将科学创新接受度动力学建模为可优化问题
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立历史文献数值目标逐点比对
+    variable: 0.75 - Rogers's diffusion theory and the Carter biography supply a good literature basis
+    equation: 0.5 - The acceptance-diffusion equation is self-built, anchored to concepts from Rogers's diffusion theory and the Carter biography's narrative
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 216-month trajectory normally, not yet compared point-by-point against independent historical data
+    optimization: 0.5 - Verified on 2026-09-04, --opt converges to 50 Pareto solutions, a non-trivial solution set, confirming the directional tradeoff numerically, but the evidence is still not at RCT/meta level
+    importance: 0.75 - Medical history's most famous case of knowledge resistance, drawing high attention in medical/science-policy circles, with direct relevance to evidence-based-medicine policy discussions
+    innovation: 1.0 - The first modeling of scientific-innovation acceptance dynamics as an optimizable problem
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared point-by-point against an independent historical-literature target value
   tags: [historical, medical, handwashing, science-rejection, mental-health, 19th-century]
   period: "1847-1865"
   location: "Vienna General Hospital / Budapest, Hungary"
 variables:
-  # ── 行为输入 ─────────────────────────────────────────────────────────────────
+  # ── Behavioral inputs ─────────────────────────────────────────────────────────────
   research_effort:
     type: input
     value: 2.0
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 3.0]
-    description: "研究强度：0=停止, 1=收集病历, 2=统计分析, 3=发表论文/演讲"
+    description: "Research intensity: 0=stopped, 1=collecting case records, 2=statistical analysis, 3=publishing papers/lecturing"
 
   advocacy_intensity:
     type: input
     value: 1.5
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 3.0]
-    description: "倡导强度：0=沉默, 1=同事交流, 2=机构提案, 3=公开辩论/出版专著"
+    description: "Advocacy intensity: 0=silence, 1=discussing with colleagues, 2=institutional proposals, 3=public debate/publishing a monograph"
 
   self_care:
     type: input
     value: 0.4
-    unit: "系数"
+    unit: "coefficient"
     bounds: [0.0, 1.0]
-    description: "自我照护（0=完全忽视健康, 1=注重休息社交与精神调节）"
+    description: "Self-care (0=fully neglecting health, 1=attending to rest, socializing, and psychological regulation)"
 
-  # ── 科学/社会状态 ─────────────────────────────────────────────────────────────
+  # ── Scientific/social state ─────────────────────────────────────────────────────────────
   evidence:
     type: state
     value: 20.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "证据质量与完整度（>60时advocacy才真正有效；<40时被机构一笑置之）"
+    description: "Evidence quality and completeness (advocacy only becomes truly effective above 60; below 40 it is dismissed by institutions)"
 
   acceptance:
     type: state
     value: 5.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "医学界接受度（目标75=主要机构开始推广洗手；<10=完全不被接受）"
+    description: "Medical-community acceptance (target 75 = major institutions begin promoting handwashing; below 10 means complete rejection)"
 
   isolation:
     type: state
     value: 15.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
-    description: "职业孤立程度（随拒绝积累上升；加速mental_health下滑）"
+    description: "Professional isolation level (rises with accumulated rejection; accelerates the decline of mental_health)"
 
   patient_mortality:
     type: state
     value: 80.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "产科病房死亡率指数（高=糟糕；每次倡导成功将实际降低死亡）"
+    description: "The obstetric-ward mortality index (high=bad; each successful act of advocacy actually lowers mortality)"
 
-  # ── 心理健康 ─────────────────────────────────────────────────────────────────
+  # ── Mental health ─────────────────────────────────────────────────────────────
   mental_health:
     type: state
     value: 75.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "心理健康状态（0=精神崩溃送入精神病院；每次驳斥都在消耗）"
+    description: "Mental-health state (0=a mental breakdown requiring committal to an asylum; each rebuttal depletes it)"
 
 simulation:
   step_size:
@@ -103,24 +114,24 @@ simulation:
     - advocacy_intensity
 equations:
 
-  # 1. 研究积累证据
-  # research_effort=2, 每月积累：2 × 2.5 = 5分；60分需12个月不间断
+  # 1. Research accumulates evidence
+  # research_effort=2, accumulating 2 x 2.5 = 5 points per month; reaching 60 needs 12 uninterrupted months
   evidence_accumulation:
-    description: "研究工作积累统计证据；研究强度越高，证据增长越快"
+    description: "Research work accumulates statistical evidence; the higher the research intensity, the faster evidence grows"
     condition: research_effort > 0
     priority: 10
     dynamics:
       evidence: "min(100, evidence + research_effort * 2.5)"
       mental_health: "max(0, mental_health - research_effort * 0.5)"
 
-  # 2. 倡导推动接受度（核心方程）
+  # 2. Advocacy drives acceptance (the core equation)
   # evidence_factor = min(1, evidence/60)
   # rejection_resistance = 0.4 + 0.4*(1 - acceptance/100)
   # advocacy_intensity=2, evidence=60, acceptance=5:
-  #   gain = 2 × 1.0 × (1 - 0.796) = 2 × 0.204 = 0.41/月
-  # 这正是历史上的困境：即便证据充足，制度惯性也极难突破
+  #   gain = 2 x 1.0 x (1 - 0.796) = 2 x 0.204 = 0.41/month
+  # this is precisely the historical bind: even with sufficient evidence, institutional inertia is extremely hard to break
   advocacy_effect:
-    description: "倡导推动机构接受；evidence不足时驳斥增加孤立感"
+    description: "Advocacy drives institutional acceptance; when evidence is insufficient, rebuttal raises isolation"
     condition: advocacy_intensity > 0
     priority: 9
     dynamics:
@@ -128,43 +139,43 @@ equations:
       mental_health: "max(0, mental_health - advocacy_intensity * 1.2)"
       isolation: "min(100, isolation + advocacy_intensity * (1 - min(1, acceptance / 50)) * 0.8)"
 
-  # 3. 自我照护恢复心理健康
+  # 3. Self-care restores mental health
   self_care_recovery:
-    description: "自我照护缓解精神压力；但减少了研究和倡导时间"
+    description: "Self-care eases mental strain; but it reduces time available for research and advocacy"
     condition: self_care > 0
     priority: 8
     dynamics:
       mental_health: "min(100, mental_health + self_care * 5)"
       isolation: "max(0, isolation - self_care * 2)"
 
-  # 4. 孤立加速心理崩溃
+  # 4. Isolation accelerates mental collapse
   isolation_damage:
-    description: "职业孤立持续侵蚀心理健康（无人理解的孤独感）"
+    description: "Ongoing professional isolation continually erodes mental health (the loneliness of not being understood)"
     condition: isolation > 20
     priority: 7
     dynamics:
       mental_health: "max(0, mental_health - (isolation - 20) * 0.06)"
 
-  # 5. 接受度提升→患者死亡率下降（人道主义成果）
+  # 5. Rising acceptance -> falling patient mortality (a humanitarian outcome)
   acceptance_saves_lives:
-    description: "接受度提升意味着更多医院实施洗手，患者死亡率下降"
+    description: "Rising acceptance means more hospitals adopt handwashing, lowering patient mortality"
     condition: acceptance > 10
     priority: 6
     dynamics:
       patient_mortality: "max(0, patient_mortality - acceptance * 0.05)"
 
-  # 6. 证据不足时倡导反效果（被嘲笑增加孤立）
+  # 6. Advocacy backfires when evidence is insufficient (mockery raises isolation)
   evidence_too_low:
-    description: "证据不足时强行倡导反被嘲笑，加速职业边缘化"
+    description: "Advocating forcefully with insufficient evidence backfires into mockery, accelerating professional marginalization"
     condition: "evidence < 30 and advocacy_intensity > 1.5"
     priority: 8
     dynamics:
       isolation: "min(100, isolation + 2)"
       mental_health: "max(0, mental_health - 2)"
 
-  # 7. 心理崩溃影响研究产出
+  # 7. Mental collapse impairs research output
   mental_collapse_penalty:
-    description: "心理严重受损（<25）时无法有效工作和倡导"
+    description: "Once mental health is severely damaged (below 25), work and advocacy can no longer proceed effectively"
     condition: mental_health < 25
     priority: 9
     dynamics:
@@ -191,11 +202,11 @@ optimization:
   constraints:
     - variable: mental_health
       condition: ">= 20"
-      description: "心理健康不能完全崩溃（送入精神病院）"
+      description: "Mental health should not fully collapse (committal to an asylum)"
     - variable: evidence
       condition: ">= 40"
       metric: final
-      description: "评估期末需积累足够证据（initial evidence=20，期末达标即可，非全程约束）"
+      description: "Sufficient evidence must be accumulated by the end of the evaluation period (initial evidence=20; only the endpoint needs to reach the target, not a constraint held throughout)"
 
   startpoint:
     regimens:
@@ -204,7 +215,7 @@ optimization:
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["1847-01-01", "1848-12-21"]
-        label: "研究阶段强度（前24个月）"
+        label: "Research-phase intensity (the first 24 months)"
         optimize:
           value: [0.0, 3.0]
       - variable: advocacy_intensity
@@ -212,21 +223,24 @@ optimization:
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["1848-12-22", "1865-01-01"]
-        label: "倡导阶段强度（24个月后）"
+        label: "Advocacy-phase intensity (after 24 months)"
         optimize:
           value: [0.0, 3.0]
       - variable: self_care
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "自我照护水平"
+        label: "Self-care level"
         optimize:
           value: [0.0, 1.0]
 
   analysis:
     pareto_description: |
-      关键发现：最优策略是先集中2年（24个月）积累证据（research_effort=3），
-      再转向倡导（advocacy_intensity=2），同时保持self_care≈0.5。
-      历史塞麦尔维斯的实际路径：过早高强度倡导（evidence不足时）
-      + 极低self_care（≈0.1），导致接受度进展缓慢且心理崩溃——
-      这正是模型预测的"帕累托劣势路径"，以18年痛苦换来了本可更快实现的结果。
+      Key finding: the optimal strategy is to first concentrate 2 years (24 months) on
+      accumulating evidence (research_effort=3), then shift to advocacy (advocacy_intensity=2),
+      while keeping self_care at about 0.5.
+      Semmelweis's actual historical path: advocating too early at high intensity (while evidence
+      was still insufficient) combined with extremely low self_care (about 0.1), resulting in slow
+      acceptance progress and a mental collapse.
+      This is exactly the "Pareto-dominated path" the model predicts, trading 18 years of suffering
+      for a result that could have been reached faster.

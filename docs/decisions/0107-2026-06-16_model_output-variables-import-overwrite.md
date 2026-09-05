@@ -1,36 +1,36 @@
-# ADR 0107 — output_variables / output_types import 行为统一为覆盖（取代并集）
+# ADR 0107 - Unifying output_variables / output_types Import Behavior to Overwrite (Replacing Union)
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-06-16
 
-## 背景
+## Background
 
-ADR 0063 为 `output_variables` 和 `output_types` 设计了特殊规则：根模型未定义时，取所有 imports 的并集。其他所有字段（`start_date`、`end_date`、`step_size` 等）都遵循 deep merge（后 import 覆盖前，根模型最终覆盖）。
+ADR 0063 designed a special rule for `output_variables` and `output_types`: when the root model does not define them, take the union across all imports. Every other field (`start_date`, `end_date`, `step_size`, etc.) follows a deep merge instead (a later import overrides an earlier one, and the root model overrides all imports in the end).
 
-这条例外规则造成两个问题：
-1. **行为不一致**：模型作者需要记住两套规则。
-2. **并集可能引入噪音**：模型 A import 了 B 和 C，B 的 `output_variables` 是 `[x]`，C 是 `[y]`，结果变成 `[x, y]`——但 A 的作者可能只想要 C 的 `[y]`（因为 C 是更完整的模型）。模型作者对每个模型有明确意图，并集反而可能带来混乱。
+This exception rule caused two problems:
+1. Inconsistent behavior: model authors had to remember two separate rules.
+2. A union can introduce noise: if model A imports B and C, where B's `output_variables` is `[x]` and C's is `[y]`, the result becomes `[x, y]`, but A's author may only have wanted C's `[y]` (because C is the more complete model). A model author has a clear intent for each model, and a union can instead create confusion.
 
-## 决策
+## Decision
 
-`output_variables` 和 `output_types` 不再特殊处理，改为与所有其他字段相同的行为：
+`output_variables` and `output_types` are no longer treated specially and now follow the same behavior as every other field:
 
-- **根模型未定义**：继承最后一个 import 的值（deep merge 自然结果，后 import 覆盖前）。
-- **根模型显式定义了任一输出字段**：根模型定义优先；若仅定义其中一个，另一个从 import 继承的值同时清除（防止两种过滤机制意外混用）。
-- **两个字段都不存在或都为空**：输出所有变量。
+- When the root model does not define them: they inherit the value from the last import (the natural result of a deep merge, where a later import overrides an earlier one).
+- When the root model explicitly defines either output field: the root model's definition takes priority; if only one of the two is defined, the other field's value inherited from an import is cleared as well (to prevent the two filtering mechanisms from being accidentally mixed).
+- When neither field exists anywhere, or both are empty: all variables are output.
 
-## 实施
+## Implementation
 
-- `sim_engine/src/model_structure/loader.py`：删除 `imported_output_variables` / `imported_output_types` 并集收集逻辑及 `_append_unique` 静态方法；`merge_dicts` 自然处理覆盖继承。
-- `model.md`：更新"输出变量选择规则"一节。
-- ADR 0063：添加修订说明。
+- `sim_engine/src/model_structure/loader.py`: removed the `imported_output_variables` / `imported_output_types` union-collection logic and the `_append_unique` static method; `merge_dicts` now handles override inheritance naturally.
+- `model.md`: updated the "output variable selection rule" section.
+- ADR 0063: added a note about this revision.
 
-## 影响
+## Impact
 
-- 有多个 import 且各自定义了 `output_variables` 的模型，行为从"并集"变为"最后一个 import 的值"。实践中这类模型几乎不存在（通常只有一个 import，或根模型自己定义了输出变量）。
-- 逻辑更简单，规则更统一，模型作者无需记忆特例。
+- For a model with multiple imports that each define `output_variables`, behavior changes from "the union" to "the last import's value." In practice, such models are nearly nonexistent (a model usually has only one import, or the root model defines its own output variables).
+- The logic is simpler and the rule is more uniform, so model authors no longer need to remember a special case.

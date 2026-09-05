@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: fr1815_fr_jean_valjean
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      冉·阿让（雨果《悲惨世界》1862）在主教的宽恕后选择救赎，面临三重持续张力：践行善行强度，即能积累社会资本和道德完整性，但暴露身份的风险也随之增加；隐藏身份，即能维持安全，但每次暴露威胁都可能引发道德危机；以及自我照料，即能保持长期能力，但与彻底利他的救赎逻辑相冲突。贾维尔的追踪是恒定的外部压力，构成跨越 18 年的逃亡与救赎弧线。
+      After choosing redemption following the bishop's forgiveness, Jean Valjean (Hugo's Les
+      Misérables, 1862) faces a sustained triple tension: the intensity of practicing good deeds
+      accumulates social capital and moral integrity, but also raises the risk of exposing his
+      identity; concealing his identity maintains safety, but each threat of exposure can trigger a
+      moral crisis; and self-care preserves his long-term capacity, but conflicts with the logic of
+      thoroughgoing altruistic redemption. Javert's pursuit is a constant external pressure, forming
+      an 18-year arc of flight and redemption.
     result: >
-      仿真预期显示 216 个月内道德资本、身份安全度和贾维尔追踪压力的动态轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to show the dynamic trajectory of moral capital, identity safety,
+      and Javert's pursuit pressure across 216 months. This is currently a draft, with parameters
+      still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出216个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - redemption_progress与community_trust经方程追踪无对立驱动，两决策变量均单向有利；2026-09-04验证--opt收敛至单一前沿点(100,100)，数值确认无权衡
-    importance: 0.5 - 冉·阿让是文学史上最著名的救赎叙事之一，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 6 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 4 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 216-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - redemption_progress and community_trust show no opposing drive when traced through the equations, with both decision variables beneficial in a single direction; verified on 2026-09-04 that --opt converges to a single front point (100,100), numerically confirming no tradeoff
+    importance: 0.5 - Jean Valjean is one of the most famous redemption narratives in literary history, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - justice
     - redemption
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 2
-    description: 践行善行强度：用行动救助他人、回报社会的努力
+    description: The intensity of practicing good deeds, effort spent helping others and giving back to society
     reference: TODO:SOURCE
   concealment:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 隐藏身份：掩盖前囚犯身份以在社会中生存
+    description: Concealing his identity, hiding his past as a convict to survive in society
     reference: TODO:SOURCE
   self_care:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 自我照料：注意身体恢复，减少苦役后遗症的进展
+    description: Self-care, attending to physical recovery, slowing the progression of after-effects from forced labor
     reference: TODO:SOURCE
   physical_health:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 身体状态：19年苦役的长期损伤与老化的综合健康
+    description: Physical state, a composite of long-term damage from 19 years of forced labor and aging
     reference: TODO:SOURCE
     io_role: output
   redemption_progress:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 救赎进度：用善行弥补过去的积累
+    description: Redemption progress, accumulation of good deeds to make amends for the past
     reference: TODO:SOURCE
     io_role: output
   javert_pursuit:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 贾维尔的追踪：警察对他身份和下落的掌握程度
+    description: Javert's pursuit, how much the police know of his identity and whereabouts
     reference: TODO:SOURCE
     io_role: output
   community_trust:
@@ -96,29 +104,29 @@ variables:
     bounds:
       - 0
       - 100
-    description: 社区信任：在新身份下建立的社会信任资本
+    description: Community trust, the social-trust capital built under his new identity
     reference: TODO:SOURCE
     io_role: output
 equations:
   health_decay:
     dynamics:
       physical_health: max(0, physical_health - (0.8) - (virtue_effort * 0.6) + (self_care * 1.5))
-    description: 苦役后遗症不可逆；善行消耗体力；自我照料可减缓
+    description: The after-effects of forced labor are irreversible; good deeds consume strength; self-care can slow the decline
     reference: TODO:SOURCE
   redemption_growth:
     dynamics:
       redemption_progress: min(100, redemption_progress + virtue_effort * 2.5)
-    description: 善行积累救赎
+    description: Good deeds accumulate redemption
     reference: TODO:SOURCE
   javert_tracking:
     dynamics:
       javert_pursuit: min(100, max(0, javert_pursuit + (0.5) + (virtue_effort * 0.3) - (concealment * 1.5)))
-    description: 隐藏身份减缓追踪；善行的曝光度反而可能泄露线索
+    description: Concealing his identity slows pursuit; but the visibility of good deeds can itself leak clues
     reference: TODO:SOURCE
   trust_growth:
     dynamics:
       community_trust: min(100, community_trust + (virtue_effort * 1.5) + (concealment * 0.8))
-    description: 社区信任随善行和稳定身份积累
+    description: Community trust accumulates with good deeds and a stable identity
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -151,7 +159,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 践行善行强度
+        label: The intensity of practicing good deeds
         optimize:
           value:
             - 0
@@ -167,7 +175,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 隐藏身份
+        label: Concealing his identity
         optimize:
           value:
             - 0
@@ -183,7 +191,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 自我照料
+        label: Self-care
         optimize:
           value:
             - 0
@@ -194,4 +202,4 @@ optimization:
     seed: 19
 
 references:
-  - 悲惨世界 (Victor Hugo, 1862)
+  - Les Misérables (Victor Hugo, 1862)

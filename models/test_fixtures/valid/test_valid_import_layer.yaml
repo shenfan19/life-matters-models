@@ -7,21 +7,11 @@ metadata:
       component), adds aerobic fitness variables, and overrides hr_set_point from 65 → 58 bpm
       (trained athlete baseline). Is itself imported by test_valid_import_top, creating the
       diamond-dependency scenario where test_valid_import_base is reachable via two paths.
-    problem_cn: >
-      两层 import 链中的中间层：导入 test_valid_import_base（心血管组件），新增有氧适能
-      相关变量，并将 hr_set_point 从 65 覆盖为 58 bpm（训练有素运动员的基线）。本文件
-      又被 test_valid_import_top 导入，形成菱形依赖场景——test_valid_import_base 通过
-      两条路径均可达。
     result: >
       When imported by test_valid_import_top, this layer's override (58 bpm) should take precedence
       over the base value (65 bpm), and aerobic fitness variables should appear in the resolved
       model. test_valid_import_base must remain deduplicated.
-    result_cn: >
-      当被 test_valid_import_top 导入时，本层的覆盖值（58 bpm）应优先于基础层的值
-      （65 bpm），且有氧适能相关变量应出现在解析后的模型中。test_valid_import_base
-      必须保持去重（仅一份）。
     limitations: Aerobic fitness model is simplified; not clinically calibrated.
-    limitations_cn: 有氧适能模型经过简化，未经临床校准。
   tags: [test, import, layer, aerobic-fitness, override]
 imports:
 - test_fixtures/valid/test_valid_import_base

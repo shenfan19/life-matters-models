@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: fr1815_fr_fantine
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,25 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      芳汀（雨果《悲惨世界》1862）被工厂因未婚母亲身份解雇后面临三重权衡：劳动强度，即能增加收入但会加剧结核病病情；自我牺牲程度，即卖头发、牙齿、身体以换取珂赛特的生活费；以及寻求援助，即可能获得支持但需暴露身份且援助并不可靠。德纳第夫妇的勒索持续上涨，系统性贫困使任何努力都面临边际递减。
+      After being dismissed from the factory for being an unmarried mother, Fantine (Hugo's Les
+      Misérables, 1862) faces a triple tradeoff: labor intensity can raise income but worsens her
+      tuberculosis; the degree of self-sacrifice, selling her hair, teeth, and body to pay for
+      Cosette's upkeep; and seeking help, possibly gaining support but requiring her to expose her
+      identity, with the help itself unreliable. The Thénardiers' extortion keeps rising, and
+      systemic poverty means every effort faces diminishing returns.
     result: >
-      仿真预期显示 36 个月内芳汀的健康状态、汇款能力和珂赛特存活概率的月动态轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，19 世纪法国劳动市场参数需参考历史文献。
+      The simulation is expected to show the monthly dynamics of Fantine's health, her capacity to
+      send money, and Cosette's survival probability across 36 months. This is currently a draft,
+      with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting whose 19th-century French labor-market parameters need grounding in historical literature.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，19世纪法国劳动市场参数未锚定历史文献
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出36个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.5 - 2026-09-04验证，--opt仅收敛出2个Pareto解(cosette_wellbeing 0/15与health 68.2/0互斥)，方向性反相关数值上确认成立，但前沿高度稀疏，人口未展开出中间解，需人工复核是否退化
-    importance: 0.5 - 芳汀是贫困单亲母亲劳工剥削的经典文学形象，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the 19th-century French labor-market parameters not anchored to historical literature
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 36-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.5 - Verified on 2026-09-04, --opt converges to only 2 Pareto solutions (cosette_wellbeing 0/15 versus health 68.2/0, mutually exclusive), numerically confirming the directional inverse correlation, but the front is highly sparse and the population never spread out intermediate solutions, requiring manual review of whether it degenerated
+    importance: 0.5 - Fantine is a classic literary figure of an impoverished single mother's labor exploitation, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - poverty
     - single-mother
@@ -39,7 +46,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 劳动强度：做工努力程度：高则多挣钱，但加速肺病
+    description: Labor intensity, how hard she works, higher earns more but accelerates the lung disease
     reference: TODO:SOURCE
   sacrifice_level:
     type: input
@@ -48,7 +55,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 自我牺牲程度：为寄钱给珂赛特牺牲自身生存资源（头发/牙齿/身体）
+    description: The degree of self-sacrifice, sacrificing her own survival resources (hair/teeth/body) to send money to Cosette
     reference: TODO:SOURCE
   seek_help:
     type: input
@@ -57,7 +64,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 寻求援助：向教会/官员/善人求助（风险高，尊严代价大）
+    description: Seeking help, asking the church/officials/benefactors for aid (high risk, a heavy toll on dignity)
     reference: TODO:SOURCE
   cosette_wellbeing:
     type: state
@@ -66,7 +73,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 珂赛特生存状态：女儿在客栈的生活质量（取决于汇款）
+    description: Cosette's living condition, her daughter's quality of life at the inn (dependent on money sent)
     reference: TODO:SOURCE
     io_role: output
   health:
@@ -76,7 +83,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 芳汀的健康：肺结核+营养不足+过度劳动的累积损耗
+    description: Fantine's health, the cumulative depletion from tuberculosis, malnutrition, and overwork
     reference: TODO:SOURCE
     io_role: output
   income:
@@ -86,7 +93,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 月收入（相对）：当前的劳动收入水平
+    description: Monthly income (relative), her current level of labor income
     reference: TODO:SOURCE
     io_role: output
   desperation:
@@ -96,7 +103,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 绝望程度：社会排斥·健康恶化·资源枯竭的综合绝望
+    description: The degree of desperation, a composite of social exclusion, worsening health, and depleted resources
     reference: TODO:SOURCE
     io_role: output
   tb_progression:
@@ -106,34 +113,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 肺结核进展：结核病的不可逆进展
+    description: Tuberculosis progression, the disease's irreversible advance
     reference: TODO:SOURCE
     io_role: output
 equations:
   health_decay:
     dynamics:
       health: max(0, health - ((tb_progression / 100) * 2.5) - (work_intensity * 0.8) - (sacrifice_level * 1.5) + seek_help * 0.5)
-    description: 肺结核+劳动强度+营养不足消耗健康
+    description: Tuberculosis, labor intensity, and malnutrition deplete health
     reference: TODO:SOURCE
   tb_growth:
     dynamics:
       tb_progression: min(100, tb_progression + (1.0 + sacrifice_level * 1.2) + (work_intensity * 0.4))
-    description: 结核病随营养不足和劳累而加速
+    description: Tuberculosis accelerates with malnutrition and exhaustion
     reference: TODO:SOURCE
   income_dynamics:
     dynamics:
       income: max(0, (work_intensity * 15.0) - ((desperation / 100) * 20.0) + (seek_help * 5.0))
-    description: 收入随工作强度，但社会排斥（desperation）逐渐降低就业机会
+    description: Income rises with work intensity, but social exclusion (desperation) gradually lowers employment opportunity
     reference: TODO:SOURCE
   cosette_status:
     dynamics:
       cosette_wellbeing: max(0, min(100, cosette_wellbeing + ((income * sacrifice_level * 0.5) * (1 - (0.4))) * 0.1 - 2.0))
-    description: 寄钱→珂赛特状态，但客栈主人会截留
+    description: Money sent improves Cosette's condition, but the innkeeper skims off a share
     reference: TODO:SOURCE
   desperation_growth:
     dynamics:
       desperation: min(100, max(0, desperation + ((1 - health / 100) * 2.0 + (1 - income / 100) * 1.5) - (seek_help * 1.5)))
-    description: 绝望随健康下降·收入下降·无援助积累
+    description: Desperation accumulates as health declines, income falls, and no help arrives
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +173,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 劳动强度
+        label: Labor intensity
         optimize:
           value:
             - 0
@@ -182,7 +189,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 自我牺牲程度
+        label: The degree of self-sacrifice
         optimize:
           value:
             - 0
@@ -198,7 +205,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 寻求援助
+        label: Seeking help
         optimize:
           value:
             - 0
@@ -209,4 +216,4 @@ optimization:
     seed: 19
 
 references:
-  - 悲惨世界 (Victor Hugo, 1862)
+  - Les Misérables (Victor Hugo, 1862)

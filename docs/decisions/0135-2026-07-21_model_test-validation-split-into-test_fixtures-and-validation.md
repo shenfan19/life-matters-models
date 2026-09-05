@@ -1,100 +1,49 @@
-# 0135 — `models/test_validation/` 拆分为 `models/test_fixtures/` + `models/validation/`
+# 0135 - Splitting models/test_validation/ into models/test_fixtures/ + models/validation/
 
-**日期**：2026-07-21
-**状态**：✅ 已接受
+**Date**: 2026-07-21
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-ADR 0134（2026-07-15）把 `models/test/` 改名为 `models/test_validation/`，动机是与 life-matters-reference-engine
-的 `tests/`→`test_verify/` 对称命名（"validate 对应模型可信度，verify 对应引擎代码正确性"）。
-但该目录的**实际内容**——`valid/`（结构合法的引擎功能示例）+ `invalid/`（故意写错的错误检测
-fixture）——从 ADR 0125 起就是"引擎能不能正确加载/跑通/拒绝一个 YAML"，属于 V&V 框架里的
-**verification**（代码写得对不对），不是 **validation**（模型代表不代表真实世界）。`valid/README.md`
-自己也早已写明"两者都不代表真实临床或社会场景，不需要文献参数校准"。
+ADR 0134 (2026-07-15) renamed `models/test/` to `models/test_validation/`, motivated by symmetric naming with life-matters-reference-engine's `tests/` to `test_verify/` ("validate corresponds to a model's credibility, verify corresponds to whether the engine's code is correct"). But that directory's actual content, `valid/` (structurally valid engine-feature examples) plus `invalid/` (deliberately broken error-detection fixtures), had been, ever since ADR 0125, about whether the engine can correctly load, run, or reject a given YAML, which belongs to verification (whether the code is written correctly) in the V&V framework, not validation (whether a model represents the real world). `valid/README.md` itself had already long stated that "neither represents a real clinical or social scenario and neither needs literature-parameter calibration."
 
-真正的 validation 内容——`models/test_validation/validation_report.md` 第1节"文献对标"——
-从来不依赖 `valid/`/`invalid/` 的任何 fixture，而是直接指向 `models/papers/s1/banister/`、
-`models/papers/s1/ckd_protein/`、`models/papers/s4/hypertension_gout/` 这些真实论文模型。
-两者只是历史上恰好放在同一个目录下，内容上无关。这个名实不符在 2026-07-21 一次围绕
-`verification_report.md`/`validation_report.md`/`test_verify/` 三者关系的讨论中被发现。
+The genuine validation content, section 1 "Literature Benchmarking" of `models/test_validation/validation_report.md`, never depended on any `valid/`/`invalid/` fixture at all, pointing directly instead to real paper models such as `models/papers/s1/banister/`, `models/papers/s1/ckd_protein/`, and `models/papers/s4/hypertension_gout/`. The two had simply happened to share the same directory historically, unrelated in content. This mismatch between name and content was found during a discussion on 2026-07-21 about the relationship among `verification_report.md`, `validation_report.md`, and `test_verify/`.
 
-## 决策
+## Decision
 
-### 1. 顶层目录一分为二
+### 1. Split the top-level directory into two
 
-- `models/test_validation/` → `models/test_fixtures/`：只装引擎 verification 用的 YAML
-  fixture（`valid/`、`invalid/` 子目录不变，`test_valid_`/`test_invalid_` 文件前缀不变——
-  这两个"valid/invalid"是通用工程语汇（YAML 结构合法与否），跟 V&V 的"validation"专有
-  术语不是一回事，本身没有歧义，不需要跟着改）。
-- 新建 `models/validation/`：只装 `validation_report.md`（文献对标/优化合理性/API-IO边界/
-  逐模型科学内容核对结果），以及后续的 `reports/` CSV 归档目录。与 `papers/`、`references/`、
-  `scenarios/`、`test_fixtures/` 同级，不再从属于 fixture 目录。
+- `models/test_validation/` becomes `models/test_fixtures/`: holding only the YAML fixtures used for engine verification (the `valid/` and `invalid/` subdirectories unchanged, and the `test_valid_`/`test_invalid_` filename prefixes unchanged; these "valid/invalid" are generic engineering terms, whether a YAML's structure is valid, a different matter from V&V's specialized term "validation," carrying no ambiguity on their own and not needing to change).
+- A new `models/validation/` created: holding only `validation_report.md` (literature benchmarking, optimization plausibility, the API-IO boundary, and per-model scientific-content check results), plus a later `reports/` CSV archive directory. This sits alongside `papers/`, `references/`, `scenarios/`, and `test_fixtures/`, no longer subordinate to the fixture directory.
 
-**为什么不直接叫 `test_verification`**：考虑过让 `test_fixtures` 改叫 `test_verification`
-以呼应 verify 语汇，但这会跟 life-matters-reference-engine 的 `test_verify/` 撞得更严重——两个目录名几乎
-一样，反而比现在的 `test_validation` vs `test_verify` 更难分清"哪个放数据、哪个放断言"。
-`test_fixtures` 准确描述内容（可复用的测试用 YAML 数据），且与 `test_verify` 无字面重叠。
+Why not call it `test_verification` directly: renaming `test_fixtures` to `test_verification` to echo the verify terminology was considered, but it would collide even more badly with life-matters-reference-engine's `test_verify/`, two nearly identical directory names, harder to tell apart than the current `test_validation` versus `test_verify` at telling "which one holds data and which one holds assertions." `test_fixtures` accurately describes its content (reusable test YAML data) and has no literal overlap with `test_verify`.
 
-### 2. `fixture_catalog.md` 改名（原 `validation_catalog.md`）+ 不新建报告文件
+### 2. Renaming `fixture_catalog.md` (formerly `validation_catalog.md`) plus not creating a new report file
 
-`validation_catalog.md`（`valid`/`invalid` 逐 fixture 导览）随目录迁移并改名为
-`models/test_fixtures/fixture_catalog.md`，标题/自引用同步更新。**不给 `test_fixtures/`
-新建"verification_report.md"**——`test_verify/verification_report.md`（life-matters-reference-engine
-仓库）§1.1 已经把消费这批 fixture 的 pytest（`test_verify/errors/`）纳入自己的报告范围，
-全项目只应该有这一份 verification 结果报告；`test_fixtures/` 只需要 README + catalog 做
-导览，不需要单独的结果报告。
+`validation_catalog.md` (a per-fixture overview of `valid`/`invalid`) migrates along with the directory and is renamed `models/test_fixtures/fixture_catalog.md`, with its title and self-references updated accordingly. No new "verification_report.md" is created for `test_fixtures/`: `test_verify/verification_report.md` (in the life-matters-reference-engine repository) already brings the pytest suite consuming these fixtures (`test_verify/errors/`) into its own report's scope in its section 1.1, so the whole project should have only this one verification-result report; `test_fixtures/` only needs a README plus a catalog for orientation, not a separate result report.
 
-### 3. 影响范围：两仓库 + home 共约 30 处路径引用同步更新
+### 3. Scope of impact: about 30 path references updated across both repositories plus home
 
-**life-matters-models 仓库**：`models/test_fixtures/{README.md,fixture_catalog.md,valid/README.md,
-invalid/README.md}` 自引用；3 个 import 路径（`test_valid_import_layer/top.yaml`、
-`test_valid_step_cross_import_top.yaml`）；3 个 invalid import fixture 的 import 路径
-（`test_invalid_import_circular_a/b.yaml`、`test_invalid_import_escapes_root.yaml`）；
-`models/validation/validation_report.md` 自身的交叉引用；
-`models/papers/s1/banister/banister_step_convergence_grid_POINTER.yaml`（顺带修正了一处
-更早就存在的错误引用——该文件把步长收敛协议标成"V4"，但 `verification_report.md` 里这个
-协议编号是 V2，V4 是另一件事，见下条）。
+**life-matters-models repository**: self-references in `models/test_fixtures/{README.md,fixture_catalog.md,valid/README.md,invalid/README.md}`; 3 import paths (`test_valid_import_layer/top.yaml`, `test_valid_step_cross_import_top.yaml`); the import paths of 3 invalid import fixtures (`test_invalid_import_circular_a/b.yaml`, `test_invalid_import_escapes_root.yaml`); `models/validation/validation_report.md`'s own cross-references; `models/papers/s1/banister/banister_step_convergence_grid_POINTER.yaml` (incidentally fixing an earlier, pre-existing wrong reference here too, where this file had labeled the step-size convergence protocol "V4," while `verification_report.md` numbers that protocol V2, with V4 being something else entirely; see the next item).
 
-**life-matters-reference-engine 仓库**：`test_verify/{README.md,verification_report.md,models/README.md,
-errors/README.md}`；`test_verify/` 下 9 个 pytest 文件里加载 fixture 的路径字符串；
-`reference_engine/scripts/validate_banister{,_step_grid}.py` 的 `MODEL_PATH`/`MODEL_DIR`；
-`cli/batch.py`、`docs/reference_engine/{cli.md,DECISIONS.md,evidence/conversion.md}`、
-根 `README.md`；`gui/src/components/sim_tab/optUtils.test.ts` 的 `FIXTURES_DIR`；
-`gui/e2e/specs/run-simulation.spec.ts` 的 3 处 GUI 文件树 testid 字符串（含一处此前遗漏、
-本次一并发现的裸目录名 testid）。`test_verify/README.md`"和 `models/test_validation/` 的
-关系"一节按新划分重写——原文把 `test_fixtures`（改名前）描述成"validate 侧"，现已改为
-准确描述其 verify 属性，并新增对 `models/validation/` 的独立说明。
+**life-matters-reference-engine repository**: `test_verify/{README.md,verification_report.md,models/README.md,errors/README.md}`; the fixture-loading path strings in 9 pytest files under `test_verify/`; the `MODEL_PATH`/`MODEL_DIR` in `reference_engine/scripts/validate_banister{,_step_grid}.py`; `cli/batch.py`, `docs/reference_engine/{cli.md,DECISIONS.md,evidence/conversion.md}`, the root `README.md`; the `FIXTURES_DIR` in `gui/src/components/sim_tab/optUtils.test.ts`; 3 GUI file-tree testid strings in `gui/e2e/specs/run-simulation.spec.ts` (including one bare directory-name testid missed earlier and found incidentally this time). `test_verify/README.md`'s "relationship to `models/test_validation/`" section has been rewritten under the new split, previously describing `test_fixtures` (before its rename) as "the validate side," now accurately describing its verify nature, with a new, separate note added about `models/validation/`.
 
-**life-matters-home 仓库**：`process/model_validation_workflow.md`（validation_report.md 路径、
-CSV 归档路径）；`tasks/task_index.md`、`tasks/2026-07-21_task_gui-invalid-model-error-display.md`
-里当天新写的活跃引用。历史 ADR 正文（0134 及其在 `decisions/README.md` 的索引行）、
-`tasks/archive/` 下已归档文件、`paper/c_paper_s1_cn.md` 里独立于本次改动、更早就已过期的
-`test_plan.md`/`test_report.md` 审阅批注引用，均按"历史记录不做追溯性改写"惯例不动。
+**life-matters-home repository**: `process/model_validation_workflow.md` (the `validation_report.md` path, the CSV archive path); the active references written that same day in `tasks/task_index.md` and `tasks/2026-07-21_task_gui-invalid-model-error-display.md`. The body text of historical ADRs (0134 and its index line in `decisions/README.md`), files already archived under `tasks/archive/`, and the review annotations in `paper/c_paper_s1_cn.md` referring to the already-stale, independent `test_plan.md`/`test_report.md` from before this change are all left unchanged, per the convention that historical records are not rewritten retroactively.
 
-### 4. 顺带修正：banister 步长收敛协议编号 V4 → V2
+### 4. An incidental fix: the Banister step-size convergence protocol number V4 to V2
 
-`verification_report.md` 的协议编号是 V1（解析解逐日对比）/V2（步长收敛性检验），V3/V4 是
-后来分配给姊妹文件 `validation_report.md`"训练适应-疲劳"小节的文献场景复现检验点
-（减量后表现峰值/超量恢复出现时间），跟步长收敛完全是两回事。6 个
-`test_valid_banister_v1_step_*.yaml` fixture 和 `banister_step_convergence_grid_POINTER.yaml`
-之前引用的是更早、现已不存在的 `test_plan.md` 里的"协议V4"编号，本次一并同步为当前
-`verification_report.md` 的 V2。
+`verification_report.md`'s protocol numbers are V1 (a day-by-day comparison against the analytical solution) and V2 (step-size convergence testing); V3/V4 were later assigned to the "training adaptation-fatigue" subsection's literature-scenario-reproduction check points (the timing of the peak performance after tapering, and the timing of supercompensation) in the sister file `validation_report.md`, entirely unrelated to step-size convergence. The 6 `test_valid_banister_v1_step_*.yaml` fixtures and `banister_step_convergence_grid_POINTER.yaml` had previously referenced the "protocol V4" number from an earlier, now-nonexistent `test_plan.md`; these were updated at the same time to match `verification_report.md`'s current V2.
 
-## 结果
+## Result
 
-- 改名：`models/test_validation/` → `models/test_fixtures/`（`valid/`、`invalid/` 子目录
-  与文件名不变）
-- 改名：`models/test_validation/validation_catalog.md` → `models/test_fixtures/fixture_catalog.md`
-- 新增：`models/validation/`，迁入 `validation_report.md`
-- 同步：两仓库 + home 约 30 处路径引用（见上）
-- 验证：`pytest test_verify/errors/ test_verify/models/ test_verify/test_sim_cli_consistency.py
-  test_verify/test_same_day_duration.py test_verify/test_schedule_runner.py` 全部通过；
-  `reference_engine/scripts/validate_banister.py`（新路径）实跑确认能正确找到并加载模型
+- Rename: `models/test_validation/` to `models/test_fixtures/` (the `valid/`/`invalid/` subdirectories and filenames unchanged)
+- Rename: `models/test_validation/validation_catalog.md` to `models/test_fixtures/fixture_catalog.md`
+- Added: `models/validation/`, with `validation_report.md` moved in
+- Updated accordingly: about 30 path references across both repositories plus home (see above)
+- Validated: `pytest test_verify/errors/ test_verify/models/ test_verify/test_sim_cli_consistency.py test_verify/test_same_day_duration.py test_verify/test_schedule_runner.py` all pass; running `reference_engine/scripts/validate_banister.py` (at its new path) confirmed it correctly finds and loads the model
 
-## 未决
+## Open Questions
 
-- `cli/batch.py --input-dir test_fixtures`（不带 `/valid`）扫描整个 `test_fixtures/` 的
-  batch 报告，本次改名后未重新实跑核对格式；预期行为与改名前一致（`invalid/` 下 FAIL 是
-  设计如此），未发现需要单独处理的理由，留作后续常规巡检覆盖，不阻塞本次改名。
+- The batch report from `cli/batch.py --input-dir test_fixtures` (without `/valid`) scanning the whole `test_fixtures/` was not re-run to check its formatting after this rename; the expected behavior matches before the rename (a FAIL under `invalid/` is by design), and no reason was found requiring special handling, left for a future routine check, not blocking this rename.

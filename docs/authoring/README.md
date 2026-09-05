@@ -1,19 +1,19 @@
-# 建模实践指南索引
+# Modeling Practice Guide Index
 
-`LM_format_1.0.md` 是正式的、版本化的格式规范，定义一个 YAML 文件要满足什么条件才算合法的 LM file，是可以独立引用的基准文件。这个目录是在那份规范之上，这一个具体项目关于怎么写好一个 LM 模型的实践指南，随建模实践持续调整，不追求版本化，也不重复维护 `LM_format_1.0.md` 已经写清楚的字段定义，涉及具体字段结构时直接指向规范对应章节。
+`LM_format_1.0.md` is the formal, versioned format specification, defining the conditions a YAML file must satisfy to count as a valid LM file, and it is a baseline document that can be referenced independently. This directory sits on top of that specification and holds this project's practical guidance on how to write a good LM model, adjusted continuously alongside modeling practice rather than versioned, and it does not re-document field definitions already covered by `LM_format_1.0.md`; wherever a specific field structure is involved, it points directly to the corresponding section of the specification.
 
-目录名叫 `authoring` 而不是 `model`，是为了跟仓库根目录下存放实际模型 YAML 文件的 `models/` 目录区分开，两个名字长得太像会让人翻错地方；`authoring` 对应"写模型"这个动作本身，`LM_format_1.0.md` 的引言里也用 author 描述同一件事，用词是一致的。
+The directory is named `authoring` rather than `model` to keep it distinct from the repository's root `models/` directory, which holds the actual model YAML files, since two similarly spelled names would send readers to the wrong place; `authoring` corresponds to the act of writing a model, and the introduction to `LM_format_1.0.md` uses the word author to describe the same act, so the terminology is consistent.
 
-## 目录
+## Contents
 
-- [methodology.md](methodology.md)：LM 的核心方法论，耦合而非堆叠的判断标准，以及模型纳入标准与学科覆盖盘点表，写新模型或审查已有模型该不该保留某个机制时先看这份。
-- [description_writing.md](description_writing.md)：`metadata.description` 与顶层 `references` 的写作规范，`problem/method/result/limitations` 四字段怎么分工、来源文献的贡献说明怎么写。这份文件是自包含的，可以单独交给另一个协作者或另一个 AI 会话，作为写模型 description 的素材。
-- [ratings.md](ratings.md)：`metadata.ratings` 评分体系，0-1 量表，技术类（VESO：`variable`/`equation`/`simulation`/`optimization`）与非技术类（`importance`/`innovation`/`confidence`）通用字段的打分标准。
-- [bookkeeping.md](bookkeeping.md)：`metadata.todo`/`metadata.log`/`history/` 目录/`reviewed` 字段，模型文件从起草到发布的状态标记与改动追溯约定。
-- [variables_and_equations.md](variables_and_equations.md)：变量三种类型与 `evidence_type` 换算规则，方程的 `step_unit`/`priority`/Euler 离散积分等执行细节，比规范本身的字段定义更详细，含设计理由和已知陷阱。
-- [regimens_and_optimization.md](regimens_and_optimization.md)：`simulation.plans[*].regimens` 与 `optimization` 的完整用法，含正反例、`lm_score` 健康时长核心指标、T1-T4 决策变量层级、`optimization.results` 内嵌格式。
-- [imports_and_organization.md](imports_and_organization.md)：`imports` 合并规则与模型分类目录约定。
+- [methodology.md](methodology.md): LM's core methodology, the judgment criteria for coupling rather than stacking, and the model inclusion criteria and discipline coverage inventory. Read this first when writing a new model or reviewing whether an existing model should keep a given mechanism.
+- [description_writing.md](description_writing.md): The writing conventions for `metadata.description` and the top-level `references`, covering how the four fields `problem`/`method`/`result`/`limitations` divide responsibilities and how to write source-literature attribution. This file is self-contained and can be handed on its own to another collaborator or another AI session as material for writing a model description.
+- [ratings.md](ratings.md): The `metadata.ratings` scoring system, a 0-1 scale, with scoring criteria for the technical fields (VESO: `variable`/`equation`/`simulation`/`optimization`) and the shared non-technical fields (`importance`/`innovation`/`confidence`).
+- [bookkeeping.md](bookkeeping.md): The `metadata.todo`/`metadata.log` fields, the `history/` directory, and the `reviewed` field, covering the conventions for marking a model file's status and tracing its changes from draft to publication.
+- [variables_and_equations.md](variables_and_equations.md): The three variable types and the `evidence_type` conversion rules, and the execution details of equations such as `step_unit`/`priority` and Euler discrete integration, going into more detail than the specification's own field definitions and including design rationale and known pitfalls.
+- [regimens_and_optimization.md](regimens_and_optimization.md): The complete usage of `simulation.plans[*].regimens` and `optimization`, including positive and negative examples, the `lm_score` healthy-duration core metric, the T1-T4 decision-variable tiers, and the embedded format of `optimization.results`.
+- [imports_and_organization.md](imports_and_organization.md): The `imports` merge rules and the model classification directory conventions.
 
-## 与 LM_format_1.0.md 的分工
+## Division of labor with LM_format_1.0.md
 
-字段合不合法、有哪些取值、必填还是可选，以 `LM_format_1.0.md` 为准；这个目录里的文件默认这些字段定义已经成立，补充的是这个项目里怎么把这些字段用好、哪些写法是推荐的、哪些是已知会踩坑的。两边内容一旦出现冲突，以 `LM_format_1.0.md` 为准，并且应该视为这个目录的文档需要修正，而不是规范本身需要迁就旧写法。
+Whether a field is legal, what values it can take, and whether it is required or optional are determined by `LM_format_1.0.md`; the files in this directory take these field definitions as already settled and supply guidance on how this project uses them well, which patterns are recommended, and which are known to cause trouble. Whenever the two conflict, `LM_format_1.0.md` governs, and the conflict should be treated as a sign that this directory's documentation needs correcting, not that the specification should accommodate an old convention.

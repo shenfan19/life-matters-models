@@ -1,15 +1,15 @@
-# models/papers — 论文专用仿真场景
+# models/papers — Paper-Specific Simulation Scenarios
 
-## 定位
+## Purpose
 
-`papers/` 存放**与具体学术论文对应的正式仿真场景**（撰写中或已发表），用于复现论文数值、执行对照实验、生成 Pareto 前沿图。
+`papers/` holds **formal simulation scenarios corresponding to a specific academic paper** (in progress or published), used to reproduce the paper's numbers, run controlled comparisons, and generate Pareto-front figures.
 
-每个场景文件经过文献参数校准，包含完整的 MC 和 Opt 配置，可复现论文中报告的定量结果。
+Each scenario file is calibrated against literature parameters and includes a complete MC and Opt configuration, reproducing the quantitative results reported in the paper.
 
-与 `scenarios/`（客观可用、但尚未关联具体论文的仿真）和 `test/`（仿真器功能测试用例）不同，`papers/` 下的文件直接服务于某一篇论文的写作与审稿。
+Unlike `scenarios/` (objectively usable simulations not yet tied to a specific paper) and `test/` (simulator functionality test cases), files under `papers/` serve directly the writing and review of a specific paper.
 
-每个模型文件都欢迎任何用户参与编辑、补充参数来源或修复问题。
+Every model file welcomes edits, additional parameter sources, or bug fixes from any user.
 
-## 验证要求
+## Validation requirements
 
-每个场景须通过对应层级的验证协议，详见 [`test/test_plan.md`](../test/test_plan.md)（层1解析解、层2文献效应量、层3可行域/Pareto结构），执行记录见 [`test/test_report.md`](../test/test_report.md)。
+Each scenario must pass the corresponding tier of the validation protocol; see [`test/test_plan.md`](../test/test_plan.md) (tier 1: analytical solutions, tier 2: literature effect sizes, tier 3: feasible-region/Pareto structure), with execution records in [`test/test_report.md`](../test/test_report.md).

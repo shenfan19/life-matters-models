@@ -7,29 +7,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      Banister 适应-疲劳模型的文献对标验证入口：import 论文 `papers/lm_format/banister/banister_validation.yaml`
-      的完整物理机制（variables/equations，Morton 1990 参数），只保留与文献直接对照的复现方案，
-      不包含 opt 衍生/改进方案——那些属于 `banister_opt.yaml` 的优化合理性验证范围（见
-      `../validation_report.md` 第2节），不在本文件的文献对标验证范围内。
+      The literature-benchmark validation entry point for the Banister fitness-fatigue model: imports
+      the complete physical mechanism (variables/equations, Morton 1990 parameters) from the paper
+      `papers/lm_format/banister/banister_validation.yaml`, keeping only the plan that directly
+      reproduces the literature, and excluding an opt-derived or improved plan, which falls under
+      `banister_opt.yaml`'s optimization-plausibility validation scope (see section 2 of
+      `../validation_report.md`) and outside this file's literature-benchmark validation scope.
     result: |
-      本文件只保留 daily_training 一个方案（Morton 1990 原始两段式协议：w=50 AU/天×16周 +
-      w=10 AU/天×4周锥形减量），对应 `../validation_report.md` 第1节"训练适应-疲劳"验证点。
-      2026-07-21 已将该方案的 training_load 数值从此前的 75/30/60 三段式改回文献原始值，
-      详见 `papers/lm_format/banister/banister_validation.yaml` metadata.todo 的已解决记录。
-    limitations: 参数、bounds、单位换算等与 `papers/lm_format/banister/banister_validation.yaml` 完全一致，
-      本文件不重复维护物理机制，只收窄 plans 范围。
+      This file keeps only the daily_training plan (Morton 1990's original two-segment protocol,
+      w=50 AU/day for 16 weeks plus w=10 AU/day for a 4-week taper), corresponding to the "Training
+      Adaptation-Fatigue" validation point in section 1 of `../validation_report.md`. On 2026-07-21,
+      this plan's training_load values were reverted from the previous three-segment 75/30/60 form
+      back to the literature's original values; see the resolved record in
+      `papers/lm_format/banister/banister_validation.yaml`'s metadata.todo for detail.
+    limitations: The parameters, bounds, and unit conversions match `papers/lm_format/banister/banister_validation.yaml`
+      exactly; this file does not re-maintain the physical mechanism and only narrows the plans.
   tags: [banister, validation, literature-benchmark]
 
 imports:
   - papers/lm_format/banister/banister_validation
 
 references:
-  - "完整引用列表见 papers/lm_format/banister/banister_validation.yaml"
+  - "The complete reference list is in papers/lm_format/banister/banister_validation.yaml"
 
 simulation:
   plans:
     - id: "daily_training"
-      label: "每日训练（7天/周，Morton 1990 原始文献协议 w=50/10）"
+      label: "Daily training (7 days/week, Morton 1990's original literature protocol, w=50/10)"
       regimens:
-        - {variable: training_load, time_start: "09:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-04-22"], label: "渐进期 w=50 AU/天（第1–16周，Morton 1990原始值）"}
-        - {variable: training_load, time_start: "09:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-04-23", "2026-05-20"], label: "锥形减量 w=10 AU/天（第17–20周，Morton 1990原始值）"}
+        - {variable: training_load, time_start: "09:00", value: 50.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-04-22"], label: "Buildup phase, w=50 AU/day (weeks 1-16, Morton 1990's original value)"}
+        - {variable: training_load, time_start: "09:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-04-23", "2026-05-20"], label: "Taper, w=10 AU/day (weeks 17-20, Morton 1990's original value)"}

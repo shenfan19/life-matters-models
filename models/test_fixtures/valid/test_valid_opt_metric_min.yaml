@@ -8,11 +8,6 @@ metadata:
       `stock` with a single up-front order, then depletes at a fixed daily demand.
       The objective is to maximize the worst-case (minimum) inventory level over the
       planning horizon, subject to a hard cost cap on the order.
-    problem_cn: >
-      验证 `optimization.objectives[].metric: min`（final|max|min|mean 四种 metric 取值
-      中唯一未被其他测试模型覆盖的一种）。一个仓库通过一次性订货补充库存 `stock`，
-      此后按固定的每日需求持续消耗。优化目标是在订货成本硬约束上限下，最大化整个
-      计划周期内的最差（最小）库存水平。
     result: >
       `stock(t) = order_qty - daily_demand * t`, monotonically decreasing, so
       `min(stock)` over the 14-day horizon occurs at the final step:
@@ -20,14 +15,7 @@ metadata:
       maximize metric:min therefore pushes `order_qty` to its largest feasible value.
       The hard constraint `order_cost <= 250` (order_cost = order_qty * 2) caps
       `order_qty` at 125, giving `min(stock) = -5` at the optimum (best_f ≈ -5).
-    result_cn: >
-      `stock(t) = order_qty - daily_demand * t`，单调递减，因此 14 天周期内的
-      `min(stock)` 出现在最后一步：`min(stock) = order_qty - 10*13 = order_qty - 130`。
-      因此 maximize metric:min 会将 `order_qty` 推向其可行范围内的最大值。硬约束
-      `order_cost <= 250`（order_cost = order_qty * 2）将 `order_qty` 上限设为 125，
-      最优解处 `min(stock) = -5`（best_f ≈ -5）。
     limitations: Linear toy inventory dynamics; for engine validation only, not a real supply-chain model.
-    limitations_cn: 线性玩具级库存动力学；仅用于引擎验证，非真实供应链模型。
   tags: [test, optimization, metric_min]
 variables:
   stock:

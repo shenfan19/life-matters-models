@@ -1,35 +1,35 @@
-# EPOC 强度-恢复关系：留一法预测验证报告
+# EPOC Intensity-Recovery Relationship: A Leave-One-Out Prediction Validation Report
 
-模型文件：`epoc_recovery_2026.yaml`。汇总入口：`models/test_validation/validation_report.md` 第1节。
+Model file: `epoc_recovery_2026.yaml`. Summary index: `models/test_validation/validation_report.md`, section 1.
 
-## 方法
+## Method
 
-Bahr & Sejersted (1991)：6名健康男性分别以29%/50%/75% VO2max骑行80分钟，测得EPOC（运动后过量氧耗）总量和持续时间：
+Bahr & Sejersted (1991): 6 healthy men cycled for 80 minutes at 29%/50%/75% VO2max, and EPOC (excess post-exercise oxygen consumption) total and duration were measured:
 
-| 强度 | EPOC总量 | 持续时间 |
+| Intensity | EPOC total | Duration |
 | --- | --- | --- |
 | 29% VO2max | 1.3 ± 0.46 L | 0.3 ± 0.1 h |
 | 50% VO2max | 5.7 ± 1.71 L | 3.3 ± 0.7 h |
 | 75% VO2max | 30.1 ± 6.41 L | 10.5 ± 1.6 h |
 
-用29%和75%两个强度的数据分别拟合指数模型 `magnitude/duration = A·exp(B·intensity)`（作者自行最小二乘拟合，非文献直接给出的系数），对50%强度做**留一法预测**（不使用50%强度自身的实测数据参与拟合）。
+An exponential model `magnitude/duration = A*exp(B*intensity)` is fit separately to the 29% and 75% intensity data (an independent least-squares fit by the author, not coefficients given directly by the literature), and a **leave-one-out prediction** is made for the 50% intensity (not using the 50% intensity's own measured data in the fit).
 
-## 结果
+## Results
 
-| 检验点 | 预测值 | 文献实测值（Bahr & Sejersted 1991） | 判断 |
+| Test point | Predicted value | Literature-measured value (Bahr & Sejersted 1991) | Verdict |
 | --- | --- | --- | --- |
-| 50%强度 EPOC 总量 | 5.46 L | 5.7 ± 1.71 L | ✅ 落在实测区间内 |
-| 50%强度 EPOC 持续时间 | 1.52 h | 3.3 ± 0.7 h | ❌ 远低于实测下限（2.6h） |
+| 50%-intensity EPOC total | 5.46 L | 5.7 ± 1.71 L | Falls within the measured interval |
+| 50%-intensity EPOC duration | 1.52 h | 3.3 ± 0.7 h | Far below the measured lower bound (2.6h) |
 
-另用75%强度的实测总量(30.1L)反推衰减参数（假设 duration≈5×时间常数），跑 `time_course_75pct` 方案的真实时间动力学积分，1分钟步长下累积总量收敛到29.86L，与目标30.1L误差<1%——证明引擎能正确对给定的"脉冲注入+一阶衰减"ODE结构做数值积分，但这是工程一致性检查，不是独立文献对标（衰减参数本身是反推的，不是文献直接报告的）。
+Separately, the decay parameters are back-derived from the 75%-intensity measured total (30.1L), assuming duration is about 5 times the time constant, and running the genuine time-dynamics integration of the `time_course_75pct` plan at a 1-minute step gives a cumulative total converging to 29.86L, within 1% of the 30.1L target. This confirms the engine can correctly numerically integrate a given "pulse injection plus first-order decay" ODE structure, but this is an engineering consistency check, not an independent literature benchmark, since the decay parameters themselves are back-derived, not directly reported by the literature.
 
-## 判断
+## Verdict
 
-**验证状态：部分吻合（validation_confidence=4）**。EPOC总量的留一法预测成功，说明"运动强度与EPOC总量成指数关系"这一文献结论是可以被独立外推验证的稳健规律，而不只是对已知数据点的事后拟合。
+**Validation status: partially consistent (validation_confidence=4)**. The EPOC total's leave-one-out prediction succeeded, showing that the literature's conclusion of "an exponential relationship between exercise intensity and EPOC total" is a robust regularity that can be independently extrapolated and verified, not merely a post-hoc fit to known data points.
 
-持续时间的预测失败同样有意义，不是模型缺陷：EPOC总量是直接测量的耗氧体积积分，测量误差相对小；"持续时间"是"恢复期VO2何时不再与静息值有统计学差异"这一操作性定义，更依赖统计检验方法和样本量，不一定服从与总量相同的强度-指数关系。两者是不同性质的产出指标，用同一个简单指数模型外推本不该期待同样成立。
+The duration prediction's failure is equally meaningful, not a model defect: the EPOC total is a direct integral of measured oxygen-consumption volume, with relatively small measurement error; "duration" is the operational definition of "when the recovery-period VO2 no longer differs statistically from resting value," which depends more on the statistical test method and sample size, and need not follow the same intensity-exponential relationship as the total. The two are output metrics of different character, and extrapolating both with the same simple exponential model should not be expected to hold equally well.
 
-## 局限
+## Limitations
 
-- `time_course_75pct` 方案的衰减时间常数由 magnitude/duration 反推（假设 duration≈5×时间常数），是简化换算，不是 Bahr & Sejersted (1991) 论文直接报告的一阶衰减参数。
-- 只用了29%/75%两个强度的数据做拟合，若未来能找到更多强度梯度的独立数据，可以更严格地检验这一指数关系在更宽范围内是否成立。
+- The `time_course_75pct` plan's decay time constant is back-derived from magnitude/duration, assuming duration is about 5 times the time constant, a simplified conversion, not a first-order-decay parameter Bahr & Sejersted (1991) directly reported.
+- The fit uses only two intensity data points, 29%/75%; if independent data across more intensity gradients becomes available in the future, this exponential relationship's validity over a wider range could be tested more rigorously.

@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_or
   lm_format_version: "1.0"
   description:
@@ -11,22 +11,12 @@ metadata:
       Validates Loader handling of the `or` (odds ratio) evidence subtype in isolation.
       `obesity_cvd_or` must equal `OR / ((1 − p₀) + p₀ × OR)`
       (or: requires `baseline_prevalence` p₀).
-    problem_cn: >
-      验证 Loader 对 `or`（比值比，odds ratio）证据子类型的独立处理。
-      `obesity_cvd_or` 必须等于 `OR / ((1 − p₀) + p₀ × OR)`（or 类型：需要
-      `baseline_prevalence` 字段 p₀）。
     result: >
       `or_display` = obesity_cvd_or = 1.65 / ((1 - 0.12) + 0.12 × 1.65)
       = 1.65 / 1.078 ≈ 1.5306 (constant, every step, dimensionless).
       `obese_cvd_risk_auto` (generated via `applies_to`, baseline is the `baseline_cvd_ir`
       evidence entry below) accumulates at baseline_cvd_ir × obesity_cvd_or / 365/day.
-    result_cn: >
-      `or_display` = obesity_cvd_or = 1.65 / ((1 - 0.12) + 0.12 × 1.65)
-      = 1.65 / 1.078 ≈ 1.5306（每一步恒定，无量纲）。`obese_cvd_risk_auto`（通过
-      `applies_to` 自动生成，基线为下方的 `baseline_cvd_ir` 证据条目）按
-      baseline_cvd_ir × obesity_cvd_or / 365 每天累积。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, or]
 
 variables:

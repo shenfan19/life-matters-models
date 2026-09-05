@@ -7,38 +7,58 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      效率工资理论（Shapiro & Stiglitz 1984）指出高疲劳直接降低生产力，而 Becker（1964）的人力资本理论表明技能培训提升长期时薪但有短期机会成本。劳动者面临跨期权衡：超时工作储蓄快但健康受损，适度工作加技能投资长期收益高但短期收入低，最优的加班策略和培训时机依赖于对疲劳积累速率的量化判断。
+      Efficiency-wage theory (Shapiro & Stiglitz 1984) shows that high fatigue directly lowers
+      productivity, while Becker's (1964) human-capital theory shows that skill training raises
+      long-term hourly wages at a short-term opportunity cost. A worker faces an intertemporal
+      tradeoff: overtime work builds savings quickly but damages health, while moderate work plus
+      skill investment yields higher long-term returns at lower short-term income, and the optimal
+      overtime strategy and training timing depend on a quantitative judgment of the fatigue
+      accumulation rate.
     result: >
-      三方案仿真已用 --sim 验证，分别是均衡工作制、高强度加班和技能投资，年末存款与疲劳分层清晰：高强度加班方案存款最高但疲劳也最高，技能投资方案短期存款最低，原因是培训扣款加上无加班收入，但生产力系数持续提升，均衡方案居中，验证了超时工作换收入与适度工作加技能投资这一跨期权衡的方向性机制。优化已用 --opt 验证，NSGA-II 算法给出 7 个解，给出年末存款与平均生产力的权衡前沿：加班时长收敛至每天 2.92 小时，休假收敛至周末完整休假，技能培训投入从每天 0 小时增至 4 小时，存款从 259378 元降至 251949 元，平均生产力从 1.0 升至 1.664，体现了培训挤占加班时间与培训费用相对长期生产力提升之间的跨期权衡。
+      Three arms, a balanced-work schedule, high-intensity overtime, and skill investment, have
+      been verified with --sim, with year-end savings and fatigue clearly stratified: the
+      high-intensity-overtime arm has the highest savings but also the highest fatigue, the
+      skill-investment arm has the lowest short-term savings, because training deductions combine
+      with no overtime income, but its productivity coefficient keeps rising, and the balanced arm
+      falls in between, confirming the directional mechanism of the intertemporal tradeoff between
+      overtime income and moderate work plus skill investment. The optimization has been verified
+      with --opt, with the NSGA-II algorithm giving 7 solutions on a tradeoff front between year-end
+      savings and average productivity: overtime hours converge to 2.92 hours/day, vacation
+      converges to a full weekend off, skill-training investment rises from 0 to 4 hours/day, savings
+      fall from 259378 yuan to 251949 yuan, and average productivity rises from 1.0 to 1.664,
+      reflecting the intertemporal tradeoff between training crowding out overtime time and training
+      cost against a longer-term productivity gain.
     limitations: >
-      未包含通货膨胀、失业风险和社会保障；个体差异，如技能初值和行业类型，通过参数调整；单个劳动者模型，不反映市场均衡和宏观动态。
+      Inflation, unemployment risk, and social security are not included; individual differences,
+      such as initial skill level and industry type, are handled through parameter adjustment; this
+      is a single-worker model and does not reflect market equilibrium or macro dynamics.
   ratings:
-    importance: 0.5 - 人力资本-效率工资-疲劳健康耦合是劳动经济学核心研究问题；劳动经济基础组件，被历史/职场场景引用预期中等
-    variable: 0.75 - 引用Becker/Shapiro-Stiglitz经典文献及OECD数据，参数有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.5 - The coupling of human capital, efficiency wages, and fatigue/health is a core labor-economics research question; a foundational labor-economics component, expected moderate citation from historical/workplace scenarios
+    variable: 0.75 - Cites classic literature such as Becker/Shapiro-Stiglitz and OECD data, with documented parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [labor, economics, human_capital, efficiency_wage, fatigue, savings]
 
 variables:
   # R1: Labor Output
-  work_load: {description: "工作负荷", value: 40, unit: "h/week", type: state, bounds: [0, 100]}
-  productivity: {description: "生产力系数", value: 1.0, unit: "系数", type: state, bounds: [0.1, 2.0]}
+  work_load: {description: "Work load", value: 40, unit: "h/week", type: state, bounds: [0, 100]}
+  productivity: {description: "The productivity coefficient", value: 1.0, unit: "coefficient", type: state, bounds: [0.1, 2.0]}
   # R2: Economy
-  income_rate: {description: "时薪收入", value: 20, unit: "元/h", type: state, bounds: [0, 1000]}
-  savings: {description: "存款储蓄", value: 5000, unit: "元", type: state, bounds: [0, 1000000]}
+  income_rate: {description: "Hourly income", value: 20, unit: "yuan/h", type: state, bounds: [0, 1000]}
+  savings: {description: "Savings", value: 5000, unit: "yuan", type: state, bounds: [0, 1000000]}
   # R3: Physiological Cost
-  fatigue_level: {description: "疲劳度", value: 0, unit: "分", type: state, bounds: [0, 100]}
+  fatigue_level: {description: "Fatigue level", value: 0, unit: "score", type: state, bounds: [0, 100]}
   # P1: Inputs (Card Inputs)
-  overtime_hours: {description: "加班时数", value: 0, unit: "h", type: input}
-  vacation_days: {description: "休假天数", value: 0, unit: "d", type: input}
-  skill_training: {description: "技能培训", value: 0, unit: "h", type: input}
+  overtime_hours: {description: "Overtime hours", value: 0, unit: "h", type: input}
+  vacation_days: {description: "Vacation days", value: 0, unit: "d", type: input}
+  skill_training: {description: "Skill training", value: 0, unit: "h", type: input}
 
 equations:
-  # F1: Economic Dynamics（原周速率÷7换算为日速率，1周=7天）
+  # F1: Economic Dynamics (the original weekly rate divided by 7 to convert to a daily rate, 1 week=7 days)
   money_dynamics:
-    description: "日薪与支出计算（周速率÷7）"
+    description: "Daily wage and expense calculation (weekly rate divided by 7)"
     step_unit: day
     condition: true
     dynamics:
@@ -47,7 +67,7 @@ equations:
 
   # F2: Fatigue Dynamics
   fatigue_dynamics:
-    description: "工作导致疲劳累积（周速率÷7）"
+    description: "Work accumulates fatigue (weekly rate divided by 7)"
     step_unit: day
     condition: true
     dynamics:
@@ -56,7 +76,7 @@ equations:
 
   # F3: Productivity Impact
   skill_dynamics:
-    description: "培训提升生产力（周速率÷7）"
+    description: "Training raises productivity (weekly rate divided by 7)"
     step_unit: day
     condition: skill_training > 0
     dynamics:
@@ -73,46 +93,46 @@ simulation:
   output_variables: [savings, fatigue_level, productivity]
   plans:
   - id: default
-    label: "均衡工作制（标准工时+周末休假）"
+    label: "A balanced work schedule (standard hours plus a weekend off)"
     regimens:
     - variable: overtime_hours
       time_start: "18:00"
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-01", "2026-12-31"]
-      label: "每日加班1小时"
+      label: "1 hour of overtime daily"
     - variable: vacation_days
       time_start: "09:00"
       value: 1.0
       days: [Sat, Sun]
       date_range: ["2026-01-01", "2026-12-31"]
-      label: "周末完整休假"
+      label: "A full weekend off"
 
   - id: overtime_grind
-    label: "高强度加班（无休假，短期收入优先）"
+    label: "High-intensity overtime (no days off, short-term income priority)"
     regimens:
     - variable: overtime_hours
       time_start: "18:00"
       value: 4.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-12-31"]
-      label: "每日加班4小时，无休息日"
+      label: "4 hours of overtime daily, no rest days"
 
   - id: skill_investment
-    label: "技能投资（短期收入让位于长期生产力）"
+    label: "Skill investment (short-term income yields to long-term productivity)"
     regimens:
     - variable: skill_training
       time_start: "20:00"
       value: 3.0
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-01", "2026-12-31"]
-      label: "每日培训3小时"
+      label: "3 hours of training daily"
     - variable: vacation_days
       time_start: "09:00"
       value: 1.0
       days: [Sat, Sun]
       date_range: ["2026-01-01", "2026-12-31"]
-      label: "周末完整休假"
+      label: "A full weekend off"
 
 optimization:
   method: nsga2
@@ -128,29 +148,30 @@ optimization:
       condition: "<= 70"
       type: hard
       description: >
-        疲劳水平不超过70（fatigue_level量表为0-100；原阈值0.8与该量表不符，
-        已按"多数models里70作为警戒阈值"的一致惯例改正）。
+        Fatigue should not exceed 70 (the fatigue_level scale is 0-100; the original threshold of
+        0.8 did not match this scale, and has been corrected following the common convention across
+        most models of using 70 as the warning threshold).
   startpoint:
     regimens:
       - variable: overtime_hours
         time_start: "18:00"
         time_end: "18:00"
         days: [Mon, Tue, Wed, Thu, Fri]
-        label: "每日加班时长（小时）"
+        label: "Daily overtime duration (hours)"
         optimize:
           value: [0, 4]
       - variable: vacation_days
         time_start: "09:00"
         time_end: "09:00"
         days: [Sat, Sun]
-        label: "周末每日休假（0=照常工作，1=完整休假）"
+        label: "Daily weekend rest (0=working as usual, 1=fully off)"
         optimize:
           value: [0, 1]
       - variable: skill_training
         time_start: "20:00"
         time_end: "20:00"
         days: [Mon, Tue, Wed, Thu, Fri]
-        label: "每日技能培训投入（小时）"
+        label: "Daily skill-training investment (hours)"
         optimize:
           value: [0, 4]
   algorithm:

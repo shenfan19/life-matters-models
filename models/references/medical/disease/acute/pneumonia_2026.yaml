@@ -9,22 +9,37 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      社区获得性细菌性肺炎（CAP）的治疗存在一个核心张力：抗生素剂量必须足够高才能快速清除细菌，但过高剂量会增加副作用风险；同时，氧疗能即时改善血氧饱和度，但并不能替代抗生素对感染本身的控制。此外，C反应蛋白（CRP）在治疗开始后的前2至3天往往先升高再下降，这一滞后现象容易被误判为治疗无效。如何在14天标准疗程内选择合适的抗生素剂量与氧疗组合，是优化肺炎预后的核心临床问题。
+      Treating community-acquired bacterial pneumonia (CAP) involves a core tension: the
+      antibiotic dose must be high enough to clear the bacteria quickly, but too high a dose raises
+      side-effect risk; meanwhile, oxygen therapy immediately improves blood-oxygen saturation but
+      cannot substitute for antibiotics controlling the infection itself. In addition, C-reactive
+      protein (CRP) often rises before falling in the first 2 to 3 days after treatment starts, and
+      this lag is easily misread as treatment failure. Choosing the right combination of antibiotic
+      dose and oxygen therapy within the standard 14-day course is the core clinical problem in
+      optimizing pneumonia outcomes.
     result: >
-      默认仿真14天显示：标准剂量抗生素治疗下，细菌负荷在约5至7天内清除至较低水平，CRP在第3天前后达到峰值后逐渐消退，血氧饱和度（SpO2）随细菌清除而恢复至94%以上。优化结果显示，提高抗生素剂量能在降低平均体温从而减少发热天数与提升第14天SpO2之间形成正向关联，但剂量提升超过标准剂量的1.5倍后收益递减。
+      A default 14-day simulation shows: under standard-dose antibiotic treatment, bacterial burden
+      clears to a low level within about 5 to 7 days, CRP peaks around day 3 and then gradually
+      resolves, and blood-oxygen saturation (SpO2) recovers above 94% as bacteria clear. The
+      optimization result shows that raising the antibiotic dose creates a positive association
+      between lowering mean body temperature, thereby reducing febrile days, and raising SpO2 on day
+      14, but returns diminish once the dose exceeds 1.5 times the standard dose.
     limitations: >
-      模型不区分病原体种类，例如肺炎链球菌、非典型病原体等，也未包含抗生素耐药场景。CRP动力学为简化描述，未涵盖细胞因子级联反应；不适用于需要机械通气的重症CAP场景。
+      The model does not distinguish pathogen type, such as Streptococcus pneumoniae versus atypical
+      pathogens, and does not include an antibiotic-resistance scenario. The CRP dynamics are a
+      simplified description that does not cover the cytokine cascade; it is not applicable to
+      severe CAP scenarios requiring mechanical ventilation.
   ratings:
-    importance: 0.5 - CAP是全球最常见住院感染，抗生素剂量优化是临床重点；急性病模型，上层场景复用少
-    variable: 0.75 - 引用IDSA/ATS指南及多篇高质量文献，核心参数有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.5 - CAP is the most common cause of hospitalization for infection worldwide, and antibiotic-dose optimization is a clinical focus; an acute-disease model, with low reuse from upstream scenarios
+    variable: 0.75 - Cites the IDSA/ATS guidelines and several high-quality publications, with a documented basis for the core parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [pneumonia, CAP, antibiotic, respiratory, inflammation, SpO2]
 variables:
   bacterial_load:
-    description: 肺部细菌负荷（相对单位，初始=100表示典型感染负荷）。抗生素半衰期约2天（Mandell 2007）。
+    description: Pulmonary bacterial burden (relative units, an initial value of 100 represents a typical infection burden). The antibiotic half-life is about 2 days (Mandell 2007).
     value: 100.0
     unit: CFU index
     type: state
@@ -32,7 +47,7 @@ variables:
     io_role: output
 
   inflammatory_index:
-    description: 全身炎症指数（0-10），驱动发热和CRP。初始随细菌负荷上升。
+    description: The systemic inflammation index (0-10), driving fever and CRP. Starts elevated with rising bacterial burden.
     value: 6.0
     unit: index
     type: state
@@ -40,7 +55,7 @@ variables:
     io_role: output
 
   fever_celsius:
-    description: 体温（°C）。正常37.0，CAP急性期38.5-39.5°C。
+    description: Body temperature (°C). Normal is 37.0, an acute-CAP episode is 38.5-39.5°C.
     value: 38.8
     unit: "°C"
     type: state
@@ -48,7 +63,7 @@ variables:
     io_role: output
 
   spo2_pct:
-    description: 血氧饱和度（%）。正常≥95%，CAP时可降至88-92%。目标≥94%（Mandell 2007）。
+    description: Blood-oxygen saturation (%). Normal is >=95%, CAP can lower it to 88-92%. The target is >=94% (Mandell 2007).
     value: 90.0
     unit: "%"
     type: state
@@ -56,7 +71,7 @@ variables:
     io_role: output
 
   crp_level:
-    description: C反应蛋白（mg/L）。正常<5，CAP急性期150-300 mg/L，峰值约治疗后2-3天。
+    description: C-reactive protein (mg/L). Normal is <5, an acute-CAP episode is 150-300 mg/L, peaking about 2-3 days after treatment starts.
     value: 80.0
     unit: mg/L
     type: state
@@ -64,35 +79,35 @@ variables:
     io_role: output
 
   antibiotic_dose:
-    description: 抗生素日剂量（相对效力单位，1.0=标准剂量，如阿莫西林克拉维酸1g tid）。
+    description: The daily antibiotic dose (relative efficacy units, 1.0=the standard dose, e.g. amoxicillin-clavulanate 1g tid).
     value: 0.0
     unit: relative units
     type: input
     bounds: [0, 2.0]
 
   oxygen_therapy_flow:
-    description: 氧疗流量（L/min）。0=不吸氧，2-4=低流量，>5=高流量面罩。
+    description: Oxygen-therapy flow rate (L/min). 0=no oxygen, 2-4=low flow, >5=a high-flow mask.
     value: 0.0
     unit: L/min
     type: input
     bounds: [0, 15]
 
   bacterial_clearance_rate:
-    description: 无药物时细菌自然清除率（/day）。标准抗生素使半衰期约2天，故清除率≈0.35/day（Mandell 2007）。
+    description: The natural bacterial-clearance rate without medication (/day). A standard antibiotic gives a half-life of about 2 days, so the clearance rate is about 0.35/day (Mandell 2007).
     value: 0.05
     unit: 1/day
     type: parameter
     reference: "Mandell LA et al. (2007) Clin Infect Dis 44(Suppl 2):S27-S72"
 
   antibiotic_efficacy:
-    description: 单位抗生素剂量对细菌的额外清除贡献（/day per relative unit）。标准剂量使清除率达0.35/day。
+    description: The additional bacterial-clearance contribution per unit antibiotic dose (/day per relative unit). A standard dose brings the clearance rate to 0.35/day.
     value: 0.30
     unit: 1/day per dose unit
     type: parameter
     reference: "Mandell LA et al. (2007) Clin Infect Dis 44(Suppl 2):S27-S72"
 
   crp_peak_lag:
-    description: CRP对炎症反应的滞后积累系数。CRP在治疗初期先升后降（峰值约2-3天）。
+    description: The lag-accumulation coefficient of CRP's response to inflammation. CRP rises before falling early in treatment, peaking around day 2-3.
     value: 0.15
     unit: mg/L per index per day
     type: parameter
@@ -100,7 +115,7 @@ variables:
 
 equations:
   bacterial_dynamics:
-    description: 细菌清除：自然清除 + 抗生素杀菌效应
+    description: Bacterial clearance combines natural clearance and antibiotic bactericidal effect
     step_unit: day
     condition: bacterial_load > 0
     priority: 8
@@ -110,7 +125,7 @@ equations:
         * bacterial_load * step)
 
   inflammation_dynamics:
-    description: 炎症指数随细菌负荷升降，细菌清除后炎症消退（半衰期约3天）
+    description: The inflammation index rises and falls with bacterial burden, resolving after bacterial clearance (a half-life of about 3 days)
     step_unit: day
     condition: true
     priority: 7
@@ -119,7 +134,7 @@ equations:
         max(0, inflammatory_index + (bacterial_load * 0.005 - inflammatory_index * 0.25) * step)
 
   fever_dynamics:
-    description: 体温由炎症指数驱动，37°C为基线，炎症消退后趋向正常
+    description: Body temperature is driven by the inflammation index, with 37°C as baseline, trending toward normal as inflammation resolves
     step_unit: day
     condition: true
     priority: 6
@@ -128,7 +143,7 @@ equations:
         max(36.5, 37.0 + inflammatory_index * 0.28)
 
   spo2_dynamics:
-    description: SpO2随肺部细菌负荷降低而恢复，氧疗提供即时支持（上限100%）
+    description: SpO2 recovers as pulmonary bacterial burden falls, with oxygen therapy providing immediate support (capped at 100%)
     step_unit: day
     condition: true
     priority: 6
@@ -137,7 +152,7 @@ equations:
         min(100, 95 - bacterial_load * 0.05 + oxygen_therapy_flow * 0.3)
 
   crp_dynamics:
-    description: CRP先随炎症积累（峰值2-3天），随后随炎症消退而下降
+    description: CRP first accumulates with inflammation, peaking at 2-3 days, then falls as inflammation resolves
     step_unit: day
     condition: true
     priority: 5
@@ -161,19 +176,19 @@ simulation:
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-14"]
-      label: "抗生素晨服（标准剂量）"
+      label: "Morning antibiotic dose (standard dose)"
     - variable: antibiotic_dose
       time_start: "20:00"
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-14"]
-      label: "抗生素晚服（标准剂量）"
+      label: "Evening antibiotic dose (standard dose)"
     - variable: oxygen_therapy_flow
       time_start: "00:00"
       value: 3.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-05"]
-      label: "低流量氧疗3L/min（急性期5天）"
+      label: "Low-flow oxygen therapy, 3L/min (the acute-phase 5 days)"
 
 optimization:
   method: nsga2
@@ -181,32 +196,32 @@ optimization:
   - variable: fever_celsius
     metric: mean
     direction: minimize
-    description: "最小化平均体温（减少发热天数）"
+    description: "Minimizing mean body temperature (reducing febrile days)"
   - variable: spo2_pct
     metric: final
     direction: maximize
-    description: "最大化第14天SpO2（肺功能恢复）"
+    description: "Maximizing SpO2 on day 14 (pulmonary-function recovery)"
   constraints:
   - variable: spo2_pct
     condition: ">= 94"
     type: hard
-    description: "SpO2目标≥94%（Mandell 2007 CAP指南）"
+    description: "SpO2 target of >=94% (the Mandell 2007 CAP guideline)"
   - variable: antibiotic_dose
     condition: "<= 2.0"
     type: hard
-    description: "抗生素剂量上限（避免毒副作用）"
+    description: "An antibiotic-dose ceiling (avoiding toxic side effects)"
   startpoint:
     regimens:
     - variable: antibiotic_dose
       time_start: "08:00"
       time_end: "08:00"
-      label: "抗生素晨服剂量"
+      label: "Morning antibiotic dose"
       optimize:
         value: [0.5, 2.0]
     - variable: antibiotic_dose
       time_start: "20:00"
       time_end: "20:00"
-      label: "抗生素晚服剂量"
+      label: "Evening antibiotic dose"
       optimize:
         value: [0.5, 2.0]
   algorithm:

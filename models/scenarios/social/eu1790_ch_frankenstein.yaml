@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: eu1790_ch_frankenstein
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      维克多·弗兰肯斯坦（玛丽·雪莱《弗兰肯斯坦》1818）逃离造物后面临三重张力：压制造物知情范围，即能降低直接威胁但会积累造物的复仇驱动；直面造物并承担责任，即可能化解冲突但要付出极度的心理代价；以及继续研究强度，即尝试解决问题或制造第二个造物。创造者拒绝承担责任的每一步都使造物的复仇动力增强，至亲相继死亡。
+      After fleeing his creation, Victor Frankenstein (Mary Shelley's Frankenstein, 1818) faces a
+      triple tension: suppressing knowledge of the creature's existence lowers the immediate threat
+      but accumulates the creature's drive for revenge; confronting the creature and accepting
+      responsibility might resolve the conflict but demands an extreme psychological cost; and
+      continuing his research, whether attempting to solve the problem or building a second
+      creature. Every step the creator takes to refuse responsibility strengthens the creature's
+      drive for revenge, and those closest to him die one after another.
     result: >
-      仿真预期显示 30 个月内弗兰肯斯坦的身体状态、精神崩溃程度和造物的复仇强度轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to show the trajectories of Frankenstein's physical state, degree
+      of mental breakdown, and the creature's revenge intensity across 30 months. This is currently
+      a draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出30个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - relationships_intact与health经方程追踪无对立驱动，confrontation_willingness同向有利两目标；2026-09-04验证--opt收敛至单一前沿点(88.9,81.9)，数值确认无权衡
-    importance: 0.5 - 弗兰肯斯坦是科学伦理和创造者责任的最经典文学隐喻，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 30-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - relationships_intact and health show no opposing drive when traced through the equations, and confrontation_willingness benefits both objectives in the same direction; verified on 2026-09-04 that --opt converges to a single front point (88.9,81.9), numerically confirming no tradeoff
+    importance: 0.5 - Frankenstein is the most classic literary metaphor for scientific ethics and creator responsibility, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - science
     - ethics
@@ -38,7 +46,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 压制造物知情范围：是否主动压制关于造物存在的消息，保密程度
+    description: Suppressing knowledge of the creature's existence, whether he actively suppresses news of it and how much he keeps secret
     reference: TODO:SOURCE
   confrontation_willingness:
     type: input
@@ -47,7 +55,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 直面造物的意愿：是否尝试与造物沟通或对峙（而非逃跑）
+    description: Willingness to confront the creature, whether he attempts to communicate with or face the creature (rather than flee)
     reference: TODO:SOURCE
   research_continuation:
     type: input
@@ -56,7 +64,7 @@ variables:
     bounds:
       - 0
       - 2
-    description: 继续研究强度：是否继续推进科学研究（以控制/销毁造物）
+    description: The intensity of continued research, whether he keeps advancing his scientific work (to control or destroy the creature)
     reference: TODO:SOURCE
   health:
     type: state
@@ -65,7 +73,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 维克多生命力：身体健康状态：过度劳累、北极追逐、精神崩溃的综合损耗
+    description: Victor's vitality, his physical health, a composite of overexertion, the Arctic chase, and mental breakdown
     reference: TODO:SOURCE
     io_role: output
   ethical_burden:
@@ -75,7 +83,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 伦理负担：未承担责任的道德重量：逃避→累积，直面→缓解
+    description: Ethical burden, the moral weight of unaccepted responsibility, accumulating through avoidance, easing through confrontation
     reference: TODO:SOURCE
     io_role: output
   relationships_intact:
@@ -85,7 +93,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 亲情存续：威廉、贾斯汀、克拉维尔、伊丽莎白等至亲的存续状态
+    description: Surviving relationships, the survival status of those closest to him, William, Justine, Clerval, Elizabeth, and others
     reference: TODO:SOURCE
     io_role: output
   creature_threat:
@@ -95,7 +103,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 造物威胁等级：造物的复仇行动强度：被忽视则升高，被面对则可能谈判
+    description: The creature's threat level, the intensity of its revenge actions, rising when ignored, potentially negotiable when confronted
     reference: TODO:SOURCE
     io_role: output
   scientific_control:
@@ -105,34 +113,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 对造物的科学掌控：能否通过研究理解/控制/销毁造物
+    description: Scientific control over the creature, whether research can understand, control, or destroy it
     reference: TODO:SOURCE
     io_role: output
 equations:
   creature_growth:
     dynamics:
       creature_threat: min(100, creature_threat + (3.0 * (1 - confrontation_willingness) - 1.5 * confrontation_willingness))
-    description: 造物威胁随逃避而增长，直面可减缓
+    description: The creature's threat grows with avoidance, and can be eased by confrontation
     reference: TODO:SOURCE
   relationship_decay:
     dynamics:
       relationships_intact: max(0, relationships_intact - ((creature_threat / 100) * 4.0))
-    description: 威胁越高，亲情损耗越快
+    description: The higher the threat, the faster relationships are lost
     reference: TODO:SOURCE
   ethical_accumulation:
     dynamics:
       ethical_burden: min(100, max(0, ethical_burden + (2.5 * (1 - confrontation_willingness) - 1.0 * confrontation_willingness)))
-    description: 逃避让伦理负担快速增长；直面可缓慢卸载
+    description: Avoidance rapidly grows the ethical burden; confrontation can slowly unload it
     reference: TODO:SOURCE
   health_decay:
     dynamics:
       health: max(0, health - (research_continuation * 1.2) - ((ethical_burden / 100) * 1.5) - ((creature_threat / 100) * 0.8))
-    description: 研究+伦理负担+威胁三重消耗健康
+    description: Research, ethical burden, and threat together deplete health
     reference: TODO:SOURCE
   scientific_progress:
     dynamics:
       scientific_control: min(100, scientific_control + research_continuation * 2.0)
-    description: 研究推进科学控制，但不能直接降低威胁（需配合直面）
+    description: Research advances scientific control, but cannot directly lower the threat (confrontation is also needed)
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -165,7 +173,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 压制造物知情范围
+        label: Suppressing knowledge of the creature's existence
         optimize:
           value:
             - 0
@@ -181,7 +189,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 直面造物的意愿
+        label: Willingness to confront the creature
         optimize:
           value:
             - 0
@@ -197,7 +205,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 继续研究强度
+        label: The intensity of continued research
         optimize:
           value:
             - 0

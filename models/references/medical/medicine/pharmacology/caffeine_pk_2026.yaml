@@ -9,43 +9,55 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      咖啡因在健康成年人中的消除半衰期为4–5小时，是被反复独立测量、共识极高的数字，适合作为单室一阶药代消除这一药理学里争议最小的动力学模型的标准参考子模型。
+      Caffeine's elimination half-life in a healthy adult is 4-5 hours, a repeatedly and
+      independently measured figure with very high consensus, well suited as the standard reference
+      sub-model for single-compartment first-order pharmacokinetic elimination, one of
+      pharmacology's least contested kinetic models.
     result: |
-      单次口服200mg咖啡因，相当于约2杯咖啡剂量，分布容积取42L，即0.6 L/kg乘以70kg代表性体重，文献范围0.5–0.75 L/kg，生物利用度99%；忽略吸收相，吸收约45分钟内完成，本文件简化为瞬时达峰，只验证消除相：t½=5小时时，5/10/15/20小时后血药浓度应分别为峰值的50%/25%/12.5%/6.25%。
+      A single oral dose of 200mg caffeine, roughly the equivalent of 2 cups of coffee, with the
+      volume of distribution taken as 42L (0.6 L/kg times a representative body weight of 70kg,
+      within the literature range of 0.5-0.75 L/kg) and bioavailability 99%; the absorption phase is
+      ignored, since absorption completes within about 45 minutes, and this file simplifies it to an
+      instantaneous peak, validating only the elimination phase: at t1/2=5 hours, the plasma
+      concentration should be 50%/25%/12.5%/6.25% of peak after 5/10/15/20 hours respectively.
     limitations: |
-      简化了吸收相，真实达峰需1-2小时，本文件按t=0瞬时达峰处理，只验证消除动力学本身；5小时半衰期是健康成年人的代表值，个体差异范围较大，为1.5–9.5小时，与CYP1A2基因型相关，未做蒙特卡洛个体差异建模。
+      The absorption phase is simplified away; a real peak takes 1-2 hours, and this file treats it
+      as instantaneous at t=0, validating only the elimination kinetics itself. The 5-hour half-life
+      is a representative value for a healthy adult, with a fairly wide individual range of
+      1.5-9.5 hours related to CYP1A2 genotype, and no Monte Carlo individual-variation modeling was
+      done.
   ratings:
-    importance: 0.25 - 方法论验证展示，非独立临床案例，可作为单室一阶PK的标准子模型复用
-    variable: 1.0 - 咖啡因消除半衰期是药理学教科书级共识数字，文献可直接追溯
-    equation: 1.0 - 单室一阶消除是被广泛引用且独立复现的标准药代动力学方程形式
-    simulation: 1.0 - 全部检查点(5/10/15/20/24小时)与理论衰减曲线偏差<0.1个百分点，逐点验证通过
-    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
-    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合
+    importance: 0.25 - A methodological validation demonstration, not an independent clinical case, reusable as the standard sub-model for single-compartment first-order PK
+    variable: 1.0 - Caffeine's elimination half-life is a textbook-level consensus figure in pharmacology, directly traceable to the literature
+    equation: 1.0 - Single-compartment first-order elimination is a widely cited, independently reproduced standard pharmacokinetic equation form
+    simulation: 1.0 - Every checkpoint (5/10/15/20/24 hours) deviates from the theoretical decay curve by less than 0.1 percentage point, passing point-by-point validation
+    optimization: 0.0 - This file contains no optimization, a pure elimination-kinetics validation with no decision variable
+    confidence: 1.0 - Passes independent predictive testing, with the simulation trajectory matching the analytical theoretical value point by point
   tags: [pharmacokinetics, caffeine, validation, literature-benchmark]
 
 variables:
   caffeine_dose:
-    description: 单次口服咖啡因剂量（约2杯咖啡，仅在模拟第1天08:00给药一次）
+    description: A single oral dose of caffeine (about 2 cups of coffee, dosed only once, at 08:00 on simulation day 1)
     value: 0.0
     unit: mg
     type: input
 
   Vd:
-    description: 表观分布容积（0.6 L/kg × 70kg 代表性体重，文献范围0.5-0.75 L/kg）
+    description: The apparent volume of distribution (0.6 L/kg times a representative body weight of 70kg, within the literature range of 0.5-0.75 L/kg)
     value: 42.0
     unit: L
     type: parameter
     reference: "Alsabri et al. (2018)"
 
   F:
-    description: 口服生物利用度（咖啡因吸收接近完全，无显著首过效应）
+    description: Oral bioavailability (caffeine absorption is nearly complete, with no significant first-pass effect)
     value: 0.99
     unit: dimensionless
     type: parameter
     reference: "Alsabri et al. (2018)"
 
   caffeine_conc:
-    description: 血浆咖啡因浓度（本文件简化吸收相为瞬时达峰，只建模消除相）
+    description: Plasma caffeine concentration (this file simplifies the absorption phase to an instantaneous peak, modeling only the elimination phase)
     value: 0.0
     unit: mg/L
     type: state
@@ -57,15 +69,18 @@ variables:
     value: 0.1386
     unit: 1/hour
     description: >
-      咖啡因消除速率常数 ke = ln2/t½，t½取健康成年人代表值5小时
-      （文献报告范围4–5小时，个体差异1.5–9.5小时，CYP1A2基因型依赖）。
+      Caffeine's elimination rate constant ke = ln2/t1/2, with t1/2 taken as a healthy adult's
+      representative value of 5 hours (the literature reports a range of 4-5 hours, with an
+      individual range of 1.5-9.5 hours depending on CYP1A2 genotype).
     reference: "Institute of Medicine (2001); Alsabri et al. (2018)"
 
 equations:
   caffeine_pk:
     description: >
-      咖啡因单室一阶消除：给药脉冲瞬时进入 Vd（简化吸收相），随后按 ke 一阶衰减。
-      caffeine_ke 已是 1/hour 的有效速率，step_unit 为 hour（step=1），无需额外换算系数。
+      Caffeine's single-compartment first-order elimination: a dosing pulse enters Vd instantaneously
+      (simplifying the absorption phase), then decays by first-order kinetics at ke. caffeine_ke is
+      already the effective rate in 1/hour, and step_unit is hour (step=1), so no additional
+      conversion factor is needed.
     step_unit: hour
     condition: true
     priority: 5
@@ -84,9 +99,9 @@ simulation:
     - caffeine_conc
   plans:
     - id: "single_dose"
-      label: "单次口服200mg咖啡因（08:00，约2杯咖啡）"
+      label: "A single 200mg oral dose of caffeine (08:00, about 2 cups of coffee)"
       regimens:
-        - {variable: caffeine_dose, time_start: "08:00", value: 200.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "单次给药"}
+        - {variable: caffeine_dose, time_start: "08:00", value: 200.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "A single dose"}
 
 references:
   - "Institute of Medicine (2001) Caffeine for the Sustainment of Mental Task Performance: Equationtions for Military Operations. National Academies Press."

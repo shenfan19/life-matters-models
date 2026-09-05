@@ -9,18 +9,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      奥林匹克铁人三项由游泳 1.5 km、自行车 40 km、跑步 10 km 三段组成，是跨三种运动模式的持续性耐力竞赛，最核心的生理挑战是糖原的跨项分配：自行车段以高于有氧阈值的强度持续 40-70 分钟会大幅消耗肌糖原，当糖原储量跌破约 20 g 时，运动员被迫大幅降速，即所谓"邦克"效应。游泳段强度影响自行车起始生理状态，自行车段每分钟多消耗的糖原都直接挤占跑步段的能量供应，三段配速形成强耦合的跨项资源分配问题，是竞技体育中"邦克"风险建模的经典场景。
+      An Olympic-distance triathlon consists of a 1.5 km swim, a 40 km bike, and a 10 km run, a
+      sustained endurance contest spanning three sport modes, whose central physiological challenge
+      is the cross-discipline allocation of glycogen: the bike leg sustained above the aerobic
+      threshold for 40-70 minutes depletes muscle glycogen substantially, and once glycogen stores
+      fall below about 20 g the athlete is forced into a sharp pace decline, the so-called "bonk"
+      effect. Swim-leg intensity affects the starting physiological state entering the bike, every
+      extra gram of glycogen the bike leg burns per minute directly crowds out the run leg's energy
+      supply, and the three legs' pacing forms a tightly coupled cross-discipline resource-allocation
+      problem, a classic scenario for modeling bonk risk in competitive sport.
     result: >
-      仿真尚未运行。理论预期：游泳 72%、自行车 78%、跑步 75% 阈值强度的配速组合，总完赛时间约 127 分钟，终点糖原储量约 148 g，处于安全范围；自行车段强度提升至 86% 以上时，跑步段糖原储量下降至 40-80 g，邦克风险显著上升。
+      Not yet run. Theoretical expectation: with a pacing combination of 72% threshold intensity for
+      the swim, 78% for the bike, and 75% for the run, total finish time is about 127 minutes, with
+      a finish-line glycogen store of about 148 g, within the safe range; raising bike-leg intensity
+      above 86% drops the run-leg glycogen store to 40-80 g, markedly raising bonk risk.
     limitations: >
-      参数基于 70 kg 男性业余铁人三项运动员，换项过渡时间固定为 2 分钟。未包含赛中补糖策略对糖原储量的影响；心理因素，例如疼痛耐受和配速感知误差，未建模；三项运动间肌肉特异性疲劳的积累和转移未分位置区分。
+      Parameters are based on a 70 kg male amateur triathlete, with a fixed 2-minute transition time
+      between legs. The effect of in-race carbohydrate-supplementation strategy on glycogen stores is
+      not included; psychological factors such as pain tolerance and pacing-perception error are not
+      modeled; the accumulation and transfer of sport-specific muscle fatigue across the three
+      disciplines is not distinguished by muscle group.
   ratings:
-    importance: 0.25 - 铁人三项多运动模式整合是运动生理学重要研究方向；综合了多个运动但专项性强，上层引用预期低
-    variable: 0.75 - 引用Hausswirth/O'Toole等权威文献，糖原-配速模型有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Integrating multiple sport modes in triathlon is an important exercise-physiology research direction; it combines several sports but is highly specialized, expected to have low upstream citation
+    variable: 0.75 - Cites authoritative literature such as Hausswirth/O'Toole, with a documented glycogen-pacing model
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [triathlon, olympic, swim, bike, run, glycogen, fatigue, bonk, pacing, energy_system]
 
 variables:
@@ -29,95 +44,94 @@ variables:
     value: 0.0
     unit: "0=swim,1=bike,2=run"
     bounds: [0.0, 2.0]
-    description: "当前运动项目（0=游泳，1=自行车，2=跑步）。YAML schedule 按时间顺序切换项目"
+    description: "The current discipline (0=swim, 1=bike, 2=run). The YAML schedule switches disciplines in time order"
   intensity_pct_threshold:
     type: input
     value: 75.0
     unit: "%threshold"
     bounds: [50.0, 105.0]
-    description: "当前强度（% 无氧阈值功率/配速）。70%=轻松有氧，85%=中高强度，100%=全力竞速"
+    description: "Current intensity (% of threshold power/pace). 70%=easy aerobic, 85%=moderate-to-high intensity, 100%=an all-out race effort"
   energy_stores_glycogen:
     type: state
     value: 450.0
     unit: g
     bounds: [0.0, 600.0]
-    description: "糖原储量（g）。训练有素运动员肝糖原+肌糖原约 400-500g（Jeukendrup 2001）；邦克阈值 < 20g"
+    description: "Glycogen stores (g). A trained athlete's liver plus muscle glycogen is about 400-500g (Jeukendrup 2001); the bonk threshold is <20g"
     io_role: output
   energy_stores_fat:
     type: state
     value: 8000.0
     unit: g
     bounds: [1000.0, 30000.0]
-    description: "脂肪储量（g）。普通成年男性约 12-15 kg（体脂 15-20%）；运动中可利用脂肪约 8-10 kg"
+    description: "Fat stores (g). An average adult male has about 12-15 kg (15-20% body fat); about 8-10 kg is exercise-available fat"
     io_role: output
   heart_rate:
     type: state
     value: 65.0
     unit: bpm
     bounds: [50.0, 210.0]
-    description: "心率（bpm）。游泳约 155-170，自行车 150-165，跑步（疲劳后）160-175"
+    description: "Heart rate (bpm). Swimming is about 155-170, biking 150-165, running, after fatigue, 160-175"
     io_role: output
   fatigue_accumulated:
     type: state
     value: 0.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "跨三项目累积疲劳（>40 开始影响跑步效率，>70 配速显著下降）"
+    description: "Cumulative cross-discipline fatigue (above 40 it starts affecting running efficiency, above 70 pace declines markedly)"
     io_role: output
   race_time_elapsed:
     type: state
     value: 0.0
     unit: minutes
     bounds: [0.0, 300.0]
-    description: "已用竞赛时间（分钟）。终值即为总完赛时间"
+    description: "Elapsed race time (minutes). The final value is the total finish time"
     io_role: output
 
-  # ── 参数 ──────────────────────────────────────────────────────────────────────
   glycogen_burn_rate_base:
     type: parameter
     value: 2.5
     unit: g/min
-    description: "基准糖原消耗率（g/min，80%阈值强度时）。跑步约 2.5-3.5 g/min，自行车约 1.8-2.5 g/min（Jeukendrup 2001）"
+    description: "The baseline glycogen-burn rate (g/min, at 80% threshold intensity). Running is about 2.5-3.5 g/min, biking about 1.8-2.5 g/min (Jeukendrup 2001)"
     reference: "Jeukendrup AE & Martin J (2001) Sports Med 31(7):559-569"
   fat_burn_rate_base:
     type: parameter
     value: 0.6
     unit: g/min
-    description: "基准脂肪消耗率（g/min，70%阈值强度时）。有氧为主时约 0.5-1.0 g/min；高强度时几乎不用脂肪"
+    description: "The baseline fat-burn rate (g/min, at 70% threshold intensity). Predominantly aerobic effort is about 0.5-1.0 g/min; high intensity uses almost no fat"
     reference: "O'Toole ML & Douglas PS (1995) Sports Med 19(4):251-267"
   sport_metabolic_factor:
     type: parameter
     value: 1.0
     unit: dimensionless
-    description: "项目代谢因子（游泳=0.85 较低因水浮力；自行车=1.0；跑步=1.15 较高因体重支撑）"
+    description: "The discipline metabolic factor (swim=0.85, lower due to water buoyancy; bike=1.0; run=1.15, higher due to body-weight support)"
 
 equations:
   glycogen_depletion:
-    description: "糖原消耗：高强度（>80%阈值）以糖原为主；脂肪参与度随强度降低而增加（能量系统切换）"
+    description: "Glycogen depletion: high intensity, above 80% threshold, relies mainly on glycogen; fat's contribution rises as intensity falls, an energy-system switch"
     condition: "intensity_pct_threshold > 0"
     priority: 10
     dynamics:
       energy_stores_glycogen: "max(0.0, energy_stores_glycogen - glycogen_burn_rate_base * (intensity_pct_threshold / 80.0) ** 2.5 * sport_metabolic_factor)"
   fat_depletion:
-    description: "脂肪消耗：低强度有氧时主要供能；高强度时几乎停止（脂肪利用率随强度增加而线性下降）"
+    description: "Fat depletion: the main energy source at low aerobic intensity, nearly halted at high intensity, fat-utilization rate declines linearly as intensity rises"
     condition: "intensity_pct_threshold > 0"
     priority: 9
     dynamics:
       energy_stores_fat: "max(0.0, energy_stores_fat - fat_burn_rate_base * max(0.0, 1.0 - (intensity_pct_threshold - 60.0) * 0.025) * sport_metabolic_factor)"
   heart_rate_response:
-    description: "心率响应：基于强度和累积疲劳；跑步段（运动 2）因换项后 HR 通常偏高"
+    description: "Heart-rate response: based on intensity and accumulated fatigue; the run leg, sport 2, typically shows a higher heart rate after the transition"
     condition: true
     priority: 8
     dynamics:
       heart_rate: "min(210.0, 65.0 + intensity_pct_threshold * 1.4 + fatigue_accumulated * 0.3 + current_sport * 3.0)"
   fatigue_accumulate:
-    description: "疲劳积累：强度、项目（跑步>自行车>游泳）和糖原水平共同驱动；糖原低时疲劳加速"
+    description: "Fatigue accumulation: jointly driven by intensity, discipline, run greater than bike greater than swim, and glycogen level, accelerating as glycogen runs low"
     condition: "intensity_pct_threshold > 0"
     priority: 7
     dynamics:
       fatigue_accumulated: "min(100.0, fatigue_accumulated + (intensity_pct_threshold / 75.0) * 0.08 * (1.0 + current_sport * 0.15) * (1.0 + max(0.0, 100.0 - energy_stores_glycogen) * 0.005))"
   race_time_progress:
-    description: "竞赛时间累积（每分钟 +1）"
+    description: "Race-time accumulation (+1 per minute)"
     condition: true
     priority: 5
     dynamics:
@@ -134,45 +148,42 @@ simulation:
   - id: default
     label: "Baseline plan"
     regimens:
-      # 游泳段（0-20分钟）
       - variable: current_sport
         time_start: "07:00"
         value: 0.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "游泳段（1.5km，约 20 分钟）"
+        label: "Swim leg (1.5km, about 20 minutes)"
       - variable: intensity_pct_threshold
         time_start: "07:00"
         value: 72.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "游泳强度（72% 阈值，节能）"
-      # 换项 T1（20-22分钟）→ 自行车段
+        label: "Swim intensity (72% threshold, energy-conserving)"
       - variable: current_sport
         time_start: "07:20"
         value: 1.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "换项 T1 → 自行车段（40km，约 70 分钟）"
+        label: "Transition T1, then the bike leg (40km, about 70 minutes)"
       - variable: intensity_pct_threshold
         time_start: "07:20"
         value: 78.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "自行车强度（78% 阈值，中等强度）"
-      # 换项 T2（90-92分钟）→ 跑步段
+        label: "Bike intensity (78% threshold, moderate)"
       - variable: current_sport
         time_start: "08:30"
         value: 2.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "换项 T2 → 跑步段（10km，约 40 分钟）"
+        label: "Transition T2, then the run leg (10km, about 40 minutes)"
       - variable: intensity_pct_threshold
         time_start: "08:30"
         value: 75.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "跑步强度（75% 阈值，控制糖原消耗）"
+        label: "Run intensity (75% threshold, controlling glycogen use)"
 
 optimization:
   method: nsga2
@@ -180,38 +191,38 @@ optimization:
     - variable: race_time_elapsed
       metric: final
       direction: minimize
-      description: "最小化总完赛时间（分钟）"
+      description: "Minimizing total finish time (minutes)"
     - variable: energy_stores_glycogen
       metric: final
       direction: maximize
-      description: "最大化终点糖原储量（防止邦克，保留储备）"
+      description: "Maximizing the finish-line glycogen store (preventing bonk, preserving reserve)"
   constraints:
     - variable: energy_stores_glycogen
       condition: ">= 20"
       type: hard
-      description: "邦克防护：糖原不低于 20g（低于此值发生强制减速，影响完赛）"
+      description: "Bonk protection: glycogen should not fall below 20g (below this a forced slowdown occurs, affecting the finish)"
     - variable: heart_rate
       condition: "<= 195"
       type: hard
-      description: "心率安全上限 195 bpm"
+      description: "A heart-rate safety ceiling of 195 bpm"
   startpoint:
     regimens:
       - variable: intensity_pct_threshold
         time_start: "07:00"
         time_end: "07:00"
-        label: "游泳段强度（%阈值，65=保守，90=激进）"
+        label: "Swim-leg intensity (% threshold, 65=conservative, 90=aggressive)"
         optimize:
           value: [65.0, 90.0]
       - variable: intensity_pct_threshold
         time_start: "07:20"
         time_end: "07:20"
-        label: "自行车段强度（%阈值，65=保守，90=激进）"
+        label: "Bike-leg intensity (% threshold, 65=conservative, 90=aggressive)"
         optimize:
           value: [65.0, 90.0]
       - variable: intensity_pct_threshold
         time_start: "08:30"
         time_end: "08:30"
-        label: "跑步段强度（%阈值，65=保守，90=激进）"
+        label: "Run-leg intensity (% threshold, 65=conservative, 90=aggressive)"
         optimize:
           value: [65.0, 90.0]
   algorithm:

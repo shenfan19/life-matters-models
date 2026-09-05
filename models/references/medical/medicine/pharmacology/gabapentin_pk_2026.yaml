@@ -9,30 +9,30 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      加巴喷丁是抗癫痫和神经痛药，消除半衰期 t½=6.0小时是药代动力学教科书和临床指南广泛引用的共识数字。本文件用归一化血药浓度验证 LM format 能否正确复现标准一阶消除曲线，浓度以峰值为1.0进行归一化，不依赖具体剂量、表观分布容积或生物利用度参数，只验证消除动力学本身。
+      Gabapentin is an anticonvulsant and neuropathic-pain medication whose elimination half-life, t1/2=6.0 hours, is a consensus figure widely cited in pharmacokinetics textbooks and clinical guidelines. This file uses a normalized plasma concentration to validate whether LM format can correctly reproduce the standard first-order elimination curve; the concentration is normalized to a peak of 1.0 and does not depend on a specific dose, apparent volume of distribution, or bioavailability parameter, validating only the elimination kinetics itself.
     result: |
-      单室一阶消除，t½=6.0小时：1个半衰期后应降至峰值50%，2个半衰期后25%，3个半衰期后12.5%，4个半衰期后6.25%。仿真结果见下方 output_variables，各检查点应与理论值偏差<0.5%。
+      A single-compartment first-order elimination, t1/2=6.0 hours: the concentration should fall to 50% of peak after 1 half-life, 25% after 2, 12.5% after 3, and 6.25% after 4. See output_variables below for the simulation result; each checkpoint should deviate from the theoretical value by less than 0.5%.
     limitations: |
-      归一化模型简化了吸收相，真实达峰通常需数十分钟到数小时；同时简化了个体差异，肝肾功能、年龄和药物相互作用均会影响实际半衰期。模型只验证消除相本身的一阶动力学结构，非完整 PK/PD 模型。
+      The normalized model simplifies away the absorption phase, since a real peak typically takes tens of minutes to a few hours to reach; it also simplifies individual variation, since liver and kidney function, age, and drug interactions all affect the actual half-life. The model validates only the first-order kinetic structure of the elimination phase itself, not a complete PK/PD model.
   ratings:
-    importance: 0.25 - 药代动力学族案例之一，通用参考组件，尚未被具体论文import
-    variable: 1.0 - 消除半衰期为药代动力学教科书级共识数字，文献可直接追溯
-    equation: 1.0 - 单室一阶消除是被广泛引用且独立复现的标准药代动力学方程形式
-    simulation: 1.0 - 归一化一阶消除曲线与理论值(50%/25%/12.5%/6.25%)逐位吻合，逐点验证通过
-    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
-    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合
+    importance: 0.25 - One of a family of pharmacokinetics cases, a general reference component, not yet imported by a specific paper
+    variable: 1.0 - The elimination half-life is a textbook-level consensus figure in pharmacokinetics, directly traceable to the literature
+    equation: 1.0 - Single-compartment first-order elimination is a widely cited, independently reproduced standard pharmacokinetic equation form
+    simulation: 1.0 - The normalized first-order elimination curve matches the theoretical values (50%/25%/12.5%/6.25%) exactly, passing point-by-point validation
+    optimization: 0.0 - This file contains no optimization, a pure elimination-kinetics validation with no decision variable
+    confidence: 1.0 - Passes independent predictive testing, with the simulation trajectory matching the analytical theoretical value point by point
   tags: [pharmacokinetics, gabapentin, validation, literature-benchmark, pk-family]
 
 variables:
   normalized_conc:
-    description: 归一化血药浓度（峰值=1.0），一阶消除
+    description: Normalized plasma concentration (peak=1.0), first-order elimination
     value: 1.0
     unit: dimensionless
     type: state
     bounds: [0, 1]
 
   elimination_ke:
-    description: 消除速率常数 ke = ln2/t½，t½=6.0小时（文献共识值）
+    description: Elimination rate constant ke = ln2/t1/2, with t1/2=6.0 hours (a literature consensus value)
     value: 0.115525
     unit: 1/hour
     type: parameter
@@ -40,7 +40,7 @@ variables:
 
 equations:
   first_order_elimination:
-    description: "单室一阶消除：dC/dt = -ke·C"
+    description: "Single-compartment first-order elimination: dC/dt = -ke*C"
     step_unit: hour
     condition: true
     priority: 5
@@ -57,7 +57,7 @@ simulation:
     - normalized_conc
   plans:
     - id: "from_peak"
-      label: "从峰值浓度(归一化=1.0)开始的消除追踪"
+      label: "Tracking elimination starting from the peak concentration (normalized=1.0)"
       regimens: []
 
 references:

@@ -7,39 +7,65 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      Banister 双分量模型描述运动训练对运动表现的动态影响：适应分量与疲劳分量均由训练负荷驱动，但以不同时间常数衰减，适应慢衰减、疲劳快衰减，运动表现 = 基线 + k₁·适应 − k₂·疲劳。核心张力在于高训练负荷能快速积累适应，但同步积累的疲劳会暂时掩盖表现提升，甚至引发过度训练，最优的强度、频率、恢复分配无法凭直觉给出。
+      The Banister two-component model describes exercise training's dynamic effect on athletic
+      performance: an adaptation component and a fatigue component are both driven by training load
+      but decay with different time constants, adaptation decaying slowly and fatigue decaying
+      quickly, with performance = baseline + k1*adaptation - k2*fatigue. The core tension is that a
+      high training load accumulates adaptation quickly, but the fatigue accumulating alongside it
+      temporarily masks the performance gain, and can even trigger overtraining, so the optimal
+      allocation of intensity, frequency, and recovery cannot be given by intuition alone.
     result: >
-      三种方案的仿真结果呈现清晰对比。轻量维持方案在TRIMP等于15时，约在第10到30天出现疲劳主导的表现低谷，降至约40分，随后适应分量逐步超过疲劳分量，第90天回升至约199分；标准方案在TRIMP等于60到80时因负荷更高，同样的疲劳低谷更早触底，第10天已到0分，但也更早回升，约第60天封顶200分；无休息日高负荷方案在TRIMP等于120时将低谷显著拉长，第30天仍为0分，直到第60天左右才追上前两者，体现负荷越高、表现受抑制期越长的过度训练风险，三方案共同验证了适应与疲劳双时间常数机制的方向性正确。基于NSGA-II的优化给出末期表现与疲劳积累的权衡前沿，含7个解：从零训练时的100分、0疲劳，到工作日加周六合计约15 TRIMP时的193分、96疲劳，后者已逼近硬约束上限。
-    limitations: 参数仍需补充正式文献来源，此为noref标记的已知缺口；未区分有氧与力量训练的分量差异。
+      Simulating three arms shows a clear contrast. The light-maintenance arm, at TRIMP equal to 15,
+      shows a fatigue-dominated performance trough around days 10 to 30, falling to about 40 points,
+      after which the adaptation component gradually overtakes the fatigue component, recovering to
+      about 199 points by day 90; the standard arm, at TRIMP equal to 60 to 80, has a higher load, so
+      the same fatigue trough bottoms out earlier, reaching 0 points by day 10, but also recovers
+      earlier, plateauing at 200 points around day 60; the no-rest-day high-load arm, at TRIMP equal
+      to 120, extends the trough markedly, remaining at 0 through day 30 and not catching up to the
+      other two until around day 60, illustrating that the higher the load, the longer the
+      performance-suppression period, the overtraining risk; all three arms together confirm the
+      directional correctness of the two-time-constant adaptation-and-fatigue mechanism. The
+      NSGA-II-based optimization gives a tradeoff front between final performance and fatigue
+      accumulation, with 7 solutions: from 100 points and 0 fatigue at zero training, to 193 points
+      and 96 fatigue at about 15 TRIMP combining weekdays and Saturday, the latter already
+      approaching the hard-constraint ceiling.
+    limitations: The parameters still need a formal literature source, a known gap flagged as noref; the componentwise difference between aerobic and strength training is not distinguished.
   ratings:
-    importance: 1.0 - Banister模型是运动科学最核心的训练负荷-表现模型，被多个fitness论文模型import，框架内核心依赖组件
-    variable: 0.75 - 引用Banister 1975原始论文及Morton/Busso等后续验证文献，参数有据可查
-    equation: 1.0 - Banister适应-疲劳双室结构是运动生理学被广泛引用且独立复现次数最多的标准形式之一
-    simulation: 0.5 - --sim/--opt已跑通且方向自洽，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 同结构在papers/lm_format/banister_validation.yaml对标Morton 1990时发现比赛日performance偏离目标2.4倍，本文件未做同等对标
+    importance: 1.0 - The Banister model is the most central training-load-versus-performance model in sports science, imported by multiple fitness papers, a core dependency component within the framework
+    variable: 0.75 - Cites Banister 1975's original paper and subsequent validation literature such as Morton/Busso, with well-documented parameters
+    equation: 1.0 - The Banister adaptation-fatigue two-compartment structure is one of the standard forms most widely cited and independently reproduced in exercise physiology
+    simulation: 0.5 - --sim/--opt run and are directionally self-consistent, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - The same structure in papers/lm_format/banister_validation.yaml, when benchmarked against Morton 1990, found race-day performance deviating from the target by 2.4-fold; this file has not undergone the same benchmark
   tags: [sports_science, training, optimization, physiological, banister, B3]
 
 variables:
   # R1: Fitness Component (Positive Training Effect, PTE)
-  # 适应分量：训练驱动增加，τ₁=45天缓慢衰减（Banister 1975, Table 1）
+  # The adaptation component: increases with training, decaying slowly with tau1=45 days (Banister 1975, Table 1)
   fitness_component:
     description: >
-      训练适应分量（正向效应），τ₁=45天指数衰减。代表有氧能力、肌肉适应等长期生理适应。
-      上界按 training_load 最大值150 TRIMP/day 的稳态（load×τ₁≈6750）留出余量设置，
-      避免早于疲劳分量触顶、抹平二者的τ差异（此前 600 的上界导致两分量几周内一起顶到同一天花板，
-      抹去了适应/疲劳的时间常数差异，使 performance 恒为0，无法复现减量期表现反弹）。
+      The training-adaptation component (a positive effect), decaying exponentially with
+      tau1=45 days. Represents long-term physiological adaptation such as aerobic capacity and
+      muscular adaptation.
+      The upper bound is set with margin above the steady state at the maximum training_load of
+      150 TRIMP/day (load x tau1 is about 6750), avoiding having the fitness component hit its
+      ceiling before the fatigue component and erasing the difference in their time constants (an
+      earlier ceiling of 600 caused both components to hit the same ceiling within a few weeks,
+      erasing the adaptation/fatigue time-constant difference and holding performance at 0
+      permanently, unable to reproduce the taper-period performance rebound).
     value: 0.0
     unit: "au"
     type: state
     bounds: [0.0, 7000.0]
 
   # R2: Fatigue Component (Negative Training Effect, NTE)
-  # 疲劳分量：训练驱动增加，τ₂=15天快速衰减（Banister 1975, Table 1）
+  # The fatigue component: increases with training, decaying quickly with tau2=15 days (Banister 1975, Table 1)
   fatigue_component:
     description: >
-      训练疲劳分量（负向效应），τ₂=15天指数衰减。代表代谢疲劳、中枢疲劳等短期抑制效应。
-      上界同理按 training_load 最大值150 TRIMP/day 的稳态（load×τ₂≈2250）留出余量设置。
+      The training-fatigue component (a negative effect), decaying exponentially with
+      tau2=15 days. Represents short-term suppressive effects such as metabolic and central fatigue.
+      The upper bound is likewise set with margin above the steady state at the maximum
+      training_load of 150 TRIMP/day (load x tau2 is about 2250).
     value: 0.0
     unit: "au"
     type: state
@@ -47,79 +73,79 @@ variables:
 
   # R3: Performance
   performance:
-    description: "运动表现指数。基线100分，训练后在适应积累与疲劳消退之间取得平衡时达到峰值。"
+    description: "The athletic-performance index. A baseline of 100 points, peaking when accumulated adaptation and dissipating fatigue reach a balance after training."
     value: 100.0
-    unit: "分"
+    unit: "score"
     type: state
     bounds: [0.0, 200.0]
 
-  # Parameters (Banister 1975 / Morton 1990 推荐值)
+  # Parameters (Banister 1975 / Morton 1990 recommended values)
   tau_fitness:
-    description: "适应分量衰减时间常数τ₁（推荐值45天）。来源：Morton 1990, Table 1。"
+    description: "The adaptation-component decay time constant tau1 (recommended value 45 days). Source: Morton 1990, Table 1."
     value: 45.0
     unit: "day"
     type: parameter
     bounds: [20.0, 80.0]
 
   tau_fatigue:
-    description: "疲劳分量衰减时间常数τ₂（推荐值15天）。来源：Morton 1990, Table 1。"
+    description: "The fatigue-component decay time constant tau2 (recommended value 15 days). Source: Morton 1990, Table 1."
     value: 15.0
     unit: "day"
     type: parameter
     bounds: [5.0, 30.0]
 
   k1:
-    description: "适应分量权重系数k₁（推荐值1.0）。来源：Morton 1990。"
+    description: "The adaptation-component weighting coefficient k1 (recommended value 1.0). Source: Morton 1990."
     value: 1.0
-    unit: "系数"
+    unit: "coefficient"
     type: parameter
     bounds: [0.3, 3.0]
 
   k2:
-    description: "疲劳分量权重系数k₂（推荐值2.0，约为k₁的2倍）。来源：Morton 1990。"
+    description: "The fatigue-component weighting coefficient k2 (recommended value 2.0, about twice k1). Source: Morton 1990."
     value: 2.0
-    unit: "系数"
+    unit: "coefficient"
     type: parameter
     bounds: [0.5, 5.0]
 
   baseline_performance:
-    description: "未训练时的基线运动表现p₀（设为100分）。"
+    description: "The baseline athletic performance p0 without training (set to 100 points)."
     value: 100.0
-    unit: "分"
+    unit: "score"
     type: parameter
     bounds: [50.0, 200.0]
 
   # P1: Input — Daily Training Load (TRIMP)
-  # TRIMP（训练冲量）= 训练时长(min) × 心率加权系数
-  # 参考值：休息日=0，轻松有氧=30-40，中等强度=60-80，高强度/比赛=100-120，极限训练=150
-  # 来源：Banister & Hamilton (1985) 运动冲量计算方法
+  # TRIMP (Training Impulse) = training duration (min) x a heart-rate-weighted coefficient
+  # Reference values: rest day=0, easy aerobic=30-40, moderate intensity=60-80, high intensity/competition=100-120, extreme training=150
+  # Source: Banister & Hamilton (1985), the training-impulse calculation method
   training_load:
     description: |
-      每日训练负荷（TRIMP，Training Impulse）。
-      典型值：休息日=0；轻松慢跑=30-40；中等有氧=60-80；高强度间歇=100-120；极限训练=150。
-      来源：Banister EW & Hamilton CL (1985) Variations in iron status with fatigue modelled from training in female distance runners.
+      Daily training load (TRIMP, Training Impulse).
+      Typical values: rest day=0; easy jogging=30-40; moderate aerobic=60-80; high-intensity intervals=100-120; extreme training=150.
+      Source: Banister EW & Hamilton CL (1985) Variations in iron status with fatigue modelled from training in female distance runners.
     value: 0.0
     unit: "TRIMP"
     type: input
     bounds: [0.0, 150.0]
 
 equations:
-  # F1: Fitness Dynamics（一阶线性系统，训练输入驱动，τ₁衰减）
-  # dFitness/dt = -Fitness/τ₁ + w(t)
-  # 来源：Banister 1975, Eq.(2)
+  # F1: Fitness Dynamics (a first-order linear system, driven by the training input, decaying with tau1)
+  # dFitness/dt = -Fitness/tau1 + w(t)
+  # Source: Banister 1975, Eq.(2)
   fitness_dynamics:
-    description: "适应分量一阶动力学：dFitness/dt = -Fitness/τ₁ + training_load（Banister 1975, Eq.2）"
+    description: "The adaptation-component first-order dynamics: dFitness/dt = -Fitness/tau1 + training_load (Banister 1975, Eq.2)"
     step_unit: day
     condition: true
     dynamics:
       fitness_component: "fitness_component + (-fitness_component / tau_fitness + training_load) * step"
     priority: 5
 
-  # F2: Fatigue Dynamics（一阶线性系统，训练输入驱动，τ₂衰减，比适应快3倍）
-  # dFatigue/dt = -Fatigue/τ₂ + w(t)
-  # 来源：Banister 1975, Eq.(3)
+  # F2: Fatigue Dynamics (a first-order linear system, driven by the training input, decaying with tau2, 3x faster than adaptation)
+  # dFatigue/dt = -Fatigue/tau2 + w(t)
+  # Source: Banister 1975, Eq.(3)
   fatigue_dynamics:
-    description: "疲劳分量一阶动力学：dFatigue/dt = -Fatigue/τ₂ + training_load（Banister 1975, Eq.3）"
+    description: "The fatigue-component first-order dynamics: dFatigue/dt = -Fatigue/tau2 + training_load (Banister 1975, Eq.3)"
     step_unit: day
     condition: true
     dynamics:
@@ -127,10 +153,10 @@ equations:
     priority: 5
 
   # F3: Performance Calculation
-  # p(t) = p₀ + k₁·Fitness(t) - k₂·Fatigue(t)
-  # 来源：Morton 1990, Eq.(1)
+  # p(t) = p0 + k1*Fitness(t) - k2*Fatigue(t)
+  # Source: Morton 1990, Eq.(1)
   performance_calc:
-    description: "运动表现方程：p = p₀ + k₁·Fitness - k₂·Fatigue（Morton 1990, Eq.1）"
+    description: "The performance equation: p = p0 + k1*Fitness - k2*Fatigue (Morton 1990, Eq.1)"
     condition: true
     dynamics:
       performance: "max(0, baseline_performance + k1 * fitness_component - k2 * fatigue_component)"
@@ -152,33 +178,33 @@ simulation:
         value: 60.0
         days: [Mon, Tue, Wed, Thu, Fri]
         date_range: ["2026-01-01", "2026-07-01"]
-        label: "工作日训练负荷（TRIMP）"
+        label: "Weekday training load (TRIMP)"
       - variable: training_load
         time_start: "09:00"
         value: 80.0
         days: [Sat]
         date_range: ["2026-01-01", "2026-07-01"]
-        label: "周六长训练"
+        label: "Saturday long training session"
 
   - id: light_maintenance
-    label: "维持性轻量训练（低刺激对照）"
+    label: "Maintenance-level light training (a low-stimulus control)"
     regimens:
       - variable: training_load
         time_start: "09:00"
         value: 15.0
         days: [Mon, Tue, Wed, Thu, Fri]
         date_range: ["2026-01-01", "2026-07-01"]
-        label: "工作日轻量训练负荷（TRIMP=15）"
+        label: "Weekday light training load (TRIMP=15)"
 
   - id: overtraining_no_rest
-    label: "无休息日高负荷（过度训练风险）"
+    label: "High load with no rest day (an overtraining risk)"
     regimens:
       - variable: training_load
         time_start: "09:00"
         value: 120.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-07-01"]
-        label: "每日高负荷训练（TRIMP=120，无休息日）"
+        label: "Daily high-load training (TRIMP=120, no rest day)"
 
 optimization:
   method: nsga2
@@ -186,30 +212,30 @@ optimization:
     - variable: performance
       metric: final
       direction: maximize
-      description: "最大化180天末运动表现"
+      description: "Maximizing performance at the end of 180 days"
     - variable: fatigue_component
       metric: final
       direction: minimize
-      description: "最小化180天末疲劳积累（过度训练风险）"
+      description: "Minimizing accumulated fatigue at the end of 180 days (overtraining risk)"
   constraints:
     - variable: fatigue_component
       condition: "<= 100"
       type: hard
-      description: "避免过度训练：疲劳分量不超100（Morton 1990推荐阈值）"
+      description: "Avoiding overtraining: the fatigue component should not exceed 100 (Morton 1990's recommended threshold)"
   startpoint:
     regimens:
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri]
-        label: "工作日训练负荷（TRIMP）"
+        label: "Weekday training load (TRIMP)"
         optimize:
           value: [0, 150]
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Sat]
-        label: "周六训练负荷（TRIMP）"
+        label: "Saturday training load (TRIMP)"
         optimize:
           value: [0, 150]
   algorithm:

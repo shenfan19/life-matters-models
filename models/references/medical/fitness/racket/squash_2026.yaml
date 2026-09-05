@@ -9,18 +9,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      壁球是代谢当量（MET）最高的运动之一，约 12 MET，其生理特殊性在于封闭球场极大限制了散热效率。与室外运动相比，壁球运动员的出汗率可达 2-3 L/h，核心体温在 60 分钟比赛中持续升高，而热量难以通过对流散失。核心体温超过 39.5°C 后运动表现显著下降，超过 40.5°C 进入安全警戒区。热调节负荷与高代谢强度的叠加，使壁球成为研究热应激-疲劳-表现三者交互关系的独特运动模型。
+      Squash is among the highest metabolic-equivalent (MET) sports, at about 12 MET, and its
+      physiological distinctiveness comes from an enclosed court that sharply limits heat
+      dissipation. Compared with outdoor sports, a squash player's sweat rate can reach 2-3 L/h,
+      core temperature rises continuously across a 60-minute match, and heat is difficult to remove
+      through convection. Once core temperature exceeds 39.5°C, performance declines markedly, and
+      above 40.5°C a player enters a safety-alert zone. This combination of thermoregulatory load and
+      high metabolic intensity makes squash a distinctive model for studying the interaction between
+      heat stress, fatigue, and performance.
     result: >
-      仿真尚未运行。理论预期：RPE=7 强度持续 60 分钟时，核心体温从 37°C 升至约 39.0-39.5°C，出汗率稳定在约 2 L/h，疲劳指数在比赛末约 0.5-0.6，综合表现评分下降至约 80-86 分。强度提升至 RPE=9 时，核心体温在 45-50 分钟后触及 40°C 安全阈值，表现快速衰减。
+      Not yet run. Theoretical expectation: at RPE=7 sustained for 60 minutes, core temperature
+      rises from 37°C to about 39.0-39.5°C, sweat rate stabilizes at about 2 L/h, the fatigue index
+      reaches about 0.5-0.6 by the end of the match, and the overall performance score falls to about
+      80-86. Raising intensity to RPE=9 brings core temperature to the 40°C safety threshold after
+      45-50 minutes, with performance decaying rapidly thereafter.
     limitations: >
-      核心体温模型为简化热平衡近似，未包含环境温度和湿度作为输入变量；脱水对心率和表现的影响通过出汗率间接代理，未建模血浆容量减少和渗透压变化；参数基于 70 kg 成年男性运动员，未区分热适应状态差异。
+      The core-temperature model is a simplified heat-balance approximation and does not include
+      ambient temperature or humidity as input variables; dehydration's effect on heart rate and
+      performance is proxied indirectly through sweat rate, without modeling plasma-volume reduction
+      or osmotic-pressure change; parameters are based on a 70 kg adult male athlete and do not
+      distinguish differences in heat-acclimatization status.
   ratings:
-    importance: 0.25 - 壁球MET最高但受众有限，热调节-代谢交互有专项研究价值；小众专项运动，上层引用预期低
-    variable: 0.5 - 引用Steininger/Duncombe等文献，但文献数量和参数覆盖有限
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Squash has the highest MET but a limited audience; the heat-regulation-versus-metabolism interaction has specialized research value; a niche specialty sport, expected to have low upstream citation
+    variable: 0.5 - Cites publications such as Steininger/Duncombe, but with limited literature count and parameter coverage
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [squash, racket, high_intensity, heat_stress, sweating, core_temperature, MET12]
 
 variables:
@@ -29,83 +44,83 @@ variables:
     value: 7.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "比赛强度（Borg RPE量表；壁球平均约7-8）"
+    description: "Match intensity (Borg RPE scale; squash averages about 7-8)"
   court_coverage_speed:
     type: input
     value: 3.5
     unit: "km/h"
     bounds: [0.5, 7.0]
-    description: "场地覆盖速度（有效移动速度；精英约3-5 km/h平均，冲刺可达15+ km/h）"
+    description: "Court-coverage speed (effective movement speed; an elite average is about 3-5 km/h, with sprints reaching 15+ km/h)"
   heart_rate:
     type: state
     value: 75.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "心率（壁球平均约170 bpm，约85% HRmax；Steininger & Wodick 1987）"
+    description: "Heart rate (squash averages about 170 bpm, about 85% HRmax; Steininger & Wodick 1987)"
   vo2:
     type: state
     value: 10.0
     unit: "mL/kg/min"
     bounds: [5.0, 70.0]
-    description: "摄氧量（壁球MET约12，对应约42 mL/kg/min；Duncombe 2006）"
+    description: "Oxygen uptake (squash is about 12 MET, corresponding to about 42 mL/kg/min; Duncombe 2006)"
   sweat_rate:
     type: state
     value: 0.5
     unit: "L/h"
     bounds: [0.0, 3.5]
-    description: "汗液速率（壁球封闭环境可达2-3 L/h；失水>2%体重影响表现）"
+    description: "Sweat rate (squash's enclosed environment can reach 2-3 L/h; fluid loss above 2% of body weight impairs performance)"
   core_temperature:
     type: state
     value: 37.0
     unit: "°C"
     bounds: [36.0, 41.5]
-    description: "核心体温（壁球封闭球场散热受限；>39.5°C表现下降，>40.5°C安全警戒）"
+    description: "Core temperature (squash's enclosed court limits heat dissipation; above 39.5°C performance declines, above 40.5°C a safety-alert zone)"
   fatigue:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 1.0]
-    description: "综合疲劳（代谢+热疲劳；高核心体温加速神经肌肉疲劳）"
+    description: "Overall fatigue (metabolic plus thermal fatigue; high core temperature accelerates neuromuscular fatigue)"
   performance:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "综合表现评分（技术发挥受疲劳和脱水双重影响）"
+    description: "Overall performance score (technical execution is affected jointly by fatigue and dehydration)"
 
 equations:
   heart_rate_dynamics:
-    description: "心率随强度升高，核心体温升高引起心血管漂移（Steininger & Wodick 1987：均值~170 bpm）"
+    description: "Heart rate rises with intensity, with cardiovascular drift from rising core temperature (Steininger & Wodick 1987: an average of about 170 bpm)"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(200, 80 + game_intensity * 11 + (core_temperature - 37.0) * 8 + fatigue * 10)"
   vo2_response:
-    description: "摄氧量对应MET约12（~42 mL/kg/min at peak intensity）"
+    description: "Oxygen uptake corresponds to about 12 MET (about 42 mL/kg/min at peak intensity)"
     condition: "game_intensity > 0"
     priority: 9
     dynamics:
       vo2: "min(70, 5 + game_intensity * 5.0 + court_coverage_speed * 1.5)"
   sweat_rate_response:
-    description: "出汗率随强度和核心体温升高（封闭球场散热受限，出汗是主要散热途径）"
+    description: "Sweat rate rises with intensity and core temperature (the enclosed court limits heat dissipation, so sweating is the primary heat-loss pathway)"
     condition: true
     priority: 8
     dynamics:
       sweat_rate: "min(3.5, 0.3 + game_intensity * 0.22 + (core_temperature - 37.0) * 0.4)"
   core_temperature_dynamics:
-    description: "核心体温：产热随强度升高，散热受封闭环境限制（热平衡简化模型）"
+    description: "Core temperature: heat production rises with intensity, while heat loss is limited by the enclosed environment (a simplified heat-balance model)"
     condition: true
     priority: 7
     dynamics:
       core_temperature: "min(41.5, core_temperature + game_intensity * 0.012 - sweat_rate * 0.05)"
   fatigue_accumulation:
-    description: "疲劳：代谢疲劳+热疲劳叠加（核心体温超过38.5°C后疲劳加速）"
+    description: "Fatigue combines metabolic and thermal fatigue (fatigue accelerates once core temperature exceeds 38.5°C)"
     condition: true
     priority: 6
     dynamics:
       fatigue: "min(1.0, fatigue + game_intensity * 0.0012 + max(0, core_temperature - 38.5) * 0.004)"
   performance_decay:
-    description: "表现随疲劳和热应激下降（脱水>2%体重对应约800mL，表现下降~8%）"
+    description: "Performance declines with fatigue and heat stress (fluid loss above 2% of body weight, about 800mL, corresponds to about an 8% performance decline)"
     condition: true
     priority: 5
     dynamics:
@@ -133,13 +148,13 @@ simulation:
         value: 7.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "壁球比赛强度（RPE=7）"
+        label: "Squash match intensity (RPE=7)"
       - variable: court_coverage_speed
         time_start: "09:00"
         value: 3.5
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "场地覆盖速度（3.5 km/h均值）"
+        label: "Court-coverage speed (3.5 km/h average)"
 
 optimization:
   method: nsga2
@@ -147,26 +162,26 @@ optimization:
     - variable: performance
       metric: final
       direction: maximize
-      description: "最大化比赛结束时综合表现评分"
+      description: "Maximizing the overall performance score at the end of the match"
     - variable: core_temperature
       metric: final
       direction: minimize
-      description: "最小化核心体温（热安全）"
+      description: "Minimizing core temperature (thermal safety)"
   constraints:
     - variable: core_temperature
       condition: "<= 40.0"
       type: hard
-      description: "核心体温不超过40°C（热安全硬约束）"
+      description: "Core temperature should not exceed 40°C (a hard thermal-safety constraint)"
     - variable: heart_rate
       condition: "<= 190"
       type: soft
-      description: "心率控制在190 bpm以内"
+      description: "Keep heart rate within 190 bpm"
   startpoint:
     regimens:
       - variable: game_intensity
         time_start: "09:00"
         time_end: "09:00"
-        label: "比赛强度（RPE 4-9）"
+        label: "Match intensity (RPE 4-9)"
         optimize:
           value: [4.0, 9.0]
   algorithm:

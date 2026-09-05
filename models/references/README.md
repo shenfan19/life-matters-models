@@ -1,76 +1,73 @@
-# models/references — 来源模型构件
+# models/references — Source Model Components
 
-## 定位
+## Purpose
 
-`references/` 存放**各论文场景所依赖的基础生理/社会动力学子模型**，是整个模型生态的基础构件层。
+`references/` holds **the foundational physiological/social dynamics submodels that each paper scenario depends on**, the base component layer of the entire model ecosystem.
 
-每个文件描述一个独立的生理系统或机制（肾功能、运动疲劳、PK/PD 等），供上层场景（`papers/`、`scenarios/`）通过 `imports:` 机制组合调用。
+Each file describes a single physiological system or mechanism (renal function, exercise fatigue, PK/PD, etc.), for an upstream scenario (`papers/`, `scenarios/`) to compose via the `imports:` mechanism.
 
-**不在这里放的内容**：
-- 完整可运行的仿真场景（放 `papers/` 或 `scenarios/`）
-- 游戏内容（放 `stories/`）
+**What does not belong here**:
+- A complete, runnable simulation scenario (put it in `papers/` or `scenarios/`)
+- Game content (put it in `stories/`)
 
-## 目录结构
+## Directory structure
 
 ```
 medical/
-  disease/      慢性病进展模型（CKD、糖尿病、高血压等）
-  fitness/      运动适应与疲劳（Banister 等）
-  medicine/     药物动力学（PK/PD，一阶吸收/清除）
-  nutrition/    营养素代谢（蛋白质、能量、水分）
-  physiology/   生理基础（肾小球滤过、肌肉合成、ALT动力学等）
-  psychology/   心理健康与认知模型
-  surgery/      手术围手术期模型
+  disease/      Chronic-disease progression models (CKD, diabetes, hypertension, etc.)
+  fitness/      Exercise adaptation and fatigue (Banister, etc.)
+  medicine/     Pharmacokinetics (PK/PD, first-order absorption/elimination)
+  nutrition/    Nutrient metabolism (protein, energy, water)
+  physiology/   Basic physiology (glomerular filtration, muscle synthesis, ALT dynamics, etc.)
+  psychology/   Mental health and cognition models
+  surgery/      Perioperative surgical models
 social/
-  conflict/     冲突与压力模型
-  demography/   人口统计动力学
-  economy/      经济收支模型
-  law/          法律与政策约束
-  psychology/   心理健康与认知模型
-  technology/   技术扩散模型
+  conflict/     Conflict and stress models
+  demography/   Demographic dynamics
+  economy/      Economic income/expenditure models
+  law/          Legal and policy constraints
+  psychology/   Mental health and cognition models
+  technology/   Technology-diffusion models
 environmental/
-  climate/      气候与环境动力学
+  climate/      Climate and environmental dynamics
 risk/
-  actuarial/    精算与死亡率模型
+  actuarial/    Actuarial and mortality models
 ```
 
-## 使用方式
+## Usage
 
 ```yaml
-# 在 papers/ 或 scenarios/ 的场景文件中通过 imports 引用
+# Referenced via imports in a scenario file under papers/ or scenarios/
 imports:
   - medical/fitness/banister_fitness_fatigue
   - medical/disease/ckd_renal_filtration
 ```
 
-Loader 递归合并导入的子模型，根文件中的同名变量/方程覆盖子模型定义。
+The loader recursively merges imported submodels, with a same-named variable/equation in the root file overriding the submodel's definition.
 
-## 验证状态（sim validation）
+## Validation status (sim validation)
 
-每个"可独立分析的参考模型"（含 `type: input` 变量的模型，见 `docs/authoring/imports_and_organization.md` §"references/ 目录约定"）
-都应有多个 `simulation.plans`，用仿真曲线相互对照来验证模型自身的方向性正确——而不是只跑一次
-`--sim` 看不报错就算过关。方法：给同一模型写 2-3 个机制上应产生不同、可预期方向的方案，
-跑 `--sim` 逐一核对曲线是否符合预期方向；核对通过后再跑 `--opt` 确认前沿非退化（不是所有解
-挤在一点），最后才摘掉 `metadata.todo` 里的 `nosim`/`noopt` 标记。
+Every "independently analyzable reference model" (a model containing a `type: input` variable, see the "references/ directory convention" section of `docs/authoring/imports_and_organization.md`)
+should have multiple `simulation.plans`, cross-checking simulation curves against each other to verify the model's own directional correctness, rather than just running `--sim` once and calling it done if nothing errors. Method: write 2-3 scenarios for the same model that should mechanistically produce different, predictable-direction outcomes,
+run `--sim` and check each curve matches the expected direction; once that passes, run `--opt` to confirm the front is non-degenerate (not all solutions crowded onto one point), and only then remove the `nosim`/`noopt` markers from `metadata.todo`.
 
-**当前已完成本轮验证的模型**（2026-07-06）：
+**Models that have completed this round of validation** (2026-07-06):
 
-| 模型 | plans 数 | 验证要点 |
+| Model | # of plans | Validation focus |
 |------|---------|---------|
-| `medical/physiology/banister_fitness_fatigue_2026.yaml` | 3 | 适应/疲劳双时间常数机制；发现 `bounds` 过窄导致 performance 恒为0 的模型级 bug 并修复 |
-| `medical/disease/chronic/ckd_protein_muscle_2026.yaml` | 3 | 低蛋白护肾 vs 高蛋白保肌的方向性权衡；发现并触发了下述引擎级 bug 的排查 |
-| `medical/nutrition/diet/mediterranean_diet_2026.yaml` | 3 | 依从性与红肉拮抗效应；修正 LDL 速率常数换算错误（3年误算成7年）；opt 前沿诚实退化为单点——唯一决策变量对 LDL 单调有益但不影响 CRP，两目标间无真实冲突，非 bug |
-| `medical/fitness/individual/running_2026.yaml` | 3 | 配速-乳酸-疲劳-表现耦合；发现"单日模型只跑1小时"引擎 bug，并将 optimization 目标从"末端表现"改为"消耗热量"以消除退化前沿 |
-| `social/demography/population/population_growth_2026.yaml` | 3 | 生育政策通过出生率影响人口结构；模型原用 `step_unit: month`（当前 format 不支持），已改写为 day 级步长 |
-| `social/economy/labor/labor_economic_2026.yaml` | 3 | 加班/休假/技能投资的收入-疲劳-生产力权衡；模型原用 `step_unit: week`（当前 format 不支持）且完全缺失 `simulation.plans`，均已补齐 |
+| `medical/physiology/banister_fitness_fatigue_2026.yaml` | 3 | The adaptation/fatigue two-time-constant mechanism; found and fixed a model-level bug where overly narrow `bounds` held performance at 0 permanently |
+| `medical/disease/chronic/ckd_protein_muscle_2026.yaml` | 3 | The directional tradeoff between low-protein renal protection and high-protein muscle preservation; found and triggered the investigation of the engine-level bug described below |
+| `medical/nutrition/diet/mediterranean_diet_2026.yaml` | 3 | Adherence and the red-meat antagonistic effect; corrected an LDL rate-constant conversion error (3 years mistakenly computed as 7); the opt front honestly degenerates to a single point, since the only decision variable is monotonically beneficial for LDL but has no effect on CRP, so there is no genuine conflict between the two objectives, not a bug |
+| `medical/fitness/individual/running_2026.yaml` | 3 | The pace-lactate-fatigue-performance coupling; found an engine bug where "a single-day model only ran for 1 hour," and changed the optimization objective from "final performance" to "calories burned" to remove the degenerate front |
+| `social/demography/population/population_growth_2026.yaml` | 3 | Fertility policy affecting population structure through the birth rate; the model originally used `step_unit: month` (unsupported by the current format), rewritten to a day-level step |
+| `social/economy/labor/labor_economic_2026.yaml` | 3 | The income-fatigue-productivity tradeoff among overtime, vacation, and skill investment; the model originally used `step_unit: week` (unsupported by the current format) and was completely missing `simulation.plans`, both now supplied |
 
-`references/` 下其余模型是否仍带 `metadata.todo` 的 `nosim`/`noopt` 标记会随建模进度持续变化，
-按同样方法逐一核实前先不要假定其 `optimization.results` 或 `description.result` 数值可信，
-以下方查询命令跑出的实时结果为准，不要依赖本文档里的历史数字。
+Whether the remaining models under `references/` still carry the `nosim`/`noopt` markers in `metadata.todo` keeps changing as modeling progresses;
+before checking each one the same way, do not assume its `optimization.results` or `description.result` values are trustworthy —
+trust the live result from running the query command below instead, not the historical numbers in this document.
 
-**批量发布提示**：本项目"可发布"的唯一判据是 `metadata.todo` 是否存在/非空（ADR 0120，与文件名无关）。
-批量发布前建议对 `metadata.todo` 为空但未在某一轮验证表格里出现过的文件也跑一遍
-`--sim`/`--opt` 确认没有中招。查询命令（在 `models/references/` 下执行，需要 PyYAML）：
+**A note for batch publishing**: this project's sole criterion for "publishable" is whether `metadata.todo` exists/is non-empty (ADR 0120, independent of the filename).
+Before a batch publish, it's advisable to also run `--sim`/`--opt` on files whose `metadata.todo` is empty but that have not appeared in any validation-round table, to confirm they aren't affected. Query command (run under `models/references/`, requires PyYAML):
 
 ```python
 import yaml, glob
@@ -80,27 +77,27 @@ for f in sorted(glob.glob('**/*.yaml', recursive=True)):
         print(f)
 ```
 
-### 典型示例：sim 验证了 LM 的哪些功能
+### Representative examples: what sim validation exercised in LM
 
-举 3 个有代表性的（其余同类不逐一列出）：
+3 representative ones (other similar cases are not listed individually):
 
-1. **`running_2026.yaml` 的 `threshold_intervals` 方案**：验证了 sustained 区间"窗口总量"语义
-   （ADR 0099，`time_start`≠`time_end` 时 `value` 按窗口内 step 数摊分）与非线性阈值机制的组合——
-   RPE=8/配速4.5min/km 持续60分钟后，乳酸从0.5冲到18.5 mmol/L（远超4 mmol/L阈值区），运动表现从
-   100分崩溃到2.1分，与模型自身文档描述的"40-50分钟后明显下降"完全吻合。
-2. **`ckd_protein_muscle_2026.yaml` 的三方案对照**（0.6 / 0.8 / 1.2 g/kg/day）：验证了"多个 plan
-   相互印证模型方向性"这一核心方法——蛋白摄入越低，GFR终值越高（43.06→42.01）但肌肉质量终值越低
-   （24.36→35.28kg），两条曲线严格反向，与模型自身描述的核心临床权衡一致；也是本轮发现 pulse
-   重置 clamp bug 的原始案例（该模型此前无 `nosim`/`noopt` 标记，看似"已验证"，实为引擎 bug 静默污染）。
-3. **`labor_economic_2026.yaml` 的 `skill_investment` 方案**：验证了多方案对比中"短期代价、长期
-   收益"的跨期权衡——相比均衡方案，该方案年末存款更低（238627 vs 249399元）但生产力系数翻倍
-   （1.0→2.0），量化体现了模型问题陈述里"人力资本投资有短期机会成本"的核心张力。
+1. **`running_2026.yaml`'s `threshold_intervals` plan**: verified the combination of sustained-interval "window total" semantics
+   (ADR 0099, when `time_start` differs from `time_end` the `value` is spread across the steps within the window) with the nonlinear threshold mechanism —
+   at RPE=8, a 4.5min/km pace, sustained for 60 minutes, lactate rises from 0.5 to 18.5 mmol/L (well past the 4 mmol/L threshold zone), and athletic performance collapses from
+   100 to 2.1 points, exactly matching the model's own documented description of "a marked decline after 40-50 minutes."
+2. **`ckd_protein_muscle_2026.yaml`'s three-arm comparison** (0.6 / 0.8 / 1.2 g/kg/day): verified the core method of "multiple plans
+   cross-confirming a model's directional correctness" — the lower the protein intake, the higher the final GFR (43.06 to 42.01) but the lower the final muscle mass
+   (24.36 to 35.28kg), the two curves strictly opposite, matching the model's own described core clinical tradeoff; this was also the original case in this round that uncovered the pulse-
+   reset clamp bug (this model previously carried no `nosim`/`noopt` marker and appeared "already validated," when in fact an engine bug had silently contaminated it).
+3. **`labor_economic_2026.yaml`'s `skill_investment` plan**: verified the "short-term cost, long-term
+   benefit" intertemporal tradeoff across a multi-plan comparison — compared with the balanced plan, this plan has lower year-end savings (238627 versus 249399 yuan) but a doubled productivity coefficient
+   (1.0 to 2.0), quantifying the core tension in the model's problem statement that "human-capital investment carries a short-term opportunity cost."
 
-## 贡献规范
+## Contribution guidelines
 
-见 [`docs/authoring/README.md`](../../docs/authoring/README.md)。每个组件文件必须包含：
-- `metadata.description`（机制说明，写作规范见 [`docs/authoring/description_writing.md`](../../docs/authoring/description_writing.md)）
-- 顶层 `references`（文献来源）
-- 每个变量的 `description` 和 `unit`
+See [`docs/authoring/README.md`](../../docs/authoring/README.md). Every component file must include:
+- `metadata.description` (a mechanism explanation; see [`docs/authoring/description_writing.md`](../../docs/authoring/description_writing.md) for the writing convention)
+- top-level `references` (literature sources)
+- a `description` and `unit` for every variable
 
-每个模型文件都欢迎任何用户参与编辑、补充参数来源或修复问题。
+Every model file welcomes edits, additional parameter sources, or bug fixes from any user.

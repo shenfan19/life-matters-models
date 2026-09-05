@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: eu1800_dk_little_match_girl
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      卖火柴的小女孩（安徒生，1845）在新年前夜 10 小时内面临三重权衡：叫卖努力程度，即可能卖出火柴获得报酬，但在零下气温中会更快消耗体温；燃烧火柴取暖，即带来短暂温暖和幻觉以缓解痛苦，但每根火柴是有限且不可再生的资源；以及寻找避风处，即可能降低失温速率，但受系统性冷漠和儿童孤立阻碍。父亲的惩罚威胁使返家选项封闭，系统性社会冷漠使求助几乎不可能。
+      The little match girl (Andersen, 1845) faces a triple tradeoff over 10 hours on New Year's
+      Eve: how hard to try selling matches, possibly earning money but depleting body heat faster in
+      the sub-zero cold; burning matches for warmth, bringing brief warmth and hallucination to ease
+      her pain, but each match is a finite, non-renewable resource; and seeking shelter from the
+      wind, possibly slowing the rate of heat loss, but hindered by systematic indifference and a
+      child's isolation. The threat of her father's punishment forecloses the option of going home,
+      and systemic social indifference makes seeking help nearly impossible.
     result: >
-      仿真预期显示 10 小时内体温、剩余火柴数量和生存概率的小时动态。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；失温生理参数需参考医学文献；文学设定。
+      The simulation is expected to show the hourly dynamics of body temperature, remaining
+      matches, and survival probability across 10 hours. This is currently a draft, with parameters
+      still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; the hypothermia physiological parameters need grounding in medical literature; a literary setting.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，失温生理参数未锚定医学文献
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出10小时合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - coins_earned与body_temperature经方程追踪无对立驱动，matches_remaining未接入selling_outcome；2026-09-04验证--opt收敛至单一前沿点(0.3,20)，数值确认无权衡
-    importance: 0.5 - 《卖火柴的小女孩》是全球最广泛阅读的童话之一，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the hypothermia physiological parameters not anchored to medical literature
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 10-hour trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - coins_earned and body_temperature show no opposing drive when traced through the equations, and matches_remaining is not wired into selling_outcome; verified on 2026-09-04 that --opt converges to a single front point (0.3,20), numerically confirming no tradeoff
+    importance: 0.5 - The Little Match Girl is one of the most widely read fairy tales in the world, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - poverty
     - child
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 叫卖努力程度：主动向路人请求购买火柴（增加成功率，但消耗体力）
+    description: How hard she tries to sell matches, actively asking passersby to buy (raises the success rate, but consumes energy)
     reference: TODO:SOURCE
   match_burning:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 燃烧火柴取暖：划燃火柴取得片刻温暖（消耗存货，带来幻觉和温暖感）
+    description: Burning matches for warmth, striking a match for a moment of warmth (consumes her stock, brings hallucination and a feeling of warmth)
     reference: TODO:SOURCE
   shelter_seeking:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 寻找避风处：在街角墙壁等处躲风，减少寒冷损耗
+    description: Seeking shelter from the wind, huddling against a street corner or wall to reduce heat loss
     reference: TODO:SOURCE
   body_temperature:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 20
       - 37
-    description: 体温：核心体温：低温症的生理指标（36.5=正常，<32=危险，<28=致命）
+    description: Body temperature, a core-temperature physiological indicator of hypothermia (36.5=normal, below 32=dangerous, below 28=fatal)
     reference: TODO:SOURCE
     io_role: output
   matches_remaining:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 剩余火柴：尚未燃烧或卖出的火柴数量
+    description: Remaining matches, the number not yet burned or sold
     reference: TODO:SOURCE
     io_role: output
   warmth_feeling:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 温暖感（幻觉）：火柴光带来的主观温暖感——与体温解耦的心理状态
+    description: A feeling of warmth (hallucinatory), the subjective warmth brought by matchlight, a psychological state decoupled from actual body temperature
     reference: TODO:SOURCE
     io_role: output
   hope:
@@ -96,7 +104,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 希望感：对救助或奇迹的期待（随体温下降可能增幻觉）
+    description: A sense of hope, anticipation of rescue or a miracle (may intensify into hallucination as body temperature falls)
     reference: TODO:SOURCE
     io_role: output
   coins_earned:
@@ -106,34 +114,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 售出收入：卖出火柴赚到的铜板（是否能回家的关键）
+    description: Income from sales, copper coins earned from selling matches (the key to whether she can go home)
     reference: TODO:SOURCE
     io_role: output
 equations:
   temperature_loss:
     dynamics:
       body_temperature: max(20, body_temperature - (0.8) + (shelter_seeking * 0.4) + (match_burning * 0.3))
-    description: 体温随时间下降，取暖和避风可减缓
+    description: Body temperature falls over time, slowed by warmth and shelter
     reference: TODO:SOURCE
   match_consumption:
     dynamics:
       matches_remaining: max(0, matches_remaining - match_burning)
-    description: 火柴被燃烧消耗
+    description: Matches are consumed by burning
     reference: TODO:SOURCE
   selling_outcome:
     dynamics:
       coins_earned: min(100, coins_earned + (match_selling_effort * 3.0 * (max(0.1, (body_temperature - 28) / 9.0))))
-    description: 叫卖成功率受体温（行动能力）和火柴库存影响
+    description: Selling success is affected by body temperature (functional capacity) and match stock
     reference: TODO:SOURCE
   warmth_feeling_dynamics:
     dynamics:
       warmth_feeling: max(0, min(100, warmth_feeling + (match_burning * 15.0 * (max(1.0, (36 - body_temperature) * 0.5))) - (8.0)))
-    description: 温暖感随火柴燃烧和体温共同变化；低体温时幻觉强度增加
+    description: The feeling of warmth varies jointly with match burning and body temperature; hallucination intensity rises at low body temperature
     reference: TODO:SOURCE
   hope_dynamics:
     dynamics:
       hope: max(0, hope - 3.0 + coins_earned * 0.1)
-    description: 希望感随体温下降而以幻觉形式增强（低温神经症状）
+    description: As body temperature falls, hope intensifies in hallucinatory form (a neurological symptom of hypothermia)
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 叫卖努力程度
+        label: How hard she tries to sell matches
         optimize:
           value:
             - 0
@@ -182,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 燃烧火柴取暖
+        label: Burning matches for warmth
         optimize:
           value:
             - 0
@@ -198,7 +206,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 寻找避风处
+        label: Seeking shelter from the wind
         optimize:
           value:
             - 0
@@ -209,4 +217,4 @@ optimization:
     seed: 19
 
 references:
-  - 卖火柴的小女孩 (Hans Christian Andersen, 1845)
+  - The Little Match Girl (Hans Christian Andersen, 1845)

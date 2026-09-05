@@ -1,63 +1,54 @@
-# 0103 — 新增 `metadata.log`：模型内改进历史记录
+# 0103 - Adding metadata.log: an In-Model Change-History Record
 
-**日期**：2026-06-14
-**状态**：✅ 已实施（文档新增；按需逐步在模型中使用，不强制回填）
-**类别**：模型规范 / 工程约定
-
----
-
-## 背景
-
-`metadata.todo`（ADR 0101）记录"待处理事项"，是前瞻性的；但模型经过多轮修改后，
-**为什么改成现在这样**这一信息只存在于 git 历史里。git log 的问题：
-
-1. 跨文件的批量 commit（如重命名、批量迁移）会把单个模型的真实修改历史淹没在大量无关 diff 中。
-2. AI/人工复查某个模型时，需要先 `git log --follow -- <file>` 再逐条 diff，才能拼出"这个参数为什么是这个值"的脉络，成本高且容易漏看。
-3. YAML 文件本身可能被复制、提取到其他仓库或分享给协作者，脱离 git 上下文后改进历史完全丢失。
-
-`metadata.todo` 的 `evidence` 字段已经验证了"把诊断结论写进文件本身，避免重新推导"这一思路的价值；
-`metadata.log` 是同一思路在"已完成改动"上的应用。
+**Date**: 2026-06-14
+**Status**: Implemented (documentation added; adopted gradually in models as needed, no mandatory backfill)
+**Category**: Model specification / engineering convention
 
 ---
 
-## 决策
+## Background
 
-### 新增 `metadata.log`：以时间戳为 key 的改动记录字典
+`metadata.todo` (ADR 0101) records pending items and is forward-looking; but after a model has gone through several rounds of edits, why it ended up the way it currently is exists only in the git history. Problems with relying on git log:
+
+1. A cross-file bulk commit (a rename, a bulk migration) buries a single model's real edit history inside a large number of unrelated diffs.
+2. When an AI or a human reviews a model, piecing together why a parameter has the value it does requires `git log --follow -- <file>` followed by reading diff after diff, which is costly and easy to miss something in.
+3. A YAML file itself may be copied, extracted into another repository, or shared with a collaborator, and once separated from its git context, its change history is completely lost.
+
+The `evidence` field on `metadata.todo` has already proven the value of writing a diagnostic conclusion into the file itself instead of re-deriving it later; `metadata.log` applies the same idea to changes that have already been completed.
+
+---
+
+## Decision
+
+### Add metadata.log: a change-record dictionary keyed by timestamp
 
 ```yaml
 metadata:
   log:
     "2026-06-14_10-30-00":
-      change: "一句话描述本次改了什么"
-      reason: "为什么这样改"
+      change: "A one-sentence description of what changed this time"
+      reason: "Why it changed this way"
 ```
 
-- **key**：`YYYY-MM-DD_HH-mm-ss` 格式时间戳（本地时间）。选择这个格式是因为字符串字典序
-  与时间顺序一致，YAML 字典本身保留插入顺序，两者叠加后无需额外排序字段即可保证可读顺序。
-- **value**：两个字段，`change`（改了什么）+ `reason`（为什么改）。不引入更多字段——
-  "改了什么"靠 git diff 已可查证，`metadata.log` 的核心价值是补全 git diff 给不出的
-  **动机/背景**；额外字段（如关联 ADR、todo 项编号）留给 `reason` 文本内自然引用
-  （例如"为解决 `metadata.todo` 中的 quality 项：……"），不单独建字段。
-- **追加方式**：新条目追加在字典末尾（即时间上最新的条目在最后），不修改或删除历史条目。
-- **何时记录**：对模型有语义影响的改动（参数值/公式/约束/结构调整、文献依据更新、
-  `metadata.todo` 项的处理过程）记一条；纯格式化、拼写修正、注释润色不必记录。
-- **不强制回填**：现有模型不需要补写历史 log；从下一次有意义的修改开始追加即可。
+- Key: a `YYYY-MM-DD_HH-mm-ss` timestamp (local time). This format was chosen because the string's lexicographic order matches chronological order, and since a YAML dict already preserves insertion order, the two together guarantee a readable order with no extra sorting field needed.
+- Value: two fields, `change` (what changed) plus `reason` (why it changed). No further fields are introduced; what changed can already be verified from a git diff, so `metadata.log`'s core value is filling in the motivation or background a git diff cannot show; an extra field (such as a related ADR or a todo item number) is left to be referenced naturally inside the `reason` text (for example, "to resolve the quality item in `metadata.todo`: ..."), rather than given its own field.
+- Appending: a new entry is appended to the end of the dict (so the chronologically newest entry is last), and existing entries are never edited or deleted.
+- When to record: record an entry for a change with semantic effect on the model (a parameter value, a formula, a constraint, a structural adjustment, an update to literature backing, or resolving a `metadata.todo` item); a pure formatting change, a spelling fix, or comment polish does not need to be recorded.
+- No mandatory backfill: an existing model does not need its history log written retroactively; entries can simply start from the next meaningful change.
 
-### 与 `metadata.todo` 的关系
+### Relationship to metadata.todo
 
-- `metadata.todo`：前瞻——还有什么需要做。
-- `metadata.log`：回顾——已经做了什么、为什么。
-- 处理 `metadata.todo` 中的某一项时，可在 `metadata.log` 追加一条说明处理结果，
-  再从 `metadata.todo` 中删除该项（todo 清空后按 ADR 0101 去掉 `_HOLD` 后缀）。
+- `metadata.todo`: forward-looking, what still needs doing.
+- `metadata.log`: backward-looking, what has been done and why.
+- When resolving an item in `metadata.todo`, an entry describing the resolution can be appended to `metadata.log` before removing the item from `metadata.todo` (once todo is empty, the `_HOLD` suffix is removed per ADR 0101).
 
-### 不是发布门控
+### Not a publication gate
 
-`metadata.log` 是可选字段，缺失不影响 `_HOLD`/`metadata.todo` 判定的"可发布"状态
-（与 `reviewed: true` 类似，详见 `docs/model.md`）。
+`metadata.log` is an optional field, and its absence does not affect the "publishable" status determined by `_HOLD`/`metadata.todo` (similar to `reviewed: true`; see `docs/model.md` for detail).
 
 ---
 
-## 关联
+## Related
 
-- ADR 0101 — `metadata.todo` 结构化任务列表（`evidence` 字段的设计思路是本决策的先例）
-- `docs/model.md` — 完整 YAML Schema 与字段说明
+- ADR 0101 - the `metadata.todo` structured task list (the design idea behind its `evidence` field is the precedent for this decision)
+- `docs/model.md` - the complete YAML schema and field reference

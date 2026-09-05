@@ -7,19 +7,11 @@ metadata:
       week to train are decision variables, chosen from predefined candidate day sets. Two inputs:
       aerobic training (3 weekday patterns) and strength training (2 weekend patterns). Tests
       that pattern index decoding maps correctly to specific day combinations.
-    problem_cn: >
-      验证每周模式优化：训练负荷数值以及每周训练所选的日期，均作为决策变量，从预定义的候选
-      日期集合中选取。两个输入：有氧训练（3 种平日模式）和力量训练（2 种周末模式）。测试模式
-      索引解码能否正确映射到具体的日期组合。
     result: >
       Decision vector has 4 dimensions (aerobic_value, aerobic_pattern_idx, strength_value,
       strength_pattern_idx). Pareto front should show the fitness-fatigue tradeoff where pattern
       indices decode correctly to the candidate day combinations.
-    result_cn: >
-      决策向量为 4 维（有氧训练值、有氧模式索引、力量训练值、力量模式索引）。Pareto 前沿应展现
-      体能-疲劳的权衡关系，且模式索引能正确解码为候选日期组合。
     limitations: Simplified linear fitness-fatigue dynamics; not validated against training science.
-    limitations_cn: 体能-疲劳动力学采用简化的线性模型，未经运动训练科学验证。
   tags: [test, optimization, t3, days-pattern, weekly-schedule, mixed-integer]
 variables:
   fitness_score:

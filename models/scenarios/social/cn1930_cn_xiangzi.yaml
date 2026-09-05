@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: cn1930_cn_xiangzi
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,25 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      祥子（老舍《骆驼祥子》1936）的核心问题是：在 1930 年代北京系统性剥削中，个人努力能走多远？拉车强度，即越努力储蓄积累越快但健康消耗越大；接单风险度，即接受高收益但伴随军阀或骗局风险的订单；以及用于降低被骗概率的社交维护，三者权衡决定祥子是否能在三次失车打击后维持希望还是走向堕落。
+      Xiangzi's (Lao She's Camel Xiangzi, 1936) core question is: within the systematic
+      exploitation of 1930s Beijing, how far can individual effort go? Rickshaw-pulling intensity,
+      where pulling harder accumulates savings faster but depletes health more, the risk level of
+      accepted fares, accepting higher-paying rides that carry warlord or fraud risk, and social
+      maintenance, spent lowering the probability of being cheated, together determine whether
+      Xiangzi can sustain hope after three losses of his rickshaw or instead descends into ruin.
     result: >
-      仿真预期显示 60 个月内储蓄、健康和心理状态的月动态，以及三次失车后的恢复或崩溃轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，历史北京劳动市场参数需参考经济史文献。
+      The simulation is expected to show the monthly dynamics of savings, health, and mental state
+      across 60 months, and the recovery-or-collapse trajectory after each of the three rickshaw
+      losses. This is currently a draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting whose historical Beijing labor-market parameters need grounding in economic-history literature.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，历史劳动市场参数未锚定经济史文献
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出60个月合理轨迹，未与独立数据逐点比对
-    optimization: 0.5 - 2026-09-04验证，--opt收敛出49个非平凡Pareto解(savings 82.4-100, morale 99-100)，work_intensity/risk_tolerance对savings与morale方向性权衡数值上确认成立
-    importance: 0.5 - 《骆驼祥子》是中国近现代文学经典，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the historical labor-market parameters not anchored to economic-history literature
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 60-month trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.5 - Verified on 2026-09-04, --opt converges to 49 non-trivial Pareto solutions (savings 82.4-100, morale 99-100), numerically confirming the directional tradeoff of work_intensity/risk_tolerance against savings and morale
+    importance: 0.5 - Camel Xiangzi is a classic of modern Chinese literature, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - labor
     - class
@@ -39,7 +46,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 拉车强度：每日工作的强度——越努力省钱越快，但身体损耗越大
+    description: Rickshaw-pulling intensity, the daily work intensity, working harder saves money faster but depletes the body more
     reference: TODO:SOURCE
   risk_tolerance:
     type: input
@@ -48,7 +55,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 接单风险度：是否接受危险路线（军阀区/深夜单）来赚更多钱
+    description: The risk level of accepted fares, whether to accept a dangerous route (a warlord-controlled area, a late-night fare) to earn more
     reference: TODO:SOURCE
   social_connection:
     type: input
@@ -57,7 +64,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 社交维护：维持与车行工友、虎妞等人际网络的投入
+    description: Social maintenance, the effort spent maintaining relationships with fellow rickshaw pullers, Huniu, and others
     reference: TODO:SOURCE
   savings:
     type: state
@@ -66,7 +73,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 积蓄（相对值）：向买车目标的进度（100=成功购车）
+    description: Savings (a relative value), progress toward the goal of buying a rickshaw (100=successfully purchased)
     reference: TODO:SOURCE
     io_role: output
   physical_strength:
@@ -76,7 +83,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 体力：身体状态：过度劳动+营养不足的累积损耗
+    description: Physical strength, bodily condition, the cumulative depletion from overwork plus malnutrition
     reference: TODO:SOURCE
     io_role: output
   morale:
@@ -86,7 +93,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 精神意志：对梦想的信念和继续挣扎的意志
+    description: Spirit and will, belief in the dream and the will to keep struggling
     reference: TODO:SOURCE
     io_role: output
   exploitation_damage:
@@ -96,7 +103,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 被剥削程度：制度性剥削（军阀·骗子·虎妞·恶雇主）的累积伤害
+    description: The degree of exploitation suffered, cumulative harm from systemic exploitation (warlords, swindlers, Huniu, abusive employers)
     reference: TODO:SOURCE
     io_role: output
   heat_injury_risk:
@@ -106,34 +113,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 高温损伤风险：北京夏日在烈日下拉车的中暑/热射病累积风险
+    description: Heat-injury risk, the accumulated risk of heatstroke/heat-related illness from pulling a rickshaw under the blazing sun of a Beijing summer
     reference: TODO:SOURCE
     io_role: output
 equations:
   savings_accumulation:
     dynamics:
       savings: min(100, savings + (work_intensity * 2.5 + risk_tolerance * 3.0) * max(0.3, physical_strength / 100))
-    description: 存钱速率：工作强度+风险接单，但会被随机剥削清零
+    description: The savings rate, from work intensity plus risky fares, but liable to be wiped out by random exploitation
     reference: TODO:SOURCE
   body_wear:
     dynamics:
       physical_strength: max(0, physical_strength - (work_intensity * 1.8) - ((heat_injury_risk / 100) * 2.0) + social_connection * 0.8)
-    description: 拉车强度+高温风险+营养不足→体力衰减
+    description: Rickshaw-pulling intensity plus heat risk plus malnutrition drive physical-strength decline
     reference: TODO:SOURCE
   heat_risk_build:
     dynamics:
       heat_injury_risk: min(100, heat_injury_risk + work_intensity * 1.5 - social_connection * 1.0)
-    description: 夏日连续高强度劳动累积高温风险（每年夏天峰值）
+    description: Sustained high-intensity labor through summer accumulates heat risk (peaking each summer)
     reference: TODO:SOURCE
   morale_dynamics:
     dynamics:
       morale: max(0, min(100, morale - ((exploitation_damage / 100) * 2.5 + (1 - physical_strength / 100) * 1.5) + (social_connection * 1.5)))
-    description: 意志随体力下降和剥削积累而消耗
+    description: Morale depletes as physical strength declines and exploitation accumulates
     reference: TODO:SOURCE
   exploitation_growth:
     dynamics:
       exploitation_damage: min(100, exploitation_damage + (0.8) + (risk_tolerance * 1.5))
-    description: 被剥削程度随风险接单和社会接触的复杂增长
+    description: The degree of exploitation grows in a compounding way with risky fares and social exposure
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +173,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 拉车强度
+        label: Rickshaw-pulling intensity
         optimize:
           value:
             - 0
@@ -182,7 +189,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 接单风险度
+        label: The risk level of accepted fares
         optimize:
           value:
             - 0
@@ -198,7 +205,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 社交维护
+        label: Social maintenance
         optimize:
           value:
             - 0
@@ -209,4 +216,4 @@ optimization:
     seed: 19
 
 references:
-  - 骆驼祥子 (老舍, 1936)
+  - Camel Xiangzi (Lao She, 1936)

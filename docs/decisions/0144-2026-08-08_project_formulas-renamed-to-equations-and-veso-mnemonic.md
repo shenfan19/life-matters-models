@@ -1,58 +1,58 @@
-# ADR 0144 — `formulas:` 顶层字段更名为 `equations:`，四要素助记符改为 V.E.S.O.
+# ADR 0144 - Renaming the formulas: Top-Level Field to equations:, Changing the Four-Element Mnemonic to V.E.S.O.
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-08-08
 
-## 背景
+## Background
 
-LM format 的四个顶层机制此前分别叫 `variables`、`formulas`、`simulation`、`optimizer`，简写成 var/for/sim/opt。这个简写在讨论里一直不直观——"for"既不是一个能连读成词的助记符，也容易被误认成英文介词 for，需要额外解释才能记住它指的是哪个字段。
+LM format's four top-level mechanisms used to be called `variables`, `formulas`, `simulation`, and `optimizer`, abbreviated var/for/sim/opt. This abbreviation was never intuitive in discussion; "for" is neither a pronounceable mnemonic nor easily distinguished from the English preposition "for," requiring extra explanation every time to remember which field it refers to.
 
-重新梳理这四个要素时发现，规范正文本身描述这个字段用的词从来就是 differential equation、regression equation、kinetic equation、dynamic equations，而不是 formula——多数条目是控制 dynamics 的微分方程，是随时间演化的关系，不是一次性代入数值算结果的静态公式（如 BMI 公式）。`equations` 才是和规范自己已经在用的描述语言对齐的字段名，不是引入新含义。改名之后四要素简写可以读作 V.E.S.O.（Variables, Equations, Simulation, Optimization），是一个能连读发音的助记符，比 V.F.S.O. 更容易记忆和对外传播。
+Revisiting these four elements, it became clear that the specification's own text had always described this field using the words differential equation, regression equation, kinetic equation, and dynamic equations, never formula; most entries are differential equations governing dynamics, relationships that evolve over time, not a static formula computed once from a set of inputs (such as a BMI formula). `equations` is the field name that actually matches the descriptive language the specification already uses, not a new meaning being introduced. After the rename, the four-element abbreviation reads as V.E.S.O. (Variables, Equations, Simulation, Optimization), a pronounceable mnemonic, easier to remember and communicate than V.F.S.O.
 
-版本号规则（`LM_format_1.0.md` §9.2）里 major bump 只在"破坏旧文件兼容性"时触发，其保护对象是已经依赖某个冻结版本的外部使用者。`LM_format_1.0.md` 版本历史里 v1.0 的每一条记录都标注为 Draft，规范至今没有对外冻结发布，也就没有"已经依赖旧字段名的外部消费者"需要保护——这次改名是在编辑草案，不是对已发布契约做破坏性变更，因此不需要 major bump，仍是 v1.0（changelog 新增一行记录本次改动，见该文件 §9.1）。
+The version-numbering rule (`LM_format_1.0.md` section 9.2) triggers a major bump only when "breaking compatibility with an old file," protecting an external user who already depends on a frozen version. Every entry in `LM_format_1.0.md`'s v1.0 version history is marked Draft, and the specification has never been frozen and released externally, so there is no "external consumer already depending on the old field name" to protect; this rename is an edit to a draft, not a breaking change to an already-published contract, so it needs no major bump and stays at v1.0 (a new changelog line records this change; see that file's section 9.1).
 
-## 决策
+## Decision
 
-### 1. `formulas:` 顶层字段更名为 `equations:`
+### 1. Rename the `formulas:` top-level field to `equations:`
 
-所有 LM file（`life-matters-models` 与 `life-matters-game` 两仓库 `models/` 下共 241 个文件）的顶层 `formulas:` 键改为 `equations:`。`life-matters-game` 的卡牌 YAML（`source.formula` 溯源标注字段，362 个文件）同步改为 `source.equation`，与 `reference_engine/src/routes/converter.py` 生成这批文件时写入的字段名保持一致。
+The top-level `formulas:` key is changed to `equations:` in every LM file (241 files total under `models/` across the `life-matters-models` and `life-matters-game` repositories). `life-matters-game`'s card YAML (the `source.formula` provenance-annotation field, 362 files) is likewise changed to `source.equation`, matching the field name `reference_engine/src/routes/converter.py` writes when generating these files.
 
-### 2. 四要素简写改为 var/equ/sim/opt，助记符改为 V.E.S.O.
+### 2. Change the four-element abbreviation to var/equ/sim/opt, and the mnemonic to V.E.S.O.
 
-`docs/authoring/methodology.md` 纳入标准盘点表的列名、`LM_format_1.0.md` Inclusion Test 的四问、`life-matters-home/process/lm_nomenclature.md`、各仓库 README 的介绍语言同步改为 V.E.S.O. 表述。
+The column names in `docs/authoring/methodology.md`'s inclusion-criteria inventory table, the four questions in `LM_format_1.0.md`'s Inclusion Test, `life-matters-home/process/lm_nomenclature.md`, and the introductory language in each repository's README are all changed to the V.E.S.O. phrasing accordingly.
 
-### 3. 代码、GUI、i18n 同步改名
+### 3. Code, GUI, and i18n renamed to match
 
-`reference_engine` 后端：`Formula` 类改名 `Equation`，模型对象的 `.formulas` 属性、相关变量名、API 响应字段同步改名。`gui` 前端：组件、类型定义、四语言 i18n 文件（`en`/`zh-CN`/`zh-TW`/`fr`，含 i18n key 本身）同步改名，`fr.json` 一并修正了 "de équation" 应作 "d'équation" 的省音问题。`life-matters-game` 前端（`StoryEditor.tsx`/`StoryEngine.tsx`）同步改名。
+In the `reference_engine` backend: the `Formula` class is renamed `Equation`, and the model object's `.formulas` attribute, related variable names, and API response fields are renamed accordingly. In the `gui` frontend: components, type definitions, and the four i18n files (`en`/`zh-CN`/`zh-TW`/`fr`, including the i18n keys themselves) are renamed accordingly, and `fr.json` also fixes an elision issue, correcting "de équation" to "d'équation." The `life-matters-game` frontend (`StoryEditor.tsx`/`StoryEngine.tsx`) is renamed accordingly.
 
-### 4. 测试夹具改名
+### 4. Test fixtures renamed
 
-`models/test_fixtures/` 下 4 个文件名含 `formula` 的 fixture（`test_invalid_formula_undefined_var.yaml` 等）改名为 `equation` 对应名，文件内 `metadata.name` 与交叉引用同步更新；`life-matters-reference-engine` 侧引用这些文件路径的 3 个测试文件（`test_structural_errors.py` 等）同步更新路径与函数名。
+The 4 fixture files under `models/test_fixtures/` whose names contain `formula` (`test_invalid_formula_undefined_var.yaml`, etc.) are renamed to their `equation` counterparts, with `metadata.name` and cross-references inside each file updated accordingly; the 3 test files on the `life-matters-reference-engine` side that reference these file paths (`test_structural_errors.py`, etc.) have their paths and function names updated accordingly.
 
-## 改写范围的边界
+## Boundaries of the Rewrite's Scope
 
-`life-matters-models`/`life-matters-reference-engine`/`life-matters-game` 三仓库内，除下面明确列出的例外，所有文件——含 model YAML 的 `metadata.log`/`todo`/`change` 字段、两仓库索引文件（`DECISIONS.md`/`decisions/README.md`）描述历史 ADR 内容的摘要文字——都按本次改名统一改写，不保留"这里曾经叫 formula"式的更改痕迹。`life-matters-home` 仓库仅论文草稿（`paper/*.md`）与 `validation/validation_report.md` 按同一标准统一改写；`home` 下其余内容（`tasks/`、`process/` 除已改的活文档外、`personal/`、`outreach/` 除 slides 示例外）不要求追溯改写。
+Across the `life-matters-models`/`life-matters-reference-engine`/`life-matters-game` repositories, except for the explicit exceptions listed below, every file, including a model YAML's `metadata.log`/`todo`/`change` fields and the summary text in the two repositories' index files (`DECISIONS.md`/`decisions/README.md`) describing historical ADR content, is rewritten uniformly under this rename, with no trace left of "this used to be called formula." In the `life-matters-home` repository, only the paper drafts (`paper/*.md`) and `validation/validation_report.md` are rewritten to the same standard; the rest of `home` (`tasks/`, `process/` other than the living documents already updated, `personal/`, `outreach/` other than the slides example) is not required to be rewritten retroactively.
 
-例外（保留原状，不属于遗漏）：
+Exceptions (kept as-is, not an oversight):
 
-- **两仓库 `docs/decisions/` 下已接受的历史 ADR 正文与文件名本身**（如 0068 `formula-precompile-to-python-function.md`、0102 `formula-priority-execution-order.md`、0104、0106）——ADR 是本项目的决策记录载体，保留其原始文字与文件名；索引文件里指向这些 ADR 的链接文字（如"0068 方程预编译"）已改写为新术语，但链接目标（文件名）不变，因此索引行文字与其指向的文件名不完全一致，属预期行为。0106 索引摘要"移除 `formula:` 字典形式"例外保留，因为该行描述的是一个已被移除、从未叫过 `equation` 的独立旧字段（与本次 `formulas`/`equations` 复数块改名是两回事），改写会产生事实错误。`LM_format_1.0.md` §9.1 版本历史里，专门记录"字段从 formula 改名"这件事本身的行（2026-08-08 新增行）同理保留旧名，其余历史行的措辞已更新。
-- **`models/**/history/` 下的调试历史快照**（ADR 0141 引入，`.gitignore` 排除，不随仓库发布）——这是刻意保留的改动前原样副本，与"文档里的更改记录"是不同性质的东西，本次改动过程中曾被误改，已核实并恢复原状。
-- **`life-matters-home/paper/c_paper_s1_cn.md` 一处讨论已废弃的独立 `formula:` 字符串字段（ADR 0106 移除的旧写法，与本次 `formulas`/`equations` 改名是两个不同字段）的审阅批注区块**——同上，改写会产生事实错误，予以保留。
-- **`life-matters-home/process/model_copyright_safety.md` 引用《著作权法》第 5 条原文"通用数表、通用表格和公式"**，以及同文件里泛指"公式作为思想不受版权保护"的表述——这是法律条文引用与知识产权语境下的通用词，与本次改名的 schema 字段无关，且该文件不在 `home` 的改写范围（`paper`/`validation_report.md`）内。
-- **`life-matters-home/outreach/lm_slides_v2_global.md` 等三份 slides 里 `formula: "-0.08 * ..."` 示例**——这是 ADR 0106 移除的旧版单数 `formula:` 字典写法的过时示例，本身已与当前 schema 不一致，是独立于本次改名的既有遗留问题，且该文件不在 `home` 的改写范围内，未一并修复。
-- **`reference_engine/src/routes/files.py` 里 `f.equation`（原 `f.formula`）读取一个 `Equation`/`Formula` dataclass 上不存在的属性**——这是改名前就存在的既有 bug（该 dataclass 从未定义过 `formula`/`equation` 字段），本次只做了同名改名，未修复该 bug，超出本次改名范围。
+- **The body text and filenames of already-accepted historical ADRs under both repositories' `docs/decisions/`** (such as 0068 `formula-precompile-to-python-function.md`, 0102 `formula-priority-execution-order.md`, 0104, 0106): an ADR is this project's decision-record medium, and its original text and filename are preserved. The link text pointing to these ADRs in the index files (such as "0068 Equation Precompilation") has been updated to the new terminology, but the link target (the filename) is unchanged, so an index row's text and the filename it points to are not perfectly aligned, which is expected. The 0106 index summary "removes the `formula:` dictionary form" is kept as an exception, since that line describes an already-removed, independent old field that was never called `equation` (a different matter from this rename of the plural `formulas`/`equations` block), and rewriting it would introduce a factual error. In `LM_format_1.0.md` section 9.1's version history, the line specifically recording the fact that "the field was renamed from formula" (the new entry added 2026-08-08) keeps the old name for the same reason; the wording of every other historical line has been updated.
+- **The debug-history snapshots under `models/**/history/`** (introduced by ADR 0141, excluded via `.gitignore`, not published with the repository): these are deliberately preserved as-is copies from before a change, a different kind of thing from "a change record inside a document"; these were mistakenly edited once during this rewrite and have since been checked and restored to their original state.
+- **A review-annotation block in `life-matters-home/paper/c_paper_s1_cn.md` discussing an already-deprecated, independent `formula:` string field** (the old form removed by ADR 0106, a different field from this `formulas`/`equations` rename): kept for the same reason, since rewriting it would introduce a factual error.
+- **`life-matters-home/process/model_copyright_safety.md`'s quotation of Article 5 of the Copyright Law, "generic tables, generic forms, and formulas," and its general statement elsewhere in the same file that "a formula as an idea is not protected by copyright"**: this is a legal citation and a generic term in an intellectual-property context, unrelated to this rename's schema field, and this file is not within `home`'s rewrite scope (`paper`/`validation_report.md`) anyway.
+- **The `formula: "-0.08 * ..."` example in three slides such as `life-matters-home/outreach/lm_slides_v2_global.md`**: this is a stale example of the old singular `formula:` dictionary form that ADR 0106 removed, already inconsistent with the current schema, an existing legacy issue independent of this rename, and this file is not within `home`'s rewrite scope, so it was not fixed at the same time.
+- **`f.equation` (formerly `f.formula`) in `reference_engine/src/routes/files.py`, reading an attribute that does not exist on the `Equation`/`Formula` dataclass**: this is a pre-existing bug from before the rename (that dataclass has never defined a `formula`/`equation` field), and this rename only renamed the same bug, without fixing it, which is outside this rename's scope.
 
-## 已知环境限制
+## Known Environment Limitation
 
-本次改动后 `life-matters-reference-engine` 仓库本地 `models/` 目录为空（与本次改名无关的既有环境问题，改名前后同样失败），导致本地 `pytest` 大部分用例因"模型未找到"而无法真正跑通验证；已通过 `git stash` 对照确认该失败与本次改名无关。GUI（`gui/`）与游戏前端（`life-matters-game/game/`）的 `tsc --noEmit` 类型检查均已通过。
+After this change, the local `models/` directory under the `life-matters-reference-engine` repository was empty (a pre-existing environment issue unrelated to this rename, failing the same way both before and after), so most local `pytest` cases could not actually run to validate anything, failing with "model not found." This failure was confirmed unrelated to this rename by comparing against a `git stash`. Type checking with `tsc --noEmit` passed for both the GUI (`gui/`) and the game frontend (`life-matters-game/game/`).
 
-## 结果
+## Result
 
-- 改名：`formulas:` → `equations:`（LM format 字段），四要素简写 var/for/sim/opt → var/equ/sim/opt，助记符 V.F.S.O. → V.E.S.O.
-- 覆盖：`life-matters-models`、`life-matters-reference-engine`、`life-matters-game`、`life-matters-home` 四仓库的 YAML、后端、前端、i18n、规范文档、建模指南、README、论文草稿、outreach 材料
-- `LM_format_1.0.md` 仍为 v1.0（Draft 状态未发布，不构成对已发布契约的破坏性变更），§9.1 新增一行 changelog 记录本次改动
+- Rename: `formulas:` to `equations:` (the LM format field), the four-element abbreviation var/for/sim/opt to var/equ/sim/opt, and the mnemonic V.F.S.O. to V.E.S.O.
+- Coverage: YAML, backend, frontend, i18n, the specification document, the modeling guide, READMEs, paper drafts, and outreach material across the `life-matters-models`, `life-matters-reference-engine`, `life-matters-game`, and `life-matters-home` repositories.
+- `LM_format_1.0.md` stays at v1.0 (still an unpublished Draft, so this is not a breaking change to an already-published contract), with a new changelog line added to section 9.1 recording this change.

@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: uk1886_uk_dr_jekyll
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,27 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      杰基尔博士（史蒂文森《化身博士》1886）面临三重动态张力：药物使用频率，即每次使用能短期释放被压抑的冲动，但累积耐受性会使不可控变化的阈值降低；科学研究严谨度，即尝试开发解药，但研究本身需要持续暴露于药物；以及维持社会形象，即能降低外部发现风险，但压抑带来的正反馈会加速依赖。成瘾螺旋依次经历自控、习惯、耐受、睡梦中自发变化、失控，是无法逆转的相变点。
+      Dr. Jekyll (Stevenson's Strange Case of Dr Jekyll and Mr Hyde, 1886) faces a triple dynamic
+      tension: drug-usage frequency releases repressed impulses in the short term each time, but
+      accumulating tolerance lowers the threshold for uncontrollable transformation; scientific
+      research rigor pursues an antidote, but the research itself requires continued exposure to the
+      drug; and maintaining a social facade lowers the risk of external discovery, but the positive
+      feedback from repression accelerates dependency. The addiction spiral moves in sequence through
+      self-control, habit, tolerance, spontaneous transformation in sleep, and loss of control, an
+      irreversible phase-transition point.
     result: >
-      仿真预期显示 52 周内海德人格控制时间比例、身份稳定性和解药研究进度的轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；成瘾耐受动力学参数需参考神经科学文献。
+      The simulation is expected to show the trajectory over 52 weeks of the fraction of time Hyde
+      controls the body, identity stability, and antidote-research progress. This is currently a
+      draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; the addiction-tolerance-dynamics parameters need grounding in neuroscience literature.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，成瘾耐受动力学参数未锚定神经科学文献
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出52周合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - self_control与antidote_progress经方程追踪无对立驱动，research_rigor同时有利两目标；2026-09-04验证--opt收敛至单一前沿点(100,100)，数值确认无权衡
-    importance: 0.25 - 杰基尔博士是成瘾动力学和自我实验伦理的著名文学隐喻，但相对小众受众，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the addiction-tolerance-dynamics parameters not anchored to neuroscience literature
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 52-week trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - self_control and antidote_progress show no opposing drive when traced through the equations, with research_rigor benefiting both objectives at once; verified on 2026-09-04 that --opt converges to a single front point (100,100), numerically confirming no tradeoff
+    importance: 0.25 - Dr. Jekyll is a famous literary metaphor for addiction dynamics and the ethics of self-experimentation, but with a relatively niche audience, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - addiction
     - self-experimentation
@@ -38,7 +47,7 @@ variables:
     bounds:
       - 0
       - 5
-    description: 药物使用频率：每周使用变身药物的次数（越高→Hyde停留时间越长）
+    description: Drug-usage frequency, how many times per week he takes the transformation potion (higher means Hyde stays longer)
     reference: TODO:SOURCE
   research_rigor:
     type: input
@@ -47,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 科学研究严谨度：分析药物机制·寻找解药的努力
+    description: Scientific research rigor, effort spent analyzing the drug's mechanism and seeking an antidote
     reference: TODO:SOURCE
   social_facade:
     type: input
@@ -56,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 维持社会形象：以Jekyll身份维持绅士形象，掩盖Hyde的行为
+    description: Maintaining a social facade, keeping up a gentlemanly image as Jekyll, concealing Hyde's actions
     reference: TODO:SOURCE
   self_control:
     type: state
@@ -65,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 自我控制力：Jekyll保持主导意识的能力（降至0=完全被Hyde接管）
+    description: Self-control, Jekyll's ability to keep his consciousness dominant (falling to 0 means Hyde has fully taken over)
     reference: TODO:SOURCE
     io_role: output
   hyde_dominance:
@@ -75,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: Hyde人格强度：阴暗面人格对身体的控制程度
+    description: Hyde's dominance, the degree to which the dark-side personality controls the body
     reference: TODO:SOURCE
     io_role: output
   drug_dependency:
@@ -85,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 药物依赖度：需要越来越多剂量才能维持同等效果的成瘾进展
+    description: Drug dependency, the progression of needing an ever-larger dose to achieve the same effect
     reference: TODO:SOURCE
     io_role: output
   social_exposure_risk:
@@ -95,7 +104,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 社会曝光风险：Hyde的行为被追查到Jekyll的风险
+    description: Social exposure risk, the risk of Hyde's actions being traced back to Jekyll
     reference: TODO:SOURCE
     io_role: output
   antidote_progress:
@@ -105,34 +114,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 解药研究进度：找到永久控制Hyde的科学方案的进度
+    description: Antidote-research progress, progress toward a scientific solution to permanently control Hyde
     reference: TODO:SOURCE
     io_role: output
 equations:
   dependency_growth:
     dynamics:
       drug_dependency: min(100, drug_dependency + (drug_usage_frequency * 2.5))
-    description: 成瘾性随使用频率指数增长
+    description: Addiction grows exponentially with usage frequency
     reference: TODO:SOURCE
   self_control_decay:
     dynamics:
       self_control: max(0, min(100, self_control - ((drug_dependency / 100) * 3.0) - ((hyde_dominance / 100) * 2.0) + (research_rigor * 1.5)))
-    description: 自我控制力随依赖度和Hyde强度消耗
+    description: Self-control is depleted by dependency and Hyde's dominance
     reference: TODO:SOURCE
   hyde_growth:
     dynamics:
       hyde_dominance: min(100, max(0, hyde_dominance + (drug_usage_frequency * 1.5 + (drug_dependency / 100) * 2.0) - (self_control / 100 * 1.0)))
-    description: Hyde人格随使用次数和依赖度增强
+    description: Hyde's personality strengthens with usage count and dependency
     reference: TODO:SOURCE
   exposure_risk:
     dynamics:
       social_exposure_risk: min(100, max(0, social_exposure_risk + ((hyde_dominance / 100) * 3.0) - (social_facade * 1.5)))
-    description: 曝光风险随Hyde强度增长，facade维持可延缓
+    description: Exposure risk grows with Hyde's dominance, and maintaining the facade can delay it
     reference: TODO:SOURCE
   antidote_research:
     dynamics:
       antidote_progress: min(100, antidote_progress + (research_rigor * (self_control / 100)) * 3.0)
-    description: 解药研究进度随科研努力推进，但self_control降低则研究效率下降
+    description: Antidote-research progress advances with research effort, but declining self-control lowers research efficiency
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -165,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 药物使用频率
+        label: Drug-usage frequency
         optimize:
           value:
             - 0
@@ -181,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 科学研究严谨度
+        label: Scientific research rigor
         optimize:
           value:
             - 0
@@ -197,7 +206,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 维持社会形象
+        label: Maintaining a social facade
         optimize:
           value:
             - 0

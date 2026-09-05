@@ -7,19 +7,11 @@ metadata:
       solver. One decision variable (protein intake) targets maximum muscle mass at day 90,
       with a hard constraint on nitrogen waste. Tests that L-BFGS-B runs end-to-end correctly
       as an alternative solver path to NSGA-II.
-    problem_cn: >
-      使用基于梯度的 L-BFGS-B 求解器进行最简单的单变量、单目标优化。一个决策变量（蛋白质摄入量）
-      以第 90 天的肌肉质量最大化为目标，并对氮废物设有硬约束。测试 L-BFGS-B 作为 NSGA-II 之外的
-      另一条求解器路径能否端到端正确运行。
     result: >
       Solver should converge in seconds to an optimal protein intake where anabolic benefit is
       balanced against nitrogen waste accumulation. The constraint should be binding at the
       optimum.
-    result_cn: >
-      求解器应在数秒内收敛到一个最优蛋白质摄入量，在合成代谢收益与氮废物累积之间取得平衡。在
-      最优点处，该约束应处于紧约束（binding）状态。
     limitations: L-BFGS-B supports continuous variables only; discrete tiers cannot be tested here.
-    limitations_cn: L-BFGS-B 仅支持连续变量；此处无法测试离散档位。
   tags: [test, optimization, t1, single-objective, l-bfgs-b]
 variables:
   muscle_mass:

@@ -7,19 +7,11 @@ metadata:
       on any day within a 60-day spring window (2026-04-01 to 2026-05-31). Later starts reduce
       total accumulated deficit; the optimiser must balance start date against dose magnitude.
       Decision vector is 2-dimensional: deficit amount and start-day offset.
-    problem_cn: >
-      验证起始日期窗口优化：热量限制干预可以在一个为期 60 天的春季窗口（2026-04-01 至
-      2026-05-31）内的任意一天开始。开始得越晚，累积的总热量赤字越小；优化器必须在起始日期与
-      剂量大小之间权衡。决策向量为 2 维：赤字量和起始日偏移量。
     result: >
       Optimizer should find that earlier starts with moderate deficits dominate late starts
       with high deficits in terms of final body weight. Day offset must decode correctly from
       index back to a calendar date in the result regimen.
-    result_cn: >
-      优化器应发现，在最终体重上，"较早开始+适度赤字"优于"较晚开始+高赤字"（即前者支配后者）。
-      结果 regimen 中的日偏移必须能从索引正确解码回具体日历日期。
     limitations: Linear weight dynamics only; no metabolic adaptation or seasonal compliance modelled.
-    limitations_cn: 仅采用线性体重动力学，未建模代谢适应或季节性依从性。
   tags: [test, optimization, t4, date-start, intervention-timing, mixed-integer]
 variables:
   body_weight:

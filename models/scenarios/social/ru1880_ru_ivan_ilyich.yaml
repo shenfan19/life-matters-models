@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: ru1880_ru_ivan_ilyich
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,27 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      伊万·伊里奇（托尔斯泰《伊万·伊里奇之死》1886）在确认临终后 20 周面临三重权衡：维持社会体面，即维持家庭和职业关系表面正常，但与心理真实需求的冲突会加剧孤独感；真实表达，即能减少孤独感和存在焦虑，但家人和医生的表演体面使真实表达成本极高；以及忍痛程度，即能减少对他人的负担，但会加速身心崩溃。只有格拉西姆的无欺骗陪伴才能真正减少痛苦，体制性虚伪构成核心障碍。
+      In the 20 weeks after learning he is dying, Ivan Ilyich (Tolstoy's The Death of Ivan Ilyich,
+      1886) faces a triple tradeoff: maintaining social decorum keeps family and professional
+      relations looking normal on the surface, but its conflict with his true psychological needs
+      deepens his loneliness; authentic expression can reduce loneliness and existential anxiety, but
+      the family's and doctors' performance of decorum makes authentic expression extremely costly;
+      and enduring pain can lighten the burden on others, but accelerates his physical and mental
+      collapse. Only Gerasim's honest, undeceiving companionship can genuinely ease his suffering,
+      and institutionalized hypocrisy is the core obstacle.
     result: >
-      仿真预期显示 20 周内心理孤独度、身体疼痛和临终平静度的周动态。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；临终心理动力学参数需参考姑息治疗文献。
+      The simulation is expected to show the weekly dynamics of psychological isolation, physical
+      pain, and dying peace over 20 weeks. This is currently a draft, with parameters still to be
+      calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; the end-of-life psychological-dynamics parameters need grounding in palliative-care literature.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，临终心理动力学参数未锚定姑息治疗文献
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出20周合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - inner_peace与dignity_preserved经方程追踪无对立驱动，facade_maintenance同时损害两目标；2026-09-04验证--opt收敛至单一前沿点(81,47.1)，数值确认无权衡
-    importance: 0.5 - 《伊万·伊里奇之死》是临终关怀和真实性的最深刻文学探讨，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, with the end-of-life psychological-dynamics parameters not anchored to palliative-care literature
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 20-week trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - inner_peace and dignity_preserved show no opposing drive when traced through the equations, with facade_maintenance harming both objectives at once; verified on 2026-09-04 that --opt converges to a single front point (81,47.1), numerically confirming no tradeoff
+    importance: 0.5 - The Death of Ivan Ilyich is the most profound literary exploration of end-of-life care and authenticity, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - death
     - dignity
@@ -39,7 +48,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 维持社会体面：继续表现正常、掩盖病情、回避死亡话题
+    description: Maintaining social decorum, continuing to appear normal, hiding his condition, avoiding the topic of death
     reference: TODO:SOURCE
   authentic_expression:
     type: input
@@ -48,7 +57,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 真实表达：向家人、医生或仆人表达真实恐惧与需求
+    description: Authentic expression, expressing his true fear and needs to family, doctors, or servants
     reference: TODO:SOURCE
   pain_endurance:
     type: input
@@ -57,7 +66,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 忍痛程度：不要求镇痛药物（鸦片），强撑（当时医生能做的极少）
+    description: The degree of pain endurance, refusing pain medication (opium), forcing himself through it (there was little else doctors could do at the time)
     reference: TODO:SOURCE
   pain_level:
     type: state
@@ -66,7 +75,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 疼痛等级：内脏慢性疼痛的累积强度（19世纪无有效止痛）
+    description: Pain level, the accumulated intensity of chronic internal pain (no effective analgesia in the 19th century)
     reference: TODO:SOURCE
     io_role: output
   inner_peace:
@@ -76,7 +85,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 内心平静：接受死亡、与生命和解的程度
+    description: Inner peace, the degree of accepting death and making peace with life
     reference: TODO:SOURCE
     io_role: output
   social_isolation:
@@ -86,7 +95,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 情感孤立：家人回避、医生敷衍、无真实连接的孤独感
+    description: Emotional isolation, the loneliness from family avoidance, perfunctory doctors, and a lack of genuine connection
     reference: TODO:SOURCE
     io_role: output
   dignity_preserved:
@@ -96,7 +105,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 尊严完整度：在生命末期保有作为人的尊严（非社会地位，而是真实的自我）
+    description: Preserved dignity, retaining dignity as a human being at the end of life (not social status, but a genuine self)
     reference: TODO:SOURCE
     io_role: output
   physical_decline:
@@ -106,34 +115,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 身体衰竭进程：不可逆的生理衰竭积累
+    description: Physical decline, the irreversible accumulation of physiological deterioration
     reference: TODO:SOURCE
     io_role: output
 equations:
   pain_progression:
     dynamics:
       pain_level: min(100, pain_level + (2.5) + (pain_endurance * 1.5))
-    description: 疼痛随时间不可逆增长，忍痛会让痛苦内化
+    description: Pain grows irreversibly over time, and enduring it internalizes the suffering
     reference: TODO:SOURCE
   isolation_dynamics:
     dynamics:
       social_isolation: min(100, max(0, social_isolation + (facade_maintenance * 2.0) - (authentic_expression * 3.0)))
-    description: 维持体面→家人更疏离（因为疏离也在表演）；真实表达→孤立可能减少
+    description: Maintaining decorum drives the family further away (since their distance is also a performance); authentic expression can reduce isolation
     reference: TODO:SOURCE
   peace_growth:
     dynamics:
       inner_peace: min(100, inner_peace + (authentic_expression * 2.5 + (1 - facade_maintenance) * 1.5))
-    description: 真实表达和接受疼痛（非逃避）缓慢带来内心平静
+    description: Authentic expression and accepting pain (rather than avoiding it) slowly bring inner peace
     reference: TODO:SOURCE
   dignity_change:
     dynamics:
       dignity_preserved: min(100, max(0, dignity_preserved + ((inner_peace / 100) * 2.0) - (facade_maintenance * 1.0)))
-    description: 内心平静↑带来尊严↑；体面表演↑反而侵蚀真实尊严
+    description: Rising inner peace raises dignity; a rising performance of decorum instead erodes genuine dignity
     reference: TODO:SOURCE
   body_decline:
     dynamics:
       physical_decline: min(100, physical_decline + 4.0 - (1 - pain_endurance) * 0.5)
-    description: 身体衰竭按固定速率进行，无法阻止，只受微弱影响
+    description: Physical decline proceeds at a fixed rate, unstoppable, only weakly influenced
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +175,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 维持社会体面
+        label: Maintaining social decorum
         optimize:
           value:
             - 0
@@ -182,7 +191,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 真实表达
+        label: Authentic expression
         optimize:
           value:
             - 0
@@ -198,7 +207,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 忍痛程度
+        label: The degree of pain endurance
         optimize:
           value:
             - 0

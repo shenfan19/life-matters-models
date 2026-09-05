@@ -7,21 +7,11 @@ metadata:
       test_valid_import_base AND test_valid_import_layer (which itself also imports test_valid_import_base).
       The Loader must include test_valid_import_base exactly once. Also tests the override chain:
       layer overrides base (58 bpm), and this model further overrides stroke_volume (0.075 L).
-    problem_cn: >
-      用于验证菱形依赖去重的顶层组合模型：同时直接导入 test_valid_import_base 与
-      test_valid_import_layer（后者本身也导入 test_valid_import_base）。Loader 必须使
-      test_valid_import_base 恰好只出现一次。同时测试覆盖链：layer 覆盖 base（58 bpm），
-      本模型进一步覆盖 stroke_volume（0.075 L）。
     result: >
       Resolved model should contain cardiovascular + aerobic fitness variables merged exactly
       once, with override precedence: top > layer > base. Optimizer should maximise VO2max
       subject to a heart rate ceiling constraint, confirming the composite model runs end-to-end.
-    result_cn: >
-      解析后的模型应恰好合并一次心血管与有氧适能相关变量，覆盖优先级为
-      top > layer > base。优化器应在心率上限约束下最大化 VO2max，以确认组合模型
-      能端到端运行。
     limitations: Simplified adaptation kinetics; not validated against training science.
-    limitations_cn: 适应性动力学经过简化，未针对训练科学做过验证。
   tags: [test, import, diamond, composite, override-chain]
 imports:
 - test_fixtures/valid/test_valid_import_base

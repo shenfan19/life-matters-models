@@ -1,65 +1,65 @@
-# LM format 快速入门
+# LM format Quickstart
 
-> 目标：30 分钟内写出并运行你的第一个 LM format 模型。  
-> 前提：能读懂临床文献，无需编程背景。
-
----
-
-## 核心概念（3 种变量）
-
-LM format 模型只有三种积木：
-
-| 类型 | 含义 | 类比 |
-|------|------|------|
-| `state` | 随时间变化的指标 | 患者的检验报告值 |
-| `input` | 干预行为（药物、饮食、运动） | 医嘱 |
-| `parameter` | 固定的机制系数 | 文献里的回归系数 |
-
-方程（`equations`）描述这些变量如何相互影响。仅此而已。
+> Goal: write and run your first LM format model in 30 minutes.
+> Prerequisite: the ability to read clinical literature; no programming background needed.
 
 ---
 
-## 第一个模型：高血压患者服降压药
+## Core Concepts (3 Variable Types)
 
-### 1. 最简版（可运行）
+An LM format model has only three building blocks:
+
+| Type        | Meaning                                    | Analogy                                      |
+| ----------- | ------------------------------------------ | -------------------------------------------- |
+| `state`     | A metric that changes over time            | A patient's lab value                        |
+| `input`     | An intervention (a drug, a diet, exercise) | A doctor's order                             |
+| `parameter` | A fixed mechanism coefficient              | A regression coefficient from the literature |
+
+Equations (`equations`) describe how these variables affect each other. That is all there is to it.
+
+---
+
+## Your First Model: a Hypertensive Patient Taking a Blood-Pressure Drug
+
+### 1. The Simplest Version (Runnable)
 
 ```yaml
 metadata:
   name: hypertension_intro
   description:
-    brief: "降压药物效果演示——LM format 入门示例"
+    brief: "A demonstration of a blood-pressure drug's effect, an LM format introductory example"
 
 variables:
   med_dose:
     type: input
     value: 0.0
     unit: mg
-    description: "降压药每日剂量（氨氯地平等效）"
-    reference: "示例值，非临床剂量"
+    description: "The daily dose of a blood-pressure drug (amlodipine-equivalent)"
+    reference: "An example value, not a clinical dose"
 
   SBP:
     type: state
     value: 160.0
     unit: mmHg
-    description: "收缩压"
-    reference: "初始值代表典型未控制高血压"
+    description: "Systolic blood pressure"
+    reference: "The initial value represents typical uncontrolled hypertension"
 
   bp_sensitivity:
     type: parameter
     value: 0.08
     unit: mmHg/mg/day
-    description: "每 mg 剂量每天的平均降压幅度"
+    description: "The average drop in blood pressure per mg of dose per day"
     reference: "Law et al. (2009) BMJ 338:b1665"
 
 equations:
   bp_daily_change:
-    description: "降压药线性效应（简化模型）"
-    step_unit: day          # 方程中 step 的时间单位（必填）
+    description: "The blood-pressure drug's linear effect (a simplified model)"
+    step_unit: day          # the time unit of step in this equation (required)
     dynamics:
       SBP: SBP - bp_sensitivity * med_dose * step
 
 simulation:
-  step_size:                # 仿真执行步长（必填）
+  step_size:                # the simulation's execution step size (required)
     value: 1
     unit: day
   start_date: "2026-01-01"
@@ -70,30 +70,30 @@ simulation:
         - variable: med_dose
           time_start: "08:00"
           value: 5.0
-          label: "晨服 5mg"
+          label: "5mg taken in the morning"
 ```
 
-把这段 YAML 保存为任意 `.yaml` 文件，在 Life Matters 界面加载即可运行。输出：SBP 随时间的变化曲线。
+Save this YAML as any `.yaml` file and load it in the Life Matters interface to run it. The output is SBP's curve over time.
 
 ---
 
-### 2. 加一条约束：如果 SBP 过低就停药
+### 2. Adding a Constraint: Stop the Drug if SBP Gets Too Low
 
-在 `equations` 里加条件：
+Add a condition inside `equations`:
 
 ```yaml
 equations:
   bp_daily_change:
-    condition: "SBP > 90"          # 收缩压高于 90 mmHg 才生效
+    condition: "SBP > 90"          # only takes effect when systolic pressure is above 90 mmHg
     dynamics:
       SBP: SBP - bp_sensitivity * med_dose * step
 ```
 
-`condition` 是普通数学表达式，可以引用任意变量。
+`condition` is an ordinary mathematical expression and can reference any variable.
 
 ---
 
-### 3. 加优化：让软件帮你找最优剂量
+### 3. Adding Optimization: Let the Software Find the Best Dose for You
 
 ```yaml
 optimization:
@@ -106,65 +106,65 @@ optimization:
     regimens:
       - variable: med_dose
         time_start: "08:00"
-        label: "晨服剂量"
+        label: "Morning dose"
         optimize:
-          value: [2.5, 10.0]          # 搜索范围：2.5–10 mg
+          value: [2.5, 10.0]          # search range: 2.5 to 10 mg
 ```
 
-运行后得到 Pareto 前沿：不同剂量下 SBP 最终值的权衡曲线。
+Running this produces a Pareto front, the trade-off curve of SBP's final value across different doses.
 
 ---
 
-## 变量类型速查
+## Variable Type Quick Reference
 
-**何时用 `state`**  
-指标随时间演变，且演变过程是你要建模的核心——血压、血糖、肌酐清除率、体重。
+**When to use `state`**
+A metric that evolves over time, where the evolution itself is the core of what you are modeling, such as blood pressure, blood glucose, creatinine clearance, or body weight.
 
-**何时用 `input`**  
-患者或医生可以调整的行为——剂量、餐食内容、运动时长。优化器搜索的就是这些变量。
+**When to use `input`**
+A behavior the patient or a clinician can adjust, such as a dose, a meal's content, or exercise duration. These are exactly the variables the optimizer searches over.
 
-**何时用 `parameter`**  
-文献给出的固定系数——回归斜率、速率常数、群体均值。不随时间变化，不参与优化。
+**When to use `parameter`**
+A fixed coefficient given by the literature, such as a regression slope, a rate constant, or a population mean. It does not change over time and does not take part in optimization.
 
 ---
 
-## 两个常见错误
+## Two Common Mistakes
 
-**错误 1：state 更新忘了乘 `step`**
+Mistake 1: forgetting to multiply by `step` in a state update
 
 ```yaml
-# ❌ 每步降压量与步长无关，步长变了结果就错
+# Wrong: the per-step drop is then independent of step size, so changing step size changes the result
 dynamics:
   SBP: SBP - bp_sensitivity * med_dose
 
-# ✅ 正确
+# Correct
 dynamics:
   SBP: SBP - bp_sensitivity * med_dose * step
 ```
 
-**错误 2：input 脉冲乘了 `step`**
+Mistake 2: multiplying an input pulse by `step`
 
 ```yaml
-# ❌ 药片剂量不随步长缩放，5mg 就是 5mg
+# Wrong: a pill's dose does not scale with step size; 5mg is 5mg
 dynamics:
   stomach_drug: stomach_drug + med_dose * step
 
-# ✅ 正确
+# Correct
 dynamics:
   stomach_drug: stomach_drug + med_dose
 ```
 
-规则：`state` 连续演化 → 乘 `step`；`input` 瞬时给药 → 不乘。
+The rule: a `state` evolving continuously gets multiplied by `step`; an `input` delivered instantaneously does not.
 
 ---
 
-## 下一步
+## Where to Go Next
 
-| 目标 | 去哪里找 |
+| Goal | Where to look |
 |------|---------|
-| 完整字段规范 | `docs/LM_format_1.0.md` |
-| 建模实践指南 | `docs/authoring/README.md` |
-| 多模型组合（import） | `docs/authoring/imports_and_organization.md` |
-| 优化器全部参数 | `docs/authoring/regimens_and_optimization.md` |
-| 已有可运行模型参考 | `models/papers/` 目录 |
-| 架构决策背景 | `docs/decisions/` 目录 |
+| The complete field specification | `docs/LM_format_1.0.md` |
+| The modeling practice guide | `docs/authoring/README.md` |
+| Combining multiple models (import) | `docs/authoring/imports_and_organization.md` |
+| Every optimizer parameter | `docs/authoring/regimens_and_optimization.md` |
+| Existing runnable models for reference | the `models/papers/` directory |
+| Architecture decision background | the `docs/decisions/` directory |

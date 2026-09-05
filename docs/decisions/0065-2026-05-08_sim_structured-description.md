@@ -1,48 +1,48 @@
-# ADR 0065 — metadata.description 支持结构化与自由文本
+# ADR 0065 - metadata.description Supports Both a Structured Form and Free Text
 
-## 状态
+## Status
 
-✅ 已实施（`papers/` 范围内由 ADR 0097 收窄为三字段；`references/` 等其他模型仍适用本 ADR）
+Implemented (narrowed to three fields for `papers/` by ADR 0097; this ADR still applies to `references/` and other models)
 
-## 日期
+## Date
 
 2026-05-08
 
-## 背景
+## Background
 
-模型需要一段面向读者的说明，但单个长字符串容易混杂需求、问题、方法、结果和限制。相反，如果强制所有模型填写固定字段，又会让简单模型显得繁琐，并在 GUI 中留下许多空行。
+A model needs a reader-facing explanation, but a single long string easily mixes together the need, the problem, the method, the result, and the limitations. On the other hand, forcing every model to fill in fixed fields makes a simple model feel tedious and leaves many empty rows in the GUI.
 
-因此需要一种亲和的描述规则：作者可以只写一段自由文本，也可以按需要写结构化字段；界面只展示实际存在的内容。
+What is needed is a flexible description rule: an author can write a single block of free text, or fill in structured fields as needed, and the interface displays only what is actually present.
 
-## 决策
+## Decision
 
-`metadata.description` 支持两种形式：
+`metadata.description` supports two forms:
 
-- 字符串：作为一个 `Brief` 显示。
-- 映射对象：按 YAML 中的字段顺序显示所有非空字段。
+- A string: displayed as a `Brief`.
+- A mapping object: every non-empty field is displayed in the order it appears in the YAML.
 
-推荐结构化字段为：
+The recommended structured fields are:
 
-`brief`、`need`、`problem`、`method`、`simulation`、`optimization`、`result`、`conclusion`、`limitations`
+`brief`, `need`, `problem`, `method`, `simulation`, `optimization`, `result`, `conclusion`, `limitations`
 
-这些字段只是推荐，不是 schema 限制。作者可以增加其他英文键，例如 `scope`、`cohort`、`assumption`、`usage`、`evidence`、`mechanism`、`time_scale`、`sources`。GUI 会自动把 unknown key 转成英文标签，例如 `expected_cohort` 显示为 `Expected Cohort`。
+These fields are only a recommendation, not a schema constraint. An author can add other English keys, such as `scope`, `cohort`, `assumption`, `usage`, `evidence`, `mechanism`, `time_scale`, `sources`. The GUI automatically converts an unknown key into an English label, so `expected_cohort` displays as `Expected Cohort`.
 
-科学依据、文献解释和建模假设属于模型描述的一部分，但不使用笼统的 `science_note`。应拆成更具体的 description 子项，例如 `evidence`、`mechanism`、`time_scale`、`sources`；不再使用 `metadata.science_note` 或顶层 `science_note`。
+Scientific basis, literature interpretation, and modeling assumptions are part of a model's description, but should not use a catch-all `science_note`. They should be split into more specific description sub-fields, such as `evidence`, `mechanism`, `time_scale`, `sources`; `metadata.science_note` or a top-level `science_note` is no longer used.
 
-当来源能归属到具体变量或公式时，优先写入对应 `reference` 字段；`description.sources` 只保留无法拆分的场景级背景来源。
+When a source can be attributed to a specific variable or equation, prefer writing it into that entry's `reference` field; `description.sources` keeps only background sources at the scenario level that cannot be split out.
 
-`brief` 取代 `summary` 作为第一推荐字段，因为它更像模型卡片中的短说明，不暗示必须写成论文摘要。`result` 取代 `expected_result`；如果当前还没有实际结果，可以在内容中写明“预期……”。
+`brief` replaces `summary` as the first recommended field, since it reads more like a model card's short blurb and does not imply it must be written as a paper abstract. `result` replaces `expected_result`; if there is no actual result yet, the content can simply state an expectation.
 
-## 影响
+## Impact
 
-- 简单模型可以继续使用 `description: "..."`。
-- 复杂模型可以使用结构化 description，但不需要填满所有字段。
-- Overview 页更紧凑：字段名和内容同一行，缺失字段不显示。
-- 后端 validator 允许 `metadata.description` 为字符串或映射对象。
-- `published` 模型统一采用结构化中文描述，并使用 `brief` 与 `result` 字段。
+- A simple model can continue to use `description: "..."`.
+- A complex model can use a structured description without needing to fill in every field.
+- The Overview page is more compact: a field's name and content sit on the same line, and a missing field is not displayed.
+- The backend validator accepts `metadata.description` as either a string or a mapping object.
+- `published` models uniformly adopt a structured Chinese-language description using the `brief` and `result` fields.
 
-## 非目标
+## Non-Goals
 
-- 不引入多语言 description schema。
-- 不把推荐字段变成硬性 schema。
-- 不在 report 页展示完整 description 结构；report 仍以结果输出为主。
+- This does not introduce a multilingual description schema.
+- This does not turn the recommended fields into a hard schema requirement.
+- This does not display the full description structure on the report page; the report page still centers on result output.

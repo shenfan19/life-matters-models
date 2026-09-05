@@ -1,103 +1,57 @@
-# 0133 — `delivery: total/level` 判断原则 + "day-lumped map" 反模式识别
+# 0133 - The delivery: total/level Decision Principle, Plus Identifying the "day-lumped map" Anti-Pattern
 
-**日期**：2026-07-15
-**状态**：✅ 判断原则已决定；反模式修复（sleep_hours/bedtime_hour 重构）未实施，见下方 task 链接
-**类别**：建模方法论 / regimen schema（延伸 [0132](0132-2026-07-14_model_sustained-delivery-total-vs-level.md)）
+**Date**: 2026-07-15
+**Status**: The decision principle is settled; the anti-pattern fix (the sleep_hours/bedtime_hour refactor) is not implemented, see the task link below
+**Category**: Modeling methodology / regimen schema (extending [0132](0132-2026-07-14_model_sustained-delivery-total-vs-level.md))
 
 ---
 
-## 背景
+## Background
 
-ADR 0132 引入 `delivery: total | level`，解决了一个数值症状——sustained 窗口内的读数不该
-被 `N_steps` 稀释。但没有回答"建模者该怎么判断一个 `type: input` 变量该用哪个 `delivery`"，
-现有表述（"下游被累加 vs 被当系数直接读"）不够精确，容易掩盖一类更深层的问题：某些变量
-表面上"需要 level"，实际原因不是这个变量本身的物理性质，而是下游公式本身写成了粗粒度
-（`step_unit: day`）的一次性地图，而不是逐步可积的动力学方程——`delivery: level` 在这种
-情况下只是把"一天算一次的答案"重复分发给每个更细的 step，本身不是错误的读数，但也不是
-真正的逐步积分。
+ADR 0132 introduced `delivery: total | level`, fixing a numeric symptom, that a reading inside a sustained window should not be diluted by `N_steps`. But it did not answer how a modeler should decide which `delivery` a given `type: input` variable needs; the existing description ("accumulated downstream versus read directly as a coefficient") is not precise enough and can mask a deeper problem: some variables appear on the surface to "need level," but the real reason is not that variable's own physical nature, it is that the downstream formula itself was written at a coarse granularity (`step_unit: day`) as a one-shot map rather than a step-by-step integrable dynamics equation. In that case, `delivery: level` merely redistributes "the answer computed once for the day" to every finer step; this is not, by itself, a wrong reading, but it is also not genuine step-by-step integration.
 
-2026-07-15 `life-matters-reference-engine` 会话逐一核对了全仓库全部 `delivery: level` 用例（`running_2026.yaml`
-的 `training_intensity`/`pace`；内部一个更早场景文件的三个决策变量；
-`sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml` 的
-`sleep_hours`/`bedtime_hour`/`nutrition_score`），发现
-这些用例能清楚分成两类，只有其中一类是"这个变量物理上只有 level 这一种合理解读"，
-另一类是"公式写法选错了粒度，靠 level 打了补丁"。
+A `life-matters-reference-engine` session on 2026-07-15 checked every `delivery: level` use case across the whole repository one by one (`running_2026.yaml`'s `training_intensity`/`pace`; three decision variables in an earlier internal scenario file; `sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml`'s `sleep_hours`/`bedtime_hour`/`nutrition_score`), and found these cases split clearly into two groups: only one group is a variable that physically has no reasonable reading other than level, and the other group is a formula written at the wrong granularity, patched over with level.
 
-## 决策
+## Decision
 
-### 1. 术语澄清（避免后续讨论混淆三个独立的轴）
+### 1. Terminology clarification (to avoid later discussion conflating three independent axes)
 
-| 概念 | 所属层 | 管什么 |
+| Concept | Layer | What it governs |
 |---|---|---|
-| `sustained` | regimen 输入机制（ADR 0127） | `type: input` 唯一的交付机制；pulse（`time_start==time_end`，`N_steps=1`）是它的特例，不是与之并列的第二种模式 |
-| `delivery: total \| level` | regimen 条目字段（ADR 0132） | sustained 窗口命中时，每格该交付 `value/N_steps`（total）还是 `value` 本身（level） |
-| `step_unit` | **formula 的 `dynamics` 块字段** | 这条公式自己的 `step` 变量对应多长时间，与 regimen/delivery 完全无关，是公式层、不是输入层的概念 |
+| `sustained` | The regimen input mechanism (ADR 0127) | The sole delivery mechanism for `type: input`; a pulse (`time_start==time_end`, `N_steps=1`) is its special case, not a second, parallel mode |
+| `delivery: total \| level` | A regimen-entry field (ADR 0132) | When a sustained window hits, whether each step delivers `value/N_steps` (total) or `value` itself (level) |
+| `step_unit` | A field on a formula's `dynamics` block | How much time this formula's own `step` variable corresponds to, entirely unrelated to regimen/delivery, a formula-layer concept, not an input-layer one |
 
-三者分属不同层，可能同时出现在同一个变量身上，但互不是对方的别名或子集。
+The three belong to different layers and may all appear on the same variable at once, but none is an alias or subset of another.
 
-### 2. `delivery` 判断规则（取代 ADR 0132 原有"累加 vs 直接读"表述）
+### 2. The `delivery` decision rule (superseding ADR 0132's original "accumulate versus read directly" description)
 
-**规则 A**：该变量在下游公式里是否作为"系数/瞬时状态"参与运算，且这条公式写在**原生 step
-粒度**（不声明粗于 `simulation.step_size` 的 `step_unit`）上？
-- 是 → `delivery: level`，且这是唯一正确、无需进一步处理的终态。
-  例：`training_intensity`/`pace`（`heart_rate_response`/`fatigue_accumulate` 逐分钟原生读取）、
-  `care_intensity`/`self_protection`/`rest_hours`（`radiation_accumulation`/`rest_slows_ars`
-  逐小时原生读取）。这类变量物理上没有"总量"这个维度（问"training_intensity 的总量是
-  多少"没有意义），不存在二义性。
-- 该变量本身就是"这次投入了多少"，被下游 state 累加？→ `delivery: total`（默认）。
+Rule A: does this variable participate in a downstream formula as a coefficient or an instantaneous state, in a formula written at native step granularity (with a `step_unit` no coarser than `simulation.step_size`)?
+- If yes: use `delivery: level`, the sole correct, final answer requiring no further treatment. Examples: `training_intensity`/`pace` (read natively minute by minute in `heart_rate_response`/`fatigue_accumulate`), `care_intensity`/`self_protection`/`rest_hours` (read natively hour by hour in `radiation_accumulation`/`rest_slows_ars`). Such variables physically have no "total" dimension at all (asking "what is training_intensity's total" is meaningless), so there is no ambiguity.
+- Is the variable itself "how much was put in this time," accumulated by a downstream state? Then use `delivery: total` (the default).
 
-**规则 B（新增）——"day-lumped map" 反模式检验**：如果一个变量为了表现出"level"效果，其
-下游公式必须用一个粗于 `simulation.step_size` 的 `step_unit`（如 `day`）把多个 simulation
-step 的净变化一次性算出来，再靠 `delivery: level` 把这个"一次性答案"原样重复分发给每个
-更细的 simulation step——这是设计异味信号，**不能靠调整 `delivery` 解决**，说明这个变量
-选错了原语。正确方向：拆成"原生粒度可读的瞬时指示量（真 level，如 `is_asleep`）+ 由它
-累积出的衍生 state（真 total，如 `sleep_hours_today`，与 `lm_score` 同一模式）"，公式相应
-改写为原生 `step_unit` 的真正 ODE。
+Rule B (new), the "day-lumped map" anti-pattern test: if a variable, in order to display a "level" effect, forces its downstream formula to use a `step_unit` coarser than `simulation.step_size` (such as `day`) to compute the net change across several simulation steps in one shot, then relies on `delivery: level` to redistribute this "one-shot answer" unchanged to every finer simulation step, this is a design-smell signal that cannot be fixed by adjusting `delivery`; it means the variable was modeled with the wrong primitive to begin with. The correct direction is to split it into an instantaneous indicator readable at native granularity (a true level, such as `is_asleep`) plus a derived state accumulated from it (a true total, such as `sleep_hours_today`, following the same pattern as `lm_score`), with the formula rewritten accordingly as a genuine ODE at its native `step_unit`.
 
-当前命中：`sleep_hours`/`bedtime_hour`（`sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml`，
-`sleep_pressure_dynamics` 声明 `step_unit: day` 却用全天 sustained + `delivery: level` 逐小时
-重复读取同一个日常量）。`nutrition_score` 疑似同一模式，未逐条核实。
+Current hits: `sleep_hours`/`bedtime_hour` (in `sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml`, where `sleep_pressure_dynamics` declares `step_unit: day` yet uses an all-day sustained input plus `delivery: level`, repeatedly reading the same daily quantity hour by hour). `nutrition_score` is suspected of the same pattern, not individually verified.
 
-## 与已有原则的关系
+## Relationship to Existing Principles
 
-- **延伸而非推翻 ADR 0132**——0132 的字段定义、引擎实现（`schedule_runner.py`）、既有迁移
-  记录全部保持不变，本 ADR 只是补一层"该怎么判断用哪个、什么时候该怀疑 `delivery` 治标
-  不治本"的方法论。
-- **呼应 Banister `*step` 排查的教训**（ADR 0131 前身排查记录）："只在唯一一种粒度下测过，
-  问题从未暴露"——规则 B 本质上是把这条教训沉淀成一条可执行的检验规则，防止同类反模式在
-  其他模型里复现而不自知。
-- **对 `draft_s1_numerical_consistency.md`（S1 论文候选小节）的影响**：该节论证的"数值
-  一致性保证"只对规则 A 类模型（公式写在原生粒度）成立；规则 B 类模型（day-lumped map）
-  的读数虽然不随 `step_size` 漂移（ADR 0132 已验证），但方程本身不会随步长细化而收敛到
-  更精确解——这是两种不同强度的"一致性"，论文需要区分说明，已记入 task（见下）。
+- Extends rather than overturns ADR 0132: 0132's field definition, engine implementation (`schedule_runner.py`), and existing migration record are all kept unchanged; this ADR only adds a layer of methodology on how to decide which to use and when to suspect `delivery` is treating a symptom rather than the cause.
+- Echoes the lesson from the Banister `*step` review (the investigation record that preceded ADR 0131): "tested under only one granularity, so the problem never surfaced." Rule B essentially distills that lesson into an executable check, to prevent the same anti-pattern from recurring unnoticed in other models.
+- Impact on `draft_s1_numerical_consistency.md` (an S1 paper candidate subsection): the "numeric consistency guarantee" argued there holds only for rule-A-type models (formulas written at native granularity); for rule-B-type models (a day-lumped map), the reading does not drift with `step_size` (already validated by ADR 0132), but the equation itself does not converge to a more precise solution as the step size is refined. These are two different strengths of "consistency," and the paper needs to distinguish them; this has been recorded as a task (see below).
 
-## 现状与代价（未实施部分）
+## Current State and Cost (the Unimplemented Part)
 
-- 规则 A/B 作为判断原则，本 ADR 已确定；写入 `docs/model.md`"delivery 判断规则"一节待执行。
-- 规则 B 识别出的 `sleep_hours`/`bedtime_hour` 反模式**不在本 ADR 修复范围**——修复方案
-  （`is_asleep` 状态量 + 脉冲对，取代 duration 型 input）已记录为独立 task，涉及重写公式、
-  重新校准 S3 论文数字，是否/何时执行留给该 task 单独决定，详见内部任务
-  `2026-07-15_task_sleep-model-native-step-reform.md`。
-- 当前 `delivery: level` 对 `sleep_hours` 的数值修复（ADR 0132）不受影响、依然有效——已
-  验证步长鲁棒（1h/30min/15min 回归不发散），只是不解决更细粒度的动力学表达问题。
+- Rules A/B, as decision principles, are settled by this ADR; writing them into the "delivery decision rule" section of `docs/model.md` is pending execution.
+- The `sleep_hours`/`bedtime_hour` anti-pattern rule B identified is outside this ADR's fix scope; the fix (an `is_asleep` state plus a pulse pair, in place of a duration-type input) has been recorded as a separate task, involving rewriting the formula and recalibrating the S3 paper's numbers, with whether and when to execute it left to that task's own decision; see the internal task `2026-07-15_task_sleep-model-native-step-reform.md` for detail.
+- The current numeric fix `delivery: level` provides for `sleep_hours` (ADR 0132) is unaffected and remains valid, already validated as step-size-robust (no divergence across a 1h/30min/15min regression), just not solving the finer-grained dynamics-expression problem.
 
-## 实现
+## Implementation
 
-- `docs/authoring/regimens_and_optimization.md`（`docs/model.md` 的后继路径）：已补"delivery
-  判断规则：结构位置检验，兼 day-lumped map 反模式识别（ADR 0133）"一节，规则 A + 规则 B 完整
-  版本，替换掉此前偏模糊的"累加 vs 直接读取"表述；同一份文档另加了一节"概念基础"，把
-  `value`/`delivery`/`days`/`date_range` 统一到广延量/强度量框架下（2026-08-25，随 S1 论文
-  §4.4 同批改写一并落地，见该节的等价论证）。
-- `draft_s1_numerical_consistency.md` / S1 论文 §4.4：论证只覆盖规则 A 类模型（公式写在原生
-  粒度）；规则 B 类模型（day-lumped map）读数虽不随 `step_size` 漂移，但方程本身不收敛到更
-  精确解，论文这次改写为只保留一句前提陈述，不展开反模式的完整技术描述（2026-08-25，用户
-  审阅后判断论文正文应弱化举例，完整反模式描述保留在本 ADR 和上述 authoring 文档）。
-  `sleep_schedule`/`burnout_allostatic` 论文 `limitations` 段落尚未补充更精确描述，留待接触
-  这两篇论文时处理。
+- `docs/authoring/regimens_and_optimization.md` (the successor path to `docs/model.md`): the "delivery decision rule: a structural-position test, also catching the day-lumped-map anti-pattern (ADR 0133)" section has been added, the full version of rules A plus B, replacing the previously vaguer "accumulate versus read directly" description; the same document adds a "conceptual foundation" section unifying `value`/`delivery`/`days`/`date_range` under the extensive/intensive-quantity framework (2026-08-25, landed together with the same batch of rewrites for S1 paper section 4.4; see that section's equivalent argument).
+- `draft_s1_numerical_consistency.md` / S1 paper section 4.4: the argument now covers only rule-A-type models (formulas written at native granularity); for rule-B-type models (a day-lumped map), the reading does not drift with `step_size`, but the equation itself does not converge to a more precise solution, and this rewrite (2026-08-25) keeps only one premise-stating sentence in the paper without expanding into the anti-pattern's full technical description (after review, the user judged the paper's body text should understate the example, keeping the full anti-pattern description in this ADR and the authoring document above). The `sleep_schedule`/`burnout_allostatic` papers' `limitations` paragraphs have not yet been given a more precise description, left for when those two papers are next touched.
 
-## 已知局限（不在本 ADR 处理）
+## Known Limitation (Not Handled in This ADR)
 
-- 全仓库 AST 扫描"还有没有其他模型命中 day-lumped map 反模式"未做，当前只人工核对了已知
-  的 `delivery: level` 全部命中点（10 个文件）。
-- `nutrition_score` 是否属于规则 B 命中（vs 规则 A）未逐条核实下游公式，留待下次触碰
-  `burnout_allostatic_sim.yaml` 时确认。
+- A repository-wide AST scan for "are there other models hitting the day-lumped-map anti-pattern" has not been done; only the currently known `delivery: level` hits (10 files) have been checked manually.
+- Whether `nutrition_score` is a rule-B hit (versus rule A) has not been individually verified against its downstream formula, left to be confirmed the next time `burnout_allostatic_sim.yaml` is touched.

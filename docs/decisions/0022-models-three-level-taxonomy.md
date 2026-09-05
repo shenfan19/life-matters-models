@@ -1,72 +1,72 @@
-# 0022 — Models 三层分类体系
+# 0022 - The Models Three-Level Classification System
 
-**状态**: ✅ 已实施  
-**日期**: 2026-04-12  
-**作者**: shenfan19
+**Status**: Implemented
+**Date**: 2026-04-12
+**Author**: shenfan19
 
 ---
 
-## 背景
+## Background
 
-随着模型库（`models/references/`）规模扩大，原有的扁平或浅层目录结构难以维护。主要问题：
-- `nutrition/`、`fitness/` 等二级目录缺乏进一步分类
-- `social/` 下 `panic/` 目录语义不清晰
-- 新建模型无明确"归属"位置，贡献者难以判断放在哪里
+As the model library (`models/references/`) grew, the original flat or shallow directory structure became hard to maintain. Main problems:
+- Second-level directories such as `nutrition/`, `fitness/` lacked further classification.
+- The `panic/` directory under `social/` was semantically unclear.
+- A newly created model had no clear "home," leaving a contributor unsure where to place it.
 
-## 决策
+## Decision
 
-采用三层分类体系，规则如下：
+Adopt a three-level classification system, following these rules:
 
-| 层级 | 含义 | 示例 |
+| Level | Meaning | Example |
 |------|------|------|
-| L1 | 领域大类 | `medical/`、`social/` |
-| L2 | 学科分支 | `nutrition/`、`fitness/`、`economy/` |
-| L3 | 细分方向 | `nutrition/food/`、`nutrition/diet/`、`fitness/individual/` |
+| L1 | Major domain | `medical/`, `social/` |
+| L2 | Discipline branch | `nutrition/`, `fitness/`, `economy/` |
+| L3 | Subdivision | `nutrition/food/`, `nutrition/diet/`, `fitness/individual/` |
 
-**不强制三层到底**：`physiology/` 等已成熟的库组件目录保持扁平，待文件数量增长后再细分，不为层级而层级。
+Not mandatory to go all three levels deep: an already-mature library-component directory such as `physiology/` stays flat, to be subdivided later once its file count grows, rather than adding a level for its own sake.
 
-## 结构快照（实施时）
+## Structure Snapshot (at Implementation Time)
 
 ```
 models/references/
 ├── medical/
-│   ├── physiology/           (扁平，库组件，暂不细分)
+│   ├── physiology/           (flat, library components, not yet subdivided)
 │   ├── nutrition/
-│   │   ├── food/             (单一食材生理模型)
-│   │   └── diet/             (饮食模式与干预方案)
+│   │   ├── food/             (single-ingredient physiological models)
+│   │   └── diet/             (dietary patterns and intervention plans)
 │   ├── fitness/
-│   │   ├── individual/       (个人耐力项目：跑步、游泳)
-│   │   ├── team/             (团队运动：篮球、足球)
-│   │   └── racket/           (球拍运动：网球、乒乓球)
+│   │   ├── individual/       (individual endurance sports: running, swimming)
+│   │   ├── team/             (team sports: basketball, soccer)
+│   │   └── racket/           (racket sports: tennis, table tennis)
 │   ├── disease/
-│   │   ├── metabolic/        (代谢病：糖尿病、肥胖)
-│   │   ├── chronic/          (慢性病：肝病、高血压、CKD)
-│   │   ├── acute/            (急性病：流感)
-│   │   ├── infectious/       (传染病，待填充)
-│   │   ├── mental/           (心理健康，待填充)
-│   │   └── genetic/          (遗传病，待填充)
+│   │   ├── metabolic/        (metabolic disease: diabetes, obesity)
+│   │   ├── chronic/          (chronic disease: liver disease, hypertension, CKD)
+│   │   ├── acute/            (acute disease: influenza)
+│   │   ├── infectious/       (infectious disease, to be filled in)
+│   │   ├── mental/           (mental health, to be filled in)
+│   │   └── genetic/          (genetic disease, to be filled in)
 │   ├── medicine/
-│   │   ├── pharmacology/     (药代动力学，待填充)
-│   │   ├── therapy/          (治疗方案，待填充)
-│   │   └── preventive/       (预防医学，待填充)
+│   │   ├── pharmacology/     (pharmacokinetics, to be filled in)
+│   │   ├── therapy/          (treatment plans, to be filled in)
+│   │   └── preventive/       (preventive medicine, to be filled in)
 │   └── surgery/
 │       ├── orthopedic/
 │       ├── cardiovascular/
 │       └── general/
 └── social/
     ├── economy/
-    │   ├── labor/            (劳动力模型)
-    │   ├── market/           (待填充)
-    │   └── finance/          (待填充)
+    │   ├── labor/            (labor models)
+    │   ├── market/           (to be filled in)
+    │   └── finance/          (to be filled in)
     ├── conflict/
-    │   ├── war/              (战争动力学)
-    │   ├── disaster/         (自然灾害)
-    │   └── civil/            (社会动乱，待填充)
+    │   ├── war/              (war dynamics)
+    │   ├── disaster/         (natural disaster)
+    │   └── civil/            (civil unrest, to be filled in)
     ├── law/
     │   ├── policy/
     │   ├── criminal/
     │   └── civil/
-    ├── psychology/           (原 panic/，语义扩展)
+    ├── psychology/           (formerly panic/, with expanded scope)
     │   ├── panic/
     │   ├── behavior/
     │   └── cognition/
@@ -80,25 +80,25 @@ models/references/
         └── migration/
 ```
 
-## 文件路径规范
+## File Path Convention
 
-所有 `imports:` 中的跨目录引用，必须使用从 `models/` 根目录出发的完整路径：
+Any cross-directory reference inside `imports:` must use the complete path starting from the `models/` root:
 
 ```yaml
 imports:
-  - components/medical/physiology/glucose_regulation   # ✅ 正确
-  - glucose_regulation                                 # ⚠️ 仅在同目录下可用
-  - medical/physiology/glucose_regulation              # ❌ 不含 components/ 前缀，会解析失败
+  - components/medical/physiology/glucose_regulation   # Correct
+  - glucose_regulation                                 # Only works within the same directory
+  - medical/physiology/glucose_regulation              # Wrong: missing the components/ prefix, fails to resolve
 ```
 
-## 后续影响
+## Follow-On Impact
 
-- `physiology/` 文件保持扁平，不移动（避免大规模 import 路径变更）
-- `standalone: false` 的库组件标注不变
-- 新增领域（如 `social/demography/`）预留目录，待建模时填充
+- `physiology/` files stay flat and are not moved (to avoid a large-scale import-path change).
+- The `standalone: false` marking on library components is unchanged.
+- A newly added domain (such as `social/demography/`) reserves its directory, to be filled in as modeling proceeds.
 
-## 被否定的方案
+## Rejected Alternatives
 
-- **全扁平**：所有模型放在 `medical/` 下一层。扩展性差，数十个文件难以区分。  
-- **四层分类**：过于深层（如 `medical/physiology/endocrine/insulin/`），增加导入路径维护成本。  
-- **按病理过程（而非学科）分类**：如 `glycolysis/`、`immune_response/`，对跨学科研究者不直观。
+- Fully flat: every model placed one level under `medical/`. Poor scalability, hard to tell dozens of files apart.
+- A four-level classification: too deep (such as `medical/physiology/endocrine/insulin/`), raising the maintenance cost of import paths.
+- Classification by pathological process rather than discipline: such as `glycolysis/`, `immune_response/`, unintuitive for a cross-disciplinary researcher.

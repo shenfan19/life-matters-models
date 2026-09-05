@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_beta
   lm_format_version: "1.0"
   description:
@@ -12,20 +12,11 @@ metadata:
       in isolation. `age_sbp_beta` must equal `value`
       (beta: effective = value, no auxiliary fields), and the effective value must be
       usable as a per-day rate (per-year coefficient ÷ 365).
-    problem_cn: >
-      验证 Loader 对 `beta`（回归系数，regression coefficient）证据子类型的独立处理。
-      `age_sbp_beta` 必须等于 `value`（beta 类型：有效值 = value，无需辅助字段），
-      且该有效值必须能够作为按天计的速率使用（按年系数 ÷ 365）。
     result: >
       `beta_display` = age_sbp_beta = 0.45 (constant, every step, mmHg/year).
       `systolic_bp` rises by 0.45/365 ≈ 0.00123 mmHg/day from a baseline of 120 mmHg,
       reaching ≈120.037 after 30 days.
-    result_cn: >
-      `beta_display` = age_sbp_beta = 0.45（每一步恒定，单位 mmHg/year）。
-      `systolic_bp` 从基线 120 mmHg 起，按 0.45/365 ≈ 0.00123 mmHg/天 上升，
-      30 天后达到约 120.037。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, beta]
 
 variables:

@@ -1,38 +1,38 @@
-# Ebbinghaus 遗忘曲线：跨130年/跨样本外推验证报告
+# The Ebbinghaus Forgetting Curve: A 130-Years/Cross-Sample Extrapolation Validation Report
 
-模型文件：`ebbinghaus_forgetting_2026.yaml`。汇总入口：`models/test_validation/validation_report.md` 第1节。
+Model file: `ebbinghaus_forgetting_2026.yaml`. Summary index: `models/test_validation/validation_report.md`, section 1.
 
-## 方法
+## Method
 
-用 Ebbinghaus (1885) 本人一位被试的原始记忆节省率数据（7个时间点）拟合幂律曲线：
+A power-law curve is fit to Ebbinghaus (1885)'s original memory-savings-rate data from one of his own subjects (7 time points):
 
 ```
 retention(t) = A · (1 + t/20min)^(-beta)
 ```
 
-拟合系数（最小二乘，作者自行计算，非文献直接给出）：A=0.5975，beta=0.1442。
+Fit coefficients (least squares, computed by the author, not given directly by the literature): A=0.5975, beta=0.1442.
 
-代入 Murre & Dros (2015, PLOS ONE) 130年后独立被试复现实验的同一批时间点，比较预测值与实测值。
+Substituting the same set of time points from Murre & Dros's (2015, PLOS ONE) independent-subject replication experiment 130 years later, and comparing predicted against measured values.
 
-## 结果
+## Results
 
-| 时间点 | Ebbinghaus 1885（拟合用数据） | 模型预测 | Murre & Dros 2015 实测 | 偏差 |
+| Time point | Ebbinghaus 1885 (data used for the fit) | Model prediction | Murre & Dros 2015 measured | Deviation |
 | --- | --- | --- | --- | --- |
-| 20分钟 | 58.2% | 54.1% | 47.2% | +14.5% |
-| 1小时 | 44.2% | 48.9% | 37.3% | +31.2% |
-| 9小时 | 35.8% | 37.0% | 27.6% | +33.9% |
-| 1天 | 33.7% | 32.2% | 31.7% | **+1.5%** |
-| 2天 | 27.8% | 29.2% | 23.0% | +26.7% |
-| 6天 | 25.4% | 24.9% | 16.8% | +48.2% |
-| 31天 | 21.1% | 19.7% | 4.1% | +379.3% |
+| 20 minutes | 58.2% | 54.1% | 47.2% | +14.5% |
+| 1 hour | 44.2% | 48.9% | 37.3% | +31.2% |
+| 9 hours | 35.8% | 37.0% | 27.6% | +33.9% |
+| 1 day | 33.7% | 32.2% | 31.7% | **+1.5%** |
+| 2 days | 27.8% | 29.2% | 23.0% | +26.7% |
+| 6 days | 25.4% | 24.9% | 16.8% | +48.2% |
+| 31 days | 21.1% | 19.7% | 4.1% | +379.3% |
 
-## 判断
+## Verdict
 
-**验证状态：部分吻合（validation_confidence=3）**。除1天检验点外，模型系统性高估了2015年复现实验的实测值——2015年多数时间点的节省率显著低于1885年原始数据。这不是拟合曲线形式的问题（幂律拟合本身在1885年自己的7个点内表现良好），而是两组数据本身存在真实差异：Ebbinghaus 1885 的数据来自他本人一位被试的自我实验，样本量为1，不足以代表群体记忆特征；Murre & Dros 2015 用现代被试独立测量，130年后另一组被试出现系统性偏离是预期内的，不代表模型机制错误。
+**Validation status: partially consistent (validation_confidence=3)**. Apart from the 1-day test point, the model systematically overestimates the 2015 replication's measured values, since the 2015 savings rate is markedly lower than the 1885 original data at most time points. This is not a problem with the fitted curve's form, since the power-law fit itself performs well within Ebbinghaus's own 7 points from 1885, but a genuine difference between the two datasets: Ebbinghaus's 1885 data comes from a self-experiment on one of his own subjects, a sample size of 1, insufficient to represent population-level memory characteristics; Murre & Dros 2015 independently measured modern subjects, and a systematic deviation appearing in another group of subjects 130 years later is expected, not evidence of a mechanism error in the model.
 
-31天检验点偏差最大（+379%），Murre & Dros 论文原文自己也指出这是该复现实验里最异常的一个数据点（可能与被试个体差异或实验操作有关），不宜过度解读。
+The 31-day test point shows the largest deviation (+379%), and the Murre & Dros paper itself also flags this as the most anomalous data point in that replication, possibly related to individual subject differences or experimental procedure, and should not be over-interpreted.
 
-## 局限
+## Limitations
 
-- 本文件的幂律拟合系数是作者自行最小二乘拟合的结果，不是 Ebbinghaus 或 Murre & Dros 论文直接给出的方程参数。
-- 只用了1885年的7个点做拟合，样本效率低；若未来能找到更大样本的历史记忆曲线数据，可以重新评估这一"跨130年外推"结论的稳健性。
+- This file's power-law fit coefficients are the author's own least-squares fit, not equation parameters given directly by the Ebbinghaus or Murre & Dros papers.
+- The fit uses only the 7 points from 1885, a low sample efficiency; if a larger-sample historical memory-curve dataset becomes available in the future, the robustness of this "130-year extrapolation" conclusion could be re-assessed.

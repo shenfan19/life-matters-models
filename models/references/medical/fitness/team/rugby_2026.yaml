@@ -9,103 +9,117 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      橄榄球是少数将高强度间歇跑动与反复全身接触冲撞结合的运动项目，后卫每场冲刺距离约 800-1400 m，前锋擒抱次数约 30-60 次。反复碰撞触发肌肉微撕裂，导致肌酸激酶（CK）释放，这一肌肉损伤动力学在赛后 24-48 小时达到峰值，与比赛中实时疲劳机制部分解耦，使橄榄球成为研究"机械损伤叠加代谢疲劳"的独特运动模型。冲刺比例决定有氧-无氧代谢分配，擒抱频率驱动碰撞应激积累，两者共同制约场上覆盖范围。
+      Rugby is one of the few sports that combines high-intensity interval running with repeated
+      full-body collision contact; a back covers about 800-1400 m of sprinting per match, and a
+      forward makes about 30-60 tackles. Repeated collisions trigger muscle micro-tears, releasing
+      creatine kinase (CK), a muscle-damage dynamic that peaks 24-48 hours after the match and is
+      partly decoupled from real-time in-match fatigue, making rugby a distinctive model for
+      studying mechanical damage layered on top of metabolic fatigue. The sprint proportion sets the
+      aerobic-anaerobic metabolic split, tackle frequency drives collision-stress accumulation, and
+      the two together constrain a player's field coverage.
     result: >
-      仿真尚未运行。理论预期：以冲刺占比 15%、擒抱 1.5 次/分的后卫场景进行 80 分钟比赛，碰撞应激指数升至约 100，肌肉损伤指数约 16，疲劳指数约 0.65，全场跑动距离约 7300 m；提高冲刺比例至 30% 时距离增加至约 8000 m，但肌肉损伤指数升至约 30。
+      Not yet run. Theoretical expectation: in an 80-minute match for a back scenario with a sprint
+      proportion of 15% and a tackle frequency of 1.5 per minute, the collision-stress index rises to
+      about 100, the muscle-damage index to about 16, the fatigue index to about 0.65, and the total
+      running distance to about 7300 m; raising the sprint proportion to 30% increases distance to
+      about 8000 m, but the muscle-damage index rises to about 30.
     limitations: >
-      模型使用通用参数，未区分前锋与后卫位置；肌肉损伤（CK）动力学为比赛内近似，实际 CK 峰值出现在赛后 24-48 小时，无法在仿真时间范围内准确捕捉。碰撞时的骨骼应力和神经肌肉震荡效应未建模。
+      The model uses generic parameters and does not distinguish forward from back positions;
+      muscle-damage (CK) dynamics are an in-match approximation, since the real CK peak occurs
+      24-48 hours after the match and cannot be accurately captured within the simulation's time
+      range. Skeletal stress and neuromuscular concussion effects from a collision are not modeled.
   ratings:
-    importance: 0.25 - 橄榄球冲撞-疲劳模型有专项运动医学价值，受众较集中；团队运动专项模型，上层引用预期低
-    variable: 0.5 - 引用Duthie/Cunniffe等文献，参数基本有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - A rugby collision-fatigue model has specialized sports-medicine value, with a fairly concentrated audience; a team-sport specialty model, expected to have low reuse elsewhere
+    variable: 0.5 - Cites publications such as Duthie/Cunniffe, with fairly well-founded parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [rugby, team, contact, collision, sprint, muscle_damage, CK, VO2max]
 
 variables:
   tackle_frequency:
     type: input
     value: 1.5
-    unit: "次/min"
+    unit: "per min"
     bounds: [0.0, 6.0]
-    description: "擒抱/冲撞频率（前锋约2-4次/min，后卫约0.5-2次/min；Austin 2011）"
+    description: "Tackle/collision frequency (a forward is about 2-4 per minute, a back about 0.5-2 per minute; Austin 2011)"
   sprint_ratio:
     type: input
     value: 0.15
-    unit: "比例"
+    unit: "fraction"
     bounds: [0.0, 0.5]
-    description: "高速冲刺时间占比（后卫约10-20%，前锋约5-10%；Cunniffe 2009）"
+    description: "The high-speed-sprint time proportion (a back is about 10-20%, a forward about 5-10%; Cunniffe 2009)"
   heart_rate:
     type: state
     value: 75.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "心率（后卫平均约165-175 bpm，前锋约155-165 bpm；Cunniffe 2009）"
+    description: "Heart rate (a back averages about 165-175 bpm, a forward about 155-165 bpm; Cunniffe 2009)"
   vo2:
     type: state
     value: 10.0
     unit: "mL/kg/min"
     bounds: [5.0, 70.0]
-    description: "摄氧量（前锋VO2max约50-55，后卫约55-65 mL/kg/min；Duthie 2003）"
+    description: "Oxygen uptake (a forward's VO2max is about 50-55, a back's about 55-65 mL/kg/min; Duthie 2003)"
   collision_stress_index:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 100.0]
-    description: "碰撞应激指数（累计冲撞强度×频率；驱动赛后CK升高；Austin 2011）"
+    description: "The collision-stress index (cumulative collision intensity times frequency; drives the post-match CK rise; Austin 2011)"
   muscle_damage_index:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 100.0]
-    description: "肌肉损伤指数（CK释放代理指标；高值提示恢复期延长风险）"
+    description: "The muscle-damage index (a CK-release proxy; a high value signals a longer recovery-period risk)"
   fatigue:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 1.0]
-    description: "综合疲劳（代谢疲劳+碰撞蓄积；>0.7时跑动速度和决策质量下降）"
+    description: "Overall fatigue (metabolic fatigue plus collision buildup; above 0.7, running speed and decision quality decline)"
   distance_covered:
     type: state
     value: 0.0
     unit: "m"
     bounds: [0.0, 12000.0]
-    description: "累计跑动距离（后卫全场约7000-8000m，前锋约5000-6000m；Duthie 2003）"
+    description: "Cumulative running distance (a back covers about 7000-8000m per match, a forward about 5000-6000m; Duthie 2003)"
 
 equations:
   heart_rate_dynamics:
-    description: "心率随冲刺和碰撞强度响应（Cunniffe 2009：橄榄球平均~170 bpm）"
+    description: "Heart rate responds to sprint and collision intensity (Cunniffe 2009: rugby averages about 170 bpm)"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(200, 80 + sprint_ratio * 100 + tackle_frequency * 8 + fatigue * 15)"
   vo2_response:
-    description: "摄氧量跟随冲刺比例（冲刺时趋近VO2max；Duthie 2003）"
+    description: "Oxygen uptake follows the sprint proportion (approaching VO2max during a sprint; Duthie 2003)"
     condition: "sprint_ratio > 0"
     priority: 9
     dynamics:
       vo2: "min(70, 15 + sprint_ratio * 100 + tackle_frequency * 2)"
   collision_stress_accumulation:
-    description: "碰撞应激随擒抱频率和冲刺强度累积（接触次数×强度；Austin 2011）"
+    description: "Collision stress accumulates with tackle frequency and sprint intensity (contact count times intensity; Austin 2011)"
     condition: true
     priority: 8
     dynamics:
       collision_stress_index: "min(100, collision_stress_index + tackle_frequency * 1.2 + sprint_ratio * 5)"
   muscle_damage_accumulation:
-    description: "肌肉损伤由碰撞应激积累驱动（橡皮筋应力→微撕裂→CK释放）"
+    description: "Muscle damage is driven by collision-stress accumulation (mechanical stress leading to micro-tears leading to CK release)"
     condition: "collision_stress_index > 20"
     priority: 7
     dynamics:
       muscle_damage_index: "min(100, muscle_damage_index + (collision_stress_index - 20) * 0.015)"
   fatigue_accumulation:
-    description: "疲劳：代谢（冲刺）+机械（碰撞）双重来源"
+    description: "Fatigue has two sources: metabolic (sprinting) and mechanical (collision)"
     condition: true
     priority: 6
     dynamics:
       fatigue: "min(1.0, fatigue + sprint_ratio * 0.006 + tackle_frequency * 0.003 + muscle_damage_index * 0.0005)"
   distance_accumulation:
-    description: "跑动距离累积（冲刺贡献高于慢跑；Cunniffe 2009：总距离~7km后卫）"
+    description: "Running distance accumulates (sprinting contributes more than jogging; Cunniffe 2009: about 7km total for a back)"
     condition: true
     priority: 5
     dynamics:
@@ -133,13 +147,13 @@ simulation:
         value: 1.5
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "擒抱频率（1.5次/min，后卫场景）"
+        label: "Tackle frequency (1.5 per minute, a back scenario)"
       - variable: sprint_ratio
         time_start: "15:00"
         value: 0.15
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "冲刺比例（15%，后卫典型值）"
+        label: "Sprint proportion (15%, a typical value for a back)"
 
 optimization:
   method: nsga2
@@ -147,26 +161,26 @@ optimization:
     - variable: distance_covered
       metric: final
       direction: maximize
-      description: "最大化总跑动距离（场上覆盖范围）"
+      description: "Maximizing total running distance (field coverage)"
     - variable: muscle_damage_index
       metric: final
       direction: minimize
-      description: "最小化肌肉损伤指数（减少赛后恢复负担）"
+      description: "Minimizing the muscle-damage index (reducing the post-match recovery burden)"
   constraints:
     - variable: fatigue
       condition: "<= 0.85"
       type: hard
-      description: "疲劳不超过0.85（防止力竭受伤风险）"
+      description: "Fatigue should not exceed 0.85 (preventing an exhaustion-injury risk)"
     - variable: heart_rate
       condition: "<= 190"
       type: soft
-      description: "心率控制在190 bpm以内"
+      description: "Keep heart rate within 190 bpm"
   startpoint:
     regimens:
       - variable: sprint_ratio
         time_start: "15:00"
         time_end: "15:00"
-        label: "冲刺时间占比（5-35%）"
+        label: "Sprint time proportion (5-35%)"
         optimize:
           value: [0.05, 0.35]
   algorithm:
@@ -190,8 +204,8 @@ optimization:
 
 references:
   - citation: "Duthie G et al. (2003) Applied physiology and game analysis of rugby union. Sports Med 33(13):973-991."
-    description: "提供按位置划分的 VO2max 和跑动距离数据，是摄氧量动力学和跑动距离积累机制的参数来源。"
+    description: "Supplies position-specific VO2max and running-distance data, the parameter source for the oxygen-uptake dynamics and running-distance accumulation mechanism."
   - citation: "Cunniffe B et al. (2009) An evaluation of the physiological demands of elite rugby union using global positioning system tracking software. J Strength Cond Res 23(4):1195-1203."
-    description: "基于 GPS 追踪提供心率、冲刺占比和跑动距离数据，是心率动力学和跑动距离积累机制的参数来源。"
+    description: "Supplies heart-rate, sprint-proportion, and running-distance data from GPS tracking, the parameter source for the heart-rate dynamics and running-distance accumulation mechanism."
   - citation: "Austin DJ et al. (2011) Physiological response to tackling in rugby league. J Strength Cond Res 25(4):1038-1042."
-    description: "提供擒抱冲撞的生理响应数据，是碰撞应激积累机制的参数来源。"
+    description: "Supplies physiological-response data for a tackle collision, the parameter source for the collision-stress accumulation mechanism."

@@ -3,23 +3,23 @@ metadata:
   lm_format_version: "1.0"
   updated: 2026-05-22
   description:
-    problem: "Banister 模型 K×4 行为优化扩展，涵盖训练负荷、训练频率与减量时机三个决策维度，论文当前文本标注为后续工作范围，不在 §6.2 报告结果。完整物理机制与对比仿真见 imports 的 banister_validation。"
-    method: "机制与 banister_validation.yaml 相同，完整机制列表见该文件 description.method；本文件只把训练负荷、训练频率、减量起始时机、维持期负荷这几个决策变量收窄为一次 K×4 多目标优化，同时最大化 performance、最小化 fatigue。"
+    problem: "A K×4 behavioral optimization extension of the Banister model, covering three decision dimensions, training load, training frequency, and taper timing; the paper's current text marks this as follow-on work, not reported in section 6.2. See the imported banister_validation for the complete physical mechanism and the comparison simulation."
+    method: "The mechanism matches banister_validation.yaml; see that file's description.method for the complete mechanism list. This file narrows training load, training frequency, taper start timing, and maintenance-phase load into a single K×4 multi-objective optimization, jointly maximizing performance and minimizing fatigue."
   log:
     "2026-08-05_00-00-00":
-      change: "results 精简为 2026-07-10 的最终收敛结果，移除已确认不可复现的 historical_stale_from_2026-06-15 子块，status 文本去除过程叙述；description 补充 method 字段"
-      reason: "落实 ADR 0141，主文件只保留当前有效结果，调试脉络转移至 history/2026-08-05_banister_opt.yaml。"
+      change: "results streamlined to the final converged result from 2026-07-10, removing the confirmed-unreproducible historical_stale_from_2026-06-15 sub-block, with process narrative removed from the status text; description gains a method field"
+      reason: "Implements ADR 0141: the main file now keeps only the currently valid result, with the debugging trail moved to history/2026-08-05_banister_opt.yaml."
     "2026-08-13_00-00-00":
-      change: "新增 Halson SL (2014) 引用"
-      reason: "该引用原本挂在 banister_validation.yaml，但描述的是本文件训练频率决策维度的文献依据，本文件自己的 references 之前只有一条占位符，属孤儿引用遗留，随本文件归档至 test_validation 一并迁移过来。"
+      change: "Added a citation to Halson SL (2014)"
+      reason: "This citation had originally been attached to banister_validation.yaml, but it actually describes the literature basis for this file's own training-frequency decision dimension; this file's own references previously carried only a single placeholder, an orphaned citation, so it was migrated here when this file was archived to test_validation."
 
 imports:
   - papers/lm_format/banister/banister_validation
 
 references:
-  - "见 ./banister_validation.yaml（体能/疲劳时间常数、增益系数、基础表现等共享物理机制的引用）"
+  - "See ./banister_validation.yaml for citations covering the shared physical mechanism (the fitness/fatigue time constants, gain coefficients, baseline performance, etc.)"
   - citation: "Halson SL (2014) Monitoring training load to understand fatigue in athletes. Sports Med 44(Suppl 2):139-147"
-    description: "训练频率，即每周训练天数，改变疲劳积累节奏这一定性机制的文献依据，用于本文件训练频率决策维度的设计。"
+    description: "The literature basis for the qualitative mechanism that training frequency, the number of training days per week, changes the pace of fatigue accumulation, used in designing this file's training-frequency decision dimension."
 
 optimization:
   method: nsga2
@@ -33,64 +33,64 @@ optimization:
     - variable: performance
       direction: maximize
       metric: final
-      description: 最大化第16周末综合表现（AU）
+      description: Maximizing overall performance (AU) at the end of week 16
     - variable: fatigue
       direction: minimize
       metric: final
-      description: 最小化训练结束时疲劳积累（AU）
+      description: Minimizing accumulated fatigue (AU) at the end of training
   constraints:
     - variable: fatigue
       condition: "<= 2500"
       type: hard
-      description: 疲劳上限 2500 AU，防止过度训练（Banister模型AU量纲，与训练负荷相称）
+      description: A fatigue ceiling of 2500 AU, preventing overtraining (the Banister model's AU dimension, proportionate to training load)
     - variable: performance
       condition: ">= 480"
       type: soft
       metric: final
-      description: 第16周末表现不低于基础值 480 AU（训练初期fatigue快于fitness积累，performance会先降后升，约束仅检查终值）
+      description: Performance at the end of week 16 not below the baseline of 480 AU (fatigue accumulates faster than fitness early in training, so performance dips before rising; the constraint checks only the final value)
 
   startpoint:
     regimens:
-      # T1: 渐进期负荷强度（每日，固定区间）
+      # T1: buildup-phase load intensity (daily, a fixed interval)
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-03-11"]
-        label: "渐进期负荷"
+        label: "Buildup-phase load"
         optimize:
           value: [40.0, 120.0]
 
-      # T1+T3: 渐进期训练频率（几天/周）——休息日 training_load=0，促进疲劳恢复
-      # 科学意义：5天/周 vs 7天/周 改变疲劳积累节奏（Halson 2014）
+      # T1+T3: buildup-phase training frequency (days per week); training_load=0 on a rest day promotes fatigue recovery
+      # Scientific significance: 5 days/week versus 7 days/week changes the pace of fatigue accumulation (Halson 2014)
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         date_range: ["2026-01-01", "2026-03-11"]
-        label: "渐进期训练频率（天/周）"
+        label: "Buildup-phase training frequency (days/week)"
         optimize:
           value: [50.0, 110.0]
           days_pool: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
           days_n: [5, 7]
 
-      # T1+T4: 减量期起始时机（在第7-12周之间搜索最优减量点）
-      # 科学意义：减量早1-2周 vs 文献标准第11周是否能提高峰值表现？
+      # T1+T4: taper-phase start timing (searching for the optimal taper point between weeks 7 and 12)
+      # Scientific significance: does tapering 1-2 weeks earlier than the literature standard of week 11 improve peak performance?
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "减量期起始时机与负荷"
+        label: "Taper-phase start timing and load"
         optimize:
           value: [0.0, 45.0]
           date_range: [["2026-02-19", "2026-03-25"], ["2026-04-22", "2026-04-22"]]
 
-      # T1: 维持期负荷（减量后的巩固期）
+      # T1: maintenance-phase load (the consolidation period after tapering)
       - variable: training_load
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-03-26", "2026-04-22"]
-        label: "维持期负荷"
+        label: "Maintenance-phase load"
         optimize:
           value: [0.0, 100.0]
 
@@ -100,7 +100,7 @@ optimization:
     seed: 19
 
   results:
-    status: "本结果基于 banister_validation.yaml 的 k1/k2 hour 换算修复后配置；2026-07-14 用相同配置独立重跑一次，60 解前沿与下方 recommended、min-fatigue 端点逐位精确一致，确认可复现。"
+    status: "This result is based on the configuration after banister_validation.yaml's k1/k2 hour-conversion fix; an independent rerun with the same configuration on 2026-07-14 matched the 60-solution front, the recommended point below, and the min-fatigue endpoint exactly, confirming it reproduces."
     generated_at: "2026-07-10"
     method: nsga2
     population_size: 60
@@ -130,4 +130,4 @@ optimization:
     recommended:
       x: [43.65123710379597, 54.72624830869052, 16.775899764021617, 0.000601448157838581, 22.397621498220143, 3.7206476467828716e-05]
       f: [1513.3839523990666, 140.77966006804647]
-    note: "Pareto 前沿共 60 解（本字段仅列出代表性 20 解，完整 60 解见同批次输出 CSV），前沿两端分别对应渐进期负荷约40、减量与维持期几乎完全停训（fatigue 最低 123.6）与渐进期负荷约43.7、维持期略高（performance 最高 1513.4）。recommended 取 performance 最高解。更早的重跑记录见 history/2026-08-05_banister_opt.yaml。"
+    note: "The Pareto front has 60 solutions in total (this field lists only 20 representative ones; see the same batch's output CSV for the full 60). The front's two ends correspond respectively to a buildup-phase load of about 40 with taper and maintenance nearly fully stopped (the lowest fatigue, 123.6) and a buildup-phase load of about 43.7 with a somewhat higher maintenance load (the highest performance, 1513.4). recommended takes the solution with the highest performance. See history/2026-08-05_banister_opt.yaml for the earlier rerun record."

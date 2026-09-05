@@ -7,37 +7,68 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   log:
     "2026-08-05_00-00-00":
-      change: "移除已解决的 todo 条目；description 补充 method 字段"
-      reason: "落实 ADR 0141，主文件只保留当前状态，调试脉络转移至 history/2026-08-05_infant_breastfeeding_night_tradeoff_demo_babymax.yaml。"
+      change: "Removed resolved todo items; description gains a method field"
+      reason: "Implements ADR 0141: the main file now keeps only the current state, with the debugging trail moved to history/2026-08-05_infant_breastfeeding_night_tradeoff_demo_babymax.yaml."
     "2026-08-06_00-00-00":
-      change: "description 按 problem/method/result/limitations 四字段重写，problem/method/result/limitations 改为列表结构，去掉案例C这类框架内部代号，改用基线文件指代，清理硬换行与非豁免括号，来源文献不再单列 citation 字段，改为直接挂在基线文件 description.problem 各机制条目下面"
-      reason: "落实 ADR 0142。"
+      change: "description rewritten into the four fields problem/method/result/limitations; problem/method/result/limitations changed to a list structure; the framework-internal code name Case C was replaced with a reference to the baseline file; hard-wrapping and non-exempt parentheses cleaned out; source publications are no longer listed as a separate citation field, and instead attached directly under each mechanism item in the baseline file's description.problem"
+      reason: "Implements ADR 0142."
   description:
     problem: |
-      与同目录 infant_breastfeeding_night_tradeoff_demo.yaml 共享完全相同的动力学机制与来源文献，为什么需要联合建模见该文件 description.problem，此处不重复。
-      本文件把夜间净吸收奶量预算从150 mL每晚拉高到400 mL每晚，超过四个候选时段各自0到90 mL上界能产生的物理上限360 mL每晚，使这条约束实质上不再起作用，目标结构不变，用于回答：夜间预算约束是塑造前沿婴儿与母亲权衡这一发现的关键因素，还是即使预算不设限前沿也能自发保持多样性。
+      Shares exactly the same dynamics mechanism and source publications as
+      infant_breastfeeding_night_tradeoff_demo.yaml in the same directory; see that file's
+      description.problem for why joint modeling is needed, not repeated here.
+      This file raises the nighttime net-absorbed-volume budget from 150 mL a night to 400 mL a
+      night, exceeding the physical ceiling of 360 mL a night that the four candidate windows'
+      individual [0,90] upper bounds can produce, so that this constraint effectively no longer
+      binds, with the objective structure unchanged; it answers whether the nighttime budget
+      constraint is the key factor shaping the finding of a baby-versus-mother tradeoff on the
+      front, or whether the front can spontaneously stay diverse even with no budget limit at all.
     method: |
-      机制与同目录 infant_breastfeeding_night_tradeoff_demo.yaml 相同，耦合结构说明见该文件 description.method，此处不重复。
-      本文件把 night_absorbed_volume_budget 从150 mL每晚拉高到400 mL每晚，超过决策变量物理上限使约束不再绑定，用于检验夜间预算约束松紧本身对前沿结构的影响。
+      The mechanism matches infant_breastfeeding_night_tradeoff_demo.yaml in the same directory;
+      see that file's description.method for the coupling structure, not repeated here.
+      This file raises night_absorbed_volume_budget from 150 mL a night to 400 mL a night,
+      exceeding the decision variables' physical ceiling so the constraint no longer binds, testing
+      how the nighttime budget constraint's tightness itself shapes the front's structure.
     result: |
-      预算拉高到400 mL每晚且不再绑定后，前沿没有收窄成几乎全是婴儿利益的单一区域，反而变得更宽，但更宽的部分主要是信息量最低的极端解，真正有决策价值的中段权衡反而被稀释。
-      - 前沿保留了基线文件已经找到的单时段与双时段两种规模，母亲健康时长140.0与29.42到29.50。
-      - 新增了基线文件因预算限制从未出现过的三时段与四时段两种规模，母亲健康时长分别为3.21与1.4583，后者正是基线文件在加入预算约束前记录过的角点收敛冻结值本身。
-      - 总吸收奶量范围从基线文件的59142到69372 mL扩大到59142到87756 mL。
-      预算约束真正的作用因此不是把前沿限制在某个区域内，而是把四个时段全开、母亲收益冻结在最差值这一支配性但信息量最低的解排除在可行域之外：这个解在总奶量单一维度上确实最优，一旦预算不限制它，搜索算法必然把它保留为非支配解，但它对研究母亲与婴儿权衡这件事没有信息量。更准确的说法不是预算越高越偏向婴儿利益，而是预算越高，前沿越容易被单一维度最优但退化的解重新占据一角，预算约束真正的作用是排除这类退化解，不是单纯限制婴儿一侧的收益上限。
+      Once the budget is raised to 400 mL a night and no longer binds, the front does not narrow
+      into a single region dominated by the baby's interest; instead it widens, but the widened
+      part is mostly the least informative extreme solutions, and the midsection tradeoff that
+      actually carries decision value ends up diluted.
+      - The front keeps the single-window and two-window scales the baseline file already found,
+        with the mother's healthy duration at 140.0 and 29.42 to 29.50.
+      - It adds two scales, three windows and four windows, that the baseline file's budget
+        constraint had prevented from ever appearing, with the mother's healthy duration at 3.21
+        and 1.4583 respectively; the latter is exactly the corner-convergence frozen value the
+        baseline file recorded before its budget constraint was added.
+      - The total absorbed volume's range expands from the baseline file's 59142 to 69372 mL to
+        59142 to 87756 mL.
+      The budget constraint's real effect, then, is not to confine the front to some region, but to
+      exclude, from the feasible region, the dominant but least informative solution where all four
+      windows are fully open and the mother's benefit is frozen at its worst value: this solution is
+      genuinely optimal along the single dimension of total milk volume, so once the budget no
+      longer limits it, the search algorithm necessarily keeps it as a non-dominated solution, even
+      though it carries no information for studying the mother-baby tradeoff. The more accurate
+      statement is not that a higher budget favors the baby's interest more, but that a higher
+      budget makes the front more likely to have a corner reoccupied by a solution optimal along a
+      single dimension but degenerate; the budget constraint's real effect is excluding this kind of
+      degenerate solution, not simply capping the baby side's benefit.
     limitations: |
-      与基线文件共享同一套简化边界，详见该文件 description.limitations，此处不重复。
-      400 mL每晚这个数字是刻意选取的方法论探针，明确超过决策变量物理上限，让约束不绑定，不代表任何临床推荐喂养量，不应被引用为标定选择以外的任何意义。
+      Shares the same simplified boundaries as the baseline file; see that file's
+      description.limitations for detail, not repeated here.
+      The figure 400 mL a night is a deliberately chosen methodological probe, explicitly exceeding
+      the decision variables' physical ceiling so the constraint does not bind; it does not
+      represent any clinically recommended feeding amount and should not be cited as meaning
+      anything beyond this calibration choice.
   ratings:
-    importance: 0.25 - 简化演示场景，测试探针性质，非独立科学案例
-    variable: 0.5 - 大部分参数沿用infant_breastfeeding_sim/postpartum_recovery_sim已有文献锚点，机制继承为主
-    equation: 0.5 - 自建方程复用postpartum_recovery_sim已验证的重返职场棘轮/职业代价机制
-    simulation: 0.5 - 可跑通产出更宽前沿，厘清预算约束的真实作用是排除退化解而非单纯限制婴儿收益上限
-    optimization: 0.5 - 放宽预算后保留基线单/双时段权衡规模并新增两种规模，前沿信息量部分被极端退化解稀释
-    innovation: 0.25 - 对已有模型放宽预算约束的探针性质变体，厘清约束机制作用但不构成新方法
-    confidence: 0.0 - 简化演示场景，尚未与任何独立文献目标数值比对，仅验证夜间预算约束松紧对决策变量结构的影响
+    importance: 0.25 - A simplified demonstration scenario, a test probe in nature, not an independent scientific case
+    variable: 0.5 - Most parameters follow the existing literature anchors already used in infant_breastfeeding_sim/postpartum_recovery_sim, with the mechanism mainly inherited
+    equation: 0.5 - A self-built equation reusing postpartum_recovery_sim's already-validated return-to-work ratchet and career-penalty mechanism
+    simulation: 0.5 - Runs successfully and produces a wider front, clarifying that the budget constraint's real effect is excluding a degenerate solution rather than simply capping the baby side's benefit
+    optimization: 0.5 - After relaxing the budget, the baseline's single- and two-window tradeoff scales are kept and two new scales are added, with the front's information diluted in part by an extreme degenerate solution
+    innovation: 0.25 - A probe-natured variant relaxing an existing model's budget constraint; clarifies the constraint mechanism's effect but is not a new method
+    confidence: 0.0 - A simplified demonstration scenario, not yet compared against any independent literature target value, validating only how the nighttime budget constraint's tightness affects the decision-variable structure
 
-# ── 变量 ─────────────────────────────────────────────────────────────────────
+# -- Variables ---------------------------------------------------------------
 variables:
 
   baby_weight_fixed:
@@ -45,34 +76,41 @@ variables:
     value: 3.3
     unit: kg
     description: >
-      固定出生体重，本演示场景不建模体重增长。2026-08-02仿真窗口从14天延长到140天后，这一简化的失真程度比原版更明显（20周内婴儿体重实际会有显著增长），但本文件的 total_absorbed_volume目标本来就是"决策变量结构能否产生非退化前沿"的相对比较代理指标，不是绝对生长结局判断，继续使用固定体重以保持与原14天版本的一致性、避免引入原始90天模型已知的体重标定问题。
+      A fixed birth weight; this demonstration scenario does not model weight growth. After the
+      simulation window was extended from 14 to 140 days on 2026-08-02, this simplification's
+      distortion is more pronounced than in the original version (an infant's weight would actually
+      grow substantially over 20 weeks), but this file's total_absorbed_volume objective is
+      inherently a relative comparison proxy for whether the decision-variable structure can
+      produce a non-degenerate front, not an absolute growth-outcome judgment, so the fixed weight
+      is kept for consistency with the original 14-day version and to avoid the weight-calibration
+      issue already known in the original 90-day model.
 
   stomach_capacity_per_kg:
     type: parameter
     value: 30.0
     unit: mL/kg
-    description: "每kg体重对应的胃容量，沿用原文件参数。"
+    description: "Stomach capacity per kg of body weight, following the original file's parameter."
     reference: "Scammon & Doyle (1920) AJDC 20:516-538."
 
   gastric_emptying_rate:
     type: parameter
     value: 0.46
     unit: 1/hour
-    description: "胃排空一阶速率常数，沿用原文件参数。"
+    description: "The first-order gastric-emptying rate constant, following the original file's parameter."
     reference: "Cavell B (1981) Acta Paediatr Scand 70:639-641."
 
   sleep_disruption_per_nightfeed:
     type: parameter
     value: 0.75
     unit: hour
-    description: "每次夜间喂奶消耗的有效睡眠时间，沿用原文件参数。"
+    description: "The effective sleep time lost per nighttime feed, following the original file's parameter."
     reference: "Doan T et al. (2007) J Perinat Neonatal Nurs 21(3):200-206."
 
   sleep_recovery_rate:
     type: parameter
     value: 0.083
     unit: hour/hour
-    description: "每小时睡眠债自然恢复速率，沿用原文件参数。"
+    description: "The natural sleep-debt recovery rate per hour, following the original file's parameter."
     reference: "Borbely AA (1982) Hum Neurobiol 1(3):195-204."
 
   sleep_fragmentation_quality_loss:
@@ -81,38 +119,50 @@ variables:
     unit: dimensionless
     bounds: [0, 0.8]
     description: >
-      夜间喂奶造成的睡眠碎片化对"剩余睡眠"恢复效率的折损比例，2026-08-02改编自 postpartum_recovery_sim.yaml（S4）已验证的同名机制与同一数值（0.4为标定选择，非直接文献测量值，原文件已如此标注）。
+      The fraction by which nighttime-feeding-induced sleep fragmentation discounts the recovery
+      efficiency of "remaining sleep"; adapted 2026-08-02 from the already-validated same-named
+      mechanism and the same value (0.4) in postpartum_recovery_sim.yaml (S4), a calibration choice
+      rather than a direct literature measurement, as already noted in the original file.
     reference: "Bonnet MH (1985) Sleep 8(1):11-19; Insana SP & Montgomery-Downs HE (2013) Infant Behav Dev 36(4):554-560"
 
-  # ── 母亲职业发展心理维度 ─────────────────────────────────────
+  # -- The mother's career-development psychological dimension --------------------
   return_to_work_trigger:
     type: input
     value: 0.0
     unit: dimensionless
     bounds: [0.0, 1.0]
     description: >
-      重返职场触发标记（T4决策变量：只搜索触发的起始日期，量值本身固定不搜索）。从 optimization搜到的起始日起每天0点触发一次，触发后 return_to_work_ratchet 方程把 at_work 锁定为1（不会因为触发窗口结束而复位），代表"重返职场是一次性状态转换，不是可逆事件"。
+      A return-to-work trigger flag (a T4 decision variable: only the trigger's start date is
+      searched, with the value itself fixed and not searched). It triggers once a day at midnight
+      starting from the date optimization finds; once triggered, the return_to_work_ratchet
+      equation locks at_work at 1 (it does not reset when the trigger window ends), representing
+      that returning to work is a one-time state transition, not a reversible event.
 
   at_work:
     type: state
     value: 0.0
     unit: dimensionless
     bounds: [0, 1]
-    description: "是否已重返职场的棘轮状态（一旦变为1，此后保持1，见 return_to_work_ratchet）。"
+    description: "The ratchet state for whether the mother has returned to work (once it becomes 1, it stays 1 thereafter; see return_to_work_ratchet)."
 
   leave_length_days:
     type: state
     value: 0.0
     unit: day
     description: >
-      实际请假天数：at_work=0期间逐日累加，at_work变为1后冻结，冻结时的值即为本次仿真里"实际请假多少天才重返职场"，同时驱动 maternal_depression_index 与 career_penalty_index 两条曲线。
+      The actual number of leave days: accumulated day by day while at_work=0, and frozen once
+      at_work becomes 1; the frozen value is this run's "how many days of leave were actually taken
+      before returning to work," and it also drives both the maternal_depression_index and
+      career_penalty_index curves.
 
   leave_threshold_days:
     type: parameter
     value: 84.0
     unit: day
     description: >
-      产后12周（84天），母婴身心结局最优的循证阈值，兼作 maternal_depression_index 的下降终点与 career_penalty_index 的上升起点。
+      12 postpartum weeks (84 days), the evidence-based threshold at which mother-and-infant
+      outcomes are best, serving both as maternal_depression_index's endpoint for its decline and
+      career_penalty_index's starting point for its rise.
     reference: "Whitney MD et al. (2023) Matern Child Health J 27(8):1308-1323"
 
   depression_penalty_max:
@@ -120,7 +170,13 @@ variables:
     value: 0.79
     unit: dimensionless
     description: >
-      请假时长趋近0时 maternal_depression_index 的峰值，直接取自 Chatterji & Markowitz（2012）报告的真实测量值："产假<12周"对应 CES-D 12项抑郁量表 +0.79分。maternal_depression_index 在请假0至84天间按线性插值从此峰值降到0，是把该文献单一时间点的categorical测量值換算为连续曲线的工程近似（文献本身未提供连续的剂量-反应轨迹数据），非独立测量值本身延伸出的连续曲线。
+      maternal_depression_index's peak as leave length approaches 0, taken directly from the real
+      measured value Chatterji and Markowitz (2012) report: leave under 12 weeks corresponds to a
+      +0.79-point change on the CES-D 12-item depression scale. maternal_depression_index
+      interpolates linearly from this peak down to 0 as leave runs from 0 to 84 days, an
+      engineering approximation converting that publication's single categorical measurement point
+      into a continuous curve (the publication itself does not supply continuous dose-response
+      trajectory data); it is not a continuous curve extended from an independent measurement.
     reference: "Chatterji P & Markowitz S (2012) J Ment Health Policy Econ 15(2):61-76"
 
   career_penalty_rate_per_day:
@@ -128,15 +184,26 @@ variables:
     value: 0.01
     unit: 1/day
     description: >
-      请假超过 leave_threshold_days 后，career_penalty_index 每多请假一天的增量。标定选择，非直接文献测量值：Kleven et al.（2019）用丹麦行政数据证明生育后女性收入受到真实、持续的长期损失（"child penalty"），为"延长职业中断有真实经济代价"这一机制的存在性提供文献依据，但该文献未给出"每多请假一天代价增加多少"的斜率，此处取值仅代表量级存在、方向正确，不代表已校准的真实斜率。
-    reference: "标定选择（见描述）；机制存在性依据 Kleven H et al. (2019) Am Econ J Appl Econ 11(4):181-209"
+      Once leave exceeds leave_threshold_days, career_penalty_index's increment per additional day
+      of leave. A calibration choice, not a direct literature measurement: Kleven et al. (2019) use
+      Danish administrative data to demonstrate a real, sustained long-term earnings loss for women
+      after childbirth (the "child penalty"), supplying the literature basis for the existence of
+      the mechanism that extending a career interruption carries a real economic cost, but that
+      publication gives no slope for how much cost each additional day of leave adds; the value used
+      here only represents that the magnitude exists and the direction is correct, not an already
+      calibrated real slope.
+    reference: "A calibration choice (see description); the mechanism's existence is based on Kleven H et al. (2019) Am Econ J Appl Econ 11(4):181-209"
 
   maternal_depression_index:
     type: state
     value: 0.79
     unit: dimensionless
     description: >
-      短假期抑郁风险指数（CES-D量表点数近似）：leave_length_days在0至 leave_threshold_days区间内线性下降至0，之后保持0（不是二元阈值，每多请一天假风险连续下降，避免重蹈原90天模型WHO二元阈值导致前沿退化为单点的覆辙）。
+      A short-leave depression-risk index (an approximation of a CES-D scale score): declines
+      linearly to 0 as leave_length_days runs from 0 to leave_threshold_days, then stays at 0 (not
+      a binary threshold; the risk declines continuously with each extra day of leave, avoiding a
+      repeat of the original 90-day model's problem where a WHO binary threshold degenerated the
+      front to a single point).
     reference: "Chatterji P & Markowitz S (2012) J Ment Health Policy Econ 15(2):61-76"
 
   career_penalty_index:
@@ -144,8 +211,11 @@ variables:
     value: 0.0
     unit: dimensionless
     description: >
-      职业代价指数：leave_length_days超过leave_threshold_days后，超出部分乘以 career_penalty_rate_per_day连续累积，之前恒为0。与maternal_depression_index 方向相反，共同构成请假时长的真实两面权衡（而非"请假越长越好"的单调关系）。
-    reference: "标定选择，机制存在性依据 Kleven H et al. (2019)"
+      A career-cost index: once leave_length_days exceeds leave_threshold_days, the excess
+      accumulates continuously, multiplied by career_penalty_rate_per_day; it stays at 0 before
+      that. It moves opposite to maternal_depression_index, together forming leave length's real
+      two-sided tradeoff, rather than a monotonic "longer leave is always better" relationship.
+    reference: "A calibration choice; the mechanism's existence is based on Kleven H et al. (2019)"
 
   work_daytime_retention_factor:
     type: parameter
@@ -153,96 +223,112 @@ variables:
     unit: dimensionless
     bounds: [0, 1]
     description: >
-      重返职场后，日间哺乳/泵奶能达成的比例（相对未返岗时的100%）。标定选择，非直接文献测量值，定性方向由"全职工作与更早重返职场显著降低母乳喂养持续时长/频率"这一发现支撑（Determinants of breastfeeding initiation and cessation among employed mothers 队列研究），用于让"重返职场时点"这一决策与已有的夜间喂养决策空间产生真实耦合：更早重返职场会压低日间奶量，迫使更多夜奶才能维持总摄入量。
-    reference: "标定选择；定性支持见描述"
+      After returning to work, the fraction of daytime breastfeeding or pumping still achievable
+      (relative to 100% before returning). A calibration choice, not a direct literature
+      measurement, with its qualitative direction supported by a cohort study's finding that
+      full-time work and an earlier return to work markedly reduce breastfeeding duration and
+      frequency (Determinants of breastfeeding initiation and cessation among employed mothers). It
+      lets the return-to-work timing decision genuinely couple with the existing nighttime feeding
+      decision space: returning to work earlier lowers daytime milk volume, forcing more nighttime
+      feeds to maintain the total intake.
+    reference: "A calibration choice; qualitative support noted in the description"
 
-  # 日间固定喂养（非决策变量，通过 startpoint.regimens 的无 optimize 块条目声明）
+  # Fixed daytime feeding (not a decision variable, declared via a no-optimize-block entry in startpoint.regimens)
   breast_milk_day:
     type: input
     value: 100.0
     unit: mL
-    description: "日间固定喂养量，非决策变量。"
+    description: "The fixed daytime feeding amount, not a decision variable."
 
   effective_breast_milk_day:
     type: state
     value: 0.0
     unit: mL
     description: >
-      实际有效日间哺乳量（脉冲，语义同breast_milk_day）：at_work=0时等于breast_milk_day，at_work=1后按work_daytime_retention_factor打折。stomach_intake_and_overflow/absorbed_volume_tracking改用这个变量而非breast_milk_day，使重返职场时点真实影响婴儿侧摄入结局。
+      The actual effective daytime breastfeeding amount (a pulse, with the same semantics as
+      breast_milk_day): equals breast_milk_day while at_work=0, and is discounted by
+      work_daytime_retention_factor once at_work=1. stomach_intake_and_overflow and
+      absorbed_volume_tracking use this variable instead of breast_milk_day, so the return-to-work
+      timing genuinely affects the baby-side intake outcome.
 
-  # 夜间4个候选时段，独立决策变量，0表示跳过
+  # The 4 nighttime candidate windows, independent decision variables, 0 means skipped
   night_feed_1:
     type: input
     value: 0.0
     unit: mL
     bounds: [0, 90]
-    description: "夜间候选喂奶时段1（23:00）。值0表示本次跳过不喂。"
+    description: "Nighttime candidate feeding window 1 (23:00). A value of 0 means skipped this time."
 
   night_feed_2:
     type: input
     value: 0.0
     unit: mL
     bounds: [0, 90]
-    description: "夜间候选喂奶时段2（01:00）。值0表示本次跳过不喂。"
+    description: "Nighttime candidate feeding window 2 (01:00). A value of 0 means skipped this time."
 
   night_feed_3:
     type: input
     value: 0.0
     unit: mL
     bounds: [0, 90]
-    description: "夜间候选喂奶时段3（03:00）。值0表示本次跳过不喂。"
+    description: "Nighttime candidate feeding window 3 (03:00). A value of 0 means skipped this time."
 
   night_feed_4:
     type: input
     value: 0.0
     unit: mL
     bounds: [0, 90]
-    description: "夜间候选喂奶时段4（05:00）。值0表示本次跳过不喂。"
+    description: "Nighttime candidate feeding window 4 (05:00). A value of 0 means skipped this time."
 
   night_absorbed_volume_budget:
     type: parameter
     value: 400.0
     unit: mL
     description: >
-      夜间（23:00-05:00窗口）四个候选时段净吸收奶量之和的预算上限，本案例（案例A）刻意拉高到
-      400 mL/night，超过night_feed_1..4四个决策变量各自[0,90]上界能产生的物理上限
-      （4×90=360 mL/night），让这条约束实质上不再绑定。跟案例C（同目录基线文件，150 mL/night）
-      唯一的差异就是这个数字，用于测试预算约束的松紧如何塑造前沿。不是标定选择，是方法论探针，
-      不代表任何临床推荐喂养量。
+      The upper-bound budget on the sum of net absorbed volume across the four nighttime candidate
+      windows (the 23:00-05:00 window). This case (Case A) deliberately raises it to 400 mL/night,
+      exceeding the physical ceiling the four decision variables night_feed_1..4's individual
+      [0,90] upper bounds can produce (4x90=360 mL/night), so that this constraint effectively no
+      longer binds. The only difference from Case C (the baseline file in the same directory,
+      150 mL/night) is this figure, used to test how the budget constraint's tightness shapes the
+      front. It is not a calibration choice; it is a methodological probe and does not represent
+      any clinically recommended feeding amount.
 
   baby_stomach_volume:
     type: state
     value: 0.0
     unit: mL
-    description: "宝宝胃内当前奶量。"
+    description: "The baby's current stomach volume of milk."
 
   total_absorbed_volume:
     type: state
     value: 0.0
     unit: mL
-    description: "累计吸收奶量（不含溢出部分），婴儿侧目标的简化代理指标。"
+    description: "The cumulative absorbed milk volume (excluding overflow), a simplified proxy for the baby-side objective."
 
   night_absorbed_volume:
     type: state
     value: 0.0
     unit: mL
     description: >
-      夜间四个候选时段（night_feed_1..4）净吸收奶量（扣除胃容量溢出后）的仿真窗口累计总和，
-      仅用于optimization.constraints约束夜奶总预算，不是独立的婴儿侧目标。
+      The simulation window's cumulative sum of net absorbed volume (after subtracting overflow due
+      to stomach capacity) across the four nighttime candidate windows (night_feed_1..4); used only
+      to constrain the total nighttime budget in optimization.constraints, not an independent
+      baby-side objective.
 
   mother_sleep_debt:
     type: state
     value: 0.0
     unit: hour
-    description: "妈妈累计睡眠债，沿用原文件动态。"
+    description: "The mother's accumulated sleep debt, following the original file's dynamics."
 
   lm_mother_score:
     type: state
     value: 0.0
     unit: hour
-    description: "妈妈健康时长：睡眠债低于4小时的累计小时数。"
+    description: "The mother's healthy duration: the accumulated hours with sleep debt below 4 hours."
 
-# ── 动力学方程 ────────────────────────────────────────────────────────────────
+# -- Dynamics equations --------------------------------------------------------
 equations:
 
   return_to_work_ratchet:
@@ -251,14 +337,16 @@ equations:
     dynamics:
       at_work: "max(at_work, 1.0 if return_to_work_trigger > 0 else 0.0)"
     description: >
-      重返职场是一次性状态转换：return_to_work_trigger 从T4搜到的起始日起每天触发，at_work 一旦被置1便不会复位（棘轮），代表这是不可逆事件而非可重复开关。
+      Returning to work is a one-time state transition: return_to_work_trigger fires daily starting
+      from the date T4 searches for, and once at_work is set to 1 it never resets (a ratchet),
+      representing that this is an irreversible event, not a repeatable switch.
 
   leave_length_tracking:
     step_unit: day
     priority: 45
     dynamics:
       leave_length_days: "leave_length_days + step * (1 if at_work < 0.5 else 0)"
-    description: "请假天数累加：at_work=0期间逐日累加，变1后自动冻结（增量条件恒为0）。"
+    description: "Accumulates leave days: adds up day by day while at_work=0, and automatically freezes once it becomes 1 (the increment condition is then always 0)."
 
   psych_index_update:
     step_unit: day
@@ -267,7 +355,11 @@ equations:
       maternal_depression_index: "max(0.0, depression_penalty_max * (1.0 - leave_length_days / leave_threshold_days))"
       career_penalty_index: "max(0.0, leave_length_days - leave_threshold_days) * career_penalty_rate_per_day"
     description: >
-      两条连续曲线，均为 leave_length_days 的直接函数（无记忆，每步用当前leave_length_days 重新计算，leave_length_days冻结后两者自然也冻结在最终值）：请假越短抑郁风险越高（线性降到leave_threshold_days=0），请假超过leave_threshold_days后职业代价连续上升。
+      Two continuous curves, both a direct function of leave_length_days (memoryless, recomputed
+      each step from the current leave_length_days, so both naturally freeze at their final value
+      once leave_length_days freezes): the shorter the leave, the higher the depression risk
+      (declining linearly to 0 at leave_threshold_days), and the career cost rises continuously once
+      leave exceeds leave_threshold_days.
     reference: "Chatterji P & Markowitz S (2012); Whitney MD et al. (2023); Kleven H et al. (2019)"
 
   effective_daytime_feed_calc:
@@ -278,7 +370,11 @@ equations:
         (breast_milk_day * (1.0 if at_work < 0.5 else work_daytime_retention_factor))
         if breast_milk_day > 0 else 0
     description: >
-      实际有效日间哺乳量，仅在喂奶脉冲时刻（breast_milk_day>0）非零，其余步为0（保持与 breast_milk_day相同的脉冲语义，避免非进餐小时被误注入非零值）。priority 12，早于 absorbed_volume_tracking（11）/stomach_intake_and_overflow（10）执行，两者改用这个变量而非 breast_milk_day。
+      The actual effective daytime breastfeeding amount, nonzero only at a feeding pulse moment
+      (breast_milk_day>0) and 0 at every other step (keeping the same pulse semantics as
+      breast_milk_day, avoiding an accidental nonzero value being injected at a non-feeding hour).
+      Priority 12, executing before absorbed_volume_tracking (11) and stomach_intake_and_overflow
+      (10), both of which use this variable instead of breast_milk_day.
 
   absorbed_volume_tracking:
     priority: 11
@@ -288,7 +384,11 @@ equations:
         - max(0.0, baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
         - stomach_capacity_per_kg * baby_weight_fixed)
     description: >
-      喂奶脉冲的吸收量记账：priority 11，先于 stomach_intake_and_overflow（priority 10）执行，读取的 baby_stomach_volume 是本步更新前的旧值，避免与胃容量更新方程重复计算溢出量。2026-08-02改用 effective_breast_milk_day（重返职场后打折）而非 breast_milk_day。
+      Records a feeding pulse's absorbed amount: priority 11, executing before
+      stomach_intake_and_overflow (priority 10), reading baby_stomach_volume's old value from
+      before this step's update, avoiding double-counting the overflow with the stomach-volume
+      update equation. Changed 2026-08-02 to use effective_breast_milk_day (discounted after
+      returning to work) instead of breast_milk_day.
 
   night_absorbed_volume_tracking:
     priority: 11
@@ -299,10 +399,13 @@ equations:
         - stomach_capacity_per_kg * baby_weight_fixed)))
         if (night_feed_1 > 0 or night_feed_2 > 0 or night_feed_3 > 0 or night_feed_4 > 0) else night_absorbed_volume
     description: >
-      夜间四时段净吸收量（扣除胃容量溢出）的累计记账，priority与absorbed_volume_tracking相同，
-      读取的baby_stomach_volume是本步更新前的旧值。用if(是否有夜间脉冲)门控整个更新表达式：
-      夜间脉冲时累加净吸收量，其余时段（含日间脉冲与空步）原样保持night_absorbed_volume不变
-      （不能写成else 0，那会把累计值每步清零）。
+      Accumulates the net absorbed amount across the four nighttime windows (after subtracting
+      stomach-capacity overflow), at the same priority as absorbed_volume_tracking, reading
+      baby_stomach_volume's old value from before this step's update. The whole update expression
+      is gated by an if (whether a nighttime pulse occurred): it accumulates the net absorbed amount
+      on a nighttime pulse, and leaves night_absorbed_volume unchanged at every other step
+      (including a daytime pulse or an empty step); it cannot be written as an else 0, since that
+      would zero out the accumulated value every step.
 
   stomach_intake_and_overflow:
     priority: 10
@@ -311,14 +414,14 @@ equations:
         baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
         - max(0.0, baby_stomach_volume + effective_breast_milk_day + night_feed_1 + night_feed_2 + night_feed_3 + night_feed_4
         - stomach_capacity_per_kg * baby_weight_fixed)
-    description: "喂奶脉冲：加入胃，超过胃容量的部分记为溢出（不计入吸收量）。2026-08-02同上改用 effective_breast_milk_day。"
+    description: "A feeding pulse: added to the stomach, with the part exceeding stomach capacity recorded as overflow (not counted as absorbed). Changed 2026-08-02, as above, to use effective_breast_milk_day."
 
   gastric_emptying:
     step_unit: hour
     priority: 0
     dynamics:
       baby_stomach_volume: "max(0.0, baby_stomach_volume - gastric_emptying_rate * baby_stomach_volume * step)"
-    description: "一阶胃排空，沿用原文件参数。"
+    description: "First-order gastric emptying, following the original file's parameter."
 
   maternal_sleep_tracking:
     step_unit: hour
@@ -329,16 +432,19 @@ equations:
         + sleep_disruption_per_nightfeed * (1 + sleep_fragmentation_quality_loss)
         * (1 if (night_feed_1 > 0 or night_feed_2 > 0 or night_feed_3 > 0 or night_feed_4 > 0) else 0))
     description: >
-      睡眠债动态：本步任意一个夜间时段有非零喂奶即计一次夜醒代价，沿用原文件单次代价系数，2026-08-02叠加睡眠碎片化质量折损乘子（改编自postpartum_recovery_sim.yaml，引用Bonnet 1985）。
+      Sleep-debt dynamics: any nonzero feeding in any nighttime window this step counts one waking
+      cost, following the original file's single-cost coefficient; a sleep-fragmentation
+      quality-loss multiplier was added 2026-08-02 (adapted from postpartum_recovery_sim.yaml,
+      citing Bonnet 1985).
 
   lm_mother_score_update:
     step_unit: hour
     priority: 30
     dynamics:
       lm_mother_score: "lm_mother_score + step / 24.0 * (1 if mother_sleep_debt <= 4.0 else 0)"
-    description: "妈妈健康时长累积（单位：天），判据沿用原文件 4.0h 阈值。"
+    description: "Accumulates the mother's healthy duration (in days), using the original file's 4.0h threshold."
 
-# ── 仿真设置 ───────────────────────────────────────────────────────────────────
+# -- Simulation setup ----------------------------------------------------------
 simulation:
   step_size:
     value: 1
@@ -348,13 +454,13 @@ simulation:
   output_types: [input, state]
   plans:
     - id: "no_night_feeds"
-      label: "夜间全跳过（对照：只喂日间），重返职场固定84天"
+      label: "All nighttime feeds skipped (a control: daytime feeding only), returning to work at a fixed 84 days"
       regimens:
-        - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "日间7:00"}
-        - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "日间11:00"}
-        - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "日间15:00"}
-        - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "日间19:00"}
-        - {variable: return_to_work_trigger, time_start: "00:00", value: 1.0, date_range: ["2026-03-26", "2026-05-21"], label: "重返职场（固定第84天/12周）"}
+        - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "Daytime 7:00"}
+        - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "Daytime 11:00"}
+        - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "Daytime 15:00"}
+        - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "Daytime 19:00"}
+        - {variable: return_to_work_trigger, time_start: "00:00", value: 1.0, date_range: ["2026-03-26", "2026-05-21"], label: "Returning to work (fixed at day 84, 12 weeks)"}
 
 optimization:
   method: nsga2
@@ -370,65 +476,66 @@ optimization:
       metric: final
       type: hard
       description: >
-        夜间净吸收奶量预算约束（案例A）：400 mL/night × 140天 = 56000 mL，标定依据见
-        night_absorbed_volume_budget，刻意拉高到超过决策变量物理上限，让约束不绑定。
+        The nighttime net-absorbed-volume budget constraint (Case A): 400 mL/night x 140 days =
+        56000 mL, with the calibration basis in night_absorbed_volume_budget, deliberately raised
+        past the decision variables' physical ceiling so the constraint does not bind.
 
   objectives:
     - variable: total_absorbed_volume
       metric: final
       direction: maximize
-      description: "最大化140天末累计吸收奶量（婴儿侧简化代理指标）"
+      description: "Maximizing the cumulative absorbed milk volume at day 140 (a simplified baby-side proxy)"
     - variable: lm_mother_score
       metric: final
       direction: maximize
-      description: "最大化140天末妈妈健康时长（天）"
+      description: "Maximizing the mother's healthy duration (days) at day 140"
     - variable: maternal_depression_index
       metric: final
       direction: minimize
-      description: "最小化短假期抑郁风险指数"
+      description: "Minimizing the short-leave depression-risk index"
     - variable: career_penalty_index
       metric: final
       direction: minimize
-      description: "最小化职业代价指数，与上一目标方向相反"
+      description: "Minimizing the career-cost index, opposite in direction to the previous objective"
 
   startpoint:
     regimens:
-      - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "日间7:00（固定背景量）"}
-      - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "日间11:00（固定背景量）"}
-      - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "日间15:00（固定背景量）"}
-      - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "日间19:00（固定背景量）"}
+      - {variable: breast_milk_day, time_start: "07:00", value: 100.0, label: "Daytime 7:00 (a fixed background quantity)"}
+      - {variable: breast_milk_day, time_start: "11:00", value: 100.0, label: "Daytime 11:00 (a fixed background quantity)"}
+      - {variable: breast_milk_day, time_start: "15:00", value: 100.0, label: "Daytime 15:00 (a fixed background quantity)"}
+      - {variable: breast_milk_day, time_start: "19:00", value: 100.0, label: "Daytime 19:00 (a fixed background quantity)"}
       - variable: night_feed_1
         time_start: "23:00"
-        label: "夜间23:00（T1决策变量）"
+        label: "Nighttime 23:00 (a T1 decision variable)"
         optimize:
           value: [0.0, 90.0]
           value_step: 5
       - variable: night_feed_2
         time_start: "01:00"
-        label: "夜间01:00（T1决策变量）"
+        label: "Nighttime 01:00 (a T1 decision variable)"
         optimize:
           value: [0.0, 90.0]
           value_step: 5
       - variable: night_feed_3
         time_start: "03:00"
-        label: "夜间03:00（T1决策变量）"
+        label: "Nighttime 03:00 (a T1 decision variable)"
         optimize:
           value: [0.0, 90.0]
           value_step: 5
       - variable: night_feed_4
         time_start: "05:00"
-        label: "夜间05:00（T1决策变量）"
+        label: "Nighttime 05:00 (a T1 decision variable)"
         optimize:
           value: [0.0, 90.0]
           value_step: 5
       - variable: return_to_work_trigger
         time_start: "00:00"
-        label: "重返职场时点（T4决策变量）"
+        label: "Return-to-work timing (a T4 decision variable)"
         optimize:
           value: [0.9, 1.0]
           date_range:
-            - ["2026-01-15", "2026-04-15"]   # 起始日搜索窗：第14天至第104天
-            - ["2026-05-21", "2026-05-21"]   # 结束日固定：仿真末日
+            - ["2026-01-15", "2026-04-15"]   # the start-date search window: day 14 to day 104
+            - ["2026-05-21", "2026-05-21"]   # a fixed end date: the last day of the simulation
 
   algorithm:
     population_size: 60
@@ -436,15 +543,17 @@ optimization:
     seed: 19
 
   results:
-    status: "2026-08-04首次运行NSGA-II（pop=60/gen=60/seed=19）。60个非支配解，出现5档
-      lm_mother_score：4个时段激活（[90,90,90,90]附近，多个解在night_feed_3/4上有小幅
-      变化，如[90,90,85,90]/[90,90,75,90]/[90,90,85,75]等）给出1.4583333333333337，与
-      2026-08-03（案例C修复前）记录的角点收敛冻结值完全一致；3个时段激活给出
-      3.2083333333333304；2个时段激活（[90,90,0,0]/[0,90,0,90]两种配对）给出
-      29.416666666666956至29.50000000000029；1个时段激活（[0,90,0,0]）给出满分
-      140.00000000000307。total_absorbed_volume范围59141.7-87756.1 mL，上界较案例C
-      （59142-69372 mL）明显扩大，4个时段激活的解正是这个扩大区间的贡献者。详细分析与
-      对比结论见metadata.description.result。"
+    status: "The first NSGA-II run on 2026-08-04 (pop=60/gen=60/seed=19). 60 non-dominated
+      solutions, showing 5 tiers of lm_mother_score: 4 windows active (near [90,90,90,90], with
+      several solutions varying slightly on night_feed_3/4, such as
+      [90,90,85,90]/[90,90,75,90]/[90,90,85,75]) gives 1.4583333333333337, matching exactly the
+      corner-convergence frozen value recorded on 2026-08-03 (before Case C's fix); 3 windows
+      active gives 3.2083333333333304; 2 windows active (the two pairings [90,90,0,0]/[0,90,0,90])
+      gives 29.416666666666956 to 29.50000000000029; 1 window active ([0,90,0,0]) gives the perfect
+      score of 140.00000000000307. total_absorbed_volume ranges 59141.7-87756.1 mL, its upper bound
+      markedly wider than Case C's (59142-69372 mL), with the 4-window-active solutions contributing
+      this widened range. See metadata.description.result for the detailed analysis and comparison
+      conclusion."
     generated_at: "2026-08-04"
     method: nsga2
     population_size: 60

@@ -9,29 +9,47 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      吸烟是肺癌最主要的已知危险因素，现吸烟者相对不吸烟者的肺癌死亡风险比(HR)在流行病学文献中普遍报告为两位数量级的大效应量。本文件用 HR=17.85 作为这一量级的示意性数值，2026-08-28 核查确认未能找到报告这一精确数字组合（含 95% CI 14.38-22.17）的具体文献，故不再声称直接引自某一篇研究，改为标注为示意性数值，用于展示 evidence_type=rr 换算机制能正确处理大幅值效应量。
+      Smoking is the leading known risk factor for lung cancer, and a current smoker's lung-cancer
+      mortality hazard ratio (HR) relative to a nonsmoker is commonly reported in the epidemiological
+      literature as a large effect size on the order of double digits. This file uses HR=17.85 as an
+      illustrative value at this order of magnitude. A check on 2026-08-28 could not locate a
+      specific publication reporting this exact number combination, including the 95% CI 14.38-22.17,
+      so it is no longer claimed to be drawn directly from a particular study, and is instead marked
+      as an illustrative value, used to demonstrate that the evidence_type=rr conversion mechanism
+      correctly handles a large-magnitude effect size.
     result: |
-      用 LM format 的 evidence 节的 rr 子类型声明该效应量，代入示意性基线风险0.6%，验证 Loader 能正确读取、承载并展示这一效应量，暴露组风险等于基线风险乘以17.85，即HR为17.85。
+      This case declares the effect size using the rr subtype of the LM format's evidence block,
+      substituting an illustrative baseline risk of 0.6%, to verify that the loader correctly reads,
+      carries, and displays this effect size, with the exposed-group risk equal to the baseline risk
+      times 17.85, that is, an HR of 17.85.
     limitations: |
-      本案例是"效应量编码正确性"展示，不是独立预测检验：17.85这个数字本身就是要验证的目标，不是外推后与另一个独立来源比较。基线风险0.6%为示意性设定值，非任何具体人群的实测患病率。HR=17.85 本身是示意性数值，不对应特定文献，与本文件其余同族案例（processed_meat_mortality 等）均能追溯到具体文献不同，这一点已在 problem 字段说明，投稿前如需引用真实文献支撑吸烟-肺癌这一关联，需要另行检索替换。
+      This case demonstrates the correctness of effect-size encoding, not an independent prediction
+      test: the number 17.85 is itself the target being verified, not a value extrapolated and then
+      compared against a separate independent source. The 0.6% baseline risk is an illustrative
+      setting, not a measured prevalence in any specific population. HR=17.85 is itself an
+      illustrative value that does not correspond to a specific publication, unlike this file's other
+      cases in the same family, such as processed_meat_mortality, which are all traceable to a
+      specific publication; this is noted in the problem field, and if a genuine publication
+      supporting the smoking-lung-cancer association is needed before submission, a separate search
+      and replacement will be required.
   ratings:
-    importance: 0.25 - 流行病学效应量族案例之一，通用参考组件，尚未被具体论文import
-    variable: 0.25 - 2026-08-28 核查确认 HR=17.85 查无具体对应文献，已改为示意性数值，不再声称来自meta分析/大型队列研究的共识值
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.25 - 数值本身查无实据，与同族其余案例的置信度不可比，见 problem/limitations 说明
+    importance: 0.25 - One case in the epidemiological-effect-size family, a general-purpose reference component not yet imported by a specific paper
+    variable: 0.25 - A check on 2026-08-28 confirmed HR=17.85 has no traceable corresponding publication and has been changed to an illustrative value, no longer claimed as a consensus value from a meta-analysis or large cohort study
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.25 - The value itself has no traceable basis, and is not comparable in confidence to this family's other cases; see the problem/limitations fields
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family]
 
 variables:
   baseline_risk_pct:
-    description: 示意性基线（未暴露组）风险（%）
+    description: An illustrative baseline (unexposed-group) risk (%)
     value: 0.6
     unit: "%"
     type: parameter
 
   exposed_risk_pct:
-    description: 暴露组预测风险（%）= 基线风险 × 相对风险
+    description: The predicted exposed-group risk (%) = baseline risk x relative risk
     value: 0.0
     unit: "%"
     type: state
@@ -41,12 +59,12 @@ variables:
     evidence_type: rr
     value: 17.85
     unit: "HR"
-    description: 现吸烟者相对不吸烟者肺癌死亡风险比量级的示意性数值，不对应特定文献
-    reference: "示意性数值，不声称引自特定研究；2026-08-28 核查未找到报告 HR=17.85（95% CI 14.38-22.17）这一精确数字组合的文献，改用此标注"
+    description: An illustrative value at the order of magnitude of a current smoker's lung-cancer mortality hazard ratio relative to a nonsmoker, not corresponding to a specific publication
+    reference: "An illustrative value, not claimed to be drawn from a specific study; a check on 2026-08-28 found no publication reporting this exact number combination, HR=17.85 with 95% CI 14.38-22.17, hence this label"
 
 equations:
   risk_calc:
-    description: "静态计算：exposed_risk_pct = baseline_risk_pct × exposure_rr"
+    description: "A static calculation: exposed_risk_pct = baseline_risk_pct x exposure_rr"
     condition: true
     priority: 3
     dynamics:
@@ -63,8 +81,8 @@ simulation:
     - exposed_risk_pct
   plans:
     - id: "exposure_scenario"
-      label: "暴露组 vs 基线风险效应量展示"
+      label: "Exposed-group versus baseline-risk effect-size demonstration"
       regimens: []
 
 references:
-  - "示意性数值，不声称引自特定研究；2026-08-28 核查未找到报告 HR=17.85（95% CI 14.38-22.17）这一精确数字组合的文献"
+  - "An illustrative value, not claimed to be drawn from a specific study; a check on 2026-08-28 found no publication reporting this exact number combination, HR=17.85 with 95% CI 14.38-22.17"

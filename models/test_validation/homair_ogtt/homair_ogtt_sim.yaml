@@ -4,51 +4,100 @@ metadata:
   updated: 2026-06-26
   log:
     "2026-08-13_00-00-00":
-      change: "k_disp_basal 补上 Bergman RN (1989) Diabetes glucose effectiveness Sg 文献引用（0.026±0.008 /min，与校准值0.024吻合）；k_clear 补上 Matthews DR et al. (1985) Clin Endocrinol 胰岛素半衰期文献引用；c_abs 引用改指向已有的 Bergman RN et al. (1981)，并在 comments 中注明细胞外液分布容积约1.65 dL/kg的量级依据；k_absorb/HGO_const/HGO_ir/k_disp_ins/k_secrete/basal_secrete/gut_glucose/gut_absorption 保留 TODO:SOURCE，各自在 comments 中补充查证结论——其中 k_absorb 假设的30分钟吸收半衰期与文献报告的58-97.5分钟胃排空半排空时间存在2-3倍差异，k_disp_ins 校准值也高于文献报告的正常人SI典型范围，均标记为待后续核实调整；其余为本文件自定义的现象学参数，非标准 minimal model 分腔的直接对应量。"
-      reason: "投稿前核查 TODO:SOURCE 标注的动力学系数是否存在可用文献来源：三处（k_disp_basal/k_clear/c_abs）确认量级吻合，补齐真实引用；k_absorb 发现与文献存在实质性数值差异，需要标注供后续决定是否重新校准；其余系数确认是本模型自定义的现象学参数，无直接对应文献，保留估算值并说明理由，供后续 modeller 参考。"
+      change: "k_disp_basal gains a citation to Bergman RN (1989) Diabetes on glucose effectiveness Sg (0.026±0.008 /min, matching the calibrated value of 0.024); k_clear gains a citation to Matthews DR et al. (1985) Clin Endocrinol on insulin half-life; c_abs's reference now points to the already-present Bergman RN et al. (1981), with a comment added noting the extracellular distribution volume of about 1.65 dL/kg as the basis for its magnitude; k_absorb/HGO_const/HGO_ir/k_disp_ins/k_secrete/basal_secrete/gut_glucose/gut_absorption keep TODO:SOURCE, each with a comment added recording the check's conclusion. Among these, k_absorb's assumed 30-minute absorption half-life differs by a factor of 2-3 from the literature's reported gastric-emptying half-time of 58-97.5 minutes, and k_disp_ins's calibrated value is also higher than the literature's typical normal-population SI range; both are flagged for future reconciliation. The rest are phenomenological parameters custom to this file, with no direct counterpart in the standard minimal model."
+      reason: "Before submission, checking whether the coefficients marked TODO:SOURCE have an available literature source: three of them (k_disp_basal/k_clear/c_abs) were confirmed to match in magnitude, and their real citations were added; k_absorb was found to differ substantially in value from the literature and needed flagging for a future decision on whether to recalibrate; the rest were confirmed to be phenomenological parameters custom to this model with no directly corresponding publication, so the estimated values were kept with the reasoning noted, for a future modeler's reference."
     "2026-08-06_05-00-00":
-      change: "按 ADR 0142/0143 迁移：problem 改为主题句加边界列表，result/limitations 改为列表结构，references 全部改为 {citation, description} 对象写法；清理破折号、句首叙述式引用与数值+引用混排括号"
-      reason: "落实 ADR 0143：编辑 papers/ 模型时顺带完成 description/references 迁移，不再以任务范围小为由跳过。"
+      change: "Migrated per ADR 0142/0143: problem changed to a topic sentence plus a list of gaps, result/limitations changed to a list structure, references all changed to the {citation, description} object form; dashes, sentence-initial narrative citations, and parentheses mixing a number with a citation cleaned out"
+      reason: "Implements ADR 0143: editing a papers/ model now also completes the description/references migration, no longer skipped on the grounds that the task's scope is small."
     "2026-06-26_18-00-00":
-      change: "首版完成校准：肝脏/肌肉双通路分离系数（HGO_const/HGO_ir 与 k_disp_basal/k_disp_ins），加入8小时空腹前置稳定期（00:00起跑，08:00才触发OGTT糖负荷），S_muscle采样下界从0.25放宽到0.18。"
-      reason: "首版（单一k_disposal、无前置稳定期、t=1min即采集'空腹'值）未给系统足够时间收敛到S_hepatic/S_muscle各自决定的个体化稳态——300次MC结果显示HOMA-IR几乎不随参数变化（全部集中在3.2-4.0），300/300个体被判定为'HOMA异常但OGTT正常'，无法展示真实的四象限分布。用独立Python原型（脚本见对话记录）数值验证：(a) 系统在~200分钟内即收敛，8小时前置期足够；(b) 拆分胰岛素非依赖性（k_disp_basal）和胰岛素依赖性（k_disp_ins）外周处置后，S_muscle对空腹血糖的影响显著弱于对负荷后2h血糖的影响（因为后者发生在胰岛素浓度更高时），才能复现Abdul-Ghani 2006报告的孤立性IFG（HOMA异常/OGTT正常）和孤立性IGT（HOMA正常/OGTT异常）两类不一致模式同时存在。"
+      change: "Completed the first version's calibration: separate liver/muscle two-pathway coefficients (HGO_const/HGO_ir and k_disp_basal/k_disp_ins), added an 8-hour fasting lead-in period (starting at 00:00, with the OGTT glucose load triggered only at 08:00), and relaxed S_muscle's sampling lower bound from 0.25 to 0.18."
+      reason: "The first version (a single k_disposal, no lead-in period, sampling the 'fasting' value at t=1min) did not give the system enough time to converge to the individualized steady state each S_hepatic/S_muscle pair determines; 300 MC runs showed HOMA-IR barely changing with the parameters (all clustered between 3.2 and 4.0), with 300 out of 300 individuals classified as HOMA-abnormal-but-OGTT-normal, unable to show the true four-quadrant distribution. An independent Python prototype (the script is in the conversation record) numerically confirmed: (a) the system converges within about 200 minutes, so an 8-hour lead-in period is sufficient; (b) only after splitting peripheral disposal into an insulin-independent part (k_disp_basal) and an insulin-dependent part (k_disp_ins) does S_muscle's effect on fasting glucose become significantly weaker than its effect on the 2-hour post-load glucose (since the latter occurs at a higher insulin concentration), which is what reproduces Abdul-Ghani 2006's report of isolated IFG (HOMA-abnormal, OGTT-normal) and isolated IGT (HOMA-normal, OGTT-abnormal) coexisting."
     "2026-06-26_18-30-00":
-      change: "S_muscle 采样下界从0.18放宽到0.10，MC runs从300/1000提高到最终1000（seed=19）。"
-      reason: "[0.18,1.3]范围下n=1000仅出现2例孤立性IGT（0.2%），不足以构成稳健演示；网格扫描（620点）估算[0.10,1.3]范围下孤立性IGT象限占比约3%，与该范围下n=1000实测2.9%吻合。最终四象限分布：一致正常53.6%、一致异常29.1%、孤立性IFG样14.4%、孤立性IGT样2.9%（不一致合计17.3%），写入description.result。"
+      change: "S_muscle's sampling lower bound relaxed from 0.18 to 0.10, and the MC runs raised from 300/1000 to a final 1000 (seed=19)."
+      reason: "Under the [0.18,1.3] range, n=1000 produced only 2 isolated-IGT cases (0.2%), not enough for a robust demonstration; a grid scan (620 points) estimated the isolated-IGT quadrant's share at about 3% under the [0.10,1.3] range, matching the 2.9% actually measured at n=1000 under that range. The final four-quadrant distribution: concordant-normal 53.6%, concordant-abnormal 29.1%, isolated-IFG-like 14.4%, isolated-IGT-like 2.9% (discordant totaling 17.3%), written into description.result."
   description:
     problem: |
-      胰岛素抵抗没有单一金标准指标：HOMA-IR，即空腹血糖乘空腹胰岛素，只需一次空腹采血；口服葡萄糖耐量试验，OGTT，2 小时血糖则需要负荷后追踪。两者在人群中并不总是给出相同的判断，单篇来源文献回答不了这一问题：
-      - HOMA-IR 的判定阈值本身因人群、检测方法而异，文献报告范围约 1.7 至 3.5，不存在普适常数（Wallace 2004）。
-      - Abdul-Ghani et al.（2006）证明孤立性空腹血糖受损，以肝脏胰岛素抵抗为主、肌肉胰岛素敏感性接近正常，与孤立性糖耐量受损，以肌肉胰岛素抵抗为主、肝脏受累较轻，是同一代谢综合征的不同侧面，但该证据本身不涉及如何在同一虚拟人群里联合仿真两套诊断标准。
-      本案例演示 LM format 的仿真即校验用法：把 HOMA-IR，阈值 2.7（Yeni-Komshian 2000），和 OGTT 2 小时血糖，阈值 7.8 mmol/L 即 140 mg/dL（ADA 2024），两条独立诊断标准装入同一个生理框架，检验联合判定的可行域，不是检验某篇文献对错，而是检验同一虚拟人群在两套标准下的分类是否重叠。
+      Insulin resistance has no single gold-standard measure: HOMA-IR, fasting glucose times fasting
+      insulin, needs only one fasting blood draw, while the oral glucose tolerance test (OGTT)'s
+      2-hour glucose needs post-load tracking. The two do not always agree across a population, and
+      a single source publication cannot answer why:
+      - HOMA-IR's own diagnostic threshold varies by population and assay method, with the literature
+        reporting a range of roughly 1.7 to 3.5 and no universal constant (Wallace 2004).
+      - Abdul-Ghani et al. (2006) show that isolated impaired fasting glucose, dominated by hepatic
+        insulin resistance with near-normal muscle insulin sensitivity, and isolated impaired glucose
+        tolerance, dominated by muscle insulin resistance with lesser hepatic involvement, are
+        different facets of the same metabolic syndrome, but this evidence on its own says nothing
+        about how to jointly simulate the two diagnostic standards in the same virtual population.
+      This case demonstrates LM format's simulation-as-validation use: loading two independent
+      diagnostic standards, HOMA-IR with a threshold of 2.7 (Yeni-Komshian 2000) and OGTT 2-hour
+      glucose with a threshold of 7.8 mmol/L, that is 140 mg/dL (ADA 2024), into the same
+      physiological framework to test the joint determination's feasible region. This tests not
+      whether either publication is right, but whether the same virtual population's classifications
+      under the two standards overlap.
     method: |
-      本文件融合以下机制：
-      - 肝糖输出通路：基础肝糖输出加上肝脏胰岛素敏感性 S_hepatic 驱动的超额输出，主导空腹血糖与 HOMA-IR（Abdul-Ghani 2006）
-      - 外周葡萄糖处置通路：胰岛素非依赖性处置与胰岛素依赖性处置，后者由肌肉胰岛素敏感性 S_muscle 和当前胰岛素浓度共同决定，量级参考 Bergman 1981
-      - 肠道吸收动力学：OGTT 75g 糖负荷按一阶动力学吸收进入血液
-      - β细胞分泌-清除动力学：胰岛素基础分泌加血糖刺激分泌，按一阶速率清除
-      这些通路共享同一套血糖-胰岛素状态：S_hepatic 和 S_muscle 是两个独立采样、代表人群异质性的参数，但它们各自的效应都要经过同一个 glucose/insulin 动力学系统才能显现，外周处置项随胰岛素浓度放大，使 S_muscle 对空腹血糖的影响远小于对负荷后 2 小时血糖的影响，这正是 HOMA-IR 和 OGTT 两套独立诊断标准能够对同一虚拟人群给出不同分类的机制来源。
+      This file combines the following mechanisms:
+      - The hepatic glucose output pathway: baseline hepatic glucose output plus an excess output
+        driven by hepatic insulin sensitivity S_hepatic, dominating fasting glucose and HOMA-IR
+        (Abdul-Ghani 2006).
+      - The peripheral glucose disposal pathway: insulin-independent disposal plus insulin-dependent
+        disposal, with the latter jointly set by muscle insulin sensitivity S_muscle and the current
+        insulin concentration, at a magnitude referencing Bergman 1981.
+      - Gut absorption dynamics: the OGTT's 75g glucose load absorbs into the blood by first-order
+        kinetics.
+      - Beta-cell secretion and clearance dynamics: baseline insulin secretion plus glucose-stimulated
+        secretion, cleared at a first-order rate.
+      These pathways share the same glucose-insulin state: S_hepatic and S_muscle are two
+      independently sampled parameters representing population heterogeneity, but each one's effect
+      can only show up by passing through the same glucose/insulin dynamical system; the peripheral
+      disposal term is amplified by the insulin concentration, making S_muscle's effect on fasting
+      glucose far smaller than its effect on the 2-hour post-load glucose. This is exactly the
+      mechanism source that lets HOMA-IR and OGTT, two independent diagnostic standards, give
+      different classifications for the same virtual population.
     result: |
-      用蒙特卡洛仿真生成 1000 例虚拟人群，肝脏敏感性 S_hepatic 与肌肉敏感性 S_muscle 独立均匀采样，代表人群异质性，每个体先经 8 小时空腹前置期收敛到个体化稳态，再模拟标准 75g OGTT，空腹采血加负荷后 2 小时采血，分别按 HOMA-IR 大于 2.7（Yeni-Komshian 2000）和 OGTT 2 小时血糖大于 140 mg/dL 即 7.8 mmol/L（ADA 2024）两套标准分类。
-      - 联合可行域非空但显著小于全人群：两套标准一致判定为正常 53.6%、一致判定为异常 29.1%，合计一致率 82.7%。
-      - 不一致 17.3% 中，HOMA-IR 异常但 OGTT 正常，肝脏胰岛素抵抗为主、孤立性 IFG 样，占 14.4%；HOMA-IR 正常但 OGTT 异常，肌肉胰岛素抵抗为主、孤立性 IGT 样，占 2.9%。两个方向的不一致均非零，与 Abdul-Ghani 2006 报告的孤立性 IFG/IGT 现象方向一致，本模型参数下二者比例不对称，肝脏轴不一致更常见，不代表真实人群的精确比例，仅说明两套指标确实测量不同的生理通路。
+      A Monte Carlo simulation generates 1000 virtual individuals, with hepatic sensitivity
+      S_hepatic and muscle sensitivity S_muscle sampled independently and uniformly to represent
+      population heterogeneity; each individual first converges to their own individualized steady
+      state over an 8-hour fasting lead-in, then undergoes a standard 75g OGTT, with a fasting blood
+      draw and a 2-hour post-load blood draw classified respectively by HOMA-IR above 2.7
+      (Yeni-Komshian 2000) and OGTT 2-hour glucose above 140 mg/dL, that is 7.8 mmol/L (ADA 2024).
+      - The joint feasible region is non-empty but markedly smaller than the whole population: the
+        two standards agree on normal for 53.6% and agree on abnormal for 29.1%, an 82.7% total
+        concordance rate.
+      - Of the 17.3% discordant, HOMA-IR abnormal but OGTT normal, dominated by hepatic insulin
+        resistance and isolated-IFG-like, accounts for 14.4%; HOMA-IR normal but OGTT abnormal,
+        dominated by muscle insulin resistance and isolated-IGT-like, accounts for 2.9%. Both
+        directions of discordance are non-zero, consistent in direction with the isolated IFG/IGT
+        phenomena Abdul-Ghani 2006 reports; under this model's parameters the two proportions are
+        asymmetric, with hepatic-axis discordance more common, which does not represent the exact
+        proportion in a real population and only shows that the two measures genuinely track
+        different physiological pathways.
     limitations: |
-      - 本模型是简化的双通路现象学模型，不是 Bergman 1981 完整最小模型或 DeFronzo 钳夹研究的直接复现：肝脏通路和肌肉通路用两个独立的胰岛素敏感性参数代表，而非真实的肝脏葡萄糖输出与外周葡萄糖处置分腔机制；β细胞分泌动力学为线性近似，未建模第一相和第二相分泌差异。
-      - 吸收动力学、分泌速率等系数为同量级估算值，标记为 TODO:SOURCE，已通过 --sim 校准使参照个体，即 S_hepatic 与 S_muscle 均为 1.0，的空腹血糖约 90 mg/dL、HOMA-IR 约 1.8、OGTT 2 小时血糖约 105 mg/dL 落在文献报告的正常范围内，但未逐项匹配某一具体人群队列的精确数值。
+      - This model is a simplified two-pathway phenomenological model, not a direct reproduction of
+        Bergman 1981's complete minimal model or a DeFronzo clamp study: the hepatic and muscle
+        pathways are each represented by an independent insulin-sensitivity parameter rather than the
+        real compartmental mechanism for hepatic glucose output and peripheral glucose disposal; the
+        beta-cell secretion dynamics are a linear approximation and do not model the difference
+        between first-phase and second-phase secretion.
+      - Coefficients such as the absorption dynamics and secretion rates are order-of-magnitude
+        estimates marked TODO:SOURCE, calibrated via --sim so that a reference individual (S_hepatic
+        and S_muscle both 1.0) has a fasting glucose of about 90 mg/dL, a HOMA-IR of about 1.8, and
+        an OGTT 2-hour glucose of about 105 mg/dL, all falling within the literature's reported
+        normal range, without matching the exact numbers of any specific population cohort item by
+        item.
   ratings:
-    importance: 0.25 - 胰岛素抵抗诊断标准不一致是真实临床问题，但本案例定位为方法论演示而非新指南提案，非旗舰案例
-    variable: 0.25 - S_hepatic/S_muscle/k_disp_basal/k_clear/c_abs有文献锚点，但HGO_const/HGO_ir/k_secrete/basal_secrete/k_absorb/k_disp_ins为自定义现象学参数，其中k_absorb/k_disp_ins经核查与文献量级存在2-3倍差异
-    equation: 0.25 - 双通路现象学模型明确非Bergman完整最小模型的直接复现，多个系数为--sim校准值而非文献测量
-    simulation: 0.75 - 1000例MC population仿真定性复现Abdul-Ghani 2006报告的孤立性IFG/IGT双向不一致现象，具体比例未声称匹配真实人群
-    optimization: 0.0 - 本文件不含optimization，纯population分类分析，不涉及决策变量搜索
-    innovation: 0.5 - 肝脏/肌肉双通路分离机制用以复现已知的孤立性IFG/IGT现象，方法论新意但核心机制沿用已知发现
-    confidence: 0.5 - 两个方向的不一致均定性复现Abdul-Ghani 2006报告方向，但k_absorb/k_disp_ins等关键系数经核查与文献量级不符
+    importance: 0.25 - The inconsistency between insulin-resistance diagnostic standards is a real clinical issue, but this case is positioned as a methodological demonstration rather than a proposed new guideline, not a flagship case
+    variable: 0.25 - S_hepatic/S_muscle/k_disp_basal/k_clear/c_abs have literature anchors, but HGO_const/HGO_ir/k_secrete/basal_secrete/k_absorb/k_disp_ins are custom phenomenological parameters, and k_absorb/k_disp_ins were found on checking to differ from the literature by a factor of 2 to 3
+    equation: 0.25 - The two-pathway phenomenological model is explicitly not a direct reproduction of Bergman's complete minimal model, with several coefficients being --sim-calibrated values rather than literature measurements
+    simulation: 0.75 - The 1000-individual MC population simulation qualitatively reproduces the bidirectional isolated-IFG/IGT discordance Abdul-Ghani 2006 reports, without claiming the specific proportions match a real population
+    optimization: 0.0 - This file contains no optimization, being a pure population-classification analysis with no decision-variable search
+    innovation: 0.5 - The hepatic/muscle two-pathway separation mechanism is used to reproduce the already-known isolated-IFG/IGT phenomena, methodologically novel but building on an already-known finding for its core mechanism
+    confidence: 0.5 - Both directions of discordance qualitatively reproduce the direction Abdul-Ghani 2006 reports, but key coefficients such as k_absorb/k_disp_ins were found on checking not to match the literature's magnitude
   tags: [insulin_resistance, HOMA-IR, OGTT, simulation_as_validation, cross_literature]
 
-# ── 变量 ────────────────────────────────────────────────────────────────────────
+# -- Variables ----------------------------------------------------------------
 variables:
   glucose:
-    description: 血浆葡萄糖浓度（mg/dL）；起始值代表未个体化的通用初值，仿真前8小时空腹期会收敛到各个体真实稳态
+    description: Plasma glucose concentration (mg/dL); the starting value is a generic, non-individualized initial value, and the simulation's first 8 fasting hours converge to each individual's true steady state
     value: 90.0
     unit: mg/dL
     type: state
@@ -57,7 +106,7 @@ variables:
     locator: "TODO:LOCATE"
 
   insulin:
-    description: 血浆胰岛素浓度（μU/mL）；起始值同上，随空腹前置期收敛到个体化稳态
+    description: Plasma insulin concentration (μU/mL); the starting value is likewise generic and converges to the individualized steady state over the fasting lead-in
     value: 8.0
     unit: μU/mL
     type: state
@@ -66,33 +115,35 @@ variables:
     locator: "TODO:LOCATE"
 
   gut_glucose:
-    description: 肠道未吸收葡萄糖（g）；OGTT 75g负荷后按一阶吸收动力学进入血液
+    description: Unabsorbed gut glucose (g); after the OGTT's 75g load, it enters the blood by first-order absorption kinetics
     value: 0.0
     unit: g
     type: state
     bounds: [0, 100]
-    reference: "TODO:SOURCE 标准OGTT吸收动力学估算"
-    comments: "吸收速率假设见 k_absorb 的 comments：与文献报告的胃排空半排空时间存在量级差异，尚未核实调整。"
+    reference: "TODO:SOURCE a standard-OGTT absorption-kinetics estimate"
+    comments: "The absorption-rate assumption is discussed in k_absorb's comments: it differs in magnitude from the literature's reported gastric-emptying half-time, not yet reconciled."
 
   HOMA_IR:
-    description: HOMA-IR = (血糖[mmol/L] × 胰岛素[μU/mL]) / 22.5；逐步计算，仅08:00（空腹采血时刻）的值具有诊断意义
+    description: HOMA-IR = (glucose [mmol/L] x insulin [μU/mL]) / 22.5; computed step by step, with only the value at 08:00 (the fasting blood-draw moment) carrying diagnostic meaning
     value: 0.0
     unit: AU
     type: state
     reference: "Matthews DR et al. (1985)"
 
   glucose_load:
-    description: OGTT 标准糖负荷（一次性事件量，08:00触发后进入 gut_glucose）
+    description: The OGTT's standard glucose load (a one-time event quantity, entering gut_glucose once triggered at 08:00)
     value: 0.0
     unit: g
     type: input
 
-  # ── 个体差异参数（MC 采样，代表虚拟人群）────────────────────────────────────────
+  # -- Individual-variation parameters (MC-sampled, representing the virtual population) ------------
   S_hepatic:
     description: |
-      肝脏胰岛素敏感性（相对单位，1.0=参照正常）。决定空腹状态下肝糖输出未被抑制的程度，
-      因此主要驱动空腹血糖/HOMA-IR这一轴——对应Abdul-Ghani 2006报告的"孤立性IFG=肝脏胰岛素抵抗为主"。
-      population 采样范围 [0.35, 1.3] 覆盖正常到明显肝脏胰岛素抵抗。与S_muscle独立采样。
+      Hepatic insulin sensitivity (a relative unit, 1.0 equals the normal reference). Determines how
+      unsuppressed hepatic glucose output is in the fasting state, so it mainly drives the fasting
+      glucose/HOMA-IR axis, corresponding to Abdul-Ghani 2006's "isolated IFG is dominated by hepatic
+      insulin resistance." The population sampling range [0.35, 1.3] covers normal through
+      pronounced hepatic insulin resistance. Sampled independently of S_muscle.
     value: "uniform(0.35, 1.3)"
     unit: AU
     type: parameter
@@ -102,13 +153,17 @@ variables:
 
   S_muscle:
     description: |
-      肌肉/外周胰岛素敏感性（相对单位，1.0=参照正常）。胰岛素依赖性外周葡萄糖处置速率与该参数
-      和当前胰岛素浓度的乘积成正比；负荷后胰岛素浓度远高于空腹，该参数对OGTT 2h血糖的影响
-      远大于对空腹血糖的影响——对应Abdul-Ghani 2006报告的"孤立性IGT=肌肉胰岛素抵抗为主"。
-      采样范围[0.10,1.3]下界比S_hepatic更低：需要更severe的外周抵抗才能在保持空腹血糖/HOMA-IR
-      正常的同时把2h血糖推过140 mg/dL阈值（校准时数值验证，见metadata.log；网格扫描显示
-      "孤立性肌肉抵抗"象限在[0.10,1.3]范围下占比约3%，[0.18,1.3]范围下占比<0.2%——
-      过窄的下界会让该象限在有限MC样本下几乎采不到，故扩大下界至0.10）。
+      Muscle/peripheral insulin sensitivity (a relative unit, 1.0 equals the normal reference). The
+      insulin-dependent peripheral glucose disposal rate is proportional to this parameter times the
+      current insulin concentration; since insulin is far higher after a load than while fasting,
+      this parameter's effect on OGTT 2h glucose is far larger than its effect on fasting glucose,
+      corresponding to Abdul-Ghani 2006's "isolated IGT is dominated by muscle insulin resistance."
+      The sampling range [0.10,1.3]'s lower bound is lower than S_hepatic's: a more severe peripheral
+      resistance is needed to push the 2h glucose past the 140 mg/dL threshold while keeping fasting
+      glucose/HOMA-IR normal (verified numerically during calibration, see metadata.log; a grid scan
+      showed the "isolated muscle resistance" quadrant at about 3% under [0.10,1.3] but under 0.2%
+      under [0.18,1.3], since too narrow a lower bound leaves this quadrant almost unsampled at a
+      finite MC sample size, hence widening the lower bound to 0.10).
     value: "uniform(0.10, 1.3)"
     unit: AU
     type: parameter
@@ -118,33 +173,39 @@ variables:
 
   HGO_const:
     description: |
-      基础肝糖输出速率（与胰岛素敏感性无关的部分，对应脑/红细胞等胰岛素非依赖组织的葡萄糖消耗
-      在空腹稳态下必须由肝糖输出匹配）。数值通过--sim校准：使S_hepatic=S_muscle=1.0时空腹血糖
-      稳态落在90 mg/dL。
+      The baseline hepatic glucose output rate (the part unrelated to insulin sensitivity,
+      corresponding to the glucose consumption of insulin-independent tissue such as the brain and
+      red blood cells, which hepatic output must match at the fasting steady state). Calibrated via
+      --sim so that fasting glucose's steady state lands at 90 mg/dL when S_hepatic=S_muscle=1.0.
     value: 1.2
     unit: mg/dL/min
     type: parameter
     bounds: [0.5, 2.5]
-    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) 肝糖输出速率范围"
-    comments: "该系数为本文件自定义的现象学参数（基础肝糖输出与胰岛素敏感性无关的部分），非 Bergman 最小模型标准分腔的直接对应量，数值通过 --sim 校准到参照个体空腹血糖稳态得出，未找到可直接映射的独立文献测量值。"
+    reference: "TODO:SOURCE a calibrated value, at a magnitude referencing Bergman RN et al. (1981)'s hepatic-glucose-output-rate range"
+    comments: "This coefficient is a phenomenological parameter custom to this file (the part of baseline hepatic glucose output unrelated to insulin sensitivity), with no direct counterpart in a standard Bergman minimal-model compartment; its value is calibrated via --sim to a reference individual's fasting glucose steady state, and no independent literature measurement mapping directly to it was found."
 
   HGO_ir:
     description: |
-      肝脏胰岛素抵抗驱动的超额肝糖输出系数：S_hepatic=1时无超额输出；S_hepatic<1时产生持续正向通量
-      HGO_ir*(1/S_hepatic-1)，代表未被胰岛素充分抑制的肝糖输出。数值通过--sim校准：使
-      S_hepatic=0.5（中度肝脏IR，S_muscle=1.0不变）时空腹血糖落在IFG诊断区间(100-125 mg/dL)。
+      The coefficient for excess hepatic glucose output driven by hepatic insulin resistance: no
+      excess output when S_hepatic=1; when S_hepatic<1, a sustained positive flux
+      HGO_ir*(1/S_hepatic-1) results, representing hepatic output not adequately suppressed by
+      insulin. Calibrated via --sim so that fasting glucose lands within the IFG diagnostic range
+      (100-125 mg/dL) at S_hepatic=0.5 (moderate hepatic IR, with S_muscle held at 1.0).
     value: 3.0
     unit: mg/dL/min
     type: parameter
     bounds: [1.0, 6.0]
-    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) 肝糖输出速率范围"
-    comments: "该系数为本文件自定义的现象学参数（肝脏胰岛素抵抗驱动的超额输出），非 Bergman 最小模型标准分腔的直接对应量，数值通过 --sim 校准到 IFG 诊断区间得出，未找到可直接映射的独立文献测量值。"
+    reference: "TODO:SOURCE a calibrated value, at a magnitude referencing Bergman RN et al. (1981)'s hepatic-glucose-output-rate range"
+    comments: "This coefficient is a phenomenological parameter custom to this file (excess output driven by hepatic insulin resistance), with no direct counterpart in a standard Bergman minimal-model compartment; its value is calibrated via --sim to the IFG diagnostic range, and no independent literature measurement mapping directly to it was found."
 
   k_disp_basal:
     description: |
-      胰岛素非依赖性葡萄糖处置速率系数（与S_muscle、insulin均无关，代表脑/红细胞等组织的固定消耗）。
-      清除项之一 = k_disp_basal*(glucose-70)，70 mg/dL为生理处置下限。与k_disp_ins共同校准：
-      使参照个体(S_hepatic=S_muscle=1.0)空腹血糖稳态=90、OGTT 2h血糖回落至~105 mg/dL。
+      The insulin-independent glucose disposal rate coefficient (unrelated to both S_muscle and
+      insulin, representing the fixed consumption of tissue such as the brain and red blood cells).
+      One clearance term equals k_disp_basal*(glucose-70), with 70 mg/dL as the physiological
+      disposal floor. Calibrated together with k_disp_ins so that a reference individual
+      (S_hepatic=S_muscle=1.0) has a fasting glucose steady state of 90 and an OGTT 2h glucose
+      falling back to about 105 mg/dL.
     value: 0.024
     unit: 1/min
     type: parameter
@@ -154,83 +215,89 @@ variables:
 
   k_disp_ins:
     description: |
-      胰岛素依赖性葡萄糖处置速率系数。清除项之二 = k_disp_ins*S_muscle*insulin*(glucose-70)——
-      该项随胰岛素浓度放大，使S_muscle对空腹血糖（低胰岛素）的影响远小于对负荷后2h血糖
-      （高胰岛素）的影响，是本模型实现HOMA-IR/OGTT判定分离的关键机制。
-      数值通过--sim校准，理由同k_disp_basal。
+      The insulin-dependent glucose disposal rate coefficient. The second clearance term equals
+      k_disp_ins*S_muscle*insulin*(glucose-70), which is amplified by the insulin concentration,
+      making S_muscle's effect on fasting glucose (low insulin) far smaller than its effect on the
+      2h post-load glucose (high insulin); this is the key mechanism by which this model separates
+      the HOMA-IR and OGTT determinations.
+      Calibrated via --sim, for the same reason as k_disp_basal.
     value: 0.0045
     unit: 1/(min·μU/mL)
     type: parameter
     bounds: [0.001, 0.02]
-    reference: "TODO:SOURCE 校准值，量级参考 Bergman RN et al. (1981) Si 范围"
-    comments: "本文件校准值 0.0045 /(min·μU/mL) 高于文献报告的正常人胰岛素敏感性 SI 典型范围（多篇研究报告约2至23×10⁻⁴ /(min·μU/mL)，多数均值集中在3至8×10⁻⁴），量级偏高，尚未确认差异原因，需后续工作核实调整。"
+    reference: "TODO:SOURCE a calibrated value, at a magnitude referencing Bergman RN et al. (1981)'s Si range"
+    comments: "This file's calibrated value of 0.0045 /(min·μU/mL) is higher than the literature's reported typical normal-population insulin sensitivity SI range (several studies report roughly 2 to 23x10⁻⁴ /(min·μU/mL), with most means clustered around 3 to 8x10⁻⁴); the reason for this higher magnitude has not been confirmed and needs reconciling in future work."
 
   k_absorb:
-    description: 肠道葡萄糖吸收速率常数 = ln2/t_half，t_half取30分钟（标准OGTT葡萄糖吸收半衰期量级）
+    description: The gut glucose absorption rate constant, equal to ln2/t_half, with t_half taken as 30 minutes (the standard-OGTT glucose-absorption half-life magnitude)
     value: 0.0231
     unit: 1/minute
     type: parameter
-    reference: "TODO:SOURCE 标准OGTT胃排空+小肠吸收动力学量级估算"
-    comments: "假设糖负荷吸收半衰期30分钟（k_absorb=ln2/30），但后续检索文献报告OGTT胃排空半排空时间实测范围约58至97.5分钟，且有性别差异（男性65±3分钟、女性79±2分钟），比本文件假设慢2至3倍量级，尚未确认差异原因或重新校准，需后续工作核实调整。"
+    reference: "TODO:SOURCE an estimate at the magnitude of standard OGTT gastric-emptying plus small-intestine absorption kinetics"
+    comments: "Assumes a 30-minute absorption half-life for the glucose load (k_absorb=ln2/30), but a subsequent literature search found the OGTT gastric-emptying half-time measured at roughly 58 to 97.5 minutes, with a sex difference (65±3 minutes for men, 79±2 minutes for women), slower than this file's assumption by a factor of 2 to 3; the reason for the difference has not been confirmed and this has not been recalibrated, needing reconciling in future work."
 
   c_abs:
-    description: 每克吸收葡萄糖对血糖浓度的提升（近似葡萄糖分布容积换算，~12L成人细胞外液葡萄糖池）
+    description: The rise in blood glucose concentration per gram of absorbed glucose (approximately a glucose-distribution-volume conversion, an about 12L adult extracellular glucose pool)
     value: 8.3
     unit: (mg/dL)/g
     type: parameter
     reference: "Bergman RN et al. (1981)"
-    comments: "细胞外液葡萄糖分布容积量级参考 Bergman 最小模型 V 参数的常见取值约1.65 dL/kg；按70kg参照个体折算约11.6L，与本文件采用的约12L量级一致。未找到该1.65 dL/kg数值本身独立于 Bergman(1981)之外的其他主文献，如需更精确来源建议核实原始最小模型论文中 V 的报告值。"
+    comments: "The extracellular glucose distribution volume's magnitude references the Bergman minimal model's V parameter's common value of about 1.65 dL/kg; converted for a 70kg reference individual, this is about 11.6L, consistent with this file's approximately 12L magnitude. No other primary source for the 1.65 dL/kg figure itself, independent of Bergman (1981), was found; a more precise source would need to check V's reported value in the original minimal-model paper."
 
   k_secrete:
     description: |
-      β细胞葡萄糖刺激胰岛素分泌速率系数：分泌项 = basal_secrete + k_secrete*max(0, glucose-g_thresh)。
-      数值通过--sim校准：使参照个体空腹胰岛素稳态=8 μU/mL、且随空腹血糖升高呈现合理的代偿性高胰岛素血症
-      （肝脏IR个体空腹血糖与胰岛素同步升高，HOMA-IR被双重放大）。
+      The beta-cell glucose-stimulated insulin-secretion rate coefficient: the secretion term equals
+      basal_secrete + k_secrete*max(0, glucose-g_thresh). Calibrated via --sim so that a reference
+      individual's fasting insulin steady state is 8 μU/mL, and shows a plausible compensatory
+      hyperinsulinemia as fasting glucose rises (in a hepatic-IR individual, fasting glucose and
+      insulin rise together, doubly amplifying HOMA-IR).
     value: 0.015
     unit: (μU/mL)/(min·mg/dL)
     type: parameter
     bounds: [0.005, 0.05]
-    reference: "TODO:SOURCE 校准值，量级参考 Matthews DR et al. (1985) 正常人胰岛素分泌范围"
-    comments: "该系数为本文件自定义的线性化分泌速率参数，非文献中标准的一相/二相分泌动力学模型直接对应量，数值通过 --sim 校准到参照个体空腹胰岛素稳态得出，未找到可直接映射的独立文献测量值。"
+    reference: "TODO:SOURCE a calibrated value, at a magnitude referencing Matthews DR et al. (1985)'s normal-population insulin-secretion range"
+    comments: "This coefficient is a linearized secretion-rate parameter custom to this file, with no direct counterpart in the literature's standard first-phase/second-phase secretion dynamics model; its value is calibrated via --sim to a reference individual's fasting insulin steady state, and no independent literature measurement mapping directly to it was found."
 
   basal_secrete:
-    description: β细胞基础分泌速率（与血糖偏离阈值无关的部分），与k_secrete共同决定空腹胰岛素稳态
+    description: The beta-cell baseline secretion rate (the part unrelated to how far glucose deviates from the threshold), jointly determining the fasting insulin steady state together with k_secrete
     value: 0.6
     unit: μU/mL/min
     type: parameter
-    reference: "TODO:SOURCE 校准值"
-    comments: "该系数为本文件自定义的线性化分泌速率参数，非文献中标准的一相/二相分泌动力学模型直接对应量，数值通过 --sim 校准到参照个体空腹胰岛素稳态得出，未找到可直接映射的独立文献测量值。"
+    reference: "TODO:SOURCE a calibrated value"
+    comments: "This coefficient is a linearized secretion-rate parameter custom to this file, with no direct counterpart in the literature's standard first-phase/second-phase secretion dynamics model; its value is calibrated via --sim to a reference individual's fasting insulin steady state, and no independent literature measurement mapping directly to it was found."
 
   g_thresh:
-    description: 血糖刺激分泌的参考阈值（模型设计参数，非真实β细胞葡萄糖感受阈值）
+    description: The reference threshold for glucose-stimulated secretion (a model design parameter, not a true beta-cell glucose-sensing threshold)
     value: 50.0
     unit: mg/dL
     type: parameter
 
   k_clear:
-    description: 胰岛素肝脏/肾脏清除速率常数（血浆胰岛素半衰期约4-6分钟，取中值~4.6分钟对应的速率常数）
+    description: The insulin hepatic/renal clearance rate constant (plasma insulin's half-life is about 4 to 6 minutes; the rate constant corresponds to the midpoint, about 4.6 minutes)
     value: 0.15
     unit: 1/minute
     type: parameter
     reference: "Matthews DR et al. (1985) Clin Endocrinol (Oxf) 23(1):71-79"
     locator: "TODO:LOCATE"
 
-# ── 动力学方程 ─────────────────────────────────────────────────────────────────
+# -- Dynamics equations ---------------------------------------------------------
 equations:
   gut_absorption:
-    description: "肠道葡萄糖按一阶动力学吸收并清空（OGTT负荷的唯一来源是 glucose_load 脉冲）"
+    description: "Gut glucose absorbs and empties by first-order kinetics (the OGTT load's sole source is the glucose_load pulse)"
     step_unit: minute
     priority: 10
     dynamics:
       gut_glucose: "max(0, gut_glucose + glucose_load - k_absorb * gut_glucose * step)"
-    reference: "TODO:SOURCE 标准OGTT吸收动力学估算"
-    comments: "吸收速率假设见 k_absorb 的 comments：与文献报告的胃排空半排空时间存在量级差异，尚未核实调整。"
+    reference: "TODO:SOURCE a standard-OGTT absorption-kinetics estimate"
+    comments: "The absorption-rate assumption is discussed in k_absorb's comments: it differs in magnitude from the literature's reported gastric-emptying half-time, not yet reconciled."
 
   glucose_dynamics:
     description: |
-      血糖：肠道吸收输入 + 基础肝糖输出 + 肝脏胰岛素抵抗驱动的超额输出（S_hepatic主导）
-      − 胰岛素非依赖处置 − 胰岛素依赖处置（S_muscle主导，效果随胰岛素浓度放大，因此在
-      负荷后远强于空腹，是HOMA-IR/OGTT判定分离的关键）。
+      Glucose: gut absorption input, plus baseline hepatic glucose output, plus excess output driven
+      by hepatic insulin resistance (dominated by S_hepatic), minus insulin-independent disposal,
+      minus insulin-dependent disposal (dominated by S_muscle, with the effect amplified by the
+      insulin concentration, so it is far stronger after a load than while fasting, the key to
+      separating the HOMA-IR and OGTT determinations).
     step_unit: minute
     condition: true
     priority: 6
@@ -244,7 +311,7 @@ equations:
     locator: "TODO:LOCATE"
 
   insulin_dynamics:
-    description: "胰岛素：基础分泌 + β细胞对血糖刺激的分泌响应 − 肝肾清除"
+    description: "Insulin: baseline secretion, plus the beta cell's secretory response to glucose stimulation, minus hepatic/renal clearance"
     step_unit: minute
     condition: true
     priority: 5
@@ -254,14 +321,14 @@ equations:
     locator: "TODO:LOCATE"
 
   homa_ir_calc:
-    description: "HOMA-IR逐步计算（代数关系，无step；仅08:00空腹采血时刻的值用于诊断分类）"
+    description: "HOMA-IR computed step by step (an algebraic relationship, no step; only the value at the 08:00 fasting draw is used for diagnostic classification)"
     condition: true
     priority: 1
     dynamics:
       HOMA_IR: "(glucose / 18.0) * insulin / 22.5"
     reference: "Matthews DR et al. (1985)"
 
-# ── 仿真设置（单日：00:00起8小时空腹前置期收敛到个体化稳态 → 08:00 OGTT采血+75g糖负荷 → 10:00 2h采血）──
+# -- Simulation setup (a single day: an 8-hour fasting lead-in from 00:00 converges to the individualized steady state, then the OGTT draw plus 75g glucose load at 08:00, then the 2h draw at 10:00) --
 simulation:
   step_size:
     value: 1
@@ -277,27 +344,27 @@ simulation:
     - S_muscle
   plans:
     - id: "default"
-      label: "标准OGTT方案（8h空腹前置 → 08:00空腹采血+75g糖负荷 → 10:00 2h采血）"
+      label: "The standard OGTT plan (an 8h fasting lead-in, then a fasting draw plus 75g glucose load at 08:00, then the 2h draw at 10:00)"
       regimens:
-        - {variable: glucose_load, time_start: "08:00", value: 75.0, label: "75g 口服糖负荷（OGTT标准方案，08:00空腹采血后即刻给药）"}
+        - {variable: glucose_load, time_start: "08:00", value: 75.0, label: "The 75g oral glucose load (the standard OGTT plan, dosed immediately after the 08:00 fasting draw)"}
   mc:
     runs: 1000
     seed: 19
 
 references:
   - citation: "Matthews DR et al. (1985) Homeostasis model assessment: insulin resistance and beta-cell function from fasting plasma glucose and insulin concentrations in man. Diabetologia 28(7):412-419"
-    description: "HOMA-IR 指标本身的原始定义来源，空腹血糖乘空腹胰岛素。"
+    description: "The source of HOMA-IR's own original definition, fasting glucose times fasting insulin."
   - citation: "Yeni-Komshian H et al. (2000) Relationship between several surrogate estimates of insulin resistance and quantification of insulin-mediated glucose disposal in 490 healthy nondiabetic volunteers. Diabetes Care 23(2):171-175"
-    description: "HOMA-IR 异常判定阈值 2.7 的来源。"
+    description: "The source of HOMA-IR's abnormal-determination threshold of 2.7."
   - citation: "Wallace TM, Levy JC, Matthews DR (2004) Use and abuse of HOMA modeling. Diabetes Care 27(6):1487-1495"
-    description: "HOMA-IR 判定阈值因人群和检测方法而异、不存在普适常数这一局限的来源。"
+    description: "The source of the limitation that HOMA-IR's determination threshold varies by population and assay method with no universal constant."
   - citation: "Abdul-Ghani MA et al. (2006) Contributions of beta-cell dysfunction and insulin resistance to the pathogenesis of impaired glucose tolerance and impaired fasting glucose. Diabetes Care 29(5):1130-1139"
-    description: "孤立性 IFG 以肝脏抵抗为主、孤立性 IGT 以肌肉抵抗为主这一机制划分的证据来源，也是肝糖输出通路 S_hepatic 主导空腹血糖与 HOMA-IR 这一设计的依据。"
+    description: "The source of the evidence dividing isolated IFG as hepatic-resistance-dominated and isolated IGT as muscle-resistance-dominated, and also the basis for the hepatic-glucose-output pathway's design where S_hepatic dominates fasting glucose and HOMA-IR."
   - citation: "Bergman RN et al. (1981) Quantitative estimation of insulin sensitivity. Am J Physiol 236(6):E667-E677"
-    description: "外周葡萄糖处置通路的量级参考，本文件是简化的双通路现象学模型，不是该文完整最小模型的直接复现，见 limitations。"
+    description: "The magnitude reference for the peripheral glucose disposal pathway; this file is a simplified two-pathway phenomenological model, not a direct reproduction of that paper's complete minimal model, see limitations."
   - citation: "Bergman RN (1989) Toward Physiological Understanding of Glucose Tolerance: Minimal-Model Approach (Banting Lecture). Diabetes 38(12):1512-1527"
-    description: "胰岛素非依赖性葡萄糖处置速率系数 k_disp_basal 的量级来源，该文报告正常人 glucose effectiveness Sg = 0.026±0.008 /min，与本文件校准值 0.024 /min 吻合。"
+    description: "The magnitude source for the insulin-independent glucose disposal rate coefficient k_disp_basal; this paper reports a normal-population glucose effectiveness Sg of 0.026±0.008 /min, matching this file's calibrated value of 0.024 /min."
   - citation: "Matthews DR et al. (1985) The half-life of endogenous insulin and C-peptide in man assessed by somatostatin suppression. Clin Endocrinol (Oxf) 23(1):71-79"
-    description: "胰岛素清除速率系数 k_clear 的量级来源，该文报告血浆胰岛素半衰期约5至6分钟，与本文件校准值隐含的半衰期约4.6分钟吻合；与本文件另一条同作者同年的 Matthews DR et al. (1985) Diabetologia HOMA-IR 定义文献是不同论文，引用时以期刊名区分。"
+    description: "The magnitude source for the insulin clearance rate coefficient k_clear; this paper reports a plasma insulin half-life of about 5 to 6 minutes, matching the half-life of about 4.6 minutes implied by this file's calibrated value. This is a different paper from this file's other same-author, same-year citation, Matthews DR et al. (1985) Diabetologia on the HOMA-IR definition, distinguished here by journal name."
   - citation: "American Diabetes Association (2024) Standards of Care: Classification and Diagnosis of Diabetes. Diabetes Care 47(Suppl 1):S20-S42"
-    description: "OGTT 2 小时血糖异常判定阈值 7.8 mmol/L 的指南来源。"
+    description: "The guideline source for the OGTT 2-hour glucose abnormal-determination threshold of 7.8 mmol/L."

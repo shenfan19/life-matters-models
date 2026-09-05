@@ -1,40 +1,40 @@
-# 0120 — 废除 `_HOLD` 文件名后缀，状态判定仅看 `metadata.todo`
+# 0120 - Abolishing the `_HOLD` Filename Suffix, Determining Status Solely by `metadata.todo`
 
-**日期**：2026-06-23
-**状态**：🟢 已实施（部分取代 [0101](0101-2026-06-14_model_hold-suffix-todo-field.md)：文件名后缀部分废除，`metadata.todo` 字段及其语义不变）
-**类别**：模型库管理 / 工程约定
+**Date**: 2026-06-23
+**Status**: Implemented (partially supersedes [0101](0101-2026-06-14_model_hold-suffix-todo-field.md): the filename suffix part is abolished, while the `metadata.todo` field and its semantics are unchanged)
+**Category**: Model library management / engineering convention
 
 ---
 
-## 背景
+## Background
 
-ADR 0101 用文件名 `_HOLD` 后缀 + `metadata.todo` 双重信号表示"该文件存在待处理事项"：`_HOLD` 后缀本身不携带信息，只是 `metadata.todo` 非空这一事实在文件名上的镶嵌。
+ADR 0101 used a dual signal, a filename `_HOLD` suffix plus `metadata.todo`, to indicate "this file has pending items"; the `_HOLD` suffix itself carried no information, only reflecting the fact that `metadata.todo` was non-empty, embedded into the filename.
 
-实践中暴露的问题：todo 项处理完毕、去掉 `_HOLD` 后缀时，文件路径发生变化，**所有引用该文件的 `imports:` 路径需要同步更新**，否则 `--sim`/`--opt` 报 `Cannot load model`。这不是假设风险——`papers/s4/ckd_protein_pareto.yaml` 和 `papers/s4/hypertension_gout_3obj.yaml` 均发生过这类故障（imports 路径未跟着上游文件改名同步更新）。
+A problem surfaced in practice: once a todo item was resolved and the `_HOLD` suffix removed, the file's path changed, and every `imports:` path referencing that file needed updating accordingly, or `--sim`/`--opt` would report `Cannot load model`. This is not a hypothetical risk; both `papers/s4/ckd_protein_pareto.yaml` and `papers/s4/hypertension_gout_3obj.yaml` had this exact failure (an imports path not updated when the upstream file was renamed).
 
-## 决策
+## Decision
 
-### 1. 状态判定唯一信号：`metadata.todo`
+### 1. The sole signal for status: `metadata.todo`
 
-- `metadata.todo` 存在且非空 = 该文件有待处理事项（草稿/未确认状态）。
-- `metadata.todo` 不存在或为空 = 已确认通过、可发布。
-- 文件名与发布状态**完全脱钩**：草稿阶段不再要求任何文件名后缀，todo 清空后**不需要重命名文件**。
+- `metadata.todo` present and non-empty means the file has a pending item (a draft/unconfirmed state).
+- `metadata.todo` absent or empty means confirmed passing and publishable.
+- The filename is completely decoupled from publication status: a draft no longer requires any filename suffix, and once todo is emptied, the file does not need to be renamed.
 
-### 2. 废除内容
+### 2. What is abolished
 
-- `_HOLD` 文件名后缀约定（ADR 0101 的文件名部分）废除。
-- `.gitignore` 中 `**/*_HOLD.yaml`、`**/*_HOLD/` 规则移除——发布门控改为外部脚本读取 `metadata.todo` 字段判定，不再依赖文件名 pattern。
-- `metadata.todo` 字段结构、`type`/`issue`/`evidence`/`next` 子字段语义不变，沿用 ADR 0101 原定义。
+- The `_HOLD` filename-suffix convention (the filename part of ADR 0101) is abolished.
+- The `**/*_HOLD.yaml` and `**/*_HOLD/` rules in `.gitignore` are removed; the publication gate now relies on an external script reading the `metadata.todo` field, no longer on a filename pattern.
+- The structure of `metadata.todo` and the semantics of its `type`/`issue`/`evidence`/`next` sub-fields are unchanged, carrying forward ADR 0101's original definition.
 
-### 3. 与目录级 `_HOLD`（论文结构维度）的关系
+### 3. Relationship to a directory-level `_HOLD` (the paper-structure dimension)
 
-ADR 0101 第 5 节提到的目录级 `_HOLD`（如 `papers/s3_HOLD/`，表示论文结构"暂缓"）当前仓库中没有实例，本次一并移除该约定的文档描述；如未来需要"暂缓发布某个目录"的信号，应另起一个不依赖文件名/目录名的机制（如目录下放置 `.draft` 标记文件，或在该目录的索引文件中显式声明），避免重复 ADR 0101 暴露的同一类问题。
+The directory-level `_HOLD` mentioned in ADR 0101 section 5 (such as `papers/s3_HOLD/`, indicating a paper structure is "deferred") has no instance in the current repository; this ADR also removes that convention's documentation description. Should a future signal for "defer publishing a given directory" be needed, it should use a different mechanism that does not depend on a filename or directory name (such as a `.draft` marker file placed in the directory, or an explicit declaration in that directory's index file), to avoid repeating the same class of problem ADR 0101 exposed.
 
-## 迁移（2026-06-23）
+## Migration (2026-06-23)
 
-内部开发工作副本下 104 个 `*_HOLD.yaml` 文件去除后缀，改名后确认零处 `imports:` 引用、零处跨文件 prose 提及指向这些文件的旧名——纯文件名变更，无需同步修改其他文件。
+104 `*_HOLD.yaml` files under the internal development working copy had their suffix removed; after renaming, it was confirmed that zero `imports:` references and zero cross-file prose mentions pointed to these files' old names, a pure filename change requiring no corresponding update to any other file.
 
-## 关联
+## Related
 
-- ADR 0101 — 原约定（文件名部分被本 ADR 取代，`metadata.todo` 字段定义保留有效）
-- `docs/model.md` — 文件名质量标记节
+- ADR 0101 - the original convention (its filename part is superseded by this ADR; the `metadata.todo` field definition remains valid)
+- `docs/model.md` - the filename quality-marker section

@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_cohens_d
   lm_format_version: "1.0"
   description:
@@ -11,18 +11,10 @@ metadata:
       Validates Loader handling of the `cohens_d` evidence subtype in isolation.
       `exercise_vo2_cohens_d` must equal `d × population_sd`
       (cohens_d: requires `population_sd`, unit matches the target variable's unit).
-    problem_cn: >
-      验证 Loader 对 `cohens_d`（Cohen's d 效应量）证据子类型的独立处理。
-      `exercise_vo2_cohens_d` 必须等于 `d × population_sd`（cohens_d 类型：需要
-      `population_sd` 字段，单位与目标变量的单位一致）。
     result: >
       `cohens_d_display` = exercise_vo2_cohens_d = 0.68 × 6.0 = 4.08 mL/kg/min
       (constant, every step).
-    result_cn: >
-      `cohens_d_display` = exercise_vo2_cohens_d = 0.68 × 6.0 = 4.08 mL/kg/min
-      （每一步恒定）。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, cohens_d]
 
 variables:

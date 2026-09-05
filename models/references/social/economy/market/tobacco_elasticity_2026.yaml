@@ -9,35 +9,51 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      验证目的：跨学科拓展到公共卫生经济学。香烟价格弹性是被独立重复测量次数最多的经济学效应量之一，Gallet & List (2003) 对 523 项研究的 meta 分析、IARC (2011)、Chaloupka & Warner (2000) 等多个独立 meta 分析均收敛到短期约 -0.4 的共识值，且短期弹性系统性小于长期弹性，长期约为 -0.44，是一个被多次独立复现的稳定结构性事实，不是单一研究的孤立数字。
+      Validation purpose: a cross-disciplinary extension into public-health economics. Cigarette
+      price elasticity is one of the economics effect sizes measured independently the most times,
+      with the Gallet & List (2003) meta-analysis of 523 studies, IARC (2011), Chaloupka & Warner
+      (2000), and other independent meta-analyses all converging on a short-run consensus value of
+      about -0.4, with short-run elasticity systematically smaller in magnitude than long-run
+      elasticity, about -0.44 in the long run, a stable structural fact repeatedly independently
+      reproduced, not an isolated number from a single study.
     result: |
-      用 LM format 的 evidence 节以 beta 子类型分别声明短期与长期弹性系数，代入同一价格涨幅，展示两者预测的消费量下降幅度差异，验证 Loader 能正确承载并区分这两个同一现象的不同时间尺度效应量。
+      This declares the short-run and long-run elasticity coefficients separately using the beta
+      subtype in the LM format's evidence block, substituting the same price increase, to show the
+      difference in predicted consumption decline between the two, verifying that the loader
+      correctly carries and distinguishes these two effect sizes for the same phenomenon at
+      different timescales.
     limitations: |
-      本案例同 education_classsize，是效应量编码正确性展示，不是独立预测检验，-0.4 和 -0.44 本身就是要验证的目标数字，不是外推后与另一个独立来源比较。短期与长期之间的具体调整速度，即多久从短期弹性过渡到长期弹性，文献未给出可直接复用的单一数字，本文件不建模这一过渡过程，只展示两个端点弹性各自的静态预测。
+      This case, like education_classsize, demonstrates the correctness of effect-size encoding,
+      not an independent prediction test, and -0.4 and -0.44 are themselves the target numbers being
+      verified, not values extrapolated and then compared against a separate independent source. The
+      literature gives no single directly reusable number for the specific adjustment speed between
+      short-run and long-run, that is, how long it takes to transition from the short-run to the
+      long-run elasticity, and this file does not model that transition process, only demonstrating
+      the static prediction of each endpoint elasticity separately.
   ratings:
-    importance: 0.25 - 方法论验证展示，可作为公共卫生政策/税收类场景的需求响应子模型
-    variable: 1.0 - 多个独立meta分析收敛到同一共识值，证据质量在本库所有案例中最高
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.75 - 效应量本身来自高质量独立来源(多个meta分析收敛共识值)，Loader正确编码展示，非独立预测已在理由中注明
+    importance: 0.25 - A methodology-validation demonstration, usable as a demand-response submodel for public-health-policy/taxation scenarios
+    variable: 1.0 - Multiple independent meta-analyses converge on the same consensus value, the highest evidence quality among all cases in this library
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.75 - The effect size itself comes from a high-quality independent source (a consensus value across multiple converging meta-analyses), and the loader's correct encoding is demonstrated; that this is not an independent prediction is noted in the rationale
   tags: [economics, public-health, tobacco, elasticity, evidence, validation, literature-benchmark, cross-domain]
 
 variables:
   price_increase_pct:
-    description: 香烟价格涨幅（%），示意性场景值
+    description: The cigarette price increase (%), an illustrative scenario value
     value: 20.0
     unit: "%"
     type: parameter
 
   consumption_change_shortrun_pct:
-    description: 短期（约1年内）预测的消费量变化（%）
+    description: The predicted short-run (within about 1 year) consumption change (%)
     value: 0.0
     unit: "%"
     type: state
 
   consumption_change_longrun_pct:
-    description: 长期预测的消费量变化（%）
+    description: The predicted long-run consumption change (%)
     value: 0.0
     unit: "%"
     type: state
@@ -47,7 +63,7 @@ variables:
     evidence_type: beta
     value: -0.40
     unit: "% quantity change per % price change"
-    description: 香烟需求短期价格弹性共识值（多个独立meta分析收敛，约-0.4）
+    description: The consensus short-run price elasticity of cigarette demand (converging across multiple independent meta-analyses, about -0.4)
     reference: "Gallet & List (2003); Chaloupka & Warner (2000); IARC (2011)"
 
   elasticity_longrun:
@@ -55,19 +71,19 @@ variables:
     evidence_type: beta
     value: -0.44
     unit: "% quantity change per % price change"
-    description: 香烟需求长期价格弹性共识值（略高于短期，Gallet & List 2003 报告-0.44）
+    description: The consensus long-run price elasticity of cigarette demand (slightly larger in magnitude than the short run; Gallet & List 2003 reports -0.44)
     reference: "Gallet & List (2003)"
 
 equations:
   shortrun_calc:
-    description: "静态计算：短期消费量变化 = 短期弹性 × 价格涨幅"
+    description: "A static calculation: the short-run consumption change = the short-run elasticity x the price increase"
     condition: true
     priority: 4
     dynamics:
       consumption_change_shortrun_pct: "elasticity_shortrun * price_increase_pct"
 
   longrun_calc:
-    description: "静态计算：长期消费量变化 = 长期弹性 × 价格涨幅"
+    description: "A static calculation: the long-run consumption change = the long-run elasticity x the price increase"
     condition: true
     priority: 3
     dynamics:
@@ -85,7 +101,7 @@ simulation:
     - consumption_change_longrun_pct
   plans:
     - id: "price_increase_20pct"
-      label: "香烟价格上涨20%的短期/长期消费量响应展示"
+      label: "The short-run/long-run consumption response to a 20% cigarette price increase"
       regimens: []
 
 references:

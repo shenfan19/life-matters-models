@@ -14,29 +14,13 @@ metadata:
       step_size alone (not step_size × date_range) keeps the fixture count small
       and makes switching between them for comparison straightforward, at the
       cost of not separately re-confirming the date_range axis.
-    problem_cn: >
-      引擎正确性测试夹具，对应 test_verification/verification_report.md §2 Protocol V2（步长收敛网格）：在仿真时间跨度
-      保持不变的前提下，Euler 前向积分器相对于 Banister 解析闭式解的误差，是否会随
-      step_size 细化而缩小？这是六个姊妹夹具之一（test_valid_banister_v1_step_{12h,6h,3h,1h,30min}.yaml，
-      加上以天为步长的基线 test_valid_banister_v1_analytical.yaml），彼此仅在
-      simulation.step_size 上不同——根据 2026-07-15 的决定，日期跨度固定为测试过的最大
-      范围（60 天，2026-01-01 至 2026-03-02）：只改变 step_size（而不是 step_size ×
-      date_range 的组合）能让夹具数量保持精简，便于相互切换比较，代价是不单独重新确认
-      date_range 这个维度。
     result: >
       Same physics/parameters as test_valid_banister_v1_analytical.yaml
       (constant training_load=50 AU/day, Morton 1990 standard g/h/k1/k2/p0),
       only simulation.step_size differs (6 hours here vs 1 day baseline).
       Run with reference_engine/scripts/validate_banister.py by pointing
       MODEL_PATH at this file, or via `python -m cli.main --sim-only`.
-    result_cn: >
-      physics/parameters 与 test_valid_banister_v1_analytical.yaml 完全相同（恒定
-      training_load=50 AU/day，Morton 1990 标准 g/h/k1/k2/p0 参数），仅
-      simulation.step_size 不同（本文件为 6 小时，基线为 1 天）。运行方式：将
-      MODEL_PATH 指向本文件后执行 reference_engine/scripts/validate_banister.py，
-      或使用 `python -m cli.main --sim-only`。
     limitations: No physiological meaning beyond reproducing the closed-form solution; purely a numeric engine-correctness fixture.
-    limitations_cn: 除了重现解析闭式解之外不具有生理学意义；纯粹是一个数值引擎正确性测试夹具。
   tags: [test, banister, numerical_precision, engine_correctness, step_convergence]
 
 variables:

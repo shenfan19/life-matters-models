@@ -9,18 +9,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      瑜伽是少数同时被证明能降低皮质醇、改善心率变异性（HRV）并提升柔韧性的身心练习之一，但其效应高度依赖练习强度。皮质醇响应呈倒 U 形：低强度瑜伽，即 1.5-2 MET 的阴瑜伽，激活副交感神经、降低下丘脑-垂体-肾上腺轴活性，而高强度流动瑜伽，即 4.5 MET 以上，反而触发应激反应，皮质醇上升。如何确定"刚好足够"的练习强度，即同时最大化放松效果、HRV 改善和柔韧性增益，是瑜伽运动处方设计的核心生理挑战。
+      Yoga is among the few mind-body practices shown to simultaneously lower cortisol, improve
+      heart-rate variability (HRV), and increase flexibility, but its effects depend heavily on
+      practice intensity. The cortisol response follows an inverted-U shape: low-intensity yoga,
+      1.5-2 MET yin yoga, activates the parasympathetic nervous system and lowers
+      hypothalamic-pituitary-adrenal axis activity, while high-intensity vinyasa flow, above
+      4.5 MET, instead triggers a stress response and raises cortisol. Finding the "just enough"
+      practice intensity, one that simultaneously maximizes relaxation, HRV improvement, and
+      flexibility gain, is the core physiological challenge in yoga exercise-prescription design.
     result: >
-      仿真尚未运行。理论预期：哈他瑜伽以 3 MET、每天 60 分钟练习 12 周后，柔韧性指数从基线 50 提升至约 75，HRV 从 45 ms 升至约 61 ms，晨起皮质醇从 18 nmol/L 降至约 10 nmol/L。当强度达到阿斯汤加瑜伽的 4.5 MET 以上时，HRV 和柔韧性改善幅度相近，但皮质醇受应激效应影响上升，两者在 HRV-皮质醇空间形成不同的适应聚类。
+      Not yet run. Theoretical expectation: at 3 MET Hatha yoga practiced 60 minutes daily for
+      12 weeks, the flexibility index rises from a baseline of 50 to about 75, HRV rises from
+      45 ms to about 61 ms, and morning cortisol falls from 18 nmol/L to about 10 nmol/L. At an
+      intensity of 4.5 MET or above, corresponding to Ashtanga yoga, the HRV and flexibility gains
+      are similar in magnitude, but cortisol rises due to the stress effect, so the two intensity
+      regimes form distinct adaptation clusters in HRV-versus-cortisol space.
     limitations: >
-      模型参数主要来自以女性受试者为主的随机对照试验（Cramer 2013），男性效应可能偏小；冥想与呼吸练习的正念效应和纯体式练习未分离建模；个体基线柔韧性差异对增益速率影响较大。
+      The model parameters mainly come from randomized controlled trials predominantly enrolling
+      female subjects (Cramer 2013), so the effect in men may be smaller; the mindfulness effect of
+      meditation and breathing practice is not modeled separately from pure postural practice;
+      individual differences in baseline flexibility substantially affect the gain rate.
   ratings:
-    importance: 0.25 - 瑜伽对皮质醇/HRV/精神健康的影响是当前压力管理研究热点；压力管理专项场景，上层引用预期低
-    variable: 0.75 - 引用Cramer 2013 meta等高质量系统综述，参数有文献依据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Yoga's effect on cortisol, HRV, and mental health is a current stress-management research focus; a stress-management specialty scenario, expected to have low upstream citation
+    variable: 0.75 - Cites a high-quality systematic review such as the Cramer 2013 meta-analysis, with a literature basis for the parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [yoga, flexibility, cortisol, HRV, mindfulness, stress, parasympathetic, relaxation]
 
 variables:
@@ -29,88 +44,87 @@ variables:
     value: 3.0
     unit: MET
     bounds: [1.5, 6.0]
-    description: "瑜伽练习强度（MET）。阴瑜伽=1.5-2.0，哈他瑜伽=3.0-4.0，阿斯汤加/流动=4.5-6.0（Ainsworth 2011 METs compendium）"
+    description: "Yoga practice intensity (MET). Yin yoga=1.5-2.0, Hatha yoga=3.0-4.0, Ashtanga/flow=4.5-6.0 (Ainsworth 2011 METs compendium)"
   session_duration:
     type: input
     value: 60.0
     unit: minutes
     bounds: [15.0, 120.0]
-    description: "单次练习时长（分钟）。典型课程：45-90 分钟；短练习 15-30 分钟亦有效果（Pascoe 2015）"
+    description: "Session duration (minutes). A typical class is 45-90 minutes; a short 15-30 minute practice is also effective (Pascoe 2015)"
   flexibility_index:
     type: state
     value: 50.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "柔韧性指数（0-100 综合评分）。坐位前弯、肩部和髋关节活动度的标准化综合评分；初始 50 代表普通成人基线"
+    description: "The flexibility index (a 0-100 composite score). A standardized composite of seated forward-bend reach and shoulder/hip range of motion; an initial value of 50 represents an average adult baseline"
     io_role: output
   cortisol_level:
     type: state
     value: 18.0
     unit: nmol/L
     bounds: [5.0, 60.0]
-    description: "晨起唾液皮质醇（nmol/L）。正常范围 5-25，慢性压力可达 30-60；目标干预后 <15 nmol/L（Pascoe 2015）"
+    description: "Morning salivary cortisol (nmol/L). A normal range is 5-25, chronic stress can reach 30-60; the post-intervention target is <15 nmol/L (Pascoe 2015)"
     io_role: output
   hrv_score:
     type: state
     value: 45.0
     unit: ms
     bounds: [10.0, 120.0]
-    description: "心率变异性 RMSSD（ms）。成人正常 25-65ms；自主神经健康指标；瑜伽可提升副交感张力（Streeter 2012）"
+    description: "Heart-rate variability, RMSSD (ms). A normal adult range is 25-65ms; an autonomic-health indicator; yoga can raise parasympathetic tone (Streeter 2012)"
     io_role: output
   mindfulness_score:
     type: state
     value: 30.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "正念评分（五方面正念问卷 FFMQ 简化，0-100）。练习积累正念技能，进一步增强 HRV 和皮质醇抑制"
+    description: "The mindfulness score (a simplified Five Facet Mindfulness Questionnaire, FFMQ, 0-100). Practice builds mindfulness skill, which further enhances HRV and cortisol suppression"
 
-  # ── 参数 ──────────────────────────────────────────────────────────────────────
   flexibility_gain_rate:
     type: parameter
     value: 0.12
     unit: score/day
-    description: "每次练习柔韧性基础增益率（score/day per MET-hour）。来自 Cramer 2013 meta-analysis：8 周瑜伽平均柔韧性改善约 30%"
+    description: "The base flexibility gain rate per session (score/day per MET-hour). From the Cramer 2013 meta-analysis: 8 weeks of yoga improved flexibility by about 30% on average"
     reference: "Cramer H et al. (2013) Clin J Pain 29(5):450-460"
   cortisol_sensitivity:
     type: parameter
     value: 0.8
     unit: nmol/L/MET
-    description: "低强度瑜伽每 MET 降低皮质醇的效应量（nmol/L per MET per session-hour）。Innes & Vincent 2007 报告 8 周瑜伽皮质醇下降约 20%"
+    description: "The effect size of low-intensity yoga on lowering cortisol, per MET (nmol/L per MET per session-hour). Innes & Vincent 2007 reported an 8-week yoga cortisol decline of about 20%"
     reference: "Innes KE & Vincent HK (2007) J Am Board Fam Med 20(5):486-492"
   hrv_gain_per_session:
     type: parameter
     value: 0.15
     unit: ms/session
-    description: "每次练习 HRV 基础增益（ms per session-hour）。Ross & Thomas 2010：12 周瑜伽 HRV 提升约 8-12 ms"
+    description: "The base HRV gain per session (ms per session-hour). Ross & Thomas 2010: 12 weeks of yoga raised HRV by about 8-12 ms"
     reference: "Ross A & Thomas S (2010) J Altern Complement Med 16(1):3-12"
 
 equations:
   flexibility_gain:
-    description: "柔韧性每天增益：强度和时长共同驱动，有上限天花板（sigmoid 饱和近似）"
+    description: "Daily flexibility gain: jointly driven by intensity and duration, with a saturating ceiling (a sigmoid approximation)"
     condition: "yoga_intensity > 0"
     priority: 8
     dynamics:
       flexibility_index: "min(100.0, flexibility_index + flexibility_gain_rate * yoga_intensity * (session_duration / 60.0) * (1.0 - flexibility_index / 100.0))"
   cortisol_response:
-    description: "皮质醇响应：倒 U 形（低强度降低，高强度>4.5 MET 反向升高），持续练习形成累积效益"
+    description: "The cortisol response: inverted-U shaped, lowered by low intensity, raised instead above 4.5 MET, with sustained practice producing a cumulative benefit"
     condition: "yoga_intensity > 0"
     priority: 7
     dynamics:
       cortisol_level: "max(5.0, cortisol_level - cortisol_sensitivity * min(yoga_intensity, 4.0) * (session_duration / 60.0) + max(0.0, yoga_intensity - 4.5) * 1.5)"
   hrv_improvement:
-    description: "HRV 改善：有氧适应 + 副交感张力增强（正念积累进一步加成）"
+    description: "HRV improvement: aerobic adaptation plus increased parasympathetic tone, with an additional boost from accumulated mindfulness"
     condition: "yoga_intensity > 0"
     priority: 6
     dynamics:
       hrv_score: "min(120.0, hrv_score + hrv_gain_per_session * (session_duration / 60.0) * (1.0 + mindfulness_score * 0.005))"
   mindfulness_accumulate:
-    description: "正念技能随练习天数累积（学习曲线效应，边际递减）"
+    description: "Mindfulness skill accumulates over practice days (a learning-curve effect with diminishing returns)"
     condition: "yoga_intensity > 0"
     priority: 5
     dynamics:
       mindfulness_score: "min(100.0, mindfulness_score + 0.3 * (session_duration / 60.0) * (1.0 - mindfulness_score / 100.0))"
   hrv_cortisol_coupling:
-    description: "低皮质醇状态增强 HRV 恢复（应激-恢复耦合：当皮质醇<12时 HRV 额外提升）"
+    description: "A low-cortisol state reinforces HRV recovery (stress-recovery coupling: HRV gets an additional boost when cortisol is below 12)"
     condition: "cortisol_level < 12.0"
     priority: 4
     dynamics:
@@ -132,13 +146,13 @@ simulation:
         value: 3.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-03-26"]
-        label: "哈他瑜伽（3 MET，中等强度）"
+        label: "Hatha yoga (3 MET, moderate intensity)"
       - variable: session_duration
         time_start: "07:30"
         value: 60.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-03-26"]
-        label: "60 分钟练习课程"
+        label: "A 60-minute practice session"
 
 optimization:
   method: nsga2
@@ -146,26 +160,26 @@ optimization:
     - variable: flexibility_index
       metric: final
       direction: maximize
-      description: "最大化 12 周末柔韧性指数"
+      description: "Maximizing the flexibility index at the end of week 12"
     - variable: hrv_score
       metric: final
       direction: maximize
-      description: "最大化 12 周末 HRV（副交感功能改善）"
+      description: "Maximizing HRV at the end of week 12 (improved parasympathetic function)"
     - variable: cortisol_level
       metric: final
       direction: minimize
-      description: "最小化 12 周末晨起皮质醇（应激减轻）"
+      description: "Minimizing morning cortisol at the end of week 12 (stress reduction)"
   constraints:
     - variable: cortisol_level
       condition: ">= 5"
       type: hard
-      description: "皮质醇下限：5 nmol/L（低于此值为肾上腺抑制，病理状态）"
+      description: "A cortisol floor of 5 nmol/L (below this indicates adrenal suppression, a pathological state)"
   startpoint:
     regimens:
       - variable: yoga_intensity
         time_start: "07:30"
         time_end: "07:30"
-        label: "练习强度（MET，1.5=阴瑜伽，4.5=阿斯汤加）"
+        label: "Practice intensity (MET, 1.5=yin yoga, 4.5=Ashtanga)"
         optimize:
           value: [1.5, 6.0]
   algorithm:

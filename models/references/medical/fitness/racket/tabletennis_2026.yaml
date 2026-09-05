@@ -1,29 +1,44 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
   conflicts: []
   description:
     problem: >
-      乒乓球是以神经认知负荷为主的球拍运动，球速可超过 100 km/h，运动员需要在约 200-300 ms 内完成判断旋转方向、预判落点和组织击球的全流程。与体能消耗较大的球类运动不同，乒乓球的核心性能限制来自神经疲劳：随着比赛时间延长，反应时间延长、对旋转球的判断准确度下降、击球精准度衰减，而身体疲劳，即心肺和肌肉的疲劳，对表现的影响相对次要。神经疲劳与身体疲劳的分离建模是乒乓球生理模型的科学特征。
+      Table tennis is a racket sport dominated by neurocognitive load, ball speed can exceed
+      100 km/h, and a player must complete the full cycle of judging spin direction, anticipating
+      the landing point, and organizing the return within about 200-300 ms. Unlike sports with heavy
+      physical exertion, table tennis's core performance constraint comes from neural fatigue: as
+      match time extends, reaction time lengthens, judgment accuracy for a spinning ball declines,
+      and stroke precision decays, while physical fatigue, meaning cardiorespiratory and muscular
+      fatigue, has a comparatively secondary effect on performance. Modeling neural fatigue and
+      physical fatigue as separate tracks is table tennis's distinctive physiological feature.
     result: >
-      仿真尚未运行。理论预期：以 RPE=7、旋转强度=5 的中高节奏进行的 60 分钟比赛中，神经疲劳在 40-50 分钟后超过 0.3 阈值，反应时间从基线 220 ms 延长至约 250-280 ms，击球精准度下降约 10-15 分，综合表现评分从 80 分降至约 65-70 分；身体疲劳上升较缓慢，心率维持在约 130-160 bpm。
+      Not yet run. Theoretical expectation: in a 60-minute match at RPE=7 and a spin intensity of 5,
+      a moderate-to-high pace, neural fatigue crosses the 0.3 threshold after 40-50 minutes,
+      reaction time lengthens from a baseline of 220 ms to about 250-280 ms, stroke precision falls
+      by about 10-15 points, and the overall performance score falls from 80 to about 65-70; physical
+      fatigue rises more slowly, with heart rate held at about 130-160 bpm.
     limitations: >
-      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分弧圈型、快攻型等不同打法和优势手的代谢差异；分钟步长对 3-5 秒回合结构为时间尺度近似。
+      This file is marked noref, its parameters lack a formal literature source, and the mechanism
+      is a qualitative approximation not suited to high-precision quantitative prediction. Metabolic
+      differences between playing styles such as looping and fast-attack, and between the dominant
+      hand, are not distinguished; a one-minute step size is a timescale approximation for a
+      3-5 second rally structure.
   name: tabletennis
   lm_format_version: "1.0"
   ratings:
-    importance: 0.25 - 乒乓球在亚洲普及但反应速度-神经疲劳模型复用场景有限；noref，复用价值极低
-    variable: 0.25 - noref标记，参数无文献来源，机制为定性近似
-    equation: 0.25 - 方程结构存在但为定性近似，无文献依据，未见独立复现
-    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
-    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
-    confidence: 0.0 - 参数无文献来源，未跑通独立验证
+    importance: 0.25 - Table tennis is popular in Asia, but the reaction-speed-versus-neural-fatigue model has limited reuse scope; noref, with very low reuse value
+    variable: 0.25 - noref marker, parameters lack a literature source, the mechanism is a qualitative approximation
+    equation: 0.25 - An equation structure exists but is a qualitative approximation with no literature basis and no independent reproduction
+    simulation: 0.25 - No blocking todo found, but an actual test run has not been confirmed, nor has it been compared against an independent literature target value
+    optimization: 0.25 - A decision-variable search structure exists, but lacks literature-supported tradeoff evidence
+    confidence: 0.0 - Parameters lack a literature source, no independent verification has been run
   tags:
     - fitness
     - tabletennis
@@ -36,7 +51,7 @@ variables:
     bounds:
       - 1.0
       - 10.0
-    description: 回合节奏（1=慢速练习，10=高速比赛对决）
+    description: Rally pace (1=slow practice, 10=a high-speed competitive match)
     type: input
     unit: RPE
     value: 7.0
@@ -44,23 +59,23 @@ variables:
     bounds:
       - 0.0
       - 10.0
-    description: 旋转/变化球强度（影响神经负荷）
+    description: Spin/variation-ball intensity (affects neural load)
     type: input
-    unit: 强度
+    unit: intensity
     value: 5.0
   heart_rate:
     bounds:
       - 60.0
       - 180.0
-    description: 心率（乒乓球相比其他运动偏低）
+    description: Heart rate (lower than in most other sports)
     type: state
-    unit: 次/分
+    unit: bpm
     value: 70.0
   calories_burned:
     bounds:
       - 0.0
       - 500.0
-    description: 消耗热量
+    description: Calories burned
     type: state
     unit: kcal
     value: 0.0
@@ -68,124 +83,124 @@ variables:
     bounds:
       - 0.0
       - 1.0
-    description: 身体疲劳（肌肉、心肺）
+    description: Physical fatigue (muscular and cardiorespiratory)
     type: state
-    unit: 无量纲
+    unit: dimensionless
     value: 0.0
   neural_fatigue:
     bounds:
       - 0.0
       - 1.0
-    description: 神经疲劳（反应速度、注意力衰减）
+    description: Neural fatigue (decline in reaction speed and attention)
     type: state
-    unit: 无量纲
+    unit: dimensionless
     value: 0.0
   reaction_time:
     bounds:
       - 150.0
       - 400.0
-    description: 反应时间（神经疲劳增加时上升）
+    description: Reaction time (rises as neural fatigue increases)
     type: state
-    unit: 毫秒
+    unit: ms
     value: 220.0
   spin_reading:
     bounds:
       - 0.0
       - 100.0
-    description: 判断旋转球能力（疲劳和专注度影响）
+    description: Spin-reading ability (affected by fatigue and concentration)
     type: state
-    unit: 分
+    unit: score
     value: 80.0
   stroke_precision:
     bounds:
       - 0.0
       - 100.0
-    description: 击球精准度（受神经疲劳影响）
+    description: Stroke precision (affected by neural fatigue)
     type: state
-    unit: 分
+    unit: score
     value: 82.0
   footwork_speed:
     bounds:
       - 0.0
       - 100.0
-    description: 步法移动速度（受身体疲劳影响）
+    description: Footwork movement speed (affected by physical fatigue)
     type: state
-    unit: 分
+    unit: score
     value: 80.0
   concentration:
     bounds:
       - 0.0
       - 100.0
-    description: 专注度（双重疲劳共同影响）
+    description: Concentration (jointly affected by both fatigue tracks)
     type: state
-    unit: 分
+    unit: score
     value: 90.0
   performance:
     bounds:
       - 0.0
       - 100.0
-    description: 综合比赛表现评分
+    description: Overall match performance score
     type: state
-    unit: 分
+    unit: score
     value: 80.0
 equations:
   heart_rate_dynamics:
     condition: true
-    description: 心率随节奏变化（乒乓球心率区间较窄）
+    description: Heart rate responds to pace (table tennis's heart-rate range is fairly narrow)
     dynamics:
       heart_rate: 65 + rally_pace * 9 + physical_fatigue * 12
     priority: 1
   calories_accumulation:
     condition: true
-    description: 热量消耗（较其他运动低）
+    description: Calorie burn (lower than in most other sports)
     dynamics:
       calories_burned: calories_burned + rally_pace * 0.55 * (1 - physical_fatigue * 0.1)
     priority: 2
   physical_fatigue_accumulation:
     condition: true
-    description: 身体疲劳积累
+    description: Physical fatigue accumulation
     dynamics:
       physical_fatigue: min(1.0, physical_fatigue + rally_pace * 0.0008 + 0.0002)
     priority: 3
   neural_fatigue_accumulation:
     condition: true
-    description: 神经疲劳积累，旋转球强度加速积累
+    description: Neural fatigue accumulation, accelerated by spin intensity
     dynamics:
       neural_fatigue: min(1.0, neural_fatigue + rally_pace * 0.0006 + spin_intensity * 0.0005)
     priority: 4
   reaction_time_degradation:
     condition: neural_fatigue > 0.2
-    description: 神经疲劳增加反应时间
+    description: Neural fatigue lengthens reaction time
     dynamics:
       reaction_time: min(400, 220 + neural_fatigue * 120 + physical_fatigue * 40)
     priority: 5
   spin_reading_decay:
     condition: neural_fatigue > 0.3
-    description: 神经疲劳影响判断旋转球能力
+    description: Neural fatigue impairs spin-reading ability
     dynamics:
       spin_reading: max(30, 85 - neural_fatigue * 40 - (reaction_time - 220) * 0.1)
     priority: 6
   stroke_precision_decay:
     condition: true
-    description: 击球精准度受神经疲劳和反应时间影响
+    description: Stroke precision is affected by neural fatigue and reaction time
     dynamics:
       stroke_precision: max(30, 85 - neural_fatigue * 35 - physical_fatigue * 15)
     priority: 7
   footwork_speed_decay:
     condition: physical_fatigue > 0.3
-    description: 步法受身体疲劳影响
+    description: Footwork is affected by physical fatigue
     dynamics:
       footwork_speed: max(40, 85 - physical_fatigue * 35)
     priority: 8
   concentration_dynamics:
     condition: true
-    description: 专注度随双重疲劳下降
+    description: Concentration declines with both fatigue tracks
     dynamics:
       concentration: max(30, 95 - neural_fatigue * 40 - physical_fatigue * 20)
     priority: 9
   performance_score:
     condition: true
-    description: 综合表现评分
+    description: Overall performance score
     dynamics:
       performance: max(0, min(100, stroke_precision * 0.35 + spin_reading * 0.25 + footwork_speed * 0.2 + concentration * 0.2))
     priority: 10
@@ -202,11 +217,11 @@ simulation:
       - variable: rally_pace
         time_start: "09:00"
         value: 7.0
-        label: 回合节奏
+        label: Rally pace
       - variable: spin_intensity
         time_start: "09:00"
         value: 5.0
-        label: 旋转强度
+        label: Spin intensity
   output_variables:
     - heart_rate
     - calories_burned
@@ -225,26 +240,26 @@ optimization:
     - variable: performance
       direction: maximize
       metric: final
-      description: 最大化综合比赛表现
+      description: Maximize overall match performance
     - variable: neural_fatigue
       direction: minimize
       metric: final
-      description: 最小化神经疲劳（保护反应速度）
+      description: Minimize neural fatigue (protecting reaction speed)
   constraints:
     - variable: heart_rate
       condition: <= 180
       type: hard
-      description: 心率不超过上限
+      description: Heart rate should not exceed the upper bound
     - variable: reaction_time
       condition: <= 350
       type: soft
-      description: 反应时间控制在 350ms 以内
+      description: Keep reaction time within 350ms
   startpoint:
     regimens:
       - variable: rally_pace
         time_start: "09:00"
         time_end: "09:00"
-        label: 回合节奏（RPE 3-9）
+        label: Rally pace (RPE 3-9)
         optimize:
           value: [3.0, 9.0]
   algorithm:

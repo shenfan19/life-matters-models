@@ -1,20 +1,20 @@
-# models/scenarios — 客观可用仿真场景库
+# models/scenarios — Objectively Usable Simulation Scenario Library
 
-## 定位
+## Purpose
 
-`scenarios/` 存放**客观可用、但尚未关联到具体论文的仿真场景**。
+`scenarios/` holds **objectively usable simulation scenarios not yet tied to a specific paper**.
 
-与 `papers/`（服务于某篇论文写作）和 `test_fixtures/`（测试仿真器功能）不同，`scenarios/` 是一个开放的场景候选库：每个场景本身可独立运行，描述一个真实或历史人物/群体在特定条件下的动力学过程，供后续论文、教学或案例研究挑选使用。
+Unlike `papers/` (serving a specific paper's writing) and `test_fixtures/` (testing the simulator's functionality), `scenarios/` is an open candidate library of scenarios: each scenario can run independently, describing the dynamics of a real or historical person or group under specific conditions, available for future papers, teaching, or case studies to draw from.
 
-## 目录结构
+## Directory structure
 
 ```
-medical/   医学健康相关场景（疾病管理、营养、运动等）
-social/    社会/历史/人文相关场景（历史人物、群体事件等）
+medical/   Medical and health-related scenarios (disease management, nutrition, exercise, etc.)
+social/    Social/historical/humanities-related scenarios (historical figures, group events, etc.)
 ```
 
-## 内容可信度
+## Content reliability
 
-本目录下的场景文件由 AI 大量辅助生成，大部分尚未经过相关领域专家核实，验证程度以每个文件 `metadata.ratings.confidence` 字段为准（0-1 连续量表，定义见 [`docs/authoring/ratings.md`](../../docs/authoring/ratings.md)），完整可信度边界见仓库根 README「内容可信度声明」一节。
+The scenario files in this directory were generated with substantial AI assistance, and most have not yet been verified by a domain expert; the degree of verification is given by each file's `metadata.ratings.confidence` field (a continuous 0-1 scale, defined in [`docs/authoring/ratings.md`](../../docs/authoring/ratings.md)); the full reliability boundary is stated in the "Content Reliability Statement" section of the repository root README.
 
-每个模型文件都欢迎任何用户参与编辑、补充参数来源或修复问题。
+Every model file welcomes edits, additional parameter sources, or bug fixes from any user.

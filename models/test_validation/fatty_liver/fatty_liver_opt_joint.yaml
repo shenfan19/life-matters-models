@@ -2,19 +2,19 @@ metadata:
   name: fatty_liver_opt_joint
   lm_format_version: "1.0"
   description:
-    problem: "脂肪肝运动周期化联合多学科优化配置，基础活动强度与强化训练的叠加量、频率、升级时机同时作为决策变量，联合最小化肝脂肪与疲劳峰值，代表肝病科与运动医学联合视角。完整物理机制与对比仿真见 imports 的 fatty_liver_sim。与单学科视角的 fatty_liver_opt_hepatology.yaml、fatty_liver_opt_exercise.yaml 并列对比，才能体现联合优化揭示的权衡区间。"
-    method: "机制与 fatty_liver_sim.yaml 相同，完整机制列表见该文件 description.method；本文件把基础活动强度与强化训练叠加量、频率、升级时机这几个决策变量联合优化，同时最小化肝脂肪与疲劳峰值。"
+    problem: "A joint, multi-discipline optimization configuration for fatty-liver exercise periodization, with the baseline activity intensity and the additional training block's volume, frequency, and escalation timing all acting as decision variables, jointly minimizing liver fat and peak fatigue, representing a combined hepatology and sports medicine perspective. See the imported fatty_liver_sim for the complete physical mechanism and the comparison simulation. Comparing this against the single-discipline perspectives fatty_liver_opt_hepatology.yaml and fatty_liver_opt_exercise.yaml is what reveals the tradeoff range a joint optimization exposes."
+    method: "The mechanism matches fatty_liver_sim.yaml; see that file's description.method for the complete mechanism list. This file jointly optimizes the baseline activity intensity and the additional training block's volume, frequency, and escalation timing, minimizing both liver fat and peak fatigue at once."
   log:
     "2026-08-05_00-00-00":
-      change: "results 精简为 2026-07-11 的最终收敛结果，移除已确认冗余的 historical_stale_from_2026-07-10（含其嵌套的 historical_stale_from_2026-06-15）子块与内部任务记录指针；description 补充 method 字段"
-      reason: "落实 ADR 0141，主文件只保留当前有效结果，调试脉络转移至 history/2026-08-05_fatty_liver_opt_joint.yaml。"
+      change: "results streamlined to the final converged result from 2026-07-11, removing the confirmed-redundant historical_stale_from_2026-07-10 sub-block (including its nested historical_stale_from_2026-06-15) and its internal task-record pointer; description gains a method field"
+      reason: "Implements ADR 0141: the main file now keeps only the currently valid result, with the debugging trail moved to history/2026-08-05_fatty_liver_opt_joint.yaml."
 
 imports:
   - papers/lm_format/banister/banister_validation
   - ./fatty_liver_sim
 
 references:
-  - "见 ./fatty_liver_sim.yaml"
+  - "See ./fatty_liver_sim.yaml"
 
 optimization:
   method: nsga2
@@ -28,11 +28,11 @@ optimization:
     - variable: liver_fat_pct
       metric: final
       direction: minimize
-      description: "最小化 12 周末肝脂肪百分比（肝病科视角，主要健康结局）"
+      description: "Minimizing the liver fat percentage at week 12, a hepatology-perspective, primary health outcome"
     - variable: fatigue
       metric: max
       direction: minimize
-      description: "最小化训练期疲劳峰值（运动医学视角，损伤/脱落风险代理指标）"
+      description: "Minimizing the peak fatigue during training, a sports-medicine-perspective proxy for injury or dropout risk"
 
   mc:
     runs: 5
@@ -46,21 +46,21 @@ optimization:
 
   startpoint:
     regimens:
-      # T1: 基础日常活动（全程每日，中低强度）
+      # T1: baseline daily activity (every day throughout, low to moderate intensity)
       - variable: training_load
         time_start: "07:00"
         time_end: "07:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "基础日常活动强度"
+        label: "Baseline daily activity intensity"
         optimize:
           value: [2.5, 5.0]
 
-      # T1+T3+T4: 强化训练叠加（在基础之上；T3 控制频率，T4 控制升级时机）
-      # 物理含义：强化日总强度 = 基础值 + 叠加值（两个 pulse 同时刻累加）
+      # T1+T3+T4: an additional training block (on top of the baseline; T3 controls frequency, T4 controls escalation timing)
+      # Physical meaning: total intensity on a training day = the baseline value plus the block's value (two pulses accumulated at the same time)
       - variable: training_load
         time_start: "07:00"
         time_end: "07:00"
-        label: "强化训练叠加量 × 频率 × 升级时机"
+        label: "Additional training-block volume x frequency x escalation timing"
         optimize:
           value: [2.0, 5.5]
           days_pool: [Mon, Tue, Wed, Thu, Fri, Sat]
@@ -70,7 +70,7 @@ optimization:
             - ["2026-03-27", "2026-03-27"]
 
   results:
-    status: "同一配置（pop=80/gen=150/seed=19/mc=5）在 2026-07-11 与 2026-07-14 两次独立重跑中逐位一致，前沿在 fatigue 维度较早前更宽（14.3–61.9 AU，此前 20.3–54.1 AU），liver_fat_pct 维度基本不变（2.83–10.33%，此前 2.83–10.7%）。独立 --sim-only 复核显示前沿中段（liver_fat_pct≈8.4% 附近）opt 内部报告的低 fatigue 解不完全可信，复核后确认约4%的温和改善而非报告的更大幅改善，见 note；未采信、未更新 joint_optimized plan、未更新论文表6。"
+    status: "The same configuration (pop=80/gen=150/seed=19/mc=5) matched exactly across two independent reruns on 2026-07-11 and 2026-07-14; the front is wider than before along the fatigue dimension (14.3-61.9 AU, versus 20.3-54.1 AU previously), while the liver_fat_pct dimension is essentially unchanged (2.83-10.33%, versus 2.83-10.7% previously). An independent --sim-only check found that the front's midsection (around liver_fat_pct approximately 8.4%) reported a low-fatigue solution internally in opt that was not fully trustworthy; on review, only a modest improvement of about 4% was confirmed rather than the larger improvement originally reported (see note). This was not adopted, and the joint_optimized plan and the paper's table 6 were not updated."
     generated_at: "2026-07-11"
     method: nsga2
     population_size: 80
@@ -114,4 +114,4 @@ optimization:
     recommended:
       x: [4.013945, 2.069865, 3.287539, 2.796306]
       f: [8.381911, 19.630434]
-    note: "recommended 取前沿上 liver_fat_pct≈8.4% 的解，供与历史 joint_optimized plan（8.02%/29.24 AU/24天）对照。解码 x：basic=4.01 MET 全程 + add=2.07 MET，Mon/Tue/Sat（3次/周），2026-01-04起。独立 --sim-only 验证（5-run MC 均值）：liver_fat_pct=8.39%、fatigue=28.10 AU、lm_score=20天。fatigue 确有约4%改善，但 liver_fat_pct 略差（+0.37pp）、健康达标天数从24天降至20天，是前沿上的另一个权衡点，不是严格支配现有 plan 的改进解，因此未替换 fatty_liver_sim.yaml 的 joint_optimized plan，未更新论文表6。前沿其余 fatigue<19.6 的解（liver_fat_pct 8–10.3% 区间共9个解）未逐一独立复核，仅作定性参考：fatigue 维度前沿变宽这一现象本身由前沿两端的确定性/低方差解支撑，可信；具体中段解的精确数值需要独立复核才能采信。更早的重跑记录（含2026-07-10、2026-06-15两批历史结果）见 history/2026-08-05_fatty_liver_opt_joint.yaml。"
+    note: "recommended takes the front's solution at liver_fat_pct approximately 8.4%, for comparison against the historical joint_optimized plan (8.02%/29.24 AU/24 days). Decoding x: basic=4.01 MET throughout plus add=2.07 MET on Mon/Tue/Sat (3 times a week) starting 2026-01-04. Independent --sim-only validation (a 5-run MC mean) gives liver_fat_pct=8.39%, fatigue=28.10 AU, lm_score=20 days. fatigue does show about a 4% improvement, but liver_fat_pct is slightly worse (+0.37pp) and the number of healthy-threshold days drops from 24 to 20, making this another tradeoff point on the front rather than a solution strictly dominating the existing plan, so it did not replace the joint_optimized plan in fatty_liver_sim.yaml and the paper's table 6 was not updated. The front's other solutions with fatigue<19.6 (9 solutions in the liver_fat_pct 8-10.3% range) were not individually re-checked and serve only as qualitative reference: the fatigue dimension's front widening is itself supported by deterministic, low-variance solutions at both ends of the front and is trustworthy, but the exact numbers of the specific midsection solutions would need an independent check before being adopted. See history/2026-08-05_fatty_liver_opt_joint.yaml for the earlier rerun record (including two earlier batches of historical results from 2026-07-10 and 2026-06-15)."

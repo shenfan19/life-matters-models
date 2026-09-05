@@ -10,119 +10,136 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      简单的传染式扩散模型，例如逻辑斯蒂增长，只要存在任何正的传播率就会单调收敛到全体接受，
-      无法解释一个反复被观察到的现象：同一种新规范或新行为，在支持者比例较低时长期停滞不前，
-      一旦支持者比例跨过某个临界点，却能在短时间内迅速扩散到多数。本组件把持有某一立场的
-      人口比例，对应字段opinion_support_share，作为一个状态变量显式建模为双稳态动力学，
-      而非单调扩散，用一个不稳定不动点表达"临界质量"本身：该点以下自发衰减回原状态，
-      该点以上被推向新常态。
+      A simple contagion-style diffusion model, such as logistic growth, converges monotonically
+      to universal acceptance as long as any positive transmission rate exists, and cannot explain a
+      repeatedly observed phenomenon: the same new norm or behavior can stay stalled for a long time
+      while support remains low, yet once support crosses a certain tipping point, it can spread
+      rapidly to a majority in a short time. This component explicitly models the population fraction
+      holding a given position, corresponding to the opinion_support_share field, as a bistable
+      dynamical state rather than monotonic diffusion, using an unstable fixed point to express
+      "critical mass" itself: below this point the state spontaneously decays back to the original
+      state, above it the state is pushed toward the new norm.
     method: >
-      核心机制是三次方形式的双稳态常微分方程，在critical_mass_threshold处存在一个不稳定
-      不动点，这一函数形式和不动点位置的实验依据来自Centola et al. (2018)对小群体社会
-      惯例转变的受控实验：当推动变革的既定少数群体比例低于约25%时，群体最终仍回到原有
-      惯例；一旦比例达到约25%，会出现群体动态的突然转变，多数群体在很短时间内转向新惯例。
-      本组件额外引入外源推动力advocacy_push，代表媒体曝光、精英表态、法律裁决等外部事件
-      对支持比例的直接推力，以及由此产生的政治性反弹polarization_backlash，代表主动施压
-      本身诱发的抵制性反动员，其存在削弱了推动力的净效果。
+      The core mechanism is a cubic-form bistable ordinary differential equation with an unstable
+      fixed point at critical_mass_threshold; the experimental basis for this functional form and
+      fixed-point location comes from Centola et al.'s (2018) controlled experiments on small-group
+      social-convention change: when the proportion of a committed minority pushing for change falls
+      below about 25%, the group ultimately reverts to the original convention; once the proportion
+      reaches about 25%, a sudden shift in group dynamics occurs, with the majority switching to the
+      new convention within a short time. This component additionally introduces an exogenous push
+      force, advocacy_push, representing the direct push on support share from external events such
+      as media coverage, elite statements, and legal rulings, and a resulting political backlash,
+      polarization_backlash, representing the resistant counter-mobilization that active pressure
+      itself provokes, whose presence weakens the push force's net effect.
     result: >
-      本组件是可复用的通用机制定义，不内置具体历史场景，历史/实验校准场景与其诚实的
-      拟合优劣评估见 models/papers/sx2/opinion_critical_mass/。
+      This component is a reusable general-purpose mechanism definition and does not embed any
+      specific historical scenario; historical/experimental calibration scenarios and an honest
+      assessment of fit quality are in models/papers/sx2/opinion_critical_mass/.
     limitations: >
-      Centola et al. (2018)的25%阈值来自数十人规模、社交联系紧密的受控实验群体，本组件
-      将其作为国家或大规模人群尺度的默认标定值使用，属于跨尺度的直接复用而非重新标定，
-      这一跨尺度假设本身未经独立验证，是本组件最主要的局限，具体检验结果见上方result
-      指向的案例文件。模型把"人群"表达为单一聚合状态变量，不含网络拓扑、个体异质性或
-      任何显式的人际连接结构，无法回答"谁影响了谁"这类结构性问题，这类问题需要网络
-      重整化或多主体仿真这类LM format当前作用域之外的技术，见案例文件的讨论。
-      k_diffusion_rate、k_push_effect、k_backlash_generation、k_backlash_decay、
-      k_backlash_drag均为标定选择而非直接文献测量值。
+      Centola et al.'s (2018) 25% threshold comes from a controlled experimental group of tens of
+      people with dense social ties, and this component uses it directly as the default calibration
+      at national or large-population scale, a direct cross-scale reuse rather than a re-calibration;
+      this cross-scale assumption itself has not been independently verified, and is this component's
+      most significant limitation, with the specific test results found in the case file the result
+      field above points to. The model represents "the population" as a single aggregate state
+      variable, containing no network topology, individual heterogeneity, or any explicit interpersonal
+      connection structure, so it cannot answer structural questions like "who influenced whom,"
+      which require techniques outside the LM format's current scope, such as network renormalization
+      or multi-agent simulation, discussed in the case file.
+      k_diffusion_rate, k_push_effect, k_backlash_generation, k_backlash_decay, and k_backlash_drag
+      are all calibrated choices rather than directly measured literature values.
   ratings:
-    importance: 0.5 - 社会规范/态度转变的临界质量机制是理解大规模集体行为变化的核心理论之一，探索性组件引用预期中等
-    variable: 0.75 - 核心阈值引用Science发表的受控实验(Centola et al. 2018)，反弹机制引用Klarman(2013)对真实历史案例的系统分析
-    equation: 0.5 - 双稳态临界质量结构在社会物理学中有先例，具体耦合形式为自建
-    simulation: 0.25 - 核心阈值直接复用小群体实验数值，同一机制在papers/sx2/opinion_critical_mass_sim.yaml国家尺度检验中被证实存在数量级时间尺度错配
-    optimization: 0.0 - 本文件不含optimization，不涉及决策变量
-    confidence: 0.25 - 小群体实验阈值本身可信，但跨尺度迁移到大规模人群场景已被下游独立检验证伪，未重新标定
+    importance: 0.5 - The critical-mass mechanism for social-norm/attitude change is one of the core theories for understanding large-scale collective behavior change; an exploratory component, moderate citation expected
+    variable: 0.75 - The core threshold cites a controlled experiment published in Science (Centola et al. 2018), and the backlash mechanism cites Klarman's (2013) systematic analysis of real historical cases
+    equation: 0.5 - The bistable critical-mass structure has precedent in social physics, with the specific coupling form self-built
+    simulation: 0.25 - The core threshold directly reuses a small-group experimental value; the same mechanism, when tested at national scale in papers/sx2/opinion_critical_mass_sim.yaml, was confirmed to show an order-of-magnitude timescale mismatch
+    optimization: 0.0 - This file contains no optimization block and involves no decision variables
+    confidence: 0.25 - The small-group experimental threshold is itself credible, but the cross-scale transfer to a large-population scenario has already been falsified by independent downstream testing and has not been recalibrated
   tags: [opinion-dynamics, social-physics, critical-mass, tipping-point, bistability, sociology, social]
 
 variables:
   opinion_support_share:
     type: state
     value: 10
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
-    description: "持有目标立场的人口比例"
+    description: "The population fraction holding the target position"
 
   polarization_backlash:
     type: state
     value: 0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
-    description: "由主动推动力度诱发的抵制性反动员强度"
-    reference: "机制依据 Klarman (2013)"
+    description: "The intensity of resistant counter-mobilization provoked by the active push force"
+    reference: "The mechanism is based on Klarman (2013)"
 
   critical_mass_threshold:
     type: parameter
     value: 25
-    unit: "分"
+    unit: "score"
     bounds: [15, 35]
-    description: "临界质量阈值：动力学方程的不稳定不动点位置"
+    description: "The critical-mass threshold: the location of the dynamical equation's unstable fixed point"
     reference: "Centola et al. (2018) Science 360(6393):1116-1119"
 
   k_diffusion_rate:
     type: parameter
     value: 0.05
-    unit: "分/day，双稳态项系数"
+    unit: "score/day, the bistable-term coefficient"
     description: >
-      双稳态项的整体速率系数：标定选择，非直接文献测量值。Centola et al. (2018)测量的是
-      阈值位置本身，未给出跨越阈值后的扩散速度常数，量级选择目标是让轨迹在数十到数百天
-      的模拟窗口内可观测地演化，而非瞬间饱和或永不移动。
-    reference: "TODO:SOURCE 标定选择；不动点位置依据 Centola et al. (2018)"
+      The overall rate coefficient of the bistable term: a calibrated choice, not a directly
+      measured literature value. Centola et al. (2018) measured the threshold's location itself, but
+      did not give a diffusion-speed constant for after the threshold is crossed; the magnitude is
+      chosen so the trajectory evolves observably within a simulation window of tens to hundreds of
+      days, rather than saturating instantly or never moving.
+    reference: "TODO:SOURCE a calibrated choice; the fixed-point location is based on Centola et al. (2018)"
 
   k_push_effect:
     type: parameter
     value: 0.6
-    unit: "分 per 级推动力 per day"
-    description: "外源推动力对支持比例的直接推力速率：标定选择，非直接文献测量值。"
-    reference: "TODO:SOURCE 标定选择"
+    unit: "score per level of push force per day"
+    description: "The rate at which exogenous push force directly raises support share: a calibrated choice, not a directly measured literature value."
+    reference: "TODO:SOURCE a calibrated choice"
 
   k_backlash_generation:
     type: parameter
     value: 0.1
-    unit: "分 per 级推动力 per day"
+    unit: "score per level of push force per day"
     description: >
-      推动力度诱发反弹强度上升的速率：标定选择，非直接文献测量值，机制依据 Klarman
-      (2013)，法院裁决等强制性推动历史上确实诱发了显著的政治反弹动员，但原文是历史
-      案例分析，未给出可直接映射为该动力学系数的数值。
-    reference: "TODO:SOURCE 标定选择；机制依据 Klarman (2013)"
+      The rate at which push-force intensity raises backlash strength: a calibrated choice, not a
+      directly measured literature value; the mechanism is based on Klarman (2013), where court
+      rulings and other coercive pushes historically did provoke significant political backlash
+      mobilization, but the original work is a historical case analysis and does not give a value
+      directly mappable to this dynamics coefficient.
+    reference: "TODO:SOURCE a calibrated choice; the mechanism is based on Klarman (2013)"
 
   k_backlash_decay:
     type: parameter
     value: 0.05
     unit: "1/day"
-    description: "反弹强度的自然衰减速率，代表议题热度随时间自然消退：标定选择，非直接文献测量值。"
-    reference: "TODO:SOURCE 标定选择"
+    description: "The natural decay rate of backlash strength, representing an issue's salience naturally fading over time: a calibrated choice, not a directly measured literature value."
+    reference: "TODO:SOURCE a calibrated choice"
 
   k_backlash_drag:
     type: parameter
     value: 0.02
-    unit: "分 per 分反弹强度 per day"
-    description: "反弹强度对支持比例增长的拖累速率：标定选择，非直接文献测量值。"
-    reference: "TODO:SOURCE 标定选择"
+    unit: "score per point of backlash strength per day"
+    description: "The rate at which backlash strength drags on the growth of support share: a calibrated choice, not a directly measured literature value."
+    reference: "TODO:SOURCE a calibrated choice"
 
   advocacy_push:
     type: input
     value: 0
-    unit: "级"
+    unit: "level"
     bounds: [0, 1]
-    description: "外源推动力强度：媒体曝光、精英表态、法律裁决等事件的合成代理，0=无，1=高强度持续推动"
+    description: "The intensity of the exogenous push force: a composite proxy for events such as media coverage, elite statements, and legal rulings, 0=none, 1=high-intensity sustained push"
 
 equations:
   opinion_dynamics:
     description: >
-      三次方形式的双稳态核心机制：在critical_mass_threshold处存在一个不稳定不动点，该点
-      以下的支持比例自发衰减回0，该点以上被推向100，加上外源推动力的直接推力与反弹强度
-      的拖累项。
+      The core cubic-form bistable mechanism: an unstable fixed point exists at
+      critical_mass_threshold, below which support share spontaneously decays back to 0, above which
+      it is pushed toward 100, plus the exogenous push force's direct effect and the backlash
+      strength's drag term.
     step_unit: day
     dynamics:
       opinion_support_share: >
@@ -132,10 +149,10 @@ equations:
           + k_push_effect * advocacy_push * step
           - k_backlash_drag * polarization_backlash * step))
     priority: 5
-    reference: "三次方双稳态结构与不动点位置依据 Centola et al. (2018) Science 360(6393):1116-1119"
+    reference: "The cubic bistable structure and fixed-point location are based on Centola et al. (2018) Science 360(6393):1116-1119"
 
   backlash_dynamics:
-    description: "外源推动力度越大，诱发的反弹强度越高；反弹强度随时间自然衰减，代表议题热度消退。"
+    description: "A stronger exogenous push provokes higher backlash strength; backlash strength naturally decays over time, representing an issue's salience fading."
     step_unit: day
     dynamics:
       polarization_backlash: >
@@ -143,7 +160,7 @@ equations:
           + k_backlash_generation * advocacy_push * step
           - k_backlash_decay * polarization_backlash * step))
     priority: 6
-    reference: "机制依据 Klarman (2013)"
+    reference: "The mechanism is based on Klarman (2013)"
 
 simulation:
   step_size:
@@ -155,6 +172,6 @@ simulation:
 
 references:
   - citation: "Centola D, Becker J, Brackbill D, Baronchelli A (2018) Experimental evidence for tipping points in social convention. Science 360(6393):1116-1119."
-    description: "临界质量阈值约25%的实验测量值，双稳态动力学的功能形式依据。"
+    description: "The experimentally measured critical-mass threshold of about 25%, and the basis for the bistable dynamics' functional form."
   - citation: "Klarman MJ (2013) From the Closet to the Altar: Courts, Backlash, and the Struggle for Same-Sex Marriage. Oxford University Press."
-    description: "法院裁决等强制性推动引发政治性反弹动员的历史证据，机制依据但未给出可直接映射的动力学系数。"
+    description: "Historical evidence that coercive pushes such as court rulings provoked political backlash mobilization, the mechanism's basis, though it gives no directly mappable dynamics coefficient."
