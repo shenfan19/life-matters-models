@@ -11,35 +11,31 @@ metadata:
   description:
     problem: |
       Smoking is the leading known risk factor for lung cancer, and a current smoker's lung-cancer
-      mortality hazard ratio (HR) relative to a nonsmoker is commonly reported in the epidemiological
-      literature as a large effect size on the order of double digits. This file uses HR=17.85 as an
-      illustrative value at this order of magnitude. A check on 2026-08-28 could not locate a
-      specific publication reporting this exact number combination, including the 95% CI 14.38-22.17,
-      so it is no longer claimed to be drawn directly from a particular study, and is instead marked
-      as an illustrative value, used to demonstrate that the evidence_type=rr conversion mechanism
-      correctly handles a large-magnitude effect size.
+      mortality relative risk (RR) relative to a never-smoker is commonly reported in the
+      epidemiological literature as a large effect size on the order of double digits. A search on
+      2026-09-05 located Thun et al.'s (2013) pooled analysis of the contemporary NIH-AARP and
+      American Cancer Society CPS-II cohorts (2000-2010), reporting RR=24.97 (95% CI 22.20-28.09)
+      for men and RR=25.66 (95% CI 23.17-28.40) for women, current smokers versus never-smokers, with
+      the paper itself noting the two sex-specific point estimates are virtually identical in the
+      contemporary period. This file uses the male point estimate, 24.97, replacing the earlier
+      HR=17.85 placeholder that a 2026-08-28 check could not trace to any publication.
     result: |
       This case declares the effect size using the rr subtype of the LM format's evidence block,
       substituting an illustrative baseline risk of 0.6%, to verify that the loader correctly reads,
       carries, and displays this effect size, with the exposed-group risk equal to the baseline risk
-      times 17.85, that is, an HR of 17.85.
+      times 24.97, an RR of 24.97.
     limitations: |
-      This case demonstrates the correctness of effect-size encoding, not an independent prediction
-      test: the number 17.85 is itself the target being verified, not a value extrapolated and then
-      compared against a separate independent source. The 0.6% baseline risk is an illustrative
-      setting, not a measured prevalence in any specific population. HR=17.85 is itself an
-      illustrative value that does not correspond to a specific publication, unlike this file's other
-      cases in the same family, such as processed_meat_mortality, which are all traceable to a
-      specific publication; this is noted in the problem field, and if a genuine publication
-      supporting the smoking-lung-cancer association is needed before submission, a separate search
-      and replacement will be required.
+      The 0.6% baseline risk is an illustrative setting, not a measured prevalence in any specific
+      population; only the RR itself, 24.97, is the literature-traced value. This case still
+      demonstrates the correctness of effect-size encoding, not an independent prediction test, since
+      the number being checked is the same number being loaded.
   ratings:
     importance: 0.25 - One case in the epidemiological-effect-size family, a general-purpose reference component not yet imported by a specific paper
-    variable: 0.25 - A check on 2026-08-28 confirmed HR=17.85 has no traceable corresponding publication and has been changed to an illustrative value, no longer claimed as a consensus value from a meta-analysis or large cohort study
+    variable: 0.75 - RR=24.97 now traces to Thun et al.'s (2013) pooled NIH-AARP/CPS-II contemporary cohort analysis in NEJM, replacing the earlier untraceable placeholder
     equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
     simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
     optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
-    confidence: 0.25 - The value itself has no traceable basis, and is not comparable in confidence to this family's other cases; see the problem/limitations fields
+    confidence: 0.5 - The RR itself now matches a named, citable cohort study, but the case still only round-trips a declared value rather than testing an independent prediction
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family]
 
 variables:
@@ -58,10 +54,10 @@ variables:
   exposure_rr:
     type: parameter
     evidence_type: rr
-    value: 17.85
-    unit: "HR"
-    description: An illustrative value at the order of magnitude of a current smoker's lung-cancer mortality hazard ratio relative to a nonsmoker, not corresponding to a specific publication
-    reference: "An illustrative value, not claimed to be drawn from a specific study; a check on 2026-08-28 found no publication reporting this exact number combination, HR=17.85 with 95% CI 14.38-22.17, hence this label"
+    value: 24.97
+    unit: "RR"
+    description: A current smoker's lung-cancer mortality relative risk versus a never-smoker, the male point estimate from the contemporary (2000-2010) cohort
+    reference: "Thun MJ, Carter BD, Feskanich D, Freedman ND, Prentice R, Lopez AD, Hartge P, Gapstur SM (2013). 50-Year Trends in Smoking-Related Mortality in the United States. N Engl J Med 368(4):351-364, Table 3, contemporary cohort, men, RR=24.97 (95% CI 22.20-28.09)"
 
 equations:
   risk_calc:
@@ -86,4 +82,4 @@ simulation:
       regimens: []
 
 references:
-  - "An illustrative value, not claimed to be drawn from a specific study; a check on 2026-08-28 found no publication reporting this exact number combination, HR=17.85 with 95% CI 14.38-22.17"
+  - "Thun MJ, Carter BD, Feskanich D, Freedman ND, Prentice R, Lopez AD, Hartge P, Gapstur SM (2013). 50-Year Trends in Smoking-Related Mortality in the United States. N Engl J Med 368(4):351-364."

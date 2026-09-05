@@ -6,7 +6,7 @@ metadata:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
   description:
-    problem: "A declarative-layer verification entry for §5.3 of paper `paper/c_paper_s1_cn.md`: imports the general reference component `references/medical/disease/chronic/smoking_lungcancer_2026.yaml` to confirm that the illustrative value HR=17.85, which does not correspond to a specific source, see the 2026-08-28 verification note in the imported file, loads correctly within the LM format 1.0 model library and produces a converted result consistent with the stated value."
+    problem: "A declarative-layer verification entry for §4.3 of paper `paper/c_paper_s1_cn.md`: imports the general reference component `references/medical/disease/chronic/smoking_lungcancer_2026.yaml` to confirm that RR=24.97, Thun et al. 2013's contemporary-cohort male point estimate, loads correctly within the LM format 1.0 model library and produces a converted result consistent with the stated value."
     result: "This file does not duplicate the mechanism; the complete variables, equations, and results are in the description of the imported file."
   tags: [s1, declarative-evidence, rr-family, verification]
 
