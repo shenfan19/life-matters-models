@@ -10,6 +10,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       The little match girl (Andersen, 1845) faces a triple tradeoff over 10 hours on New Year's

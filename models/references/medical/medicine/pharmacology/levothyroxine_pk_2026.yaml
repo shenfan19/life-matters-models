@@ -7,6 +7,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: |
       Levothyroxine is a thyroid hormone replacement drug whose elimination half-life, t1/2=168.0 hours, is a consensus figure widely cited in pharmacokinetics textbooks and clinical guidelines. This file uses a normalized plasma concentration to validate whether LM format can correctly reproduce the standard first-order elimination curve; the concentration is normalized to a peak of 1.0 and does not depend on a specific dose, apparent volume of distribution, or bioavailability parameter, validating only the elimination kinetics itself.

@@ -5,6 +5,7 @@ metadata:
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     brief: "Medication-adherence decay dynamics: the adherence rate declines naturally over time, modulated by regimen complexity, side-effect burden, and life stress, with a reminder intervention able to partially reverse it."
     need: >

@@ -10,6 +10,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Hans Castorp (Thomas Mann's The Magic Mountain, 1924) originally planned a 3-week stay at

@@ -7,6 +7,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: |
       The per-10cm waist-circumference to lung-cancer association is an effect size in

@@ -8,6 +8,7 @@ metadata:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
   conflicts: []
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Table tennis is a racket sport dominated by neurocognitive load, ball speed can exceed

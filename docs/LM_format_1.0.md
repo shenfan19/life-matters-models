@@ -712,7 +712,21 @@ metadata:
 - **No `metadata.todo` (or an empty list) means confirmed passing and publication-ready**: `--sim` succeeds, `--opt` succeeds (or is skipped when no `optimization:` block is present), every parameter has a literature source, and results show no red flags.
 - Once every `todo` item is resolved, remove the field entirely — the file returns to a "clean" state. The file name is never part of this signal (a prior convention encoded status via filename suffixes such as `_HOLD`; renaming broke other files' `imports:` paths and has been removed).
 
-An optional YAML field `metadata.reviewed: true` may be set by the author to indicate that mechanisms and parameter magnitudes have been manually verified. This is not a publication gate.
+An optional YAML field `metadata.reviewed` indicates whether mechanisms and parameter magnitudes have been manually verified. This is not a publication gate. Write it as a single line, `true` or `false` followed by a free-text note, the same `value - note` notation as `metadata.ratings` (§ ratings.md):
+
+```yaml
+metadata:
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
+```
+
+Once reviewed, overwrite the line rather than deleting it, keeping the note as a record of who reviewed it and what was checked:
+
+```yaml
+metadata:
+  reviewed: true - Reviewed by Fan Shen, mechanism and parameters checked against cited sources.
+```
+
+A bare `metadata.reviewed: true` with no trailing note remains valid. An LM-compatible engine or GUI reads only the leading `true`/`false` token; the note is for human readers.
 
 ### 9.4 Contribution License Agreement
 

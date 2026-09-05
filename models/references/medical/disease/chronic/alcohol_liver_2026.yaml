@@ -5,6 +5,7 @@ metadata:
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Chronic alcohol intake drives liver-fibrosis progression through cumulative hepatocyte

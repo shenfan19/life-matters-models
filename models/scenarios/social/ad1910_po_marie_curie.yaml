@@ -5,6 +5,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       In Marie Curie's radioactivity research in Paris from 1898 to 1906, accumulated radiation
