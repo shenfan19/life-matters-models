@@ -8,6 +8,7 @@ metadata:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
   conflicts: []
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Football (soccer) is the world's most participated-in sport; a professional player covers

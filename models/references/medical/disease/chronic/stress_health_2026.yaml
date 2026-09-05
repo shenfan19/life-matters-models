@@ -7,6 +7,7 @@ metadata:
   authors:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Chronic work stress continuously raises cortisol through the hypothalamic-pituitary-adrenal

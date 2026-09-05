@@ -7,6 +7,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       An Olympic-distance triathlon consists of a 1.5 km swim, a 40 km bike, and a 10 km run, a

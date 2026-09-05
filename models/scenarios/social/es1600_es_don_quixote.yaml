@@ -10,6 +10,7 @@ metadata:
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
+  reviewed: false - Batch-drafted with AI assistance, not yet manually reviewed.
   description:
     problem: >
       Don Quixote's (Cervantes's Don Quixote, 1605/1615) core question is: what is the cost of
