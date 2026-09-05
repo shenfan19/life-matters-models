@@ -1,120 +1,119 @@
-# ADR 0040 — 医学研究结论类型与 YAML 变量映射：evidence_param 子类型
-**日期**：2026-04-22  
-**状态**：已实施（合并方案，与本文原计划不同，见下方「实施记录」）
+# ADR 0040 - Medical Research Conclusion Types and YAML Variable Mapping: the evidence_param Subtype
+**Date**: 2026-04-22
+**Status**: Implemented (a merged approach, different from this document's original plan; see "Implementation Record" below)
 
 ---
 
-## 背景
+## Background
 
-LM 的定位是"把文献里的统计结论转化为可运行的动力学模型"（见 sim_requirements.md）。
-当前 `parameter` 类型同时承载两种性质不同的值：
+LM's positioning is "turning a literature statistical conclusion into a runnable dynamics model" (see sim_requirements.md). The current `parameter` type carries two different kinds of value at once:
 
-1. **动力学系数**：直接进公式的数值（PK 速率常数、方程斜率等），文献直接给出。
-2. **流行病学效应量**：OR、HR、Cohen's d 等——这些不能直接进公式，必须先换算为有效系数（乘数或概率增量）才能使用。
+1. A dynamics coefficient: a number that goes directly into a formula (a PK rate constant, an equation slope, etc.), given directly by the literature.
+2. An epidemiological effect size: OR, HR, Cohen's d, etc., which cannot go into a formula directly and must first be converted into an effective coefficient (a multiplier or a probability increment) before use.
 
-当前设计把换算责任推给建模者，违背了 LM "像填表一样建模"的易用性原则。医学研究者不应该需要知道 OR→RR 的换算公式才能使用 LM。
+The current design pushes the conversion responsibility onto the modeler, violating LM's ease-of-use principle of "modeling like filling in a form." A medical researcher should not need to know the OR-to-RR conversion formula to use LM.
 
-### 动力学视角澄清
+### Clarifying the dynamics perspective
 
-从仿真引擎角度，OR/RR/HR 都只是"同一件事的不同统计表达"，进引擎的只有最终的概率或系数。换算是**数据预处理问题，不是仿真问题**。这个换算天然属于 **Loader 层**（Loader 已负责 YAML 组装），而非建模者的手工操作。
+From the simulation engine's perspective, OR/RR/HR are all just "different statistical expressions of the same thing," and only the final probability or coefficient enters the engine. The conversion is a data-preprocessing problem, not a simulation problem. This conversion naturally belongs at the Loader layer (the Loader already handles YAML assembly), not as manual work for the modeler.
 
-### 关于人群 SD 的说明
+### A note on population SD
 
-Effect size（Cohen's d）换算需要人群 SD（σ）。LM 目前是**个体仿真**（单人随时间），σ 是参考研究人群的固定值，必须由建模者从文献提供。若未来 LM 支持种群仿真（多人并行），可在 Loader 中改为动态读取仿真人群的实时 SD，当前设计保持兼容。
-
----
-
-## 决策
-
-**增加 `evidence_param` 作为第 5 种顶层变量类型，专门用于流行病学效应量。**
-
-- 建模者在 YAML 中填入**原始文献值**（OR=1.65，HR=0.82，d=0.68）。
-- Loader 在组装阶段自动换算为引擎可用的有效系数，存为 `_effective_value`。
-- Simulator 只读 `_effective_value`，对原始类型无感知。
-- 原始字段全部保留，用于溯源与审查。
+Converting an effect size (Cohen's d) needs the population SD (σ). LM is currently an individual simulation (one person over time), so σ is a fixed value from the reference study's population and must be supplied by the modeler from the literature. If LM supports population simulation (many individuals in parallel) in the future, the Loader could be changed to dynamically read the simulated population's live SD instead; the current design stays compatible with that.
 
 ---
 
-## 5 种变量类型（更新后）
+## Decision
 
-| 类型 | 引擎读取 | 建模者填入 | 用途 |
+Add `evidence_param` as a 5th top-level variable type, dedicated to epidemiological effect sizes.
+
+- The modeler fills in the raw literature value in the YAML (OR=1.65, HR=0.82, d=0.68).
+- The Loader converts it automatically during assembly into an effective coefficient usable by the engine, stored as `_effective_value`.
+- The Simulator reads only `_effective_value`, unaware of the original type.
+- The raw fields are all kept, for traceability and review.
+
+---
+
+## The 5 Variable Types (Updated)
+
+| Type | What the engine reads | What the modeler fills in | Purpose |
 |------|---------|----------|------|
-| `state` | `value`（随时间更新） | 初始值 | 随时间演化的状态 |
-| `input` | `value`（用户可调） | 控制量 | 用户干预 |
-| `parameter` | `value`（不变） | 最终系数 | 直接进公式的动力学系数 |
-| `probability_constant` | `value`（不变） | 概率值 | 随机事件概率，以期望值运行 |
-| **`evidence_param`** | `_effective_value`（Loader 换算） | **原始文献值** | 流行病学效应量（OR/HR/ES等） |
+| `state` | `value` (updated over time) | An initial value | A state that evolves over time |
+| `input` | `value` (user-adjustable) | A control quantity | A user intervention |
+| `parameter` | `value` (constant) | The final coefficient | A dynamics coefficient going directly into a formula |
+| `probability_constant` | `value` (constant) | A probability value | A random event's probability, run at its expected value |
+| **`evidence_param`** | `_effective_value` (converted by the Loader) | **The raw literature value** | An epidemiological effect size (OR/HR/ES, etc.) |
 
 ---
 
-## evidence_param YAML 格式
+## evidence_param YAML Format
 
 ```yaml
 evidence_params:
-  # ── 相对风险 RR ─────────────────────────────
+  # -- Relative risk RR ----------------------------
   smoking_lung_cancer_rr:
     evidence_type: relative_risk
     value: 2.7
     unit: "RR"
-    # Loader: _effective_value = 2.7（直接使用，无换算）
+    # Loader: _effective_value = 2.7 (used directly, no conversion)
     reference: "Doll & Hill (1950) BMJ"
 
-  # ── 比值比 OR（患病率 > 10% 必须换算）──────────
+  # -- Odds ratio OR (must convert when prevalence > 10%) --------
   obesity_diabetes_or:
     evidence_type: odds_ratio
     value: 1.65
     unit: "OR"
-    baseline_prevalence: 0.23        # 对照组患病率 p₀（必填）
-    # Loader: RR = OR / ((1−p₀) + p₀×OR) = 1.65 / (0.77 + 0.38) = 1.48
+    baseline_prevalence: 0.23        # the control group's prevalence p0 (required)
+    # Loader: RR = OR / ((1-p0) + p0xOR) = 1.65 / (0.77 + 0.38) = 1.48
     # _effective_value = 1.48
     reference: "..."
 
-  # ── 风险比 HR（需配对基线风险）────────────────
+  # -- Hazard ratio HR (needs a paired baseline risk) ------------
   chemo_mortality_hr:
     evidence_type: hazard_ratio
     value: 0.82
     unit: "HR"
-    baseline_rate_ref: chemo_baseline_mortality   # probability_constant 变量名（必填）
-    # Loader: _effective_value = baseline_rate × HR（在 Loader 组装时解析引用）
+    baseline_rate_ref: chemo_baseline_mortality   # the name of a probability_constant variable (required)
+    # Loader: _effective_value = baseline_rate x HR (the reference resolved during Loader assembly)
     reference: "..."
 
-  # ── 绝对风险差 ARD ────────────────────────────
+  # -- Absolute risk difference ARD ------------------------------
   statin_cvd_ard:
     evidence_type: absolute_risk_difference
     value: 0.012
     unit: "prob/year"
-    # Loader: _effective_value = 0.012（直接使用，加到概率上）
+    # Loader: _effective_value = 0.012 (used directly, added to the probability)
     reference: "..."
 
-  # ── 效应量 Cohen's d ──────────────────────────
+  # -- Effect size, Cohen's d -------------------------------------
   exercise_fev1_effect:
     evidence_type: effect_size
-    value: 0.68                      # Cohen's d（原始文献值）
-    population_sd: 0.5               # 参考人群 SD，单位与 unit 一致（必填）
+    value: 0.68                      # Cohen's d (the raw literature value)
+    population_sd: 0.5               # the reference population's SD, in the same unit as unit (required)
     unit: "L"
-    # Loader: _effective_value = d × σ = 0.68 × 0.5 = 0.34 L
+    # Loader: _effective_value = d x sigma = 0.68 x 0.5 = 0.34 L
     reference: "..."
 
-  # ── 发病率（已可用 probability_constant，此处仅演示等价写法）──
+  # -- Incidence rate (already expressible with probability_constant; shown here as an equivalent form) --
   annual_diabetes_ir:
     evidence_type: incidence_rate
     value: 0.05
     unit: "prob/year"
-    # Loader: _effective_value = 0.05（直接用）
+    # Loader: _effective_value = 0.05 (used directly)
     reference: "IDF Atlas 2021"
 ```
 
 ---
 
-## Loader 换算规则
+## Loader Conversion Rules
 
-| `evidence_type` | 换算公式 | 必填辅助字段 |
+| `evidence_type` | Conversion formula | Required auxiliary field |
 |----------------|---------|------------|
 | `relative_risk` | `effective = value` | — |
-| `odds_ratio` | `effective = OR / ((1−p₀) + p₀×OR)` | `baseline_prevalence` |
-| `hazard_ratio` | `effective = baseline_rate × HR` | `baseline_rate_ref` |
+| `odds_ratio` | `effective = OR / ((1-p0) + p0xOR)` | `baseline_prevalence` |
+| `hazard_ratio` | `effective = baseline_rate x HR` | `baseline_rate_ref` |
 | `absolute_risk_difference` | `effective = value` | — |
-| `effect_size` | `effective = d × population_sd` | `population_sd` |
+| `effect_size` | `effective = d x population_sd` | `population_sd` |
 | `incidence_rate` | `effective = value` | — |
 | `regression_coefficient` | `effective = value` | — |
 | `pk_rate_constant` | `effective = value` | — |
@@ -122,35 +121,35 @@ evidence_params:
 
 ---
 
-## 公式中的使用方式
+## How It Is Used in a Formula
 
-Loader 换算完成后，`evidence_param` 变量和普通 `parameter` 在公式中使用方式完全一致——建模者只需使用变量名：
+Once the Loader has finished converting, an `evidence_param` variable is used in a formula exactly like an ordinary `parameter`; the modeler only needs to use the variable name:
 
 ```yaml
 formulas:
   lung_cancer_dynamics:
     dynamics:
-      # smoking_lung_cancer_rr 的 _effective_value = 2.7（由 Loader 填入）
+      # smoking_lung_cancer_rr's _effective_value = 2.7 (filled in by the Loader)
       lung_cancer_risk: baseline_lung_cancer_risk * smoking_lung_cancer_rr * smoking_intensity * dt
 
   glucose_response:
     dynamics:
-      # exercise_fev1_effect 的 _effective_value = 0.34 L（由 Loader 换算后填入）
+      # exercise_fev1_effect's _effective_value = 0.34 L (filled in by the Loader after conversion)
       fev1: fev1 + exercise_fev1_effect * exercise_intensity * dt
 ```
 
-建模者无需知道原始值是 OR 还是 d，Loader 已将其变成了正确量纲的系数。
+The modeler does not need to know whether the raw value was an OR or a d; the Loader has already turned it into a coefficient with the correct dimension.
 
 ---
 
-## Loader 实现要点
+## Loader Implementation Key Points
 
 ```python
 def resolve_evidence_params(model):
     for name, ep in model.get('evidence_params', {}).items():
         etype = ep['evidence_type']
         raw = ep['value']
-        
+
         if etype == 'odds_ratio':
             p0 = ep['baseline_prevalence']
             effective = raw / ((1 - p0) + p0 * raw)
@@ -161,75 +160,46 @@ def resolve_evidence_params(model):
             effective = raw * ep['population_sd']
         else:
             effective = raw  # relative_risk / ARD / IR / PK-PD
-        
+
         ep['_effective_value'] = effective
-        # 注入到运行时变量空间，供公式引用
+        # inject into the runtime variable space for formulas to reference
         model.runtime_vars[name] = effective
 ```
 
 ---
 
-## 向后兼容
+## Backward Compatibility
 
-- 现有 `parameter` 类型继续有效，用于直接进公式的系数。
-- `evidence_params:` 是新增的顶层节，现有 YAML 无此节则跳过。
-- `probability_constant` 继续处理 IR / CFR 等已有概率类型；`evidence_param` 的 `incidence_rate` 是等价的更明确写法。
-
----
-
-## 不在此范围内
-
-- Loader 对 `evidence_type` 的完整验证（缺少必填辅助字段时报错）
-- 换算结果的不确定性区间传播（95% CI）
-- NNT（= 1/ARD）：不需要新类型，可从 ARD 直接计算
+- The existing `parameter` type continues to work, for a coefficient that goes directly into a formula.
+- `evidence_params:` is a new top-level section; an existing YAML with no such section simply skips it.
+- `probability_constant` continues to handle existing probability types such as IR/CFR; `evidence_param`'s `incidence_rate` is an equivalent, more explicit way to write the same thing.
 
 ---
 
-## 实施记录（2026-06-21）
+## Out of Scope
 
-实际实现与本文原计划有一处偏离：**未新增独立的 `VariableType.evidence_param`**。
+- Full validation of `evidence_type` by the Loader (raising an error when a required auxiliary field is missing).
+- Propagating the conversion result's uncertainty interval (a 95% CI).
+- NNT (= 1/ARD): no new type is needed, since it can be computed directly from ARD.
 
-- 顶层节名为 `evidence:`（非本文草案的 `evidence_params:`），子字段为 `type`（非
-  `evidence_type`），子类型简写为 `rr`/`or`/`hr`/`ard`/`cohens_d`/`ir`/`beta`/`pk`
-  （非本文的 `relative_risk`/`odds_ratio` 等全称）。完整定义见 `model.md`「变量类型
-  （3 种）+ evidence 顶层换算」。
-- 换算后的变量类型仍是 `parameter`，不单独建类型；通过新增的两个字段
-  `evidence_type`（原始子类型）、`evidence_raw_value`（换算前文献值）做溯源标记，
-  原始字段确实被保留（落实了本文"原始字段全部保留，用于溯源"的要求，此前实现一度
-  漏掉了这一点，已修复）。
-- **不建独立类型的原因**：内环优化器（Modeller）尚未实现，当前没有任何代码路径会对
-  `parameter` 自动调参，本文"永不参与任何优化"的约束目前是空约束，不需要靠类型隔离
-  实现。等 Modeller 实现时，只需让它跳过 `evidence_type is not None` 的 parameter，
-  不需要现在为一个不存在的优化器预留类型膨胀。
-- GUI 编辑表单未实现，建模者需直接编辑 YAML；当前无正式 model 使用 evidence，只有
-  `models/test/test_evidence_*_HOLD.yaml` 测试 fixture。
-- **第二处偏离（同日追加）**：本文原计划及上面第一版实施都用 `_effective`/`_effective_value`
-  后缀区分"换算后的变量"，实践中发现这个后缀反直觉——YAML 里只声明了不带后缀的名字，建模者必须
-  凭空知道要在 `dynamics`/`formulas` 里加 `_effective` 才能引用，没有任何 YAML 内容提示这件事。
-  改为**换算后的变量与 evidence 同名，不加任何后缀**；evidence 名字与 `variables:` 中变量重名时
-  Loader 直接报错（避免静默覆盖）。8 个 `_HOLD` 测试 fixture 已同步改名验证。
+---
 
-## 实施记录（2026-06-23）：`applies_to` 自动接入 dynamics
+## Implementation Record (2026-06-21)
 
-本文及上面两条实施记录只解决了"换算出系数"这一步，换算后怎么接到状态变量的动力学方程上，
-此前完全由建模者手写。核查（讨论纪要：`2026-06-22_evidence-to-dynamics讨论纪要.md`）发现
-8 种子类型里 `ir`/`ard`/`hr`/`rr`/`or` 这 5 种的接入方式只有一种没有歧义的写法（都是"以换算
-后的系数为速率，累加进某个目标状态"），`cohens_d`/`beta`/`pk` 这 3 种的接入方式本身是建模
-判断（过渡形式/回归结构/PK 模型结构不唯一），不能也不会自动生成。
+The actual implementation deviated from this document's original plan in one respect: no independent `VariableType.evidence_param` was added.
 
-实施了"能做多少做多少"方案：给 evidence 条目加 `applies_to`（目标状态）+ `step_unit`
-（`minute`/`hour`/`day`，与 `formulas.step_unit` 同一约束）+ `rate_unit`（速率的自然时间
-单位，ir/ard 自身声明，hr/rr/or 从 `baseline_ref` 指向的 ir/ard 条目读取）三个可选字段，
-声明后 Loader 在 `_apply_model_data` 里自动生成一条 `dynamics`，不声明则行为完全不变。
-完整字段表和约束见 `model.md`「自动接入 dynamics」一节。
+- The top-level section is named `evidence:` (not this document's draft `evidence_params:`), its sub-field is `type` (not `evidence_type`), and the subtype abbreviations are `rr`/`or`/`hr`/`ard`/`cohens_d`/`ir`/`beta`/`pk` (not this document's full names such as `relative_risk`/`odds_ratio`). See `model.md`'s "Variable Types (3) + Top-Level evidence Conversion" for the complete definition.
+- A converted variable's type remains `parameter`; no separate type was created. Two new fields, `evidence_type` (the original subtype) and `evidence_raw_value` (the literature value before conversion), serve as provenance markers, and the raw fields are indeed kept (fulfilling this document's requirement that "the raw fields are all kept, for traceability"; an earlier implementation once missed this and has since been fixed).
+- Why no separate type was created: the inner-loop optimizer (Modeller) has not yet been implemented, so no code path currently auto-tunes a `parameter`, and this document's constraint that it should "never participate in any optimization" is currently a vacuous constraint that does not need type isolation to enforce. Once the Modeller is implemented, it only needs to skip any parameter where `evidence_type is not None`, with no need to preemptively expand the type set for an optimizer that does not exist yet.
+- The GUI edit form has not been implemented, so the modeler needs to edit the YAML directly; no formal model currently uses evidence, only the test fixtures `models/test/test_evidence_*_HOLD.yaml`.
+- A second deviation (added the same day): this document's original plan, and the first implementation above, both used an `_effective`/`_effective_value` suffix to distinguish "the converted variable." In practice this suffix turned out to be counterintuitive: the YAML only declares the name without the suffix, and the modeler had to know out of nowhere to add `_effective` when referencing it in `dynamics`/`formulas`, with nothing in the YAML content hinting at this. Changed to: the converted variable keeps the same name as the evidence entry, with no suffix added; if an evidence name collides with a variable already declared in `variables:`, the Loader raises an error directly (to avoid a silent overwrite). The 8 `_HOLD` test fixtures were renamed and revalidated to match.
 
-不直接用 `Formula.step_unit` 表达年/周/月，是因为 `validator.py` 的 `valid_step_units` 只接受
-`minute`/`hour`/`day`——`rate_unit`/`step_unit` 的比值算成一个数值系数，直接写进生成的
-dynamics 表达式字符串里，不依赖 `Formula.step_unit` 本身表达更长的时间单位。
+## Implementation Record (2026-06-23): Automatically Wiring applies_to into dynamics
 
-验证：5 个 `_HOLD` 测试 fixture（ir/ard/hr/rr/or）每个都加了一个 `applies_to` 生成的状态，
-与原有手写 dynamics 的状态逐步比对（ir/ard/hr 用同一个基线，数值逐步相等；rr/or 因为
-原手写示例用的基线本来就和 applies_to 演示用的基线不同，数值不相等但分别用独立算式核对
-正确），cohens_d/beta/pk 三个 fixture 未受影响（不支持 applies_to，未做任何 YAML 改动）。
-4 类错误路径（不支持的子类型、目标重复声明、rr/or 缺 baseline_ref、applies_to 目标未声明）
-均验证报错信息正确。
+This document and the two implementation records above only solved the step of "converting into a coefficient"; how the converted result gets wired into a state variable's dynamics equation had, up to this point, been entirely hand-written by the modeler. A review (discussion notes: `2026-06-22_evidence-to-dynamics-discussion-notes.md`) found that of the 8 subtypes, `ir`/`ard`/`hr`/`rr`/`or` have exactly one unambiguous way to be wired in (all of them "use the converted coefficient as a rate, accumulated into some target state"), while `cohens_d`/`beta`/`pk`'s wiring is itself a modeling judgment (the transitional form, the regression structure, and the PK model structure are not unique), and can neither be nor will be auto-generated.
+
+A "do as much as can be done" scheme was implemented: adding three optional fields to an evidence entry, `applies_to` (the target state), `step_unit` (`minute`/`hour`/`day`, the same constraint as `formulas.step_unit`), and `rate_unit` (the rate's natural time unit, declared by `ir`/`ard` themselves and read by `hr`/`rr`/`or` from the `ir`/`ard` entry `baseline_ref` points to). Once declared, the Loader automatically generates one `dynamics` entry in `_apply_model_data`; when not declared, behavior is completely unchanged. See `model.md`'s "Automatically Wiring into dynamics" section for the complete field table and constraints.
+
+`Formula.step_unit` is not used directly to express year/week/month, because `validator.py`'s `valid_step_units` only accepts `minute`/`hour`/`day`; the ratio between `rate_unit` and `step_unit` is computed into a numeric coefficient and written directly into the generated dynamics expression string, without relying on `Formula.step_unit` itself to express a longer time unit.
+
+Validation: each of the 5 `_HOLD` test fixtures (ir/ard/hr/rr/or) had a state added that `applies_to` generated, compared step by step against a state from hand-written dynamics (ir/ard/hr use the same baseline, with values matching step by step; rr/or, whose hand-written example uses a different baseline than the one used to demonstrate applies_to, do not match numerically but were each checked correct with an independent calculation); the three fixtures cohens_d/beta/pk were unaffected (applies_to unsupported, no YAML change made). All 4 error paths (an unsupported subtype, a duplicate target declaration, rr/or missing baseline_ref, an applies_to target left undeclared) were verified to raise the correct error message.

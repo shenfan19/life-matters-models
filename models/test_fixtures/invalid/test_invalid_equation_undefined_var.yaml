@@ -8,19 +8,10 @@ metadata:
       expression, but no such variable or equation exists anywhere in this
       file — `Validator.validate_equations` (validator.py) does AST-based
       undefined-variable detection and must catch this.
-    problem_cn: >
-      错误检测夹具（故意设计成非法）。方程 `bad_dynamics` 在其 `dynamics` 表达式的
-      右侧引用了 `undeclared_var`，但该文件中并不存在这个变量或方程——
-      `Validator.validate_equations`（validator.py）会基于 AST 做未定义变量检测，
-      必须能捕获这种情况。
     result: >
       Loading this model must raise ValueError containing "Missing variables"
       and "undeclared_var". See test_verification/errors/test_structural_errors.py.
-    result_cn: >
-      加载该模型时必须抛出 ValueError，错误信息须包含 "Missing variables"
-      和 "undeclared_var"。参见 test_verification/errors/test_structural_errors.py。
     limitations: Not a real model; exists only to exercise this one validator check.
-    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
   tags: [test, error-detection, structural, equation]
 
 variables:

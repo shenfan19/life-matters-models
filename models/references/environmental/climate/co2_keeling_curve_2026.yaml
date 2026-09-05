@@ -9,54 +9,74 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      验证目的：跨学科拓展到环境科学。Mauna Loa 观测站自1958年起连续测量大气CO2浓度，即广为人知的 Keeling Curve，是地球科学里持续时间最长、测量最精确的连续观测记录之一。用1959年316ppm和2024年425ppm两个端点年份拟合恒定复合增长率模型，对中间年份1990年做留一法预测，检验"简单指数增长"能否描述这条曲线，以及偏差方向是否符合"CO2增速本身在加速"这一已知事实。
+      Validation purpose: a cross-disciplinary extension into environmental science. The Mauna Loa
+      observatory has continuously measured atmospheric CO2 concentration since 1958, the
+      well-known Keeling Curve, one of the longest-running and most precisely measured continuous
+      observational records in earth science. A constant compound-growth-rate model is fit to the
+      two endpoint years, 316ppm in 1959 and 425ppm in 2024, and a leave-one-out prediction is made
+      for the intermediate year 1990, testing whether "simple exponential growth" can describe this
+      curve, and whether the deviation's direction matches the known fact that CO2's growth rate
+      itself is accelerating.
     result: |
-      本文件对应论文 `paper/c_paper_s1_cn.md` §6.2。用1959/2024两个端点拟合年复合增长率0.457%，预测1990年CO2浓度364.0ppm，NOAA/NASA GISS记录的1990年实测值为354.29ppm，预测偏高约2.7%，偏差方向与CO2年增速本身随时间加速这一事实一致：1960年代年增速约0.7ppm/年，2020年代年增速约2.5至3ppm/年，恒定速率模型用全周期两端点拟合，会在增速较慢的早期到中期区间系统性高估。
+      This file corresponds to paper `paper/c_paper_s1_cn.md` section 6.2. Fitting an annual
+      compound growth rate of 0.457% from the 1959/2024 endpoints predicts a 1990 CO2 concentration
+      of 364.0ppm, against the NOAA/NASA GISS recorded 1990 measured value of 354.29ppm, an
+      overestimate of about 2.7%, with the deviation's direction consistent with the fact that CO2's
+      annual growth rate itself has accelerated over time: the annual growth rate was about 0.7ppm/
+      year in the 1960s and about 2.5 to 3ppm/year in the 2020s, so a constant-rate model fit to the
+      two endpoints of the full period will systematically overestimate the slower early-to-middle
+      period.
     limitations: |
-      本文件用简单复合增长率模型近似一条已知非恒速的曲线，模型本身承认这一简化，预测偏差正是由此产生，不是数据或计算错误；不包含任何排放驱动机制，纯粹是对观测记录本身的函数拟合展示。
+      This file uses a simple compound-growth-rate model to approximate a curve known not to grow
+      at a constant rate, a simplification the model itself acknowledges, and the prediction
+      deviation arises precisely from this, not from a data or calculation error; it includes no
+      emissions-driving mechanism, being purely a function-fitting demonstration of the observational
+      record itself.
   ratings:
-    importance: 0.25 - 方法论验证展示，environmental分类下首个案例，可作为气候相关跨学科场景背景组件
-    variable: 1.0 - Mauna Loa观测记录是地球科学最长、最精确的连续观测数据之一，文献可直接追溯
-    equation: 0.5 - 作者自行对真实观测数据做指数拟合，非独立复现的标准方程形式
-    simulation: 1.0 - 1990年留一法预测364.0ppm vs 实测354.29ppm，偏差2.7%且方向可解释，逐点验证通过
-    optimization: 0.0 - 本文件不含optimization，纯观测数据拟合验证，不涉及决策变量
-    confidence: 1.0 - 独立预测检验通过：用不参与拟合的独立数据点做留一法预测，结果与实测数据吻合
+    importance: 0.25 - A methodology-validation demonstration, the first case in the environmental category, usable as a background component for climate-related cross-disciplinary scenarios
+    variable: 1.0 - The Mauna Loa observational record is one of the longest and most precise continuous observational datasets in earth science, directly traceable to the literature
+    equation: 0.5 - The author independently fit an exponential to real observational data, not an independently reproduced standard equation form
+    simulation: 1.0 - The 1990 leave-one-out prediction of 364.0ppm against a measured 354.29ppm, a 2.7% deviation with an explicable direction, passes point-by-point verification
+    optimization: 0.0 - This file contains no optimization block, being a pure observational-data-fitting demonstration with no decision variables
+    confidence: 1.0 - An independent prediction test passes, a leave-one-out prediction using a data point not part of the fit agrees with the measured data
   tags: [environmental, climate, co2, validation, literature-benchmark, cross-domain]
 
 variables:
   days_since_1959:
-    description: 自1959年初以来经过的天数，仿真时钟直接累加
+    description: Days elapsed since the start of 1959, the direct accumulation of the simulation clock
     value: 0.0
     unit: day
     type: state
 
   co2_ppm:
     description: >
-      预测的大气CO2浓度（ppm），用1959/2024两端点拟合的恒定复合增长率模型计算，
-      静态代数方程，不是独立的动力学积分。
+      The predicted atmospheric CO2 concentration (ppm), computed with a constant compound-growth-
+      rate model fit to the 1959/2024 endpoints,
+      a static algebraic equation, not an independent dynamics integral.
     value: 316.0
     unit: ppm
     type: state
 
   co2_baseline_1959:
-    description: 1959年Mauna Loa年均CO2浓度（拟合起点）
+    description: The 1959 Mauna Loa annual-mean CO2 concentration (the fit's starting point)
     value: 316.0
     unit: ppm
     type: parameter
-    reference: "NASA GISS / NOAA GML Mauna Loa 记录"
+    reference: "NASA GISS / NOAA GML Mauna Loa record"
 
   annual_growth_rate:
     description: >
-      作者用1959年(316ppm)与2024年(425ppm)两端点拟合的恒定年复合增长率，
-      非文献直接给出的系数。
+      The constant annual compound growth rate the author fit from the 1959 (316ppm) and 2024
+      (425ppm) endpoints,
+      a coefficient not given directly by the literature.
     value: 0.0045695
     unit: 1/year
     type: parameter
-    reference: "本文件作者对 Mauna Loa 1959/2024 观测值的两点复合增长率拟合"
+    reference: "This file's author's two-point compound-growth-rate fit to the Mauna Loa 1959/2024 observed values"
 
 equations:
   clock_tick:
-    description: "时钟累加：days_since_1959 逐步跟踪经过天数"
+    description: "Clock accumulation: days_since_1959 tracks elapsed days step by step"
     step_unit: day
     condition: true
     priority: 5
@@ -64,7 +84,7 @@ equations:
       days_since_1959: "days_since_1959 + step"
 
   co2_calc:
-    description: "静态复合增长率计算：co2_ppm = 316·(1+r)^(t/365.25)，不随时间积分，只读当前 days_since_1959"
+    description: "A static compound-growth-rate calculation: co2_ppm = 316*(1+r)^(t/365.25), not integrated over time, just reading the current days_since_1959"
     condition: true
     priority: 3
     dynamics:
@@ -81,7 +101,7 @@ simulation:
     - co2_ppm
   plans:
     - id: "observed_record"
-      label: "1959-2024 Mauna Loa 观测记录复现（无输入事件，纯时钟驱动的静态曲线评估）"
+      label: "Reproducing the 1959-2024 Mauna Loa observational record (no input events, a purely clock-driven static curve evaluation)"
       regimens: []
 
 references:

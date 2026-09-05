@@ -8,25 +8,13 @@ metadata:
       (an individual-variability `parameter` with a `normal(μ, σ)` distribution),
       and the optimization should use the aggregated (e.g. mean) objective across runs
       rather than a single deterministic draw.
-    problem_cn: >
-      验证 `optimization.mc.runs`（内层稳健优化蒙特卡洛）：每个候选 `dose` 会针对
-      `absorption_rate`（一个具有个体差异、服从 `normal(μ, σ)` 分布的 parameter）的
-      多个采样样本分别评估，优化器应使用跨多次运行的聚合目标（如均值），而非单次
-      确定性抽样。
     result: >
       `plasma` rises by `dose * absorption_rate` (one-time pulse at day 1) and decays
       at `elimination_rate = 0.1/day`. With `optimization.mc.runs: 5`, repeated optimization
       runs with the same `seed` should converge to a similar `dose` near its upper
       bound (maximize final plasma), and the reported objective should reflect the
       across-run average rather than a single noisy `absorption_rate` draw.
-    result_cn: >
-      `plasma` 因 `dose * absorption_rate`（第 1 天一次性脉冲给药）而上升，并按
-      `elimination_rate = 0.1/day` 衰减。在 `optimization.mc.runs: 5` 的设置下，使用
-      相同 `seed` 的多次优化器运行应收敛到相近的、接近其上界的 `dose`（以最大化最终
-      plasma 为目标），且所报告的目标值应反映跨运行的平均结果，而非单次带噪声的
-      `absorption_rate` 抽样。
     limitations: Linear one-compartment toy PK; for engine validation only, not a calibrated PK model.
-    limitations_cn: 线性单室（one-compartment）玩具级 PK 模型；仅用于引擎验证，非经过校准的 PK 模型。
   tags: [test, optimization, mc, robust]
 variables:
   plasma:

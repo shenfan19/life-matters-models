@@ -12,32 +12,19 @@ metadata:
       exact Morton 1990 standard parameters and day-granularity step_size the
       protocol itself specifies, so the check doesn't depend on that unresolved
       question.
-    problem_cn: >
-      用于 test_verification/verification_report.md §2 Protocol V1 的引擎正确性夹具：
-      在恒定负荷下，Euler 前向积分器相对于 Banister 双室模型闭式解析解的数值误差，
-      是否能保持在 2% 阈值以内？该文件刻意独立于 banister_validation.yaml——
-      后者的 training_load 取值仍有争议（见其 metadata.todo 中 "75 vs 50/10" 的未决问题），
-      且其 step_unit 为小时；本夹具使用 Morton 1990 论文的标准参数原值，
-      以及该验证协议本身指定的日粒度 step_size，因此该检查不依赖那个尚未解决的争议。
     result: >
       Consumed by reference_engine/scripts/validate_banister.py, which runs this
       model at constant training_load=50 AU/day for 60 days and compares
       fitness/fatigue/performance against the closed-form solution
       a(t)=g*w/k1*(1-e^{-k1*t}), f(t)=h*w/k2*(1-e^{-k2*t}), p(t)=p0+a(t)-f(t).
-    result_cn: >
-      由 reference_engine/scripts/validate_banister.py 调用：该脚本以
-      training_load=50 AU/day 的恒定负荷运行本模型 60 天，
-      并将 fitness/fatigue/performance 与闭式解
-      a(t)=g*w/k1*(1-e^{-k1*t})、f(t)=h*w/k2*(1-e^{-k2*t})、p(t)=p0+a(t)-f(t) 进行比较。
     limitations: No physiological meaning beyond reproducing the closed-form solution; purely a numeric engine-correctness fixture.
-    limitations_cn: 除了复现闭式解外没有生理学意义；纯粹是一个数值引擎正确性夹具。
   tags: [test, banister, numerical_precision, engine_correctness]
   todo:
     - type: bug
       severity: resolved
-      issue: "training_load 原配置为单点脉冲（time_start 无 time_end），dynamics 方程把它和状态自身衰减项一起乘了 *step；在 step_size=1天（=equation step_unit）下是 no-op，仅在更细步长下才会暴露成误差"
-      evidence: "2026-07-10 用此配置跑 validate_banister.py 得到的 FAIL（performance 误差 day14=7.08%）本身数字没错，但该配置只在 step_size=1天 下碰巧正确；2026-07-13 排查 Banister S1 步长自适应问题时定位到此 bug（详见 c:/fan/b_life_matters/life-matters-home/tasks/2026-07-13_task_step-size-adaptive-input-rate-design.md）"
-      fix: "按 ADR 0128 改为全天 sustained 窗口（time_start=00:00, time_end=24:00），value=50.0 不变（ADR 0128 起本就是日速率语义）；dynamics 拆开括号，training_load 项不再乘 *step，衰减项保留 *step。修复后跑通 6 步长(1天/12h/6h/3h/1h/30min)×4区间(7/14/30/60天) 收敛网格，结果见 test_verification/verification_report.md §2。"
+      issue: "training_load was originally configured as a single-point pulse (time_start with no time_end); the dynamics equation multiplied it and the state's own decay term together by *step, which is a no-op at step_size=1 day (equal to the equation's step_unit), and only surfaces as an error at a finer step size"
+      evidence: "The FAIL this configuration produced running validate_banister.py on 2026-07-10 (a performance error of day14=7.08%) was numerically correct in itself, but this configuration was only correct by coincidence at step_size=1 day; this bug was pinned down on 2026-07-13 while investigating a step-size-adaptation issue in Banister S1 (see c:/fan/b_life_matters/life-matters-home/tasks/2026-07-13_task_step-size-adaptive-input-rate-design.md for detail)"
+      fix: "Changed to an all-day sustained window per ADR 0128 (time_start=00:00, time_end=24:00), with value=50.0 unchanged (this has been a daily-rate semantics since ADR 0128); the dynamics parenthesization was split apart so the training_load term is no longer multiplied by *step while the decay term keeps *step. After the fix, a convergence grid of 6 step sizes (1 day/12h/6h/3h/1h/30min) times 4 intervals (7/14/30/60 days) ran successfully; see test_verification/verification_report.md section 2 for the result."
 
 variables:
   fitness:

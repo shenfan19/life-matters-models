@@ -7,21 +7,11 @@ metadata:
       4-month periodisation plan (base / build / peak / taper). Aerobic volume and day patterns
       change each phase; a separate strength phase pattern runs in parallel. Tests that multiple
       same-variable entries within a single step accumulate correctly (pulse sum).
-    problem_cn: >
-      验证在一个跨 4 个月的周期化训练计划（基础期/建设期/巅峰期/减量期）中，同时使用
-      date_range 和 days 过滤条件的分阶段日程。有氧训练量和训练日模式在每个阶段都会变化；另有
-      一套独立的力量训练阶段模式与之并行运行。测试同一步内多条针对同一变量的条目能否正确累加
-      （脉冲求和）。
     result: >
       Aerobic fitness should increase fastest in the peak phase (90 min daily) and plateau
       during taper (40 min, Mon/Wed/Fri). Days filters for all three patterns (Mon–Fri,
       Sat–Sun, Mon/Wed/Fri) must each fire on the correct days only.
-    result_cn: >
-      有氧体能应在巅峰期（每天 90 分钟）增长最快，在减量期（每周一/三/五 40 分钟）趋于平台。
-      三种日期模式（周一至周五、周六至周日、周一/三/五）各自的 days 过滤条件必须只在正确的
-      日期触发。
     limitations: Training adaptation parameters are simplified estimates; not validated.
-    limitations_cn: 训练适应性参数为简化估计值，未经验证。
   tags: [test, schedules, date_range, days, phased, periodization]
 variables:
   fitness:

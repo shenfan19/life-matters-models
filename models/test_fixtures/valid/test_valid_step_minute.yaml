@@ -7,19 +7,11 @@ metadata:
       07:30, 12:30, and 19:00, running for 3 days (4,320 steps/day). Tests that schedule
       entries fire at sub-hour precision, that basal clearance uses step multiplication while
       meal pulses do not, and that output_types: [state, input] filters correctly.
-    problem_cn: >
-      验证 1 分钟步长下的日内进餐日程：每天三餐分别在 07:30、12:30、19:00，共运行 3 天
-      （每天 4,320 步）。测试日程条目能否以低于小时的精度触发、基础清除是否正确使用了步长
-      相乘而进餐脉冲不相乘，以及 output_types: [state, input] 能否正确过滤。
     result: >
       Each meal should produce a distinct glucose spike; basal clearance pulls glucose down
       between meals. Output should contain exactly the state and input variables, not
       parameters. Meal pulses must not be multiplied by step.
-    result_cn: >
-      每餐都应产生一次明显的血糖峰值；两餐之间基础清除会使血糖回落。输出应恰好只包含 state
-      和 input 类型的变量，不包含 parameter。进餐脉冲不得被步长相乘。
     limitations: Not physiologically calibrated; for feature-coverage testing only.
-    limitations_cn: 未经生理学标定；仅用于功能覆盖测试。
   tags: [test, step_size, minute, glucose, meal, output_types]
 variables:
   blood_glucose:

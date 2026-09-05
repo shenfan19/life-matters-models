@@ -1,78 +1,54 @@
-# 0102 — 澄清 formula `priority` 执行顺序与同 step 内的更新可见性
+# 0102 - Clarifying Formula priority Execution Order and Within-Step Update Visibility
 
-**日期**：2026-06-14
-**状态**：✅ 已实施（文档澄清 + 修正一处模型注释/priority 错配）
-**类别**：模型规范 / 仿真引擎语义澄清
+**Date**: 2026-06-14
+**Status**: Implemented (documentation clarified, plus one model's comment/priority mismatch fixed)
+**Category**: Model specification / simulation-engine semantics clarification
 
 ---
 
-## 背景
+## Background
 
-`docs/model.md` 与 `docs/LM_format_1.0.md` 此前都写"`priority` 小值先执行（lower = first）"，
-但实际引擎实现（`sim_engine/src/model_structure/simulation.py` `_build_formula_cache`/`step()`，
-以及 `sim_engine/src/simulator_engine.py` `solve_ode`）均使用：
+Both `docs/model.md` and `docs/LM_format_1.0.md` previously stated that "a lower `priority` value executes first" (lower = first), but the actual engine implementation (`sim_engine/src/model_structure/simulation.py`'s `_build_formula_cache`/`step()`, and `sim_engine/src/simulator_engine.py`'s `solve_ode`) both use:
 
 ```python
 sorted(formulas.items(), key=lambda x: x[1].priority, reverse=True)
 ```
 
-即**数值越大越先执行**，与文档描述相反。
+That is, a larger number executes first, the opposite of what the documentation said.
 
-这不是空谈差异：`models/papers/s1/infant_breastfeeding.yaml` 中
-`gastric_emptying_and_growth`（priority 10）的注释写明"在 `stomach_intake_and_overflow`
-（priority 0）之后执行，读取溢奶修正后的胃内奶量"——但按 `reverse=True` 的实际排序，
-priority 10 的公式**先于** priority 0 执行，与作者描述的生理顺序（先溢奶修正、再胃排空）相反。
+This is not a merely theoretical discrepancy: the comment on `gastric_emptying_and_growth` (priority 10) in `models/papers/s1/infant_breastfeeding.yaml` states that it "executes after `stomach_intake_and_overflow` (priority 0), reading the stomach milk volume after overflow correction," but under the actual `reverse=True` ordering, the priority-10 formula executes before the priority-0 one, the opposite of the physiological order the author described (overflow correction first, then gastric emptying).
 
-另外，`LM_format_1.0.md` §3.3 原描述"先执行所有 `formula:` 块，再执行所有 `dynamics:` 块"
-也与实现不符：引擎对排序后的每条公式做**单次遍历**，在同一条公式内部按
-`condition → dynamics → formula(dict) → formula(string)` 的固定顺序求值，
-不是按字段类型做两轮全局遍历。
+In addition, `LM_format_1.0.md` section 3.3's original description, "execute all `formula:` blocks first, then all `dynamics:` blocks," also did not match the implementation: the engine makes a single pass over the sorted formulas, evaluating each formula internally in the fixed order `condition -> dynamics -> formula(dict) -> formula(string)`, not two global passes grouped by field type.
 
-`step()` 中每条公式的 `dynamics`/`formula(dict)` 写回是**立即生效**的
-（`var.value` 与 `asteval.symtable` 同步更新），因此本 step 内**后执行**的公式
-会读到**先执行**公式刚写入的新值——这是 Gauss-Seidel 式的顺序更新，不是
-对上一 step 状态的快照（Jacobi 式）。这一点此前完全未文档化。
+Within `step()`, each formula's `dynamics`/`formula(dict)` write-back takes effect immediately (`var.value` and `asteval.symtable` are updated in sync), so within the same step a formula executing later reads the new value a formula executing earlier just wrote, a Gauss-Seidel-style sequential update, not a snapshot of the previous step's state (Jacobi-style). This had never been documented before.
 
-## 决策
+## Decision
 
-**保留代码现状（`reverse=True`，数值越大越先执行），更新文档与受影响模型以匹配代码行为**，
-不改动引擎代码（多个已发布模型的 `priority` 取值已隐含基于该行为调参，改代码影响面更大且无独立收益）。
+Keep the code as it is (`reverse=True`, a larger number executes first), and update the documentation and affected models to match the code's actual behavior, without changing the engine code (several published models' `priority` values already implicitly assume this behavior, so changing the code has a larger blast radius with no independent benefit).
 
-### 1. 文档修正
+### 1. Documentation corrections
 
-- `docs/model.md`：
-  - YAML schema 注释改为"数值越大越先执行"。
-  - 新增"公式执行顺序（priority）"小节，说明全局单次排序 + 单条公式内部固定求值顺序
-    + 同 step 顺序写入可见性，并给出 feed_intake/gastric_emptying 示例。
-- `docs/LM_format_1.0.md`：
-  - §3.1 示例注释 `(lower = first)` → `(higher = first)`。
-  - §3.3 Execution Order 重写：单次遍历、`condition → dynamics → formula(dict) →
-    formula(string)` 求值顺序、Gauss-Seidel 顺序写入语义、`bounds` 在每次写入时
-    逐变量裁剪（而非 step 末尾统一裁剪）。
+- `docs/model.md`:
+  - The YAML schema comment changed to "a larger number executes first."
+  - A new "Formula Execution Order (priority)" subsection added, explaining the global single sort, the fixed evaluation order within a single formula, and within-step sequential write visibility, with a feed_intake/gastric_emptying example.
+- `docs/LM_format_1.0.md`:
+  - Section 3.1's example comment `(lower = first)` changed to `(higher = first)`.
+  - Section 3.3 Execution Order rewritten: a single pass, the `condition -> dynamics -> formula(dict) -> formula(string)` evaluation order, Gauss-Seidel sequential write semantics, and `bounds` clipped per variable at each write (not clipped once at the end of the step).
 
-### 2. 修正受影响模型
+### 2. Fixing the affected model
 
-`models/papers/s1/infant_breastfeeding.yaml`：交换
-`stomach_intake_and_overflow`（0→10）与 `gastric_emptying_and_growth`（10→0）的
-`priority` 值，使实际执行顺序与作者描述的生理顺序（先溢奶修正、再胃排空，
-读取修正后的胃内奶量）一致；同步更新注释中的 priority 数字。
+`models/papers/s1/infant_breastfeeding.yaml`: swapped the `priority` values of `stomach_intake_and_overflow` (0 to 10) and `gastric_emptying_and_growth` (10 to 0), so the actual execution order matches the physiological order the author described (overflow correction first, then gastric emptying, reading the corrected stomach milk volume); the priority numbers mentioned in comments were updated to match.
 
-`maternal_sleep_tracking`（20）与 `lm_score_accumulation`（30）相对两者的执行顺序
-（仍排在两者之前）不受此次交换影响。
+`maternal_sleep_tracking` (20) and `lm_score_accumulation` (30)'s execution order relative to these two (still after both) is unaffected by this swap.
 
-## 影响与验证
+## Impact and Validation
 
-- 未改动 `sim_engine` 代码，已有测试/仿真结果不受影响。
-- `infant_breastfeeding.yaml` 的两条公式执行顺序发生变化（修正前 gastric_emptying 先于
-  stomach_intake_and_overflow 执行；修正后顺序相反），数值结果可能随之变化——
-  这是本 ADR 的预期修正（使模拟符合作者描述的生理因果顺序），需要在该模型下次跑
-  `--sim`/`--opt` 时关注 `baby_stomach_volume`/`baby_weight`/`spit_up_volume` 轨迹是否
-  仍合理（目前未发现该模型有 `_HOLD`/`metadata.todo` 标记）。
-- 全仓库 `grep -rn "priority.*(先执行|之后执行|之前执行|before|after)"` 仅命中此一处，
-  其余模型的 `priority` 注释不依赖执行顺序描述，无需调整。
+- No `sim_engine` code was changed, so existing tests and simulation results are unaffected.
+- The execution order of the two formulas in `infant_breastfeeding.yaml` has changed (before the fix, gastric_emptying executed before stomach_intake_and_overflow; after, the order is reversed), so the numeric result may change accordingly, which is this ADR's intended correction (making the simulation match the author's described physiological causal order); the next time this model runs `--sim`/`--opt`, its `baby_stomach_volume`/`baby_weight`/`spit_up_volume` trajectories should be checked for continued plausibility (no `_HOLD`/`metadata.todo` marker has been found on this model so far).
+- A repository-wide `grep -rn "priority.*(executes first|executes after|executes before|before|after)"` matched only this one location; other models' `priority` comments do not depend on an execution-order description and need no adjustment.
 
-## 关联
+## Related
 
-- `docs/model.md` — 公式步长规则节后新增"公式执行顺序（priority）"小节
-- `docs/LM_format_1.0.md` §3.1, §3.3
+- `docs/model.md` - the new "Formula Execution Order (priority)" subsection, after the formula step-size rules section
+- `docs/LM_format_1.0.md` sections 3.1, 3.3
 - `models/papers/s1/infant_breastfeeding.yaml`

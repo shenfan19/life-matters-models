@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: af1943_fr_little_prince
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      飞行员在撒哈拉沙漠与小王子相遇的 8 天里，修飞机作为维系自身生存的行动、真正聆听体现与小王子连接的深度、以及说服小王子留下，三者互相竞争，花越多时间修飞机则与小王子的连接越浅，而不修飞机则自身生存受到威胁。核心问题是，飞行员能否在 8 天内给小王子另一种选择（Saint-Exupéry, 1943）。
+      Over the 8 days the pilot spends with the little prince in the Sahara desert, three actions
+      compete with each other: repairing the plane, an action tied to his own survival; truly
+      listening, the depth of connection with the little prince; and persuading the little prince to
+      stay. The more time spent repairing the plane, the shallower the connection with the little
+      prince, while not repairing it threatens the pilot's own survival. The core question is whether
+      the pilot can give the little prince another choice within these 8 days (Saint-Exupéry, 1943).
     result: >
-      仿真预期比较修飞机为主、深度聆听为主、两者均衡分配三种策略下，小王子留下概率与飞行员存活概率的轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to compare the trajectories of the little prince's probability of
+      staying and the pilot's probability of survival under three strategies: mainly repairing the
+      plane, mainly listening deeply, and a balanced allocation of both. This is currently a draft,
+      with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部6个变量均标注TODO:SOURCE，文学设定无客观数据支撑
-    equation: 0.0 - 4条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出8天合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - connection_depth与understanding两目标由方程驱动同向，未见结构性权衡；2026-09-04验证--opt收敛至单一前沿点(96,94)，数值确认无权衡
-    importance: 0.5 - 小王子是最广泛阅读的文学作品之一，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 6 variables are marked TODO:SOURCE, a literary setting with no objective data support
+    equation: 0.0 - All 4 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 8-day trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - The connection_depth and understanding objectives are driven in the same direction by the equations, showing no structural tradeoff; verified on 2026-09-04 that --opt converges to a single front point (96,94), numerically confirming no tradeoff
+    importance: 0.5 - The Little Prince is one of the most widely read literary works, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - desert
     - meaning
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 3
-    description: 修飞机努力：飞行员修复发动机的专注程度（关系到他自己的生存）
+    description: Effort spent repairing the plane, the pilot's focus on repairing the engine (tied to his own survival)
     reference: TODO:SOURCE
   listening_depth:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 真正聆听小王子：放下大人视角，真正理解小王子说的话
+    description: Truly listening to the little prince, setting aside the adult perspective to genuinely understand what he says
     reference: TODO:SOURCE
   persuasion_attempt:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 说服小王子留下：尝试说服小王子不要回去（留在地球）
+    description: Persuading the little prince to stay, attempting to convince him not to go back (staying on Earth)
     reference: TODO:SOURCE
   pilot_survival:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 飞行员生存概率：在沙漠中的水和飞机修复进度（低=必死）
+    description: The pilot's survival probability, his water supply and the plane's repair progress in the desert (low=certain death)
     reference: TODO:SOURCE
     io_role: output
   understanding:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 真正理解：飞行员对小王子所说重要之物的真实理解程度
+    description: True understanding, how genuinely the pilot understands what the little prince says matters
     reference: TODO:SOURCE
     io_role: output
   prince_resolve:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 小王子的回家意志：小王子对回到玫瑰身边的决心（高=不可动摇）
+    description: The little prince's resolve to go home, his determination to return to his rose (high=unshakeable)
     reference: TODO:SOURCE
     io_role: output
   connection_depth:
@@ -96,29 +104,29 @@ variables:
     bounds:
       - 0
       - 100
-    description: 连接的深度：两人之间真实的理解与连接（这才是故事真正的遗产）
+    description: The depth of connection, the genuine understanding and connection between the two of them (this is the story's real legacy)
     reference: TODO:SOURCE
     io_role: output
 equations:
   survival_progress:
     dynamics:
       pilot_survival: min(100, max(0, pilot_survival + repair_effort * 8.0 - 5.0))
-    description: 修复飞机+减少水消耗
+    description: Repairing the plane plus reducing water consumption
     reference: TODO:SOURCE
   understanding_growth:
     dynamics:
       understanding: min(100, max(0, understanding + (listening_depth * 12.0) - (persuasion_attempt * 4.0)))
-    description: 真正聆听带来理解；急于说服反而阻断理解
+    description: True listening brings understanding; rushing to persuade instead blocks it
     reference: TODO:SOURCE
   prince_resolve_change:
     dynamics:
       prince_resolve: min(100, max(0, prince_resolve + (persuasion_attempt * 3.0) - ((understanding / 100) * 2.0)))
-    description: 说服尝试反而强化他的意志（越被阻止越坚定）
+    description: Attempts at persuasion instead strengthen his resolve (the more he is opposed, the firmer he becomes)
     reference: TODO:SOURCE
   connection_growth:
     dynamics:
       connection_depth: min(100, connection_depth + listening_depth * 10.0 + (1 - persuasion_attempt) * 3.0)
-    description: 连接随聆听和共同时间积累；是故事留下的唯一真实
+    description: Connection accumulates through listening and shared time; it is the story's only genuine legacy
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -151,7 +159,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 修飞机努力
+        label: Effort spent repairing the plane
         optimize:
           value:
             - 0
@@ -167,7 +175,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 真正聆听小王子
+        label: Truly listening to the little prince
         optimize:
           value:
             - 0
@@ -183,7 +191,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 说服小王子留下
+        label: Persuading the little prince to stay
         optimize:
           value:
             - 0

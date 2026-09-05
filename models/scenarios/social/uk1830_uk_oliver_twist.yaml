@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: uk1830_uk_oliver_twist
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      奥利弗·退斯特（狄更斯《雾都孤儿》1837）在 1830 年代伦敦济贫院制度下面临三重生存权衡：服从程度，即能降低惩罚风险，但会强化剥削关系；抵抗与逃跑尝试，即可能改变处境，但失败代价极高；以及建立人际连接，即能获得保护和援助网络，但需投入稀缺的时间与信任。制度性贫困使奥利弗的个人努力面临结构性天花板，与布朗罗的偶然相遇这一运气因素是关键转折变量。
+      Under the 1830s London workhouse system, Oliver Twist (Dickens's Oliver Twist, 1837) faces
+      a triple survival tradeoff: the degree of compliance can lower punishment risk, but reinforces
+      the exploitative relationship; resistance and escape attempts might change his circumstances,
+      but the cost of failure is extremely high; and building interpersonal connections can gain
+      protection and a support network, but requires investing scarce time and trust. Systemic
+      poverty puts a structural ceiling on Oliver's individual effort, and the chance encounter with
+      Mr. Brownlow, a factor of luck, is the key turning-point variable.
     result: >
-      仿真预期比较不同策略下奥利弗 78 周的生存状态、自由度和被剥削强度的轨迹。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to compare Oliver's survival state, degree of freedom, and
+      exploitation intensity across a 78-week trajectory under different strategies. This is
+      currently a draft, with parameters still to be calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出78周合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - 2026-09-04人工复核：compliance经danger_level路径对hope_for_escape确有间接正向贡献，但该路径系数（danger_level每降2.0，hope_for_escape仅增0.03）远小于connection_seeking/resistance_effort对hope_for_escape的直接贡献（各+3.0/+2.0），实际量级上compliance对hope_for_escape的影响可忽略，其唯一实质效应是直接拉低moral_integrity（-1.5/步），可达空间内不存在真实权衡，--opt收敛至单一前沿点(100,100)与此一致，此前判断只看了系数符号未核实相对量级
-    importance: 0.5 - 《雾都孤儿》是童工制度和儿童剥削的最著名文学控诉，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 78-week trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - Manual review on 2026-09-04, compliance does contribute an indirect positive effect on hope_for_escape through the danger_level pathway, but that pathway's coefficient (each 2.0-point drop in danger_level raises hope_for_escape by only 0.03) is far smaller than connection_seeking/resistance_effort's direct contribution to hope_for_escape (+3.0/+2.0 respectively), so in practice compliance's effect on hope_for_escape is negligible, and its only substantial effect is directly lowering moral_integrity (-1.5/step); no genuine tradeoff exists within the reachable space, consistent with --opt converging to a single front point (100,100); the earlier judgment only looked at the coefficient signs and did not check their relative magnitude
+    importance: 0.5 - Oliver Twist is the most famous literary indictment of child labor and child exploitation, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - orphan
     - child-labor
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 服从程度：听从雇主/犯罪团伙指令（减少惩罚，换取最低生存资源）
+    description: The degree of compliance, obeying the orders of employers/the criminal gang (reducing punishment in exchange for minimal survival resources)
     reference: TODO:SOURCE
   resistance_effort:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 抵抗与逃跑尝试：拒绝指令、尝试逃跑或向成年人求助
+    description: Resistance and escape attempts, refusing orders, attempting to escape, or seeking help from an adult
     reference: TODO:SOURCE
   connection_seeking:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 建立人际连接：向南希·布朗罗等人表达信任，寻求善意
+    description: Building interpersonal connections, extending trust to figures like Nancy and Mr. Brownlow, seeking kindness
     reference: TODO:SOURCE
   survival_resource:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 生存资源：食物·衣物·基本庇护的累积水平
+    description: Survival resources, the accumulated level of food, clothing, and basic shelter
     reference: TODO:SOURCE
     io_role: output
   physical_health:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 身体健康：营养不良·被打·疾病的综合健康状态
+    description: Physical health, a composite of malnutrition, beatings, and illness
     reference: TODO:SOURCE
     io_role: output
   danger_level:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 当前危险等级：来自犯罪团伙/当局追捕的威胁程度
+    description: The current danger level, the threat from pursuit by the criminal gang/the authorities
     reference: TODO:SOURCE
     io_role: output
   hope_for_escape:
@@ -96,7 +104,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 逃脱的希望：找到真正保护者、脱离剥削系统的可能性积累
+    description: Hope of escape, the accumulated possibility of finding a genuine protector and breaking free of the exploitative system
     reference: TODO:SOURCE
     io_role: output
   moral_integrity:
@@ -106,34 +114,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 道德完整性：在压力下保持内心的善良（抵抗成为共犯）
+    description: Moral integrity, keeping his inner goodness intact under pressure (resisting becoming complicit)
     reference: TODO:SOURCE
     io_role: output
 equations:
   resource_dynamics:
     dynamics:
       survival_resource: min(100, max(0, survival_resource + (compliance * 8.0) + (connection_seeking * 5.0) - 5.0))
-    description: 服从换取资源，但道德代价高；连接可带来帮助
+    description: Compliance trades for resources, but at a high moral cost; connection can bring help
     reference: TODO:SOURCE
   health_dynamics:
     dynamics:
       physical_health: max(0, min(100, physical_health - (max(0, (50 - survival_resource) / 50) * 2.0) - ((1 - compliance) * danger_level / 100 * 3.0) + ((survival_resource / 100) * 1.5)))
-    description: 营养不良+受伤+疾病消耗健康；资源多时健康恢复
+    description: Malnutrition, injury, and illness deplete health; health recovers when resources are ample
     reference: TODO:SOURCE
   danger_dynamics:
     dynamics:
       danger_level: min(100, max(0, danger_level + (resistance_effort * 3.0) - (compliance * 2.0)))
-    description: 抵抗增加危险；服从减少危险；逃脱成功则危险降低
+    description: Resistance raises danger; compliance lowers it; a successful escape lowers danger
     reference: TODO:SOURCE
   hope_growth:
     dynamics:
       hope_for_escape: min(100, max(0, hope_for_escape + (connection_seeking * 3.0) + (resistance_effort * 2.0) - ((danger_level / 100) * 1.5)))
-    description: 逃脱希望随连接建立和抵抗积累增长
+    description: Hope of escape grows as connection is built and resistance accumulates
     reference: TODO:SOURCE
   moral_dynamics:
     dynamics:
       moral_integrity: max(0, min(100, moral_integrity - (compliance * 1.5) + (connection_seeking * 1.0) + (resistance_effort * 0.5)))
-    description: 道德完整性随服从（共犯）消耗，随连接和抵抗维持
+    description: Moral integrity is depleted by compliance (complicity), and sustained by connection and resistance
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 服从程度
+        label: The degree of compliance
         optimize:
           value:
             - 0
@@ -182,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 抵抗与逃跑尝试
+        label: Resistance and escape attempts
         optimize:
           value:
             - 0
@@ -198,7 +206,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 建立人际连接
+        label: Building interpersonal connections
         optimize:
           value:
             - 0

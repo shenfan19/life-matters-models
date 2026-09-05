@@ -9,103 +9,116 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      公民动乱的核心机制是 Gurr 相对剥夺理论所描述的"委屈积累→动员→镇压→再委屈"正反馈循环：grievance = (期望−现实)/期望，超过临界点时抗议自我强化，该临界点由 Epstein（2002）估计约为 0.3；政府镇压在短期抑制烈度，但侵蚀合法性分数，为下一轮动乱蓄能；经济不平等、社交媒体放大与安全感知三重因素的协同使临界点难以事前预测。
+      Civil unrest's core mechanism is the positive-feedback cycle described by Gurr's
+      relative-deprivation theory, grievance accumulation, then mobilization, then repression, then
+      renewed grievance: grievance = (expectation minus reality)/expectation, and once past a
+      critical point protest becomes self-reinforcing, a threshold Epstein (2002) estimated at about
+      0.3; government repression suppresses intensity in the short term but erodes the legitimacy
+      score, storing up energy for the next round of unrest; the synergy of economic inequality,
+      social-media amplification, and security perception makes this critical point hard to predict
+      in advance.
     result: >
-      仿真预期显示低不平等和高合法性对应稳定吸引子，高不平等和高镇压触发爆炸性不稳定区域，优化预期给出经济改善力度与媒体治理强度之间的 Pareto 前沿，仿真和优化均尚未运行。
+      The simulation is expected to show that low inequality and high legitimacy correspond to a
+      stable attractor, while high inequality and high repression trigger an explosively unstable
+      region, and the optimization is expected to yield a Pareto front between the intensity of
+      economic improvement and the intensity of media governance; neither the simulation nor the
+      optimization has been run yet.
     limitations: >
-      聚合变量未建模个体异质性和网络结构，未区分城市和农村动乱的空间扩散，Epstein 智能体模型的涌现效应在连续方程近似中有所损失。
+      Aggregate variables do not model individual heterogeneity or network structure, urban and
+      rural unrest's spatial diffusion is not distinguished, and Epstein's agent-based model's
+      emergent effects are partly lost in this continuous-equation approximation.
   ratings:
-    importance: 0.5 - 公民动乱是当代政治科学核心议题，Epstein/Gurr模型有广泛引用；政治科学专项模型，跨场景引用预期低
-    variable: 0.75 - 引用Epstein/Gurr/Chenoweth等经典政治科学文献
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
+    importance: 0.5 - Civil unrest is a core topic in contemporary political science, with the Epstein/Gurr models widely cited; a political-science specialty model, expected low cross-scenario citation
+    variable: 0.75 - Cites classic political-science literature such as Epstein/Gurr/Chenoweth
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed on 2026-07-27 that --sim/--opt both run normally (--opt reaches 100% feasibility by generation 1), the nosim/noopt markers have been cleared, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed on 2026-07-27 that --sim/--opt both run normally (--opt reaches 100% feasibility by generation 1), the nosim/noopt markers have been cleared, but not yet compared against an independent literature target value
   tags: [civil-unrest, protest, repression, grievance, social-stability, Epstein, Gurr]
 
 variables:
   grievance_index:
     description: |
-      委屈指数（0-1），衡量民众感知的相对剥夺程度。
-      Gurr (1970)：grievance = (期望生活水平 - 实际生活水平) / 期望生活水平。
-      0 = 完全满足；1 = 极度委屈（革命临界）。
+      The grievance index (0-1), measuring the population's perceived relative deprivation.
+      Gurr (1970): grievance = (expected living standard minus actual living standard) / expected living standard.
+      0 = fully satisfied; 1 = extreme grievance (a revolutionary tipping point).
     value: 0.4
-    unit: "指数(0-1)"
+    unit: "index(0-1)"
     type: state
     bounds: [0.0, 1.0]
     io_role: output
 
   mobilization_rate:
     description: |
-      动员率（0-1），活跃抗议者占潜在参与者的比例。
-      Epstein (2002)：动员临界点约0.3，超过此值则大规模抗议具有自我维持性。
+      The mobilization rate (0-1), active protesters as a fraction of potential participants.
+      Epstein (2002): the mobilization tipping point is about 0.3, beyond which large-scale protest becomes self-sustaining.
     value: 0.05
-    unit: "比例(0-1)"
+    unit: "fraction(0-1)"
     type: state
     bounds: [0.0, 1.0]
     io_role: output
 
   protest_intensity:
     description: |
-      抗议烈度（0-10），综合衡量抗议的规模、暴力程度和持续时间。
-      0 = 无抗议；5 = 大规模和平抗议；10 = 武装起义。
+      Protest intensity (0-10), a composite measure of scale, violence level, and duration.
+      0 = no protest; 5 = large-scale peaceful protest; 10 = armed uprising.
     value: 0.5
-    unit: "级(0-10)"
+    unit: "level(0-10)"
     type: state
     bounds: [0.0, 10.0]
     io_role: output
 
   repression_level:
     description: |
-      镇压水平（0-1），政府对抗议活动的强制应对力度。
-      高镇压短期降低抗议，但通过合法性侵蚀机制增加中长期动乱风险（Gurr 1970）。
+      Repression level (0-1), the government's coercive response to protest activity.
+      High repression lowers protest in the short term, but raises medium-to-long-term unrest risk through legitimacy erosion (Gurr 1970).
     value: 0.1
-    unit: "强度(0-1)"
+    unit: "intensity(0-1)"
     type: state
     bounds: [0.0, 1.0]
     io_role: output
 
   legitimacy_score:
     description: |
-      政权合法性分数（0-100），民众对政府统治权威的认可度。
-      高镇压和高腐败感知是合法性侵蚀的主要驱动力（Tilly 1978）。
+      The regime-legitimacy score (0-100), the population's acceptance of the government's ruling authority.
+      High repression and high perceived corruption are the main drivers of legitimacy erosion (Tilly 1978).
     value: 60.0
-    unit: "分(0-100)"
+    unit: "score(0-100)"
     type: state
     bounds: [0.0, 100.0]
     io_role: output
 
   economic_inequality_gini:
     description: |
-      经济不平等基尼系数（0-1），作为委屈感的外生驱动因素。
-      全球范围：0.25（北欧）到0.65（南非）；0.4以上通常与社会不稳定相关。
+      The economic-inequality Gini coefficient (0-1), an exogenous driver of grievance.
+      Globally: 0.25 (Nordic countries) to 0.65 (South Africa); above 0.4 is typically associated with social instability.
     value: 0.45
-    unit: "基尼系数(0-1)"
+    unit: "Gini coefficient(0-1)"
     type: input
     bounds: [0.2, 0.8]
 
   police_presence:
     description: |
-      警察存在强度（0-1），影响抗议的感知成本。
-      高警察密度降低短期动员，但过度警察化增加对抗情绪（Epstein 2002）。
+      Police-presence intensity (0-1), affecting the perceived cost of protest.
+      A high police density lowers short-term mobilization, but over-policing raises confrontational sentiment (Epstein 2002).
     value: 0.3
-    unit: "强度(0-1)"
+    unit: "intensity(0-1)"
     type: input
     bounds: [0.0, 1.0]
 
   social_media_amplification:
     description: |
-      社交媒体放大效应（0-1），加速委屈信息传播和跨城市协调能力。
-      现代研究表明社交媒体缩短动员时间约40-60%（Chenoweth 2011）。
+      The social-media amplification effect (0-1), accelerating grievance-information spread and cross-city coordination.
+      Modern research shows social media shortens mobilization time by about 40-60% (Chenoweth 2011).
     value: 0.5
-    unit: "强度(0-1)"
+    unit: "intensity(0-1)"
     type: input
     bounds: [0.0, 1.0]
 
   grievance_decay_rate:
     description: |
-      委屈感自然衰减率（每天），反映经济改善或时间淡化效应。
-      无干预时委屈感每天衰减约0.3%（对应约6个月半衰期）。
+      The natural daily decay rate of grievance, reflecting economic improvement or a time-fading effect.
+      Without intervention, grievance decays about 0.3% per day (about a 6-month half-life).
     value: 0.003
     unit: "1/day"
     type: parameter
@@ -113,28 +126,29 @@ variables:
 
   mobilization_threshold:
     description: |
-      大规模抗议的动员临界点。超过此值，抗议具有自我维持性。
-      Epstein (2002)智能体模型中约为0.3。
+      The mobilization tipping point for large-scale protest. Beyond this value, protest becomes self-sustaining.
+      About 0.3 in Epstein's (2002) agent-based model.
     value: 0.3
-    unit: "比例(0-1)"
+    unit: "fraction(0-1)"
     type: parameter
     reference: "Epstein JM (2002) Proc Natl Acad Sci 99:7243-7250."
 
   legitimacy_recovery_rate:
     description: |
-      合法性自然恢复率（每天），反映政府提供公共服务的长期积累效应。
-      良性治理每天约+0.05分（约5年恢复满分）。
+      The natural daily recovery rate of legitimacy, reflecting the long-term cumulative effect of government public-service provision.
+      Good governance adds about +0.05 points per day (about 5 years to full recovery).
     value: 0.05
-    unit: "分/day"
+    unit: "points/day"
     type: parameter
     reference: "Tilly C (1978) From Mobilization to Revolution. Addison-Wesley."
 
 equations:
-  # F1: 委屈指数动力学——由不平等和社交媒体驱动，被经济改善衰减
+  # F1: Grievance-index dynamics — driven by inequality and social media, decayed by economic improvement
   grievance_dynamics:
     description: |
-      委屈感由经济不平等（Gurr相对剥夺）和社交媒体放大（信息触达）共同驱动，
-      自然衰减代表社会适应或经济改善。
+      Grievance is jointly driven by economic inequality (Gurr's relative deprivation) and
+      social-media amplification (information reach), with natural decay representing social
+      adaptation or economic improvement.
     step_unit: day
     priority: 10
     dynamics:
@@ -144,11 +158,12 @@ equations:
           + (economic_inequality_gini * 0.002 + social_media_amplification * 0.001) * step
           - grievance_decay_rate * (1.0 - economic_inequality_gini) * step))
 
-  # F2: 动员率动力学——委屈超过阈值时正反馈，镇压带来抑制
+  # F2: Mobilization-rate dynamics — positive feedback once grievance exceeds threshold, suppressed by repression
   mobilization_dynamics:
     description: |
-      当委屈超过动员临界点时，动员率加速增长（Epstein 2002正反馈）；
-      镇压提高参与成本从而降低动员；社交媒体降低组织成本提升动员。
+      Once grievance exceeds the mobilization tipping point, the mobilization rate accelerates
+      (Epstein 2002's positive feedback); repression raises the cost of participation, lowering
+      mobilization; social media lowers organizational cost, raising mobilization.
     step_unit: day
     priority: 8
     dynamics:
@@ -159,11 +174,12 @@ equations:
           - police_presence * mobilization_rate * 0.01 * step
           - mobilization_rate * 0.002 * step))
 
-  # F3: 抗议烈度——由动员率驱动，镇压有短期抑制效果
+  # F3: Protest intensity — driven by the mobilization rate, with repression's short-term suppressive effect
   protest_dynamics:
     description: |
-      抗议烈度由动员率决定；镇压短期降低烈度，但高镇压本身也刺激烈度上升
-      （Tilly 1978：过度暴力增加对抗情绪）。
+      Protest intensity is determined by the mobilization rate; repression lowers intensity in the
+      short term, but high repression itself also stimulates rising intensity (Tilly 1978: excessive
+      violence raises confrontational sentiment).
     step_unit: day
     priority: 7
     dynamics:
@@ -175,11 +191,11 @@ equations:
           + repression_level * grievance_index * 0.02 * step
           - protest_intensity * 0.01 * step))
 
-  # F4: 镇压水平——对抗议烈度的内生响应
+  # F4: Repression level — an endogenous response to protest intensity
   repression_response:
     description: |
-      政府镇压力度随抗议烈度上升而增强（内生响应），受警察存在强度放大；
-      抗议低时镇压自然回落。
+      Government repression intensifies as protest intensity rises (an endogenous response),
+      amplified by police-presence intensity; repression naturally recedes when protest is low.
     step_unit: day
     priority: 6
     dynamics:
@@ -189,12 +205,12 @@ equations:
           + protest_intensity * police_presence * 0.003 * step
           - (1.0 - protest_intensity / 10.0) * repression_level * 0.01 * step))
 
-  # F5: 合法性动力学——高镇压和高抗议侵蚀合法性，良治缓慢恢复
+  # F5: Legitimacy dynamics — high repression and high protest erode legitimacy, good governance slowly restores it
   legitimacy_dynamics:
     description: |
-      镇压和抗议侵蚀政权合法性（Tilly 1978）；
-      低不平等环境下合法性缓慢自然恢复；
-      合法性崩溃（<20分）加速动员正反馈。
+      Repression and protest erode regime legitimacy (Tilly 1978);
+      legitimacy naturally recovers slowly under low inequality;
+      a legitimacy collapse (<20 points) accelerates the mobilization positive feedback.
     step_unit: day
     priority: 5
     dynamics:
@@ -224,15 +240,15 @@ simulation:
       - variable: economic_inequality_gini
         time_start: "00:00"
         value: 0.45
-        label: "基准基尼系数（中等不平等社会）"
+        label: "Baseline Gini coefficient (a moderately unequal society)"
       - variable: police_presence
         time_start: "00:00"
         value: 0.3
-        label: "基准警察存在强度"
+        label: "Baseline police-presence intensity"
       - variable: social_media_amplification
         time_start: "00:00"
         value: 0.5
-        label: "基准社交媒体放大效应"
+        label: "Baseline social-media amplification effect"
 
 optimization:
   method: nsga2
@@ -240,22 +256,22 @@ optimization:
     - variable: protest_intensity
       metric: max
       direction: minimize
-      description: "最小化抗议烈度峰值"
+      description: "Minimizing peak protest intensity"
     - variable: legitimacy_score
       metric: final
       direction: maximize
-      description: "最大化政权合法性分数"
+      description: "Maximizing the regime-legitimacy score"
   constraints:
     - variable: grievance_index
       condition: "<= 0.8"
       type: soft
-      description: "避免社会极度委屈"
+      description: "Avoiding extreme societal grievance"
   startpoint:
     regimens:
       - variable: economic_inequality_gini
         time_start: "00:00"
         time_end: "00:00"
-        label: "基尼系数目标值"
+        label: "Target Gini-coefficient value"
         optimize:
           value: [0.25, 0.60]
   algorithm:

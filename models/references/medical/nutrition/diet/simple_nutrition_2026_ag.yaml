@@ -9,23 +9,30 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      游戏专用简化营养摄入组件：三餐触发时将碳水化合物、蛋白质、脂肪和水分按固定比例注入胃部缓冲区，为香蕉模型等上层场景提供对照基线组件，用于基础校验。
+      A game-specific simplified nutrient-intake component: at each of three daily meals,
+      carbohydrate, protein, fat, and water are injected into the stomach buffer at fixed amounts,
+      supplying a control-baseline component for upstream scenarios such as the banana model, for
+      basic validation use.
     result: >
-      三餐 schedule 触发后，对应营养素蓄积进胃部。--sim-only 中三餐 plan 按时触发，
-      gastric_carbohydrate/gastric_protein/gastric_fat 随三餐累加至 210/60/48g，body_water
-      从 42000ml 累加至 43050ml，累加逻辑正确。--opt-only 中 food_carbohydrate/food_protein/
-      food_fat/water_intake 是四个相互独立的决策变量，food_protein 与 food_fat 之间没有任何
-      共享预算或耦合约束，优化器可同时把 food_protein 推到上界 100g、food_fat 压到下界 0g，
-      50 个解全部收敛到 gastric_protein≈100、gastric_fat≈0 这一点，food_carbohydrate 与
-      water_intake 因不在目标函数中而在可行域内自由取值。
-    limitations: 极简转换组件，不包含消化速率、食物组成差异或个体代谢动力学；参数应在上层场景中校准。
+      After the three-meal schedule triggers, the corresponding nutrients accumulate in the
+      stomach. In --sim-only, the three-meal plan fires on schedule, gastric_carbohydrate,
+      gastric_protein, and gastric_fat accumulate across the three meals to 210/60/48g, body_water
+      accumulates from 42000ml to 43050ml, and the accumulation logic is correct. In --opt-only,
+      food_carbohydrate, food_protein, food_fat, and water_intake are four mutually independent
+      decision variables, with no shared budget or coupling constraint between food_protein and
+      food_fat, so the optimizer can push food_protein to its upper bound of 100g and food_fat to
+      its lower bound of 0g at the same time, and all 50 solutions converge to the single point
+      gastric_protein is about 100, gastric_fat is about 0, while food_carbohydrate and
+      water_intake, not appearing in the objective function, take free values within the feasible
+      region.
+    limitations: A minimalist conversion component that does not include digestion rate, food-composition variation, or individual metabolic dynamics; parameters should be calibrated in the upstream scenario.
   ratings:
-    importance: 0.0 - 游戏专用简化营养模型，仅为演示/校验用途，无研究需求，框架内复用价值极低
-    variable: 0.25 - 基本营养成分数值合理，但模型极简，缺少生理动力学，无疾病特异文献支撑
-    equation: 0.0 - 纯累加记账，不含任何消化/代谢机制，无文献依据
-    simulation: 0.75 - 2026-09-04验证：--sim-only三餐plan按时触发，累加轨迹方向和量级符合预期，未做独立数据逐点比对
-    optimization: 0.0 - 2026-09-04验证：50个解在目标空间collapse到gastric_protein≈100/gastric_fat≈0单点，food_protein与food_fat为独立决策变量无共享预算约束，两个目标可同时达到各自极值，不构成真实权衡
-    confidence: 0.25 - 2026-09-04验证：跑通且累加逻辑正确，但未与独立文献数据比对
+    importance: 0.0 - A game-specific simplified nutrition model intended only for demonstration/validation, with no research need, very low reuse value within the framework
+    variable: 0.25 - The basic nutrient-composition values are reasonable, but the model is highly simplified, lacking physiological dynamics or disease-specific literature support
+    equation: 0.0 - Pure additive bookkeeping, containing no digestion/metabolism mechanism, no literature basis
+    simulation: 0.75 - Verified on 2026-09-04, --sim-only fires the three-meal plan on schedule, with accumulation trajectories matching the expected direction and magnitude, not compared point-by-point against independent data
+    optimization: 0.0 - Verified on 2026-09-04, the 50 solutions collapse in objective space to the single point gastric_protein is about 100 / gastric_fat is about 0, since food_protein and food_fat are independent decision variables with no shared-budget constraint, both objectives can reach their own extremes simultaneously, and this does not constitute a genuine tradeoff
+    confidence: 0.25 - Verified on 2026-09-04, runs and the accumulation logic is correct, but not yet compared against independent literature data
   tags: [nutrition, simple, demo]
 
 variables:
@@ -34,56 +41,56 @@ variables:
     value: 60.0
     unit: "g"
     bounds: [0.0, 200.0]
-    description: "单次餐食碳水化合物摄入量"
+    description: "Carbohydrate intake for a single meal"
 
   food_protein:
     type: input
     value: 20.0
     unit: "g"
     bounds: [0.0, 100.0]
-    description: "单次餐食蛋白质摄入量"
+    description: "Protein intake for a single meal"
 
   food_fat:
     type: input
     value: 15.0
     unit: "g"
     bounds: [0.0, 80.0]
-    description: "单次餐食脂肪摄入量"
+    description: "Fat intake for a single meal"
 
   water_intake:
     type: input
     value: 300.0
     unit: "ml"
     bounds: [0.0, 1000.0]
-    description: "单次饮水量"
+    description: "Water intake for a single event"
 
   gastric_carbohydrate:
     type: state
     value: 0
     unit: "g"
     io_role: output
-    description: "胃部碳水化合物含量"
+    description: "Gastric carbohydrate content"
 
   gastric_protein:
     type: state
     value: 0
     unit: "g"
     io_role: output
-    description: "胃部蛋白质含量"
+    description: "Gastric protein content"
 
   gastric_fat:
     type: state
     value: 0
     unit: "g"
     io_role: output
-    description: "胃部脂肪含量"
+    description: "Gastric fat content"
 
   body_water:
     type: state
     value: 42000
     unit: "ml"
     io_role: output
-    description: "身体总水分"
+    description: "Total body water"
 
 equations:
   ingestion_transfer:
@@ -108,51 +115,51 @@ simulation:
       - variable: food_carbohydrate
         time_start: "07:30"
         value: 60.0
-        label: 早餐碳水
+        label: Breakfast carbohydrate
       - variable: food_protein
         time_start: "07:30"
         value: 15.0
-        label: 早餐蛋白质
+        label: Breakfast protein
       - variable: food_fat
         time_start: "07:30"
         value: 10.0
-        label: 早餐脂肪
+        label: Breakfast fat
       - variable: water_intake
         time_start: "07:30"
         value: 300.0
-        label: 早餐饮水
+        label: Breakfast water
       - variable: food_carbohydrate
         time_start: "12:00"
         value: 80.0
-        label: 午餐碳水
+        label: Lunch carbohydrate
       - variable: food_protein
         time_start: "12:00"
         value: 25.0
-        label: 午餐蛋白质
+        label: Lunch protein
       - variable: food_fat
         time_start: "12:00"
         value: 20.0
-        label: 午餐脂肪
+        label: Lunch fat
       - variable: water_intake
         time_start: "12:00"
         value: 400.0
-        label: 午餐饮水
+        label: Lunch water
       - variable: food_carbohydrate
         time_start: "18:30"
         value: 70.0
-        label: 晚餐碳水
+        label: Dinner carbohydrate
       - variable: food_protein
         time_start: "18:30"
         value: 20.0
-        label: 晚餐蛋白质
+        label: Dinner protein
       - variable: food_fat
         time_start: "18:30"
         value: 18.0
-        label: 晚餐脂肪
+        label: Dinner fat
       - variable: water_intake
         time_start: "18:30"
         value: 350.0
-        label: 晚餐饮水
+        label: Dinner water
   output_variables: [gastric_carbohydrate, gastric_protein, gastric_fat, body_water]
 
 optimization:
@@ -170,28 +177,28 @@ optimization:
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "碳水化合物摄入（g）"
+        label: "Carbohydrate intake (g)"
         optimize:
           value: [0.0, 200.0]
       - variable: food_protein
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "蛋白质摄入（g）"
+        label: "Protein intake (g)"
         optimize:
           value: [0.0, 100.0]
       - variable: food_fat
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "脂肪摄入（g）"
+        label: "Fat intake (g)"
         optimize:
           value: [0.0, 80.0]
       - variable: water_intake
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "水分摄入（ml）"
+        label: "Water intake (ml)"
         optimize:
           value: [0.0, 1000.0]
   algorithm:

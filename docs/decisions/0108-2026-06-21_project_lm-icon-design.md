@@ -1,31 +1,20 @@
-# ADR 0108 — LM 品牌图标：黑白对半心形
+# ADR 0108 - LM Brand Icon: a Black-and-White Split Heart
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-06-21
 
-## 背景
+## Background
 
-原 favicon（心形轮廓 + 心电图脉搏线两层叠加）在 16/32px 尺寸下两条路径互相干扰，复杂度高、识别度低。
-设计目标：保留"心"作为生命主题的核心识别符号，同时呼应 Life Matters 的"内外交困"主题——生命同时受内部
-（医学/生理）和外部（社会学）力量牵制，且这种内外关系本身并不稳定。
+The original favicon (a heart outline layered with an ECG pulse line) had its two paths interfering with each other at 16/32px sizes, making it overly complex and hard to recognize. The design goal: keep "heart" as the core identifying symbol for the life theme, while echoing Life Matters's theme of being pulled between internal and external forces, since life is constrained simultaneously by internal (medical/physiological) and external (sociological) forces, and this internal-external relationship is itself unstable.
 
-## 决策
+## Decision
 
-- **图形**：单个心形轮廓沿纵向中线一分为二，左右两半的前景（心）与背景颜色互为黑白反转——左半黑底白心，
-  右半白底黑心。"内"（心）与"外"（背景）的颜色关系在两侧互换，不引入箭头、方框等额外形状，只用一种形状
-  语言（心形）表达对立与互渗。
-- **心形比例与位置**：心形缩小到原尺寸的 85%；垂直位置不按几何外框居中，而是按心形两翼实际最高点（圆弧顶点，
-  非中间凹陷点）与底部尖端到图标上下边缘的距离相等计算。
-- **图标归属**：黑白版本绑定到 LM model / LM format 这一层（规范/理论层），不绑定到具体某个软件。
-  LM Simulator（`life-matters` 仓库的 sim_gui 引擎）按既有 UI 规范使用品牌绿色作为主色，因此该仓库
-  内的同形图标改为绿色版（黑色替换为 `#007A33`，白色不变）。浏览器 favicon 与顶栏 logo 组件均固定使用
-  这一色值，不随应用明暗模式切换——图标本身代表固定的品牌身份，不需要跟随 UI 主题深浅变化。
-- **外框**：比较过三种处理（无边框 / 整圈统一黑色描边 / 左右分色描边），三版均保留在内部设计记录中供
-  后续参考；最终选定**无边框**——内外关系已由黑白互换本身表达完整，边框是额外的、与主题无关的图形元素，
-  反而显得突兀。已部署到本仓库 `icon.svg` 和 sim 仓库 `sim_gui/public/favicon.svg` / 顶栏 logo，
-  文件名不带版本号。
+- Graphic: a single heart outline is split in two along its vertical centerline, with the foreground (the heart) and background colors inverted between black and white on each half, black background with a white heart on the left, white background with a black heart on the right. The color relationship between "inner" (the heart) and "outer" (the background) swaps between the two sides, with no arrows, boxes, or other extra shapes introduced, using only one shape vocabulary (the heart) to express opposition and interpenetration.
+- Heart proportions and position: the heart is shrunk to 85% of its original size; its vertical position is not centered on the geometric bounding box, but computed so that the distance from the heart's two lobes' actual highest points (the arc's apex, not the dip in the middle) and from its bottom tip to the icon's top and bottom edges is equal.
+- Icon ownership: the black-and-white version is bound to the LM model / LM format layer (the specification/theory layer), not to any specific piece of software. The LM Simulator (the sim_gui engine in the `life-matters` repository) uses brand green as its primary color per the existing UI conventions, so the same-shaped icon in that repository uses a green version instead (black replaced with `#007A33`, white unchanged). Both the browser favicon and the top-bar logo component use this fixed color value regardless of the app's light or dark mode, since the icon itself represents a fixed brand identity that should not follow the UI theme's light/dark switching.
+- Border: three treatments were compared (no border, a uniform black outline all the way around, and a left/right split-color outline), and all three versions are kept in the internal design record for future reference. No border was ultimately chosen, since the black-and-white swap already expresses the internal-external relationship completely, and a border would be an extra graphic element unrelated to the theme, making it feel out of place instead. Deployed to this repository's `icon.svg` and the sim repository's `sim_gui/public/favicon.svg` and top-bar logo, with no version number in the filename.

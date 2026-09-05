@@ -9,25 +9,54 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      地中海饮食是目前证据最强的心血管保护饮食模式，核心成分为橄榄油、鱼类和豆类，但其效果随依从性和各成分摄入量不同而差异显著，且红肉摄入会部分抵消保护效应。这种"多成分协同与拮抗"的结构使个体化的饮食比例难以从单纯的膳食指南推算。
+      The Mediterranean diet is currently the best-evidenced cardiovascular-protective dietary
+      pattern, with olive oil, fish, and legumes as its core components, but its effect varies
+      substantially with adherence and the intake level of each component, and red-meat intake
+      partially offsets the protective effect. This structure of multi-component synergy and
+      antagonism makes an individualized dietary ratio difficult to derive from a plain dietary
+      guideline alone.
     result: >
-      三种方案的仿真结果显示，一年后 LDL 从145 mg/dL的基线分别降至：高依从性方案142.67 mg/dL，西式基线方案144.79 mg/dL，高依从性叠加高红肉的对照方案142.70 mg/dL。高依从性方案的降幅约为西式基线的11倍，而高红肉对照方案仅比高依从性方案少降0.03 mg/dL，说明红肉的拮抗效应远小于橄榄油等保护因素的效应，方向与PREDIMED的定性结论一致。基于NSGA-II的优化前沿退化为单点：橄榄油80 mL/day，LDL 141.40 mg/dL，CRP 2.48 mg/L。唯一决策变量olive_oil_ml_day对LDL、HDL、SBP均单调有益，而crp_dynamics只依赖未暴露为决策变量的鱼类、豆类、红肉摄入，不依赖橄榄油，因此LDL与CRP两个目标之间没有真实冲突，种群必然收敛到橄榄油摄入的上界。真正的多目标权衡需要同时把鱼类、豆类、红肉摄入暴露为决策变量，并且模型需要一个与更健康饮食方向相反的竞争目标，例如依从性或口味成本，当前模型未包含这样的目标。
+      Simulating three arms shows that after one year, LDL falls from a baseline of 145 mg/dL to:
+      142.67 mg/dL under the high-adherence arm, 144.79 mg/dL under the Western-baseline arm, and
+      142.70 mg/dL under the control arm combining high adherence with high red meat. The
+      high-adherence arm's reduction is about 11 times that of the Western baseline, while the
+      high-red-meat control arm falls only 0.03 mg/dL less than the high-adherence arm, showing that
+      red meat's antagonistic effect is far smaller than the protective effect of factors such as
+      olive oil, matching PREDIMED's qualitative conclusion in direction. The NSGA-II optimization
+      front degenerates to a single point: olive oil 80 mL/day, LDL 141.40 mg/dL, CRP 2.48 mg/L. The
+      single decision variable olive_oil_ml_day is monotonically beneficial for LDL, HDL, and SBP
+      alike, while crp_dynamics depends only on fish, legume, and red-meat intake, none of which are
+      exposed as decision variables, and not on olive oil, so there is no genuine conflict between
+      the LDL and CRP objectives, and the population necessarily converges to the upper bound of
+      olive-oil intake. A genuine multi-objective tradeoff would require exposing fish, legume, and
+      red-meat intake as decision variables together, and the model would need a competing objective
+      running counter to a healthier diet, such as adherence or taste cost, which the current model
+      does not include.
     limitations: >
-      参数来自地中海人群，不同种族基线值和效应量可能不同；未建模多酚等微量营养素协同效应；APOE ε4 基因型对 LDL 响应的个体差异尚未纳入。LDL一年降幅约2.33 mg/dL，按PREDIMED三年7mg/dL的比例换算得到；CRP、SBP、HDL的速率常数未做同等复核，量级基本合理但未逐一按文献重新推导。当前 optimization 只暴露 olive_oil_ml_day 为决策变量，因此给不出真正的多目标 Pareto 前沿，参见上文result的说明；如需要有意义的前沿，需要重新设计决策变量集合与目标和约束。
+      The parameters come from a Mediterranean population, and baseline values and effect sizes may
+      differ across ethnicities; synergistic effects of micronutrients such as polyphenols are not
+      modeled; individual variation in LDL response by APOE epsilon4 genotype is not yet included.
+      LDL's one-year decline of about 2.33 mg/dL is converted proportionally from PREDIMED's 7mg/dL
+      over three years; the rate constants for CRP, SBP, and HDL have not undergone the same
+      cross-check, and while their magnitude is broadly reasonable, they have not each been
+      re-derived from the literature. The current optimization exposes only olive_oil_ml_day as a
+      decision variable, so it cannot yield a genuine multi-objective Pareto front, as explained in
+      the result field above; a meaningful front would require redesigning the decision-variable set
+      together with the objectives and constraints.
   ratings:
-    importance: 0.75 - 地中海饮食是证据最强的心血管保护饮食，全球营养研究核心；饮食干预是场景常用背景组件，中等引用预期
-    variable: 1.0 - 基于PREDIMED大型RCT（N>7000），LDL/CRP参数精确可靠
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.75 - The Mediterranean diet is the best-evidenced cardiovascular-protective diet, a core focus of global nutrition research; dietary intervention is a commonly used background component in scenarios, moderate citation expected
+    variable: 1.0 - Based on the large PREDIMED RCT (N>7000), with precise and reliable LDL/CRP parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [nutrition, mediterranean, cardiovascular, LDL, CRP, blood_pressure, HDL, PREDIMED, olive_oil]
 
 variables:
   ldl_mg_dl:
     description: |
-      LDL胆固醇（mg/dL）。基线：145 mg/dL（轻度升高）。
-      PREDIMED目标：橄榄油+地中海饮食 → 约3年降低5%（约7 mg/dL）。
+      LDL cholesterol (mg/dL). Baseline: 145 mg/dL (mildly elevated).
+      PREDIMED target: olive oil plus a Mediterranean diet gives about a 5% reduction over 3 years (about 7 mg/dL).
     value: 145.0
     unit: mg/dL
     type: state
@@ -36,8 +65,8 @@ variables:
 
   crp_mg_l:
     description: |
-      高敏C反应蛋白（hs-CRP，mg/L），全身炎症标志物。基线：2.5 mg/L（轻度升高）。
-      目标<1.0 mg/L（低心血管风险）。PREDIMED：地中海饮食3年→CRP降低约10-20%。
+      High-sensitivity C-reactive protein (hs-CRP, mg/L), a systemic-inflammation marker. Baseline: 2.5 mg/L (mildly elevated).
+      Target <1.0 mg/L (low cardiovascular risk). PREDIMED: a Mediterranean diet over 3 years lowers CRP by about 10-20%.
     value: 2.5
     unit: mg/L
     type: state
@@ -46,8 +75,8 @@ variables:
 
   systolic_bp:
     description: |
-      收缩压（mmHg）。基线：142 mmHg（高血压1级边界）。
-      PREDIMED：地中海饮食→SBP降低约2.3-5 mmHg（Toledo 2013）。
+      Systolic blood pressure (mmHg). Baseline: 142 mmHg (the borderline of stage-1 hypertension).
+      PREDIMED: a Mediterranean diet lowers SBP by about 2.3-5 mmHg (Toledo 2013).
     value: 142.0
     unit: mmHg
     type: state
@@ -56,8 +85,8 @@ variables:
 
   hdl_mg_dl:
     description: |
-      HDL胆固醇（mg/dL）。基线：45 mg/dL（偏低，男性目标≥40、女性≥50）。
-      地中海饮食（橄榄油）→HDL升高约1-2 mg/dL（Estruch 2013）。
+      HDL cholesterol (mg/dL). Baseline: 45 mg/dL (somewhat low; the target is >=40 for men, >=50 for women).
+      A Mediterranean diet (olive oil) raises HDL by about 1-2 mg/dL (Estruch 2013).
     value: 45.0
     unit: mg/dL
     type: state
@@ -66,9 +95,9 @@ variables:
 
   mediterranean_diet_score:
     description: |
-      地中海饮食评分MDS（0-14分），基于Trichopoulou 2003量表。
-      每类食物高于中位数得1分（9类有益食物）；红肉低于中位数得1分；酒精适量得1分。
-      评分≥9分定义为高依从性。
+      The Mediterranean Diet Score, MDS (0-14), based on the Trichopoulou 2003 scale.
+      1 point for each of 9 beneficial food groups above the median, 1 point for red meat below the median, and 1 point for moderate alcohol.
+      A score >=9 defines high adherence.
     value: 4.0
     unit: score
     type: state
@@ -77,8 +106,8 @@ variables:
 
   olive_oil_ml_day:
     description: |
-      特级初榨橄榄油日摄入量（mL/day）。PREDIMED干预组目标≥50 mL/day（约4汤匙）。
-      每15mL橄榄油约贡献0.5分MDS；≥50mL为高摄入（Estruch 2013）。
+      Daily extra-virgin olive oil intake (mL/day). The PREDIMED intervention arm's target is >=50 mL/day (about 4 tablespoons).
+      Each 15mL of olive oil contributes about 0.5 points of MDS; >=50mL is a high intake (Estruch 2013).
     value: 20.0
     unit: mL/day
     type: input
@@ -87,8 +116,8 @@ variables:
 
   fish_servings_week:
     description: |
-      鱼类/海鲜周摄入份数（份/周，1份≈150g）。MedDiet推荐≥3份/周。
-      富含EPA/DHA，降低甘油三酯和CRP（Calder 2013）。
+      Weekly fish/seafood servings (servings/week, 1 serving is about 150g). MedDiet recommends >=3 servings/week.
+      Rich in EPA/DHA, lowering triglycerides and CRP (Calder 2013).
     value: 2.0
     unit: servings/week
     type: input
@@ -97,8 +126,8 @@ variables:
 
   legume_servings_week:
     description: |
-      豆类（豆腐、扁豆、鹰嘴豆等）周摄入份数（份/周，1份≈180g熟重）。
-      MedDiet推荐≥4份/周。富含膳食纤维，降LDL和CRP（Martinez-Gonzalez 2015）。
+      Weekly legume servings, tofu, lentils, chickpeas, etc. (servings/week, 1 serving is about 180g cooked weight).
+      MedDiet recommends >=4 servings/week. Rich in dietary fiber, lowering LDL and CRP (Martinez-Gonzalez 2015).
     value: 2.0
     unit: servings/week
     type: input
@@ -107,21 +136,20 @@ variables:
 
   red_meat_servings_week:
     description: |
-      红肉/加工肉周摄入份数（份/周，1份≈100g）。
-      MedDiet推荐<1份/周；高红肉摄入拮抗地中海饮食的CVD保护效益。
+      Weekly red-meat/processed-meat servings (servings/week, 1 serving is about 100g).
+      MedDiet recommends <1 serving/week; high red-meat intake antagonizes the Mediterranean diet's CVD-protective benefit.
     value: 5.0
     unit: servings/week
     type: input
     bounds: [0.0, 21.0]
     optimizable: true
 
-  # ── 参数 ───────────────────────────────────────────────────────────────────
   ldl_olive_oil_rate:
     description: |
-      橄榄油每mL/day对LDL的每日降低速率（mg/dL per mL/day per day）。
-      PREDIMED：50mL/day组3年（1095天）→LDL降7mg/dL → rate = 7/(50×1095) ≈ 0.000128
-      mg/dL per (mL/day) per day（原0.00002把3年误算成2555天=7年，1年仿真仅降约0.36mg/dL，
-      远低于PREDIMED按比例应有的约2.3mg/dL/年，已按正确年数改正）。
+      The daily LDL-lowering rate per mL/day of olive oil (mg/dL per mL/day per day).
+      PREDIMED: the 50mL/day arm over 3 years, 1095 days, lowered LDL by 7mg/dL, giving rate = 7/(50x1095) is about 0.000128
+      mg/dL per (mL/day) per day. The original value of 0.00002 mistakenly treated 3 years as 2555 days, 7 years, giving only about 0.36mg/dL over a 1-year simulation,
+      far below the roughly 2.3mg/dL/year PREDIMED's ratio implies; corrected using the right number of years.
     value: 0.000128
     unit: mg/dL per (mL/day) per day
     type: parameter
@@ -129,8 +157,8 @@ variables:
 
   crp_fish_rate:
     description: |
-      鱼类摄入对CRP的每日降低速率。
-      每周3份鱼类（EPA+DHA约4g/week）3年→CRP降低约12%（约0.3 mg/L）→日速率估算。
+      The daily CRP-lowering rate from fish intake.
+      3 fish servings per week, about 4g/week EPA+DHA, over 3 years lowers CRP by about 12% (about 0.3 mg/L), giving an estimated daily rate.
     value: 0.0001
     unit: mg/L per (servings/week) per day
     type: parameter
@@ -138,8 +166,8 @@ variables:
 
   sbp_mds_rate:
     description: |
-      MDS每提高1分对SBP的每日降低速率（mmHg per score per day）。
-      MDS提高6分（基线4→10）→SBP降约4 mmHg（750天估算稳态）。
+      The daily SBP-lowering rate per 1-point rise in MDS (mmHg per score per day).
+      A 6-point MDS rise, baseline 4 to 10, lowers SBP by about 4 mmHg (a 750-day steady-state estimate).
     value: 0.0003
     unit: mmHg per score per day
     type: parameter
@@ -147,8 +175,8 @@ variables:
 
   hdl_olive_oil_rate:
     description: |
-      橄榄油每mL/day对HDL的每日升高速率。
-      PREDIMED：50mL/day 3年→HDL升约1.5 mg/dL → 日速率约0.000015。
+      The daily HDL-raising rate per mL/day of olive oil.
+      PREDIMED: 50mL/day over 3 years raised HDL by about 1.5 mg/dL, giving a daily rate of about 0.000015.
     value: 0.000015
     unit: mg/dL per (mL/day) per day
     type: parameter
@@ -156,19 +184,19 @@ variables:
 
   red_meat_ldl_rate:
     description: |
-      红肉摄入对LDL的每日升高速率（mg/dL per servings/week per day）。
-      每周5份红肉 vs 1份 → LDL约升高3-4 mg/dL → 日速率约0.00007。
+      The daily LDL-raising rate from red-meat intake (mg/dL per servings/week per day).
+      5 servings of red meat per week versus 1 raises LDL by about 3-4 mg/dL, giving a daily rate of about 0.00007.
     value: 0.00007
     unit: mg/dL per (servings/week) per day
     type: parameter
 
 equations:
-  # F1: 地中海饮食评分计算（简化：基于各食物摄入量）
+  # F1: Mediterranean-diet score calculation (simplified: based on each food group's intake)
   mds_update:
     description: |
-      MDS根据食物摄入量动态更新。
-      橄榄油≥50mL→2分；鱼类≥3份/周→2分；豆类≥4份/周→2分；红肉<1份/周→2分；基础分2分。
-      总计0-14（简化为主要食物组）。
+      MDS updates dynamically from food intake.
+      Olive oil >=50mL gives 2 points; fish >=3 servings/week gives 2 points; legumes >=4 servings/week gives 2 points; red meat <1 serving/week gives 2 points; a base of 2 points.
+      Totals 0-14 (simplified to the main food groups).
     condition: true
     priority: 10
     dynamics:
@@ -181,11 +209,11 @@ equations:
         + max(0.0, 2.0 - red_meat_servings_week * 1.0)
         + 2.0))
 
-  # F2: LDL动力学（橄榄油降低 + 红肉升高 + 趋近稳态）
+  # F2: LDL dynamics (lowered by olive oil, raised by red meat, approaching steady state)
   ldl_dynamics:
     description: |
-      LDL：橄榄油多酚→抑制LDL氧化和肝脏合成（降低）；红肉饱和脂肪→升高LDL；
-      趋近稳态的Euler积分。
+      LDL: olive-oil polyphenols suppress LDL oxidation and hepatic synthesis, lowering it; red meat's saturated fat raises LDL;
+      a Euler integration approaching steady state.
     step_unit: day
     condition: true
     priority: 8
@@ -195,11 +223,11 @@ equations:
         - ldl_olive_oil_rate * olive_oil_ml_day * step
         + red_meat_ldl_rate * red_meat_servings_week * step)
 
-  # F3: CRP动力学（鱼类EPA/DHA + 豆类纤维降炎症）
+  # F3: CRP dynamics (fish EPA/DHA and legume fiber lower inflammation)
   crp_dynamics:
     description: |
-      CRP：鱼类EPA/DHA抑制NF-κB炎症通路；豆类膳食纤维改善肠道菌群→降低内毒素负荷。
-      自然基线：无干预时缓慢回升（慢性炎症背景）。
+      CRP: fish EPA/DHA suppresses the NF-kB inflammatory pathway; legume dietary fiber improves gut microbiota, lowering endotoxin load.
+      Natural baseline: rises slowly without intervention (a chronic-inflammation background).
     step_unit: day
     condition: true
     priority: 7
@@ -210,11 +238,11 @@ equations:
         - 0.00005 * legume_servings_week * step
         + 0.00005 * red_meat_servings_week * step)
 
-  # F4: 收缩压动力学（MDS评分驱动 + 自然年龄进展）
+  # F4: Systolic-blood-pressure dynamics (driven by the MDS score plus natural age progression)
   sbp_dynamics:
     description: |
-      SBP：MDS评分提高→BP降低（橄榄油多酚+钾+纤维的综合效应）。
-      无干预年龄进展：约+0.3 mmHg/年。
+      SBP: a higher MDS score lowers BP (the combined effect of olive-oil polyphenols, potassium, and fiber).
+      Age progression without intervention: about +0.3 mmHg/year.
     step_unit: day
     condition: true
     priority: 6
@@ -224,11 +252,11 @@ equations:
         - sbp_mds_rate * max(0.0, mediterranean_diet_score - 4.0) * step
         + 0.3 / 365.0 * step)
 
-  # F5: HDL动力学（橄榄油+鱼类提升HDL）
+  # F5: HDL dynamics (raised by olive oil and fish)
   hdl_dynamics:
     description: |
-      HDL：橄榄油油酸→上调ABCA1转运蛋白→HDL合成增加；
-      鱼类EPA/DHA→HDL颗粒功能改善。
+      HDL: olive oil's oleic acid upregulates the ABCA1 transporter, increasing HDL synthesis;
+      fish EPA/DHA improves HDL particle function.
     step_unit: day
     condition: true
     priority: 5
@@ -259,69 +287,69 @@ simulation:
         value: 50.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "特级初榨橄榄油50mL/day（PREDIMED干预剂量）"
+        label: "Extra-virgin olive oil, 50mL/day (the PREDIMED intervention dose)"
       - variable: fish_servings_week
         time_start: "18:00"
         value: 3.0
         days: [Mon, Wed, Fri]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "鱼类3份/周"
+        label: "Fish, 3 servings/week"
       - variable: legume_servings_week
         time_start: "12:00"
         value: 1.0
         days: [Mon, Tue, Wed, Thu]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "豆类4份/周"
+        label: "Legumes, 4 servings/week"
       - variable: red_meat_servings_week
         time_start: "18:30"
         value: 1.0
         days: [Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "红肉限制1份/周"
+        label: "Red meat limited to 1 serving/week"
 
   - id: western_baseline
-    label: "西式饮食基线（无干预对照）"
+    label: "Western-diet baseline (a no-intervention control)"
     regimens:
       - variable: olive_oil_ml_day
         time_start: "12:00"
         value: 5.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "橄榄油仅5mL/day（普通烹饪用油）"
+        label: "Olive oil, only 5mL/day (ordinary cooking oil)"
       - variable: red_meat_servings_week
         time_start: "18:30"
         value: 1.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "红肉7份/周（典型西式饮食）"
+        label: "Red meat, 7 servings/week (a typical Western diet)"
 
   - id: red_meat_confound
-    label: "高依从性+高红肉（保护效应部分抵消）"
+    label: "High adherence plus high red meat (the protective effect partially offset)"
     regimens:
       - variable: olive_oil_ml_day
         time_start: "12:00"
         value: 50.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "特级初榨橄榄油50mL/day（同PREDIMED干预剂量）"
+        label: "Extra-virgin olive oil, 50mL/day (the same PREDIMED intervention dose)"
       - variable: fish_servings_week
         time_start: "18:00"
         value: 3.0
         days: [Mon, Wed, Fri]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "鱼类3份/周"
+        label: "Fish, 3 servings/week"
       - variable: legume_servings_week
         time_start: "12:00"
         value: 1.0
         days: [Mon, Tue, Wed, Thu]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "豆类4份/周"
+        label: "Legumes, 4 servings/week"
       - variable: red_meat_servings_week
         time_start: "18:30"
         value: 1.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-12-31"]
-        label: "红肉7份/周（与default唯一差异：红肉从1份/周升到7份/周）"
+        label: "Red meat, 7 servings/week (the only difference from default: red meat raised from 1 to 7 servings/week)"
 
 optimization:
   method: nsga2
@@ -329,44 +357,49 @@ optimization:
     - variable: ldl_mg_dl
       metric: final
       direction: minimize
-      description: "最小化年末LDL（动脉粥样硬化风险）"
+      description: "Minimizing year-end LDL (atherosclerosis risk)"
     - variable: crp_mg_l
       metric: final
       direction: minimize
-      description: "最小化年末CRP（全身炎症）"
-  # 注：HDL/SBP 原阈值（>=50 / <=130）是多年期临床目标，1年仿真窗口内任何输入组合都不可达
-  # （HDL最大约45.49，SBP最大约141.83），导致优化器 feasible 恒为0%。改为"不劣于基线"的
-  # sanity 下限而非有选择压力的目标——因为本模型唯一决策变量 olive_oil_ml_day 对 LDL/HDL/SBP
-  # 均是同方向有益（越多越好），对 CRP 则完全不影响（crp_dynamics 只依赖 fish/legume/red_meat，
-  # 均未暴露为决策变量），故 LDL 与 CRP 两个目标之间并不存在真实冲突，前沿必然退化为单点
-  # （oil=80）。真正的多目标权衡需要暴露 fish/legume/red_meat 为决策变量、且模型需要一个与
-  # "健康饮食"方向相反的竞争目标（如依从性成本），当前模型未包含，超出本轮验证范围，见
-  # metadata.description.limitations。
+      description: "Minimizing year-end CRP (systemic inflammation)"
+  # Note: HDL/SBP's original thresholds (>=50 / <=130) are multi-year clinical targets unreachable by
+  # any input combination within a 1-year simulation window (HDL reaches at most about 45.49, SBP at
+  # most about 141.83), leaving the optimizer's feasible fraction permanently at 0%. They are changed
+  # to "no worse than baseline" sanity floors rather than objectives carrying selective pressure,
+  # because this model's only decision variable, olive_oil_ml_day, is beneficial to LDL/HDL/SBP in the
+  # same direction, more is always better, and has no effect at all on CRP (crp_dynamics depends only
+  # on fish/legume/red_meat, none of which are exposed as decision variables), so there is no genuine
+  # conflict between the LDL and CRP objectives, and the front necessarily degenerates to a single
+  # point (oil=80). A genuine multi-objective tradeoff would require exposing fish/legume/red_meat as
+  # decision variables and adding a competing objective running counter to "healthy eating," such as
+  # adherence cost, which the current model does not include; this is outside the scope of this
+  # validation pass, see metadata.description.limitations.
   constraints:
     - variable: hdl_mg_dl
       condition: ">= 45.0"
       type: soft
-      description: "HDL不低于基线45（sanity下限，非有选择压力的目标——见objectives节注释）。"
+      description: "HDL should not fall below the baseline of 45 (a sanity floor, not an objective carrying selective pressure, see the note under objectives)."
     - variable: systolic_bp
       condition: "<= 142.0"
       type: soft
-      description: "SBP不高于基线142（sanity下限，非有选择压力的目标——见objectives节注释）。"
+      description: "SBP should not exceed the baseline of 142 (a sanity floor, not an objective carrying selective pressure, see the note under objectives)."
   startpoint:
     regimens:
       - variable: olive_oil_ml_day
         time_start: "12:00"
         time_end: "12:00"
-        label: "橄榄油（mL/day）"
+        label: "Olive oil (mL/day)"
         optimize:
           value: [10.0, 80.0]
   algorithm:
     population_size: 60
     n_generations: 100
     seed: 19
-  # 前沿退化为单点（非 bug）：olive_oil_ml_day 是唯一决策变量，对 LDL/HDL/SBP 均单调有益，
-  # 对 CRP 无任何影响（crp_dynamics 只依赖未暴露为决策变量的 fish/legume/red_meat）——LDL 与
-  # CRP 两个目标之间不存在真实冲突，种群整体收敛到 oil=80（上界）。详见 objectives 节注释与
-  # description.limitations。
+  # The front degenerates to a single point (not a bug): olive_oil_ml_day is the only decision
+  # variable, monotonically beneficial for LDL/HDL/SBP alike, and has no effect on CRP (crp_dynamics
+  # depends only on fish/legume/red_meat, none of which are exposed as decision variables), so there
+  # is no genuine conflict between the LDL and CRP objectives, and the population as a whole converges
+  # to oil=80 (the upper bound). See the note under objectives and description.limitations.
   results:
     generated_at: "2026-07-06"
     method: nsga2

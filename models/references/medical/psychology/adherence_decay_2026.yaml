@@ -6,51 +6,75 @@ metadata:
   - name: Fan Shen
     email: shenfan@mail.sysu.edu.cn
   description:
-    brief: "医嘱依从性衰减动力学：依从率随时间自然下降，由方案复杂度、副作用负担、生活压力调制，提醒干预可部分逆转。"
+    brief: "Medication-adherence decay dynamics: the adherence rate declines naturally over time, modulated by regimen complexity, side-effect burden, and life stress, with a reminder intervention able to partially reverse it."
     need: >
-      WHO估计慢性病患者中约50%未能持续遵医嘱（WHO 2003）。绝大多数 LM format 慢病模型假定完全依从，即 adherence=1.0，这是系统性高估治疗效果的结构性缺陷。依从性衰减是一个可建模的状态变量，引入后可将"在真实依从性条件下的最优方案"与"假定完全依从的最优方案"做对比，生成对脱落鲁棒的干预方案。
+      WHO estimates that about 50% of chronic-disease patients fail to sustain adherence to their
+      prescribed regimen (WHO 2003). The great majority of LM format chronic-disease models assume
+      full adherence, adherence=1.0, a structural flaw that systematically overestimates treatment
+      effect. Adherence decay is a state variable that can be modeled, and introducing it allows
+      comparing "the optimal regimen under real adherence conditions" against "the optimal regimen
+      assuming full adherence," generating an intervention plan robust to dropout.
     problem: >
-      两个核心建模挑战：
-      ① 依从性不是0/1二元变量，而是随时间连续衰减的动力学过程，初始即处方后1到4周通常较高、约0.85，随后指数衰减，6个月时平均约0.50，方案复杂度、副作用体验、生活压力是三类独立的衰减加速因子。
-      ② 依从性的效应是非线性的：部分依从，0.5到0.8区间，对治疗结局的影响远大于线性插值所预测的，因为大多数药物有最低有效浓度阈值，本模型用线性近似作为保守基础，建模者可在引入后根据具体药物特性调整。
+      Two core modeling challenges:
+      First, adherence is not a binary 0/1 variable but a dynamic process that decays continuously
+      over time, typically high in the first 1 to 4 weeks after prescription, about 0.85, then
+      decaying exponentially to an average of about 0.50 at 6 months, with regimen complexity,
+      side-effect experience, and life stress as three independent accelerating factors.
+      Second, adherence's effect is nonlinear: partial adherence, the 0.5 to 0.8 range, affects
+      treatment outcome far more than linear interpolation would predict, because most drugs have a
+      minimum effective concentration threshold; this model uses a linear approximation as a
+      conservative baseline, and modelers can adjust it after import based on the specific drug's
+      properties.
     method: >
-      日步长ODE，依从率 adherence_rate 作为主状态变量，取值范围0到1。衰减由基础速率、方案复杂度参数、副作用负担参数、生活压力输入三类调制，其中生活压力可由宿主模型设置。提醒干预作为输入变量，可部分逆转衰减，基于Haynes 2008 Cochrane效应量。本文件设计为被其他模型通过imports引用，不独立使用。
+      A daily-step ODE, with the adherence rate, adherence_rate, as the main state variable, ranging
+      from 0 to 1. Decay is modulated by a base rate and three factors, a regimen-complexity
+      parameter, a side-effect-burden parameter, and a life-stress input, where life stress can be
+      set by the host model. A reminder intervention, as an input variable, can partially reverse the
+      decay, based on the Haynes 2008 Cochrane effect size. This file is designed to be referenced by
+      other models via imports, not used standalone.
     simulation: >
-      无内置仿真配置，为纯组件模型。引用方在宿主模型的simulation.schedules中设置life_stress和reminder_intervention，典型对比为无干预基线、每周提醒一次、每日数字提醒三种方案。
+      No built-in simulation configuration is included; this is a pure component model. An importing
+      model sets life_stress and reminder_intervention in the host model's simulation.schedules,
+      with a typical comparison of three arms: no intervention baseline, a weekly reminder, and a
+      daily digital reminder.
     result: >
-      2026-09-04用--sim-only复现三方案12个月轨迹（life_stress=0.4、regimen_complexity=0.4）：
-      无干预基线第1月0.786 → 第3月0.673 → 第6月0.533 → 第12月0.330，6个月值落在DiMatteo 2004均值0.50附近，12个月值略低于早前估计的0.40；
-      每周SMS提醒（强度0.5）6个月末0.582，较基线+0.049，低于Haynes 2008提醒效应上限估算的+0.12；
-      每日APP提醒（强度1.0）在约第2月即收敛至0.85附近的稳态并全程维持，恢复效应明显强于每周提醒。
+      A --sim-only run on 2026-09-04 reproduced the 12-month trajectories of the three arms
+      (life_stress=0.4, regimen_complexity=0.4): the no-intervention baseline goes 0.786 at month 1,
+      0.673 at month 3, 0.533 at month 6, 0.330 at month 12, with the 6-month value landing near the
+      DiMatteo 2004 mean of 0.50 and the 12-month value somewhat below the earlier estimate of 0.40;
+      a weekly SMS reminder (intensity 0.5) reaches 0.582 by month 6, +0.049 over baseline, below the
+      Haynes 2008 estimated upper bound for the reminder effect of +0.12; a daily app reminder
+      (intensity 1.0) converges to a steady state near 0.85 by about month 2 and holds it throughout,
+      with a recovery effect markedly stronger than the weekly reminder.
     limitations: >
-      单一依从性变量代替"哪些剂次被跳过"的具体行为；
-      副作用与依从性耦合为线性近似，真实关系为非线性；
-      未区分信念驱动的有意不依从与遗忘驱动的无意不依从；
-      超过2年的长期行为改变的衰减参数不确定性高。
+      A single adherence variable stands in for the specific behavior of which doses were skipped;
+      the coupling between side effects and adherence is a linear approximation, whereas the real
+      relationship is nonlinear; intentional non-adherence driven by belief is not distinguished from
+      unintentional non-adherence driven by forgetting; the decay parameters carry high uncertainty
+      for long-term behavior change beyond 2 years.
   integration_candidates:
     description: >
-      以下 papers/ 模型可以考虑通过 imports 引入本组件，将依从性从隐含假设变为
-      显式状态变量，并在"真实依从条件"下重新运行优化。引入后需在宿主模型的
-      方程中将关键干预效应量乘以 adherence_rate（或其非线性变换）。
+      The following papers/ models could consider importing this component to turn adherence from
+      an implicit assumption into an explicit state variable, and re-run optimization under "real
+      adherence conditions." After import, the key intervention effect size in the host model's
+      equations should be multiplied by adherence_rate, or a nonlinear transform of it.
     models:
       - path: "papers/s1/ckd_protein_noref"
         reason: >
-          CKD低蛋白饮食方案持续时间长（数月到数年），依从率衰减对GFR保护效果
-          有累积性影响。引入后可优化方案复杂度（几段式K×4 vs 复杂个性化）以
-          提高对脱落的鲁棒性。
+          The CKD low-protein diet regimen has a long duration, months to years, so the
+          adherence-decay rate has a cumulative effect on the GFR-protection benefit. After import,
+          regimen complexity, a simple K x 4 staged plan versus a complex personalized one, can be
+          optimized for robustness to dropout.
   ratings:
-    importance: 0.25 - 设计为供多个慢病模型import的依从性组件，目前尚无实际import记录
-    variable: 0.75 - WHO 2003/Osterberg 2005/DiMatteo 2004/Haynes 2008 Cochrane/Horne 1999/Vrijens 2012等多篇文献支撑
-    equation: 0.5 - 自建衰减方程，base_decay_rate/reminder_recovery_strength分别锚定DiMatteo与Haynes报告的效应量
-    simulation: 0.5 - 2026-09-04复验：三方案轨迹方向一致，6个月无干预值0.53接近DiMatteo均值0.50，12个月值0.33略低于早前估计的0.40，每周提醒效应(+0.049)弱于Haynes上限估算(+0.12)，未与独立数据逐点比对
-    optimization: 0.0 - 本文件不含optimization，为纯组件模型，不涉及决策变量搜索
-    confidence: 0.25 - 2026-09-04复验：可正常跑通，6个月节点与文献均值接近，但12个月值及提醒效应量级与早前估计有差距，未做独立数据逐点比对
+    importance: 0.25 - Designed as an adherence component for import by multiple chronic-disease models, with no actual import record yet
+    variable: 0.75 - Supported by multiple publications, WHO 2003/Osterberg 2005/DiMatteo 2004/the Haynes 2008 Cochrane review/Horne 1999/Vrijens 2012
+    equation: 0.5 - A self-built decay equation, with base_decay_rate and reminder_recovery_strength each anchored to the effect sizes reported by DiMatteo and Haynes respectively
+    simulation: 0.5 - Reverified on 2026-09-04, the three arms' trajectories agree in direction, the 6-month no-intervention value of 0.53 is close to the DiMatteo mean of 0.50, the 12-month value of 0.33 is somewhat below the earlier estimate of 0.40, and the weekly-reminder effect (+0.049) is weaker than the Haynes upper-bound estimate (+0.12), not compared point-by-point against independent data
+    optimization: 0.0 - This file contains no optimization block, being a pure component model with no decision-variable search
+    confidence: 0.25 - Reverified on 2026-09-04, runs normally, with the 6-month point close to the literature mean, but the 12-month value and the reminder-effect magnitude differ from the earlier estimate, not compared point-by-point against independent data
   tags: [adherence, non-adherence, medication_compliance, chronic_disease, behavioral_dynamics, reference_component]
 
-# ── 变量 ─────────────────────────────────────────────────────────────────────────
 variables:
-
-  # ── 核心状态 ─────────────────────────────────────────────────────────────────────
 
   adherence_rate:
     type: state
@@ -59,10 +83,12 @@ variables:
     bounds: [0, 1]
     io_role: output
     description: >
-      医嘱依从率（0-1）。处方初期约0.85（DiMatteo 2004 初始依从均值）。
-      随时间自然衰减；受方案复杂度、副作用负担、生活压力三类因子加速；
-      提醒干预可部分逆转。
-      宿主模型中，将关键干预效应量乘以 adherence_rate 以获得真实依从条件下的实际效果。
+      The medication-adherence rate (0-1). About 0.85 early in a prescription (DiMatteo 2004's
+      initial-adherence mean). Decays naturally over time, accelerated by three factors, regimen
+      complexity, side-effect burden, and life stress; a reminder intervention can partially reverse
+      it.
+      In the host model, multiply the key intervention effect size by adherence_rate to get the
+      actual effect under real adherence conditions.
     reference: "DiMatteo MR (2004) Medical Care 42(3):200."
 
   cumulative_nonadherence:
@@ -71,11 +97,10 @@ variables:
     unit: day
     io_role: output
     description: >
-      累计不依从暴露量（天数×失依从幅度积分，0=完全依从全程）。
-      用于报告和作为宿主模型的惩罚项输入。
+      Cumulative non-adherence exposure (an integral of days times non-adherence magnitude, 0 if
+      fully adherent throughout).
+      Used for reporting and as a penalty-term input to the host model.
     reference: "Vrijens B et al. (2012) Br J Clin Pharmacol 73(5):691."
-
-  # ── 可外部设置的干预变量（inputs） ─────────────────────────────────────────────────
 
   life_stress:
     type: input
@@ -85,10 +110,10 @@ variables:
     optimizable: false
     io_role: input
     description: >
-      生活压力指数（0-1）。由宿主模型设置（如burnout模型的work_pressure，
-      或产后恢复模型的night_feed_count作为代理）。
-      0=低压，0.5=中等，0.8=高压（裁员/重病/丧亲等）。
-      高压环境是不依从的最强预测因子之一（Horne & Weinman 1999）。
+      The life-stress index (0-1). Set by the host model (e.g. work_pressure from a burnout model,
+      or night_feed_count as a proxy in a postpartum-recovery model).
+      0=low stress, 0.5=moderate, 0.8=high stress (layoff, serious illness, bereavement, etc.).
+      A high-stress environment is one of the strongest predictors of non-adherence (Horne & Weinman 1999).
     reference: "Horne R & Weinman J (1999) J Psychosom Res 47(6):555."
 
   reminder_intervention:
@@ -99,12 +124,13 @@ variables:
     optimizable: true
     io_role: input
     description: >
-      提醒干预强度（0=无提醒，0.5=每周短信提醒，1.0=每日数字健康APP提醒）。
-      Haynes 2008 Cochrane：提醒干预提升依从率6-21%，效应随干预强度线性近似。
-      K×4 T3优化目标：优化提醒频率（每日/隔日/每周）以最大化依从率。
+      Reminder-intervention intensity (0=no reminder, 0.5=a weekly SMS reminder, 1.0=a daily
+      digital-health app reminder).
+      Haynes 2008 Cochrane: a reminder intervention raises adherence by 6-21%, with the effect
+      approximated as linear in intervention intensity.
+      The K x 4 T3 optimization target: optimizing reminder frequency, daily, every other day, or
+      weekly, to maximize the adherence rate.
     reference: "Haynes RB et al. (2008) Cochrane Database Syst Rev (2):CD000011."
-
-  # ── 个体/方案特征参数 ────────────────────────────────────────────────────────────
 
   regimen_complexity:
     type: parameter
@@ -112,9 +138,11 @@ variables:
     unit: AU
     bounds: [0, 1]
     description: >
-      方案复杂度（0=极简单/单药每日一次，0.5=2-3种药不同时间，1.0=多药多次+饮食限制）。
-      Osterberg 2005：≥3种药物方案的依从率比单药低约26%；
-      CKD低蛋白+运动+生活方式联合方案复杂度约0.7。
+      Regimen complexity (0=very simple, a single drug once daily; 0.5=2-3 drugs at different
+      times; 1.0=multiple drugs multiple times plus dietary restriction).
+      Osterberg 2005: a regimen with >=3 drugs has about 26% lower adherence than a single-drug
+      regimen; a combined CKD low-protein-diet-plus-exercise-plus-lifestyle regimen has a complexity
+      of about 0.7.
     reference: "Osterberg L & Blaschke T (2005) N Engl J Med 353(5):487."
 
   side_effect_burden:
@@ -123,9 +151,12 @@ variables:
     unit: AU
     bounds: [0, 1]
     description: >
-      副作用负担（0=无明显副作用，0.5=轻度但可接受，1.0=严重影响生活质量）。
-      Horne 1999：副作用体验是不依从的第二大原因（约30%的患者因此停药）。
-      具体值由宿主模型根据药物类型设置（如HCTZ的尿频/低钾约0.3-0.5）。
+      Side-effect burden (0=no noticeable side effects, 0.5=mild but tolerable, 1.0=severely
+      affecting quality of life).
+      Horne 1999: the side-effect experience is the second-leading cause of non-adherence (about 30%
+      of patients discontinue because of it).
+      The specific value is set by the host model based on the drug type (e.g. HCTZ's urinary
+      frequency/hypokalemia is about 0.3-0.5).
     reference: "Horne R & Weinman J (1999) J Psychosom Res 47(6):555."
 
   base_decay_rate:
@@ -134,10 +165,12 @@ variables:
     unit: 1/day
     bounds: [0.0005, 0.003]
     description: >
-      依从率基础日衰减速率（无额外压力、简单方案、无副作用时的自然遗忘率）。
-      校准：DiMatteo 2004 中6个月平均依从率约0.50 → 从0.85衰减至0.50，
-      纯指数 k ≈ ln(0.85/0.50)/180 ≈ 0.003/day；
-      有提醒补偿时基础率降低，此处取0.0012作为有基础依从动机时的保守值。
+      The base daily adherence-decay rate (the natural forgetting rate with no extra stress, a
+      simple regimen, and no side effects).
+      Calibration: DiMatteo 2004's 6-month average adherence of about 0.50, decaying from 0.85 to
+      0.50, gives a pure exponential k of about ln(0.85/0.50)/180, about 0.003/day; with reminder
+      compensation the base rate is lower, and 0.0012 is used here as a conservative value under
+      some baseline adherence motivation.
     reference: "DiMatteo MR (2004) Medical Care 42(3):200."
 
   reminder_recovery_strength:
@@ -145,12 +178,12 @@ variables:
     value: 0.015
     unit: 1/(AU·day)
     description: >
-      每单位提醒强度对依从率的每日恢复系数。
-      Haynes 2008：每周短信提醒效应约+12%（6个月），折算为0.00067/day；
-      每日APP提醒约+21%，折算为0.0012/day。此处以单位强度计，线性放大。
+      The daily adherence-recovery coefficient per unit of reminder intensity.
+      Haynes 2008: a weekly SMS reminder's effect is about +12% at 6 months, converting to
+      0.00067/day; a daily app reminder is about +21%, converting to 0.0012/day. Here it is stated
+      per unit intensity, scaling linearly.
     reference: "Haynes RB et al. (2008) Cochrane Database Syst Rev CD000011."
 
-# ── 动力学方程 ────────────────────────────────────────────────────────────────────
 equations:
 
   adherence_decay_dynamics:
@@ -166,22 +199,24 @@ equations:
           + reminder_recovery_strength * reminder_intervention
             * (1 - adherence_rate) * step))
     description: >
-      依从率衰减（一阶）×调制因子（方案复杂度、副作用、生活压力）；
-      提醒干预以 (1-adherence_rate) 为空间的恢复驱动（越低越容易提升）。
-      最低值0.05（总有人完全不依从但不归零，避免数值奇点）。
+      Adherence decay, first-order, times a modulation factor, regimen complexity, side effects,
+      life stress.
+      The reminder intervention drives recovery in the (1-adherence_rate) space, easier to raise the
+      lower it is.
+      A floor of 0.05 (someone is always fully non-adherent, but the value does not reach zero, to
+      avoid a numerical singularity).
     reference: "DiMatteo (2004); Haynes et al. (2008); Osterberg & Blaschke (2005)"
 
   nonadherence_accumulation:
     priority: 10
     dynamics:
       cumulative_nonadherence: "cumulative_nonadherence + (1.0 - adherence_rate) * step"
-    description: "累计不依从暴露量：每天将失依从幅度（1-rate）积分累加。"
+    description: "Cumulative non-adherence exposure: each day integrates the non-adherence magnitude (1-rate)."
     step_unit: day
     reference: "Vrijens B et al. (2012)"
 
-# ── 仿真配置（示例，供引用方参考） ──────────────────────────────────────────────────
-# 本模型设计为纯组件（references/），通常不独立运行。
-# 以下仅为在 GUI 中预览组件行为的最小仿真配置。
+# This model is designed as a pure component (references/) and is typically not run standalone.
+# The simulation block below is only a minimal configuration for previewing the component's behavior in the GUI.
 simulation:
   step_size:
     value: 1
@@ -195,34 +230,34 @@ simulation:
     - reminder_intervention
   plans:
     - id: "no_intervention"
-      label: "无干预基线（中等复杂方案，生活压力0.4）"
+      label: "No-intervention baseline (a moderately complex regimen, life stress 0.4)"
       regimens:
         - {variable: life_stress, time_start: "00:00", value: 0.4,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "Sustained moderate stress"}
         - {variable: reminder_intervention, time_start: "00:00", value: 0.0,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "无提醒"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "No reminder"}
 
     - id: "weekly_reminder"
-      label: "每周SMS提醒（强度0.5）"
+      label: "Weekly SMS reminder (intensity 0.5)"
       regimens:
         - {variable: life_stress, time_start: "00:00", value: 0.4,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "Sustained moderate stress"}
         - {variable: reminder_intervention, time_start: "09:00", value: 0.5,
            days: [Mon],
-           date_range: ["2026-01-01", "2026-12-31"], label: "每周一SMS"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "SMS every Monday"}
 
     - id: "daily_app_reminder"
-      label: "每日APP提醒（强度1.0）"
+      label: "Daily app reminder (intensity 1.0)"
       regimens:
         - {variable: life_stress, time_start: "00:00", value: 0.4,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "持续中压"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "Sustained moderate stress"}
         - {variable: reminder_intervention, time_start: "08:00", value: 1.0,
            days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun],
-           date_range: ["2026-01-01", "2026-12-31"], label: "每日APP提醒"}
+           date_range: ["2026-01-01", "2026-12-31"], label: "Daily app reminder"}
 
 references:
   - "WHO (2003) Adherence to Long-Term Therapies: Evidence for Action. World Health Organization, Geneva."

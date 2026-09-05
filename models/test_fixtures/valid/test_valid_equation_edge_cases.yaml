@@ -11,13 +11,6 @@ metadata:
       The zero-division probe checks that the per-equation try/except in `step()` catches
       the runtime error, logs it, and leaves `risky_ratio` at its previous value instead
       of crashing the simulation or propagating NaN/inf into later steps.
-    problem_cn: >
-      验证围绕 asteval / 编译函数双执行路径（ADR 0068/0070）的方程表达式边界情况：
-      三元表达式内嵌链式比较（`1.0 if 0 < level < 10 else 0.0`）、围绕除法的 `and`
-      短路保护（`level > 0 and (1.0 / level) < 1.0`），以及一个当分母降为零时必定
-      抛出 ZeroDivisionError 的方程（`1.0 / countdown`）。零除探针用于验证 `step()`
-      中逐方程的 try/except 能捕获运行时错误、记录日志，并使 `risky_ratio` 保持上一次
-      的值，而不是让仿真崩溃或将 NaN/inf 传播到后续步骤。
     result: >
       Within a step, equations execute in descending priority order (engine sorts
       `_sorted_equations` with `reverse=True`), and each equation reads variables as of
@@ -43,43 +36,17 @@ metadata:
       forever (countdown permanently 0, error logged every step), and
       short_circuit_flag stays 1 (level>0 and 1/level<1 for all level>1).
       No simulation-ending exception should occur at any point.
-    result_cn: >
-      同一步内，方程按优先级从高到低顺序执行（引擎对 `_sorted_equations` 按
-      `reverse=True` 排序），且每个方程读取的是"当前步内最近一次已完成更新"的变量值——
-      因此优先级更高的方程，在读取一个由优先级更低的方程在本步稍后更新的变量时，读到
-      的是上一步的值。逐小时轨迹（level 初始为 5，每步 +1；countdown 初始为 3，每步 -1
-      并在 0 处截断；优先级：short_circuit_probe=5 > zero_division_probe=4 >
-      countdown_dynamics=3 > zone_flag_dynamics=2 > level_dynamics=1）：
-      t=1：short_circuit_flag=1（读取 level=5：5>0 且 1/5<1）；risky_ratio=1/3=0.333
-      （读取本步递减前的 countdown=3）；countdown→2；zone_flag=1（读取 level=5：
-      0<5<10）；level→6。
-      t=2：risky_ratio=1/2=0.5（读取 countdown=2）；countdown→1；zone_flag=1（读取
-      level=6）；level→7。
-      t=3：risky_ratio=1/1=1.0（读取 countdown=1）；countdown→0；zone_flag=1（读取
-      level=7）；level→8。
-      t=4：risky_ratio 读取 countdown=0 → 1/0 抛出 ZeroDivisionError → 被引擎捕获并
-      记录日志，risky_ratio 保持上一次的值（1.0）；countdown 保持 0（截断）；
-      zone_flag=1（读取 level=8）；level→9。
-      t=5：与 t=4 相同，但 zone_flag 读取的是 level=9（仍为 1）；level→10。
-      t=6：zone_flag_dynamics 读取 level=10 → 0<10<10 为假 → zone_flag=0；level→11。
-      此后 zone_flag 恒为 0，risky_ratio 永久冻结在 1.0（countdown 永久为 0，每步都会
-      记录一次错误），short_circuit_flag 恒为 1（对所有 level>1，level>0 且 1/level<1
-      均成立）。整个过程中不应出现导致仿真终止的异常。
     limitations: >
       Pure engine-validation toy; level/countdown/risky_ratio have no physical meaning.
       Only covers the `dynamics:` evaluation path, not `equations[].condition` (see
       test_valid_equation_condition.yaml) or optimization-side expression evaluation.
-    limitations_cn: >
-      纯引擎验证用玩具模型；level/countdown/risky_ratio 没有物理意义。仅覆盖
-      `dynamics:` 求值路径，不覆盖 `equations[].condition`（见
-      test_valid_equation_condition.yaml）或优化器侧的表达式求值。
   tags: [test, equations, edge-case, asteval, error-handling]
   notes: |
-    覆盖了 4 类边界情况：
-    链式比较+三元表达式：1.0 if 0 < level < 10 else 0.0
-    and 短路：level > 0 and (1.0 / level) < 1.0
-    运行时 ZeroDivisionError：1.0 / countdown，countdown 在 t=3 后归零，每步触发 1/0，引擎按 try/except 捕获并记录 ERROR 日志，risky_ratio 冻结在最后一次成功值，不会让仿真崩溃或传播 NaN/inf
-    意外发现并记录：方程按 priority 降序执行（reverse=True），且同一 step 内高 priority 的方程读到的是低 priority 方程本步尚未更新前的值——这点之前没有在任何 test_ 文件里被显式验证过，我在 result: 里把执行顺序和读值时序写清楚了，可作为这个机制的文档参考。
+    Covers 4 categories of edge cases:
+    A chained comparison plus a ternary expression: 1.0 if 0 < level < 10 else 0.0
+    An and short-circuit: level > 0 and (1.0 / level) < 1.0
+    A runtime ZeroDivisionError: 1.0 / countdown, with countdown reaching zero after t=3, triggering 1/0 every step; the engine catches it with try/except and logs an ERROR, freezing risky_ratio at its last successful value without crashing the simulation or propagating NaN/inf
+    An incidental finding recorded here: equations execute in descending order of priority (reverse=True), and within the same step, a higher-priority equation is read by a lower-priority equation before the low-priority one's own update for this step has happened. This had not previously been explicitly validated in any test_ file; the execution order and value-reading timing are spelled out in result: below and can serve as documentation for this mechanism.
 variables:
   level:
     type: state

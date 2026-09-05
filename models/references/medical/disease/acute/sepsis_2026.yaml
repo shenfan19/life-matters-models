@@ -9,25 +9,41 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      按Sepsis-3标准定义，脓毒症是一种因感染导致器官功能障碍的危及生命状态，院内死亡率高达20%至30%。其治疗存在多重时序矛盾：抗生素每延误1小时给药，院内死亡率约增加7.6%，但过于积极的液体复苏会增加肺水肿风险；升压药可快速维持血压，却不能改善组织氧合，不能替代液体复苏对器官灌注的作用。如何在72小时内协调抗生素时机、液体速率和升压药剂量三者，是重症监护决策的核心难题。
+      Under the Sepsis-3 definition, sepsis is a life-threatening state of organ dysfunction
+      caused by infection, with in-hospital mortality as high as 20% to 30%. Its treatment involves
+      multiple temporal tensions: each hour antibiotics are delayed raises in-hospital mortality by
+      about 7.6%, but overly aggressive fluid resuscitation raises pulmonary-edema risk; a
+      vasopressor quickly maintains blood pressure but does not improve tissue oxygenation and
+      cannot substitute for fluid resuscitation's role in organ perfusion. Coordinating antibiotic
+      timing, fluid rate, and vasopressor dose within 72 hours is a core challenge in critical-care
+      decision-making.
     result: >
-      默认仿真72小时显示：在1小时内给予抗生素并启动液体复苏的标准集束化方案下，SOFA评分在24小时内从初始8分降至约4至5分，乳酸从4.2 mmol/L逐步降至2 mmol/L左右，MAP在升压药和液体共同支撑下维持在65 mmHg以上。优化结果表明，增大初始液体复苏速率可同时降低SOFA和乳酸峰值，但超过约450 mL/h后边际收益明显减少。
+      A default 72-hour simulation shows: under a standard bundled protocol giving antibiotics
+      within 1 hour and starting fluid resuscitation, the SOFA score falls from an initial 8 to
+      about 4 to 5 within 24 hours, lactate falls gradually from 4.2 mmol/L to around 2 mmol/L, and
+      MAP is held above 65 mmHg with combined support from the vasopressor and fluids. The
+      optimization result shows that increasing the initial fluid-resuscitation rate can lower both
+      the SOFA score and peak lactate simultaneously, but returns diminish markedly past about 450
+      mL/h.
     limitations: >
-      SOFA评分动力学采用简化线性模型，未涵盖病原体鉴定延误，血培养通常需48至72小时。不区分脓毒症病因，例如肺源性、腹源性、尿路源性等，升压药与心脏后负荷的相互作用也未建模。
+      The SOFA-score dynamics use a simplified linear model and do not cover pathogen-identification
+      delay, since blood cultures typically take 48 to 72 hours. Sepsis etiology, such as pulmonary,
+      abdominal, or urinary source, is not distinguished, and the interaction between vasopressor
+      use and cardiac afterload is not modeled.
   ratings:
-    importance: 0.75 - 脓毒症是ICU最高死亡率急症，时序优化是生死攸关的研究问题；急性病模型，上层场景复用少
-    variable: 1.0 - 引用Sepsis-3/SSC指南及Kumar 2006等关键RCT，参数精确
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.75 - Sepsis is the highest-mortality emergency in the ICU, and timing optimization is a life-or-death research question; an acute-disease model, with low reuse from upstream scenarios
+    variable: 1.0 - Cites the Sepsis-3/SSC guidelines and key RCTs such as Kumar 2006, with precise parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [sepsis, ICU, SOFA, lactate, antibiotics, septic shock, critical care]
 variables:
   sofa_score:
     description: |
-      序贯器官衰竭评估（SOFA，0-24分）。评估6器官：呼吸、凝血、肝、心血管、CNS、肾。
-      Sepsis-3定义：急性SOFA≥2分。初始值8（重度脓毒症）；
-      目标：72h后降至<4（器官功能恢复）。
+      The Sequential Organ Failure Assessment score (SOFA, 0-24). It assesses 6 organ systems: respiratory, coagulation, hepatic, cardiovascular, CNS, and renal.
+      The Sepsis-3 definition requires an acute SOFA increase >=2. An initial value of 8 (severe sepsis);
+      the target is falling below 4 by 72h (organ-function recovery).
     value: 8.0
     unit: points
     type: state
@@ -36,8 +52,8 @@ variables:
 
   lactate_mmol:
     description: |
-      血乳酸（mmol/L）。正常<2；>2=组织低灌注；>4=脓毒性休克。
-      SSC目标：乳酸<2 mmol/L（液体复苏有效）。初始值4.2（脓毒性休克）。
+      Blood lactate (mmol/L). Normal is <2; >2 indicates tissue hypoperfusion; >4 indicates septic shock.
+      The SSC target is lactate <2 mmol/L (effective fluid resuscitation). An initial value of 4.2 (septic shock).
     value: 4.2
     unit: mmol/L
     type: state
@@ -46,8 +62,8 @@ variables:
 
   map_mmhg:
     description: |
-      平均动脉压（mmHg）。正常70-100 mmHg；脓毒性休克<65 mmHg。
-      SSC目标：MAP≥65 mmHg（升压药维持）。初始值58（低血压）。
+      Mean arterial pressure (mmHg). Normal is 70-100 mmHg; septic shock is <65 mmHg.
+      The SSC target is MAP >=65 mmHg (maintained by a vasopressor). An initial value of 58 (hypotension).
     value: 58.0
     unit: mmHg
     type: state
@@ -56,8 +72,8 @@ variables:
 
   procalcitonin:
     description: |
-      降钙素原（ng/mL）。正常<0.1；>0.5=细菌感染；>10=重度脓毒症。
-      抗生素治疗有效时48h内开始下降（t½≈24h，Seymour 2017）。
+      Procalcitonin (ng/mL). Normal is <0.1; >0.5 indicates bacterial infection; >10 indicates severe sepsis.
+      When antibiotic treatment is effective, it starts falling within 48h (t1/2 is about 24h, Seymour 2017).
     value: 18.0
     unit: ng/mL
     type: state
@@ -66,8 +82,8 @@ variables:
 
   creatinine:
     description: |
-      血肌酐（μmol/L）。正常男性62-115；急性肾损伤（AKI）>177（Sepsis-3）。
-      脓毒症肾损伤为最常见器官并发症（Singer 2016）。
+      Serum creatinine (umol/L). Normal in men is 62-115; acute kidney injury (AKI) is >177 (Sepsis-3).
+      Sepsis-associated kidney injury is the most common organ complication (Singer 2016).
     value: 220.0
     unit: μmol/L
     type: state
@@ -76,8 +92,8 @@ variables:
 
   urine_output_ml_hr:
     description: |
-      每小时尿量（mL/h）。正常≥0.5 mL/kg/h（体重70kg→≥35 mL/h）；
-      少尿：<0.5 mL/kg/h；无尿：<10 mL/h（严重AKI）。
+      Hourly urine output (mL/h). Normal is >=0.5 mL/kg/h (at 70kg body weight, >=35 mL/h);
+      oliguria: <0.5 mL/kg/h; anuria: <10 mL/h (severe AKI).
     value: 15.0
     unit: mL/h
     type: state
@@ -86,9 +102,9 @@ variables:
 
   antibiotic_timing_hours:
     description: |
-      抗生素首剂给药时机（就诊后小时数）。
-      SSC 1h集束化目标：≤1h；Kumar 2006：每延误1h死亡率+7.6%。
-      0=立即给药，1=1小时延误，3=严重延误。
+      The timing of the first antibiotic dose (hours after presentation).
+      The SSC 1-hour bundle target is <=1h; Kumar 2006: each hour of delay raises mortality by +7.6%.
+      0=immediate administration, 1=a 1-hour delay, 3=a severe delay.
     value: 0.0
     unit: hours after admission
     type: input
@@ -96,8 +112,8 @@ variables:
 
   fluid_resuscitation_ml_hr:
     description: |
-      液体复苏速率（mL/h）。SSC推荐：30 mL/kg（70kg=2100 mL）在3小时内给予
-      → 约700 mL/h。维持阶段约100-200 mL/h。上限500 mL/h（防肺水肿）。
+      The fluid-resuscitation rate (mL/h). SSC recommendation: 30 mL/kg (2100 mL at 70kg)
+      given within 3 hours, about 700 mL/h. The maintenance phase is about 100-200 mL/h. A ceiling of 500 mL/h (preventing pulmonary edema).
     value: 0.0
     unit: mL/h
     type: input
@@ -105,8 +121,8 @@ variables:
 
   vasopressor_dose:
     description: |
-      升压药剂量（相对单位，1.0=去甲肾上腺素0.1 μg/kg/min标准剂量）。
-      SSC目标：维持MAP≥65 mmHg；>2.0=大剂量升压（预后差）。
+      Vasopressor dose (relative units, 1.0=the standard norepinephrine 0.1 μg/kg/min dose).
+      The SSC target is maintaining MAP >=65 mmHg; >2.0 is a high vasopressor dose (poor prognosis).
     value: 0.0
     unit: relative units
     type: input
@@ -114,15 +130,15 @@ variables:
 
   antibiotic_sofa_improvement:
     description: |
-      有效抗生素治疗对SOFA的每小时改善量（分/h）。
-      及时给药（<1h）时改善率约0.15分/h；延误3h降至约0.08分/h（Kumar 2006）。
+      The hourly SOFA improvement from effective antibiotic treatment (points/h).
+      Timely administration (<1h) gives an improvement rate of about 0.15 points/h; a 3h delay lowers it to about 0.08 points/h (Kumar 2006).
     value: 0.12
     unit: points/hour
     type: parameter
     reference: "Kumar A et al. (2006) Crit Care Med 34:1589-1596"
 
   fluid_map_response:
-    description: 液体复苏对MAP的提升效应（mmHg per 100 mL/h）。初始灌注不足时效应大，MAP接近正常后减弱。
+    description: The MAP-raising effect of fluid resuscitation (mmHg per 100 mL/h). The effect is large when initial perfusion is deficient, weakening as MAP approaches normal.
     value: 0.8
     unit: mmHg per 100 mL/h
     type: parameter
@@ -130,7 +146,7 @@ variables:
 
 equations:
   antibiotic_effect:
-    description: 抗生素（考虑延误时机）清除病原体，降低SOFA和降钙素原；延误越长效果越差
+    description: The antibiotic, accounting for timing delay, clears the pathogen and lowers SOFA and procalcitonin; effectiveness declines with longer delay
     step_unit: hour
     condition: true
     priority: 10
@@ -142,7 +158,7 @@ equations:
         max(0.05, procalcitonin - procalcitonin * 0.035 * max(0.1, 1 - antibiotic_timing_hours * 0.08) * step)
 
   fluid_resuscitation:
-    description: 液体复苏升高MAP，改善组织灌注（降低乳酸），提升尿量
+    description: Fluid resuscitation raises MAP, improves tissue perfusion (lowering lactate), and increases urine output
     step_unit: hour
     condition: fluid_resuscitation_ml_hr > 0
     priority: 9
@@ -155,7 +171,7 @@ equations:
         min(150, urine_output_ml_hr + fluid_resuscitation_ml_hr * 0.05 * step)
 
   vasopressor_effect:
-    description: 升压药维持MAP≥65 mmHg（直接血管收缩），不改善组织灌注（不降低乳酸）
+    description: The vasopressor maintains MAP >=65 mmHg via direct vasoconstriction, without improving tissue perfusion (does not lower lactate)
     step_unit: hour
     condition: vasopressor_dose > 0
     priority: 8
@@ -164,7 +180,7 @@ equations:
         min(110, map_mmhg + vasopressor_dose * 8.0 * step)
 
   organ_recovery:
-    description: MAP改善后肾功能恢复（肌酐下降，尿量增加）
+    description: Renal function recovers once MAP improves (creatinine falls, urine output rises)
     step_unit: hour
     condition: map_mmhg >= 65
     priority: 6
@@ -175,7 +191,7 @@ equations:
         min(100, urine_output_ml_hr + (map_mmhg - 65) * 0.3 * step)
 
   lactate_clearance:
-    description: 乳酸随MAP恢复和灌注改善自然清除（SSC目标<2 mmol/L）
+    description: Lactate clears naturally as MAP and perfusion improve (the SSC target is <2 mmol/L)
     step_unit: hour
     condition: map_mmhg >= 60
     priority: 5
@@ -199,25 +215,25 @@ simulation:
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-01"]
-      label: "入院1小时内首剂抗生素（SSC集束化）"
+      label: "First antibiotic dose within 1 hour of admission (SSC bundle)"
     - variable: fluid_resuscitation_ml_hr
       time_start: "00:00"
       value: 700.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-01"]
-      label: "初始液体复苏700mL/h（3h内完成30mL/kg）"
+      label: "Initial fluid resuscitation, 700mL/h (30mL/kg given within 3h)"
     - variable: fluid_resuscitation_ml_hr
       time_start: "03:00"
       value: 150.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-04"]
-      label: "维持液体150mL/h"
+      label: "Maintenance fluids, 150mL/h"
     - variable: vasopressor_dose
       time_start: "00:00"
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-01-02"]
-      label: "去甲肾上腺素标准剂量（MAP<65时）"
+      label: "Standard norepinephrine dose (when MAP<65)"
 
 optimization:
   method: nsga2
@@ -225,32 +241,32 @@ optimization:
   - variable: sofa_score
     metric: final
     direction: minimize
-    description: "最小化72h SOFA评分（器官功能保护）"
+    description: "Minimizing the 72h SOFA score (organ-function protection)"
   - variable: lactate_mmol
     metric: max
     direction: minimize
-    description: "最小化乳酸峰值（组织灌注最优化）"
+    description: "Minimizing peak lactate (optimizing tissue perfusion)"
   constraints:
   - variable: map_mmhg
     condition: ">= 65"
     type: hard
-    description: "MAP≥65 mmHg（SSC目标，防止器官衰竭）"
+    description: "MAP >=65 mmHg (the SSC target, preventing organ failure)"
   - variable: fluid_resuscitation_ml_hr
     condition: "<= 500"
     type: hard
-    description: "液体速率上限500mL/h（防肺水肿）"
+    description: "A fluid-rate ceiling of 500mL/h (preventing pulmonary edema)"
   startpoint:
     regimens:
     - variable: fluid_resuscitation_ml_hr
       time_start: "00:00"
       time_end: "00:00"
-      label: "初始液体复苏速率（mL/h）"
+      label: "Initial fluid-resuscitation rate (mL/h)"
       optimize:
         value: [300, 500]
     - variable: fluid_resuscitation_ml_hr
       time_start: "03:00"
       time_end: "03:00"
-      label: "维持液体速率（mL/h）"
+      label: "Maintenance fluid rate (mL/h)"
       optimize:
         value: [50, 250]
   algorithm:

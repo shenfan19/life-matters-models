@@ -1,12 +1,12 @@
-# 干预方案（regimens）与优化器
+# Regimens and the Optimizer
 
-## simulation.plans[*].regimens — 时间驱动的 input 序列
+## simulation.plans[*].regimens: a Time-Driven input Sequence
 
-仿真输入方案的唯一合法位置是 `simulation.plans[*].regimens`（ADR 0109，字段名见 ADR 0117）。每个 plan 包含一组 regimens 条目，描述该方案中各 `type: input` 变量的时间驱动输入。**所有 input 都是 sustained（ADR 0127）**：每个条目对应一个 `[time_start, time_end)` 生效窗口，命中窗口的每个 step 按 `value / N_steps` 写入，窗口外自动为 0，**每次命中（每个匹配日）独立累计贡献恒等于 `value`**，与 step_size 无关，也与 `days`/`date_range` 让这个条目匹配了多少天无关（ADR 0131，见后文"value 语义"）。不存在一个独立于 sustained 之外、字面意义的"pulse 模式"——窗宽窄到 1 个 step，数值上就是过去说的"pulse"。
+The only legal location for a simulation's input schedule is `simulation.plans[*].regimens` (ADR 0109; the field name is set in ADR 0117). Each plan holds a set of regimen entries describing the time-driven input for each `type: input` variable in that plan. Every input is sustained (ADR 0127): each entry corresponds to a `[time_start, time_end)` effective window, and each step that falls inside the window is written as `value / N_steps`, with a step outside the window automatically 0, so that each hit (each matching day) independently accumulates a contribution always equal to `value`, regardless of `step_size` and regardless of how many days `days`/`date_range` cause this entry to match (ADR 0131; see "value semantics" below). There is no literal "pulse mode" that exists separately from sustained; a window narrowed to a single step is numerically identical to what used to be called a pulse.
 
-**不再支持 `simulation.schedules` 顶层字段**（旧格式，已于 ADR 0109 废弃）。
+The top-level `simulation.schedules` field is no longer supported (the old format, deprecated in ADR 0109).
 
-### 标准格式（单方案模型）
+### Standard Format (a Single-Plan Model)
 
 ```yaml
 simulation:
@@ -19,194 +19,176 @@ simulation:
         - variable: carb_intake
           time_start: "07:00"
           value: 50.0
-          days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 可省略，缺席 = 每天
-          date_range: ["2026-01-01", "2026-01-04"]        # 可省略，缺席 = 全程
-          label: "早餐碳水"
+          days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # optional; absent = every day
+          date_range: ["2026-01-01", "2026-01-04"]        # optional; absent = the whole run
+          label: "Breakfast carbs"
         - variable: carb_intake
           time_start: "12:00"
           value: 80.0
-          label: "午餐碳水"
+          label: "Lunch carbs"
         - variable: carb_intake
           time_start: "18:30"
           value: 60.0
-          label: "晚餐碳水"
+          label: "Dinner carbs"
 ```
 
-### 字段说明
+### Field Reference
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 |------|------|------|------|
-| `variable` | string | ✅ | 必须是 `variables` 中 `type: input` 的变量名 |
-| `time_start` | `"HH:MM"` | — | 生效窗口起点（24 小时制）；缺省规则见下方"窗宽默认规则" |
-| `time_end` | `"HH:MM"` | — | 生效窗口终点；缺省规则见下方"窗宽默认规则" |
-| `value` | number | ✅ | 窗口内的**总量**（不是每步的量），累计贡献恒等于这个数，与 step_size/窗宽无关 |
-| `days` | `[Mon…Sun]` | — | 三字母缩写列表；缺席 = 每天都触发 |
-| `date_range` | `["YYYY-MM-DD", "YYYY-MM-DD"]` | — | 条目仅在此日历区间内生效；缺席 = 从 `start_date` 到 `end_date` 全程 |
-| `label` | string | — | GUI 展示用说明文字 |
+| `variable` | string | Yes | Must be the name of a `type: input` variable in `variables` |
+| `time_start` | `"HH:MM"` | — | The start of the effective window (24-hour clock); see "window-width default rules" below for the default |
+| `time_end` | `"HH:MM"` | — | The end of the effective window; see "window-width default rules" below for the default |
+| `value` | number | Yes | The total quantity within the window (not the per-step quantity); the accumulated contribution always equals this number, regardless of step size or window width |
+| `days` | `[Mon...Sun]` | — | A list of three-letter abbreviations; absent means it triggers every day |
+| `date_range` | `["YYYY-MM-DD", "YYYY-MM-DD"]` | — | The entry is effective only within this calendar range; absent means the whole span from `start_date` to `end_date` |
+| `label` | string | — | Explanatory text for GUI display |
 
-#### 窗宽默认规则（ADR 0127）
+#### Window-Width Default Rules (ADR 0127)
 
-`time_start`/`time_end` 都不是必填——**都不写，不代表"缺配置"，代表建模者选择了一种明确的
-窗宽**，引擎按下面规则解析（不需要建模者自己拼 `time_start`/`time_end`，写清楚意图就够了）：
+Neither `time_start` nor `time_end` is required. Leaving both unwritten does not mean "configuration is missing"; it means the modeler has chosen a specific window width, which the engine resolves by the following rules (the modeler does not need to piece together `time_start`/`time_end` manually, just state the intent clearly):
 
-| 写法 | 生效窗口 | 适用场景 |
+| Form | Effective window | Applicable scenario |
 |---|---|---|
-| 两个都不写 | 全天 `["00:00", "24:00"]` | day-rate 输入（如日总热量缺口、日均摄入量）——这类量本来就没有"发生在哪一刻"这个概念，不该被迫编一个不存在的触发时刻 |
-| 只写 `time_start` | `time_end` = `time_start`（单 step 窗口） | 离散事件（进食、给药）——数值上与旧称呼的"pulse"完全相同 |
-| 两个都写 | 显式区间 | 子日步长模型里"持续强度/持续防护"这类跨多个 step 的输入 |
+| Neither written | All day, `["00:00", "24:00"]` | A day-rate input, such as a total daily caloric deficit or an average daily intake, a quantity that never had a concept of "the moment it happens" and should not be forced to invent a trigger time that does not exist |
+| Only `time_start` written | `time_end` = `time_start` (a single-step window) | A discrete event (a meal, a dose), numerically identical to what used to be called a "pulse" |
+| Both written | An explicit interval | An input spanning multiple steps in a sub-day step-size model, such as sustained intensity or sustained protection |
 
-不要为了凑出"pulse 效果"而手写 `time_start == time_end`——只写 `time_start` 就是这个效果，
-显式写两个相同值反而容易让读者误以为二者独立可调。
+Do not hand-write `time_start == time_end` just to reproduce the pulse effect; writing only `time_start` already achieves it, and writing two identical values explicitly makes readers more likely to think the two are independently adjustable.
 
-### 多条目 vs 多周期
+### Multiple Entries Versus Multiple Cycles
 
-同一变量**可以有多个条目**（如三餐），引擎在同一步内累加所有命中事件：
+The same variable can have multiple entries (three meals, for instance), and the engine sums every hit within the same step:
 
 ```yaml
-# 三餐：每步最多命中一个，累加结果 = 单餐值（不同时段错开）
-# 步长 1 天时：三个条目在同一步内全部命中 → dietary_protein = 0.27+0.27+0.26 = 0.80
+# Three meals: at most one hits per step, so the accumulated result equals a single meal's value (staggered across times)
+# With a 1-day step size: all three entries hit within the same step, so dietary_protein = 0.27+0.27+0.26 = 0.80
 ```
 
-`date_range` 用于表达**分阶段方案**（如训练周期渐进），不要用"每周重复列条目"替代：
+`date_range` expresses a staged plan (such as progressive training phases); do not substitute "listing repeated weekly entries" for it:
 
 ```yaml
-# ✅ 正确：用 date_range 区分阶段
+# Correct: use date_range to distinguish phases
 regimens:
   - variable: training_load
     time_start: "09:00"
     value: 50.0
     days: [Mon, Tue, Wed, Thu, Fri]
-    date_range: ["2026-01-01", "2026-01-28"]   # 基础期 4 周
+    date_range: ["2026-01-01", "2026-01-28"]   # base phase, 4 weeks
   - variable: training_load
     time_start: "09:00"
     value: 100.0
     days: [Mon, Tue, Wed, Thu, Fri]
-    date_range: ["2026-01-29", "2026-02-25"]   # 强化期 4 周
+    date_range: ["2026-01-29", "2026-02-25"]   # build phase, 4 weeks
 
-# ❌ 错误：逐周罗列（冗余，条目数 = 周数 × 2）
+# Wrong: listing week by week (redundant, entry count = number of weeks x 2)
 regimens:
   - variable: training_load
     value: 50.0
-    date_range: ["2026-01-01", "2026-01-07"]   # 第1周
+    date_range: ["2026-01-01", "2026-01-07"]   # week 1
   - variable: training_load
     value: 50.0
-    date_range: ["2026-01-08", "2026-01-14"]   # 第2周（与第1周相同，无意义）
+    date_range: ["2026-01-08", "2026-01-14"]   # week 2 (identical to week 1, pointless)
 ```
 
-### 多阶段方案的推荐写法：baseline + 增量（ADR 0126）
+### Recommended Form for a Multi-Phase Plan: Baseline Plus Increment (ADR 0126)
 
-引擎对同一变量的多条 regimen 是"每步清零后逐条累加"（不是覆盖）——这个行为本身是对的
-（上面三餐累加就是这么设计的），但如果用"每个阶段各写一条完整目标值，靠 `date_range`
-首尾相接实现互斥切换"这种写法，**要求每一条都精确写对 date_range，漏写其中一条就等于让
-它全程生效，与其余阶段叠加**（真实案例：某三阶段饮食方案的限制期条目漏写 `date_range`，
-导致进入后续阶段后限制期目标量仍在叠加，症状分数被系统性拉高）。
+The engine handles multiple regimen entries for the same variable by resetting to zero each step and accumulating them one by one, not by overriding. That behavior itself is correct; it is exactly how the three-meals accumulation above is designed to work. But if a plan is written as "one complete target value per phase, with mutually exclusive switching achieved end-to-end through `date_range`," every entry has to get its `date_range` exactly right, and missing one on a single entry makes it effective for the entire run, stacking on top of every other phase (a real case: a three-phase diet plan's restriction-phase entry was missing `date_range`, so its target quantity kept stacking after the plan moved into later phases, systematically inflating the symptom score).
 
-推荐换一种写法：一条**不写 `date_range` 的 baseline 条目**（本来就该全程生效，不存在
-"忘记设终止日期"的陷阱）+ 若干条**限定 `date_range` 的增量条目**（值是"相对 baseline 的
-差量"，不是目标绝对值）：
+The recommended alternative is one baseline entry with no `date_range` (which should be effective for the whole run anyway, so there is no "forgot to set an end date" trap) plus several increment entries scoped by `date_range`, whose value is the difference relative to baseline, not an absolute target:
 
 ```yaml
-# ✅ baseline + 增量：唯一不写 date_range 的条目本来就该全程生效
+# Correct: baseline plus increment; the one entry with no date_range is meant to be effective for the whole run anyway
 regimens:
   - variable: fodmap_intake
     time_start: "00:00"
-    value: 22.0                              # baseline：维持期目标量，全程生效
+    value: 22.0                              # baseline: the maintenance-phase target, effective for the whole run
   - variable: fodmap_intake
     time_start: "00:00"
-    value: -15.0                             # 限制期相对 baseline 的减量
+    value: -15.0                             # the restriction phase's reduction relative to baseline
     date_range: ["2026-01-01", "2026-01-28"]
   - variable: fodmap_intake
     time_start: "00:00"
-    value: -2.0                              # 重引入期相对 baseline 的减量
+    value: -2.0                              # the reintroduction phase's reduction relative to baseline
     date_range: ["2026-01-29", "2026-04-01"]
 
-# ❌ 每阶段各写完整目标值：漏写/写错任意一段 date_range 都会导致累加而非替代
+# Wrong: writing a full target value for each phase; missing or misdated date_range on any one entry causes stacking instead of replacement
 regimens:
   - variable: fodmap_intake
     value: 7.0
-    date_range: ["2026-01-01", "2026-01-28"]   # 限制期目标量
+    date_range: ["2026-01-01", "2026-01-28"]   # the restriction-phase target
   - variable: fodmap_intake
     value: 20.0
-    date_range: ["2026-01-29", "2026-04-01"]   # 重引入期目标量
+    date_range: ["2026-01-29", "2026-04-01"]   # the reintroduction-phase target
   - variable: fodmap_intake
-    value: 22.0                                 # 维持期目标量——如果忘记写这一条的 date_range，
-                                                 # 会在限制期/重引入期也生效，与其余条目叠加
+    value: 22.0                                 # the maintenance-phase target: if this entry's date_range is
+                                                 # forgotten, it also applies during the other two phases and stacks with them
 ```
 
-baseline+增量写法里，即使某条增量条目漏写 `date_range`，也只是让增量多算了几天（同量级的
-小偏差），不会出现"整个目标值"量级的叠加错误——这是选它而不是"每阶段完整目标值"的原因。
+With the baseline-plus-increment form, even if an increment entry's `date_range` is missing, it only overcounts the increment for a few days, a small deviation of the same order of magnitude, rather than a full-target-value-scale stacking error; that is why this form is preferred over writing a complete target value for every phase.
 
-#### opt 端已知局限：阶段切换时机是搜索变量时，增量条目的 `date_range` 无法跟着联动
+#### A Known Limitation on the opt Side: When Phase-Switch Timing Is a Search Variable, an Increment Entry's `date_range` Cannot Track It
 
-T4（干预日期范围优化，见后文）可以让"阶段切换的时间点"本身成为搜索变量。但如果同时想用
-baseline+增量写法表达多阶段，且某个增量条目的 `date_range` 端点应该"跟着 T4 搜索到的切换
-时机走"，**目前引擎不支持这种跨条目的日期联动**——`date_range` 只能是写死的日期，或者
-本条目自己的 `optimize.date_range` 搜索窗，不能引用"另一个 regimen 条目搜索到的值"：
+T4 (intervention date-range optimization, covered below) can turn a phase-switch time point itself into a search variable. But if a multi-phase plan is expressed in the baseline-plus-increment style and one increment entry's `date_range` endpoint should "follow the switch timing T4 searches for," the engine currently does not support this kind of cross-entry date linkage; `date_range` can only be a hardcoded date, or that entry's own `optimize.date_range` search window, and it cannot reference "the value another regimen entry's search found":
 
 ```yaml
-# T4 搜索"限制期结束在哪天"，但重引入期增量条目的 date_range 起点无法自动跟随这个搜索结果
+# T4 searches for "which day the restriction phase ends," but the reintroduction phase's
+# increment entry cannot automatically follow that search result for its date_range start
 regimens:
   - variable: fodmap_intake
     value: 22.0                       # baseline
   - variable: fodmap_intake
     optimize:
       value: [-18.0, -10.0]
-      date_range:                      # T4：限制期本身的持续时长是搜索变量
+      date_range:                      # T4: the restriction phase's own duration is the search variable
         - ["2026-01-01", "2026-01-01"]
         - ["2026-01-22", "2026-03-05"]
   - variable: fodmap_intake
     value: -2.0
-    date_range: ["???", "2026-04-01"]  # ❌ 起点无法写成"上面 T4 搜索到的结束日"
+    date_range: ["???", "2026-04-01"]  # wrong: the start cannot be written as "the end date T4 found above"
 ```
 
-**当前的应对方式**（接受为受控成本，非引擎缺陷）：opt 端涉及多阶段日期联动的需求，退回
-手动限定固定的 `date_range` 搜索窗，由建模者在 Sim 侧确认结果、必要时手动调整 opt 输入的
-日期范围后重新搜索，不追求"一次优化自动联动所有阶段边界"。这类 opt 端输入设计的便利性，
-留给未来的功能改进或 plugin，不在当前投入范围内（ADR 0126）。
+Current handling (accepted as a controlled cost, not an engine defect): a need for multi-phase date linkage on the opt side falls back to manually fixing the `date_range` search window, letting the modeler confirm the result on the Sim side and, if needed, manually adjust the opt input's date range before re-searching, rather than pursuing a single optimization run that automatically links every phase boundary. The convenience of this kind of opt-side input design is left for a future feature improvement or plugin and is not within the current scope of investment (ADR 0126).
 
-### 与 GUI inputEvents 的关系
+### Relationship to GUI inputEvents
 
-`simulation.plans[*].regimens` 是模型加载时 GUI `inputEvents` 的来源：GUI 按 plan 解析 YAML 后填充
-`inputEvents`，此后一次仿真 session 实际使用的就是 `inputEvents`（用户可编辑、可被优化结果覆盖）——
-不存在"YAML 在每步覆盖 GUI 编辑"的运行时冲突（ADR 0074/0115）。
+`simulation.plans[*].regimens` is the source of GUI `inputEvents` at model load time: the GUI parses the YAML per plan and populates `inputEvents`, and from then on a simulation session actually uses `inputEvents` (which the user can edit and which an optimization result can overwrite). There is no runtime conflict of "the YAML overriding the GUI's edits on every step" (ADR 0074/0115).
 
-**建模者须知**：GUI 上对某变量的手动调整一般直接生效；若该变量同时被 `optimization.startpoint.regimens`
-标记为决策变量（`optimize:` 块），优化运行时由优化器接管该变量的取值，与 Sim 面板的手动值是两套独立的
-搜索/预览状态。
+Note for modelers: a manual adjustment to a variable in the GUI generally takes effect directly; if that variable is also marked as a decision variable via `optimization.startpoint.regimens` (an `optimize:` block), the optimizer takes over that variable's value while running, as an independent search/preview state separate from the Sim panel's manual value.
 
-### 离散输入不写零值点
+### Discrete Inputs Do Not Need a Zero-Value Point
 
-> `type: input` 的离散量（进食、给药等）无需插入 `value: 0` 的关闭点——窗口外自动为 0。
+A discrete `type: input` quantity (a meal, a dose, etc.) does not need an inserted `value: 0` closing point; it is automatically 0 outside the window.
 
 ```yaml
-# ✅ 只写非零时刻
+# Correct: only write the nonzero moment
 - variable: carb_intake
   time_start: "07:00"
   value: 50.0
 
-# ❌ 冗余的 0 值点
+# Wrong: a redundant zero-value point
 - variable: carb_intake
   time_start: "07:30"
-  value: 0.0    # 不需要，窗口外自动补零
+  value: 0.0    # unnecessary; it is automatically zero outside the window
 ```
 
-例外：连续速率类变量（如持续泵药 `infusion_rate`）需要保留明确的关闭点。
+Exception: a genuinely continuous-rate variable, such a sustained infusion's `infusion_rate`, needs an explicit closing point.
 
-### 向后兼容：旧字典格式
+### Backward Compatibility: the Old Dict Format
 
-旧版 dict 格式（`{varName: {interpolation, points: [{time: 秒数, value}]}}`）在引擎中仍可解析，但不再推荐，新模型应使用扁平列表格式。
+The old dict format (`{varName: {interpolation, points: [{time: seconds, value}]}}`) still parses in the engine but is no longer recommended; new models should use the flat list format.
 
 ---
 
-## simulation.plans — 预定义多方案比较
+## simulation.plans: Predefined Multi-Plan Comparison
 
-`simulation.plans` 允许建模者在 YAML 中预置多个命名方案，GUI 加载模型时直接呈现为 Plan 列表供多方案并行仿真（F-MPLAN）。
+`simulation.plans` lets a modeler pre-configure several named plans in the YAML, which the GUI presents directly as a Plan list for parallel multi-plan simulation (F-MPLAN) when the model loads.
 
-**使用场景**：
-- 论文模型（papers/）：将 Pareto 前沿的代表点写成具名方案，读者打开即可比较"肾保护优先"vs"肌肉保留优先"
-- 临床对照：预置"指南标准剂量"与"优化剂量"方案，直接展示论文图表对应的输入
+Use cases:
+- Paper models (papers/): write a Pareto front's representative points as named plans, so a reader can open the model and immediately compare, say, kidney-protection-first versus muscle-preservation-first.
+- Clinical controls: pre-configure a "guideline standard dose" plan alongside an "optimized dose" plan, showing the exact inputs a paper's figures correspond to.
 
-**格式**：
+Format:
 
 ```yaml
 simulation:
@@ -214,89 +196,89 @@ simulation:
   end_date:   "2026-12-31"
   plans:
     - id: "kidney_protect"
-      label: "肾保护优先（Pareto 端点）"
+      label: "Kidney-protection-first (Pareto endpoint)"
       regimens:
         - variable: dietary_protein
           time_start: "08:00"
           value: 0.22
           days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-          label: "早餐蛋白质"
+          label: "Breakfast protein"
         - variable: dietary_protein
           time_start: "12:00"
           value: 0.21
-          label: "午餐蛋白质"
+          label: "Lunch protein"
         - variable: dietary_protein
           time_start: "18:00"
           value: 0.22
-          label: "晚餐蛋白质"
+          label: "Dinner protein"
     - id: "balanced"
-      label: "临床平衡方案"
+      label: "Clinically balanced plan"
       regimens:
         - variable: dietary_protein
           time_start: "08:00"
           value: 0.29
-          label: "早餐蛋白质"
+          label: "Breakfast protein"
         - variable: dietary_protein
           time_start: "12:00"
           value: 0.27
-          label: "午餐蛋白质"
+          label: "Lunch protein"
         - variable: dietary_protein
           time_start: "18:00"
           value: 0.28
-          label: "晚餐蛋白质"
+          label: "Dinner protein"
     - id: "muscle_preserve"
-      label: "肌肉保留优先（Pareto 端点）"
+      label: "Muscle-preservation-first (Pareto endpoint)"
       regimens:
         - variable: dietary_protein
           time_start: "08:00"
           value: 0.38
-          label: "早餐蛋白质"
+          label: "Breakfast protein"
         - variable: dietary_protein
           time_start: "12:00"
           value: 0.36
-          label: "午餐蛋白质"
+          label: "Lunch protein"
         - variable: dietary_protein
           time_start: "18:00"
           value: 0.37
-          label: "晚餐蛋白质"
+          label: "Dinner protein"
 ```
 
-**字段说明**：
+Field reference:
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 |------|------|------|------|
-| `id` | string | ✅ | 方案唯一标识（小写加下划线） |
-| `label` | string | ✅ | GUI 显示名称 |
-| `regimens` | list | ✅ | 条目格式同上，每个条目为一个时间驱动输入事件 |
+| `id` | string | Yes | The plan's unique identifier (lowercase with underscores) |
+| `label` | string | Yes | The name displayed in the GUI |
+| `regimens` | list | Yes | Same entry format as above; each entry is one time-driven input event |
 
-**唯一合法位置（ADR 0109）**：仿真输入方案只允许存在于 `simulation.plans[*].regimens`，不允许顶层 `simulation.schedules`。单方案模型使用 `id: default` 的单个 plan。
+The only legal location (ADR 0109): a simulation's input schedule may only exist under `simulation.plans[*].regimens`, never under a top-level `simulation.schedules`. A single-plan model uses one plan with `id: default`.
 
-**Plan 的 session 语义**：Plan 是 GUI 运行时对象，建模者在 YAML 中预置的是初始状态；用户在 GUI 中可继续添加、修改、删除方案，不会回写到 YAML 文件。
-
----
-
-## 分层约束
-
-1. **Model**：只能 `import` 其他 Model，严禁引用 Story。
-2. **Story**：组合 Model 并配置场景，允许 `optimization` 配置和 `patches`。
-3. **循环检测**：`LoaderEngine` 自动阻止循环导入。
+Session semantics of a Plan: a Plan is a GUI runtime object, and what the modeler pre-configures in the YAML is only its initial state; the user can go on adding, editing, or deleting plans in the GUI, and none of that is written back to the YAML file.
 
 ---
 
-## lm_score — Life Matters 健康时长核心指标
+## Layered Constraints
 
-`lm_score` 是 Life Matters 框架的约定核心变量，表示**关键指标同时满足健康条件的累计时长**。它是普通的 `state` 变量 + 标准方程，建模者在 YAML 中完整写出，无任何引擎特殊处理。变量名 `lm_score` 是约定俗成，可自由覆盖或重命名。
+1. Model: may only `import` other Models, and must never reference a Story.
+2. Story: composes Models and configures a scenario, and may include `optimization` configuration and `patches`.
+3. Cycle detection: `LoaderEngine` automatically blocks a circular import.
 
-### 两种积累语义
+---
 
-| 语义 | 描述 | 适用场景 |
+## lm_score: Life Matters's Core Healthy-Duration Metric
+
+`lm_score` is the Life Matters framework's conventional core variable, representing the accumulated duration for which key metrics simultaneously satisfy a healthy condition. It is an ordinary `state` variable plus a standard equation, written out in full by the modeler in the YAML, with no special engine handling. The variable name `lm_score` is a convention and can be freely overridden or renamed.
+
+### Two Accumulation Semantics
+
+| Semantics | Description | Applicable scenario |
 |------|------|---------|
-| **可恢复**（cumulative） | 条件满足期间累加，不满足期间暂停；恢复后继续累计 | 慢性病管理、低血糖可扛过、轻度症状 |
-| **不可逆**（latch） | 条件一旦不满足，`lm_alive` 标志永久归零，之后即使恢复也不再累计 | 器官衰竭、不可逆死亡事件 |
+| Recoverable (cumulative) | Accumulates while the condition holds and pauses while it does not; resumes accumulating once it holds again | Chronic-disease management, a hypoglycemic episode that can be survived, mild symptoms |
+| Irreversible (latch) | Once the condition stops holding, the `lm_alive` flag zeroes out permanently, and accumulation never resumes even if the condition is later restored | Organ failure, an irreversible death event |
 
-### YAML 写法
+### YAML Form
 
-**可恢复模式**（推荐默认）：
+Recoverable mode (the recommended default):
 
 ```yaml
 variables:
@@ -304,20 +286,20 @@ variables:
     type: state
     value: 0.0
     unit: day
-    description: "健康时长：GFR 与血压同时在安全范围内的累计仿真天数"
+    description: "Healthy duration: accumulated simulated days with both GFR and blood pressure in the safe range"
     reference: "Life Matters Framework core metric"
 
 equations:
   lm_score_update:
-    step_unit: day    # lm_score 单位是 day，step_unit 必须声明为 day——
-                      # 若 simulation.step_size 是 hour 而这里误写成 hour，
-                      # step 会按小时累加，把 lm_score 放大 24 倍（实测过的真实事故）。
+    step_unit: day    # lm_score's unit is day, so step_unit must be declared as day.
+                      # If simulation.step_size is hour and this is mistakenly left as hour,
+                      # step accumulates by the hour and inflates lm_score by 24x (a real incident that has been observed).
     dynamics:
       lm_score: "lm_score + step if (GFR >= 15 and SBP <= 160) else lm_score"
-    description: "累加健康时长（可恢复）"
+    description: "Accumulates healthy duration (recoverable)"
 ```
 
-**不可逆模式**（latch，适合死亡/器官衰竭）：
+Irreversible mode (latch, suited to death or organ failure):
 
 ```yaml
 variables:
@@ -325,42 +307,42 @@ variables:
     type: state
     value: 0.0
     unit: day
-    description: "健康时长：首次崩溃前的累计天数（不可逆）"
+    description: "Healthy duration: accumulated days before the first collapse (irreversible)"
     reference: "Life Matters Framework core metric"
   lm_alive:
     type: state
     value: 1.0
-    description: "存活标志：0 = 不可逆崩溃，1 = 存活"
+    description: "Survival flag: 0 = irreversible collapse, 1 = alive"
 
 equations:
   lm_alive_check:
     condition: "not (GFR >= 15 and SBP <= 160)"
     dynamics:
-      lm_alive: "0.0"                    # 一旦触发，永久为 0
-    description: "检测崩溃并锁定存活标志"
+      lm_alive: "0.0"                    # once triggered, permanently 0
+    description: "Detects collapse and latches the survival flag"
   lm_score_update:
-    step_unit: day    # 同上：必须与 lm_score 的 day 语义一致，不能照抄其他方程的 hour
+    step_unit: day    # same as above: must match lm_score's day semantics, not copied from another equation's hour
     dynamics:
       lm_score: "lm_score + lm_alive * step"
-    description: "累加健康时长（不可逆）"
+    description: "Accumulates healthy duration (irreversible)"
 ```
 
-### 作为优化目标
+### As an Optimization Objective
 
 ```yaml
 optimization:
   objectives:
     - variable: lm_score
-      metric: final          # 仿真结束时的累计健康天数
-      direction: maximize    # 最大化健康时长
+      metric: final          # the accumulated healthy days at the end of the simulation
+      direction: maximize    # maximize healthy duration
 ```
 
-### 多模型 Import 的合并
+### Merging Across Multiple Model Imports
 
-当多个子模型各自定义了 `lm_score`（条件不同），import 时后者会覆盖前者（遵循标准 import 覆盖规则）。若需 AND 合并多个子模型的条件，建模者在顶层模型中显式重写 `lm_score_update` 方程：
+When several submodels each define `lm_score` with a different condition, importing them lets the later one override the earlier one (following the standard import override rule). To AND multiple submodels' conditions together, the modeler explicitly rewrites the `lm_score_update` equation in the top-level model:
 
 ```yaml
-# 顶层模型：显式合并 Model A（GFR 条件）和 Model B（SBP 条件）
+# Top-level model: explicitly merges Model A's GFR condition and Model B's SBP condition
 equations:
   lm_score_update:
     step_unit: day
@@ -368,79 +350,77 @@ equations:
       lm_score: "lm_score + step if (GFR >= 15 and SBP <= 160) else lm_score"
 ```
 
-### 设计原则
+### Design Principles
 
-- `lm_score` 是普通变量，完全透明，所有仿真步的值均可输出和查看
-- 条件表达式使用与方程相同的 asteval 沙箱，可引用模型中任意变量
-- 多个健康条件用 `and`/`or` 自由组合
-- GUI 目标变量选择器中，`lm_score` 显示 ⭐ 标记以便识别，无其他特殊行为
+- `lm_score` is an ordinary variable, fully transparent, and its value at every simulation step can be output and inspected.
+- The condition expression uses the same asteval sandbox as any equation and can reference any variable in the model.
+- Multiple health conditions can be freely combined with `and`/`or`.
+- In the GUI's objective-variable selector, `lm_score` is marked with a star for easy identification, with no other special behavior.
 
 ---
 
-## optimization — 决策变量与调度优化
+## optimization: Decision Variables and Schedule Optimization
 
-### Sim 与 Opt 的分离原则
+### The Separation of Sim and Opt
 
-`simulation:` 和 `optimization:` 是相互独立的场景描述，但可以通过 GUI 相互转化：
+`simulation:` and `optimization:` are independent scenario descriptions, but the GUI can convert between them:
 
-| 字段/概念 | simulation | optimization |
+| Field/concept | simulation | optimization |
 |----------|-----------|-----------|
-| 时间范围 | `simulation.start_date`/`end_date` | `optimization.start_date`/`end_date`（可选） |
-| 步长 | `simulation.step_size`（必填） | `optimization.step_size`（可选，缺省沿用 sim） |
+| Time range | `simulation.start_date`/`end_date` | `optimization.start_date`/`end_date` (optional) |
+| Step size | `simulation.step_size` (required) | `optimization.step_size` (optional, defaults to sim's) |
 | Monte Carlo | — | `optimization.mc` |
-| 固定输入 + 决策变量 | `simulation.plans[*].regimens`（可视化用） | `optimization.startpoint.regimens`（统一列表） |
+| Fixed input plus decision variable | `simulation.plans[*].regimens` (for visualization) | `optimization.startpoint.regimens` (a unified list) |
 
-**Fallback**：`optimization.*` 字段缺省时，引擎从对应 `simulation.*` 继承；GUI 明确标注来源（"来自 sim" vs "已覆盖"）。
+Fallback: when an `optimization.*` field is missing, the engine inherits it from the corresponding `simulation.*`; the GUI clearly labels the source ("from sim" versus "overridden").
 
-**GUI 转化**：
-- "← 从 Sim 导入"：将 Sim tab 当前 inputEvents 复制为 `optimization.startpoint.regimens` 决策变量，自动推算 bounds
-- "发送到 Sim"：将 Pareto 推荐解的 regimen 预填为 Sim inputEvents
+GUI conversion:
+- "Import from Sim": copies the Sim tab's current inputEvents into `optimization.startpoint.regimens` as decision variables, with bounds inferred automatically.
+- "Send to Sim": pre-fills a Pareto-recommended solution's regimen as Sim inputEvents.
 
-### optimization.startpoint.regimens — 决策变量与固定背景量统一列表
+### optimization.startpoint.regimens: a Unified List of Decision Variables and Fixed Background Quantities
 
-`optimization.startpoint.regimens` 是决策变量和固定背景量的统一列表（ADR 0109）。有 `optimize:` 块的条目是决策变量；无 `optimize:` 块的是固定背景量。`startpoint` 块描述优化器从哪个初始协议出发搜索。
+`optimization.startpoint.regimens` is a unified list of decision variables and fixed background quantities (ADR 0109). An entry with an `optimize:` block is a decision variable; an entry without one is a fixed background quantity. The `startpoint` block describes which initial protocol the optimizer starts its search from.
 
 ```yaml
 optimization:
   startpoint:
     regimens:
-      - variable: metformin_dose      # 固定背景量（无 optimize 块）
+      - variable: metformin_dose      # a fixed background quantity (no optimize block)
         time_start: "08:00"
         value: 500
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "二甲双胍基础用药（背景）"
+        label: "Metformin baseline dose (background)"
 ```
 
-**独立性**：优化器每次评估在自己的内部仿真里运行，只使用 `optimization.startpoint.regimens` 解码出的事件，不读取
-`simulation.plans[*].regimens`，两条路径互不影响（见 `life-matters-reference-engine` 仓库 `optimizer_eval.py`）。`optimization.startpoint.regimens`
-必须显式定义；无隐式 fallback（ADR 0109 移除 fallback 链）。
+Independence: the optimizer runs its own internal simulation on every evaluation, using only the events decoded from `optimization.startpoint.regimens`, and never reads `simulation.plans[*].regimens`; the two paths never affect each other (see `optimizer_eval.py` in the `life-matters-reference-engine` repository). `optimization.startpoint.regimens` must be defined explicitly; there is no implicit fallback (ADR 0109 removed the fallback chain).
 
-### 评估时间窗（start_date / end_date / step_size）
+### The Evaluation Time Window (start_date / end_date / step_size)
 
-优化器在每次评估时内部运行一次仿真，其时间范围和步长可独立于 GUI 的可视化设置：
+The optimizer runs one internal simulation on every evaluation, and its time range and step size can be independent of the GUI's visualization settings:
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Description |
 |------|------|------|
-| `start_date` | `"YYYY-MM-DD"` | 优化评估起始日；缺省沿用 `simulation.start_date` |
-| `end_date` | `"YYYY-MM-DD"` | 优化评估结束日；缺省沿用 `simulation.end_date` |
-| `step_size` | `{value, unit}` | 评估步长；缺省沿用 `simulation.step_size` |
+| `start_date` | `"YYYY-MM-DD"` | The optimization evaluation's start date; defaults to `simulation.start_date` |
+| `end_date` | `"YYYY-MM-DD"` | The optimization evaluation's end date; defaults to `simulation.end_date` |
+| `step_size` | `{value, unit}` | The evaluation step size; defaults to `simulation.step_size` |
 
-**设计原则：**
-- 三者均为可选；不声明则从 simulation 继承。
-- 显式声明可保证结果可复现：发布带 `optimization.results` 的 YAML 时，读者可用相同时间窗重跑优化。
-- 评估步长建议与 `simulation.step_size` 一致；若模型动力学时间尺度允许，可适当粗化以加速搜索。
-- GUI 的时间控件值（工具栏上的日期和步长）在运行优化时作为 `optimizer_override` 传入引擎，优先级高于 YAML 静态值。
+Design principles:
+- All three are optional; when not declared, they inherit from simulation.
+- Declaring them explicitly guarantees reproducibility: when a YAML file with `optimization.results` is published, a reader can rerun the optimization with the same time window.
+- The evaluation step size is recommended to match `simulation.step_size`; if the model's dynamics timescale allows, it can be coarsened somewhat to speed up the search.
+- The GUI's time controls (the toolbar's date and step-size fields) are passed into the engine as an `optimizer_override` when running an optimization, taking priority over the YAML's static values.
 
-**典型用法（缩短评估窗以加速搜索）：**
+Typical usage (shortening the evaluation window to speed up the search):
 
 ```yaml
 simulation:
   start_date: "2026-01-01"
-  end_date:   "2030-12-31"   # 5 年可视化
+  end_date:   "2030-12-31"   # 5-year visualization
 
 optimization:
   start_date: "2026-01-01"
-  end_date:   "2027-12-31"   # 仅用 2 年评估，加速搜索
+  end_date:   "2027-12-31"   # evaluate over only 2 years to speed up the search
   step_size:
     value: 1
     unit: day
@@ -448,393 +428,282 @@ optimization:
 
 ---
 
-优化器将干预方案的参数化搜索分为四个粒度层（Tier），按科学价值与计算复杂度排序：
+The optimizer splits a regimen's parameterized search into four granularity tiers, ordered by scientific value and computational complexity:
 
-| Tier | 优化对象 | 变量类型 | 典型场景 |
+| Tier | Optimized object | Variable type | Typical scenario |
 |------|---------|---------|---------|
-| T1 | 事件值（剂量/强度） | 连续实数，可选 `value_step` 离散化 | 药物剂量、营养摄入量 |
-| T2 | 事件时刻（在时间窗内） | 离散整数（时间槽索引） | 进食窗口、给药时机、昼夜节律 |
-| T3 | 星期组合（从候选日自由组合） | 离散整数（组合索引） | 运动频率、断食日安排 |
-| T4 | 干预起始日（在日期窗内） | 整数（天偏移） | 治疗时机、季节性干预 |
+| T1 | An event value (dose or intensity) | A continuous real number, optionally discretized with `value_step` | A drug dose, a nutrient intake amount |
+| T2 | An event's timing (within a time window) | A discrete integer (a time-slot index) | An eating window, dosing timing, circadian rhythm |
+| T3 | A day-of-week combination (freely chosen from candidate days) | A discrete integer (a combination index) | Exercise frequency, fasting-day scheduling |
+| T4 | The intervention's start date (within a date window) | An integer (a day offset) | Treatment timing, seasonal intervention |
 
-每个 `inputs` 条目可独立启用任意 Tier 组合；x 向量是所有已启用维度按顺序拼接的结果。
+Each `inputs` entry can independently enable any combination of tiers; the x vector is the concatenation, in order, of every enabled dimension.
 
-T1 的 `optimize.value` 默认在 `[lo, hi]` 连续区间内搜索，解会带任意小数精度；声明可选的 `optimize.value_step` 后，引擎在解码阶段把连续解 snap 到以 `lo` 为起点、以 `value_step` 为间隔的网格点上，适合按临床或工程可读精度取值的场景，例如喂养量按 5 mL 一档、代谢当量按 0.1 MET-h 一档；不声明时行为不变，仍是连续搜索。
+T1's `optimize.value` searches by default within the continuous `[lo, hi]` interval, and the solution can carry arbitrary decimal precision; once the optional `optimize.value_step` is declared, the engine snaps the continuous solution during decoding onto a grid starting at `lo` with a spacing of `value_step`, which suits a scenario that needs clinically or practically readable increments, such as a feeding volume in 5 mL steps or a metabolic equivalent in 0.1 MET-h steps; when it is not declared, behavior is unchanged and the search remains continuous.
 
-### T2：时间窗优化
+### T2: Time-Window Optimization
 
-T2 基于 `time_start`/`time_end` 统一区间字段（上一节）。`optimize.time_start`
-搜索区间起点；区间宽度（`time_end - time_start`）默认固定不变（**1 维**，最常见情形）。
-若额外声明 `optimize.time_end`，区间终点也独立搜索（**2 维**）。
+T2 builds on the unified `time_start`/`time_end` interval fields (previous section). `optimize.time_start` searches for the interval's start; the interval's width (`time_end - time_start`) stays fixed by default (1 dimension, the most common case). If `optimize.time_end` is additionally declared, the interval's end is also searched independently (2 dimensions).
 
-**1 维：起点搜索，宽度固定**（"几点触发"这种宽度=0 的窄窗、"几点开始，持续时长不变"这种
-宽窗，均属此类）：
+1 dimension: searching the start with a fixed width (this covers both a narrow window with zero width, "at what time does it trigger," and a wide window, "starting when, with an unchanged duration"):
 
 ```yaml
 regimens:
   - variable: meal_carbs
     time_start: "08:00"
-    time_end: "08:00"            # 宽度 = 0（单 step 窗口），搜索后宽度仍为 0
-    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # 固定星期（T3 未激活）
-    label: "早餐碳水"
+    time_end: "08:00"            # width = 0 (a single-step window); stays 0 after the search
+    days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]   # fixed days of the week (T3 not active)
+    label: "Breakfast carbs"
     optimize:
       value: [30, 80]
-      time_start: ["07:00", "09:00"]   # 起点搜索窗 [lo, hi]
-      time_step: "1h"                  # 可选；缺省 1h；精细场景可设 15min
+      time_start: ["07:00", "09:00"]   # the start's search window [lo, hi]
+      time_step: "1h"                  # optional; defaults to 1h; a finer scenario can use 15min
 ```
 
 ```yaml
 regimens:
   - variable: care_intensity
     time_start: "08:00"
-    time_end: "20:00"             # sustained，宽度 = 12h
-    label: "白天救治强度"
+    time_end: "20:00"             # sustained, width = 12h
+    label: "Daytime care intensity"
     optimize:
       value: [0.0, 288.0]
-      time_start: ["06:00", "10:00"]   # 起点在 [06:00,10:00] 内搜索，宽度仍为 12h
+      time_start: ["06:00", "10:00"]   # the start is searched within [06:00,10:00], width stays 12h
 ```
 
-**2 维：起点、终点独立搜索**（区间宽度本身也是决策变量）：
+2 dimensions: the start and end are searched independently (the interval's width is itself a decision variable):
 
 ```yaml
 regimens:
   - variable: care_intensity
     time_start: "08:00"
     time_end: "20:00"
-    label: "白天救治强度（起止均搜索）"
+    label: "Daytime care intensity (both start and end searched)"
     optimize:
       value: [0.0, 288.0]
-      time_start: ["06:00", "10:00"]   # 起点搜索窗
-      time_end: ["18:00", "22:00"]     # 终点搜索窗（独立于起点）
+      time_start: ["06:00", "10:00"]   # the start's search window
+      time_end: ["18:00", "22:00"]     # the end's search window (independent of the start)
 ```
 
-- `optimize.time_start` / `optimize.time_end` 格式均为 `["HH:MM", "HH:MM"]`（24 小时制，起止含边界）。
-- `time_step` 合法值：`"1h"`（缺省）、`"15min"`，对两个窗口同时生效。引擎展开为离散时间槽，
-  例如 `["07:00","09:00"]` + `1h` → `["07:00","08:00","09:00"]`（3 个槽）。
-- 仅写 `optimize.time_start`（不写 `optimize.time_end`）时为 1 维：搜索后的 `time_end` =
-  搜索后的 `time_start` + 固定宽度（= 该条目自身 `time_end - time_start`，单 step 窗口时宽度为 0）。
-- 同时写 `optimize.time_start` 和 `optimize.time_end` 时为 2 维：两端独立搜索，互不联动。
-- 旧字段 `optimize.time` 已废弃，不再受支持。请使用 `optimize.time_start`。
-- 科学意义：时间生物学（Chrono-nutrition / Chronopharmacology）中，干预时机本身是关键决策变量，本框架将其显式纳入优化搜索空间。
+- `optimize.time_start` and `optimize.time_end` are both formatted as `["HH:MM", "HH:MM"]` (24-hour clock, inclusive of both endpoints).
+- Legal values for `time_step` are `"1h"` (default) and `"15min"`, applied to both windows at once. The engine expands them into discrete time slots, so `["07:00","09:00"]` with `1h` becomes `["07:00","08:00","09:00"]` (3 slots).
+- Writing only `optimize.time_start` (with no `optimize.time_end`) gives 1 dimension: the searched `time_end` equals the searched `time_start` plus a fixed width (equal to that entry's own `time_end - time_start`, which is 0 for a single-step window).
+- Writing both `optimize.time_start` and `optimize.time_end` gives 2 dimensions: both ends are searched independently, with no linkage between them.
+- The old field `optimize.time` is deprecated and no longer supported; use `optimize.time_start` instead.
+- Scientific significance: in chronobiology, chrono-nutrition and chronopharmacology, the timing of an intervention is itself a key decision variable, and this framework brings it explicitly into the optimization search space.
 
-### T3：星期组合搜索
+### T3: Day-of-Week Combination Search
 
 ```yaml
 regimens:
   - variable: exercise_load
     time_start: "17:00"
-    label: "运动"
+    label: "Exercise"
     optimize:
       value: [30, 90]
-      days_pool: [Mon, Tue, Wed, Thu, Fri, Sat]  # 候选日集合
-      days_n: [3, 5]                             # 从 pool 中选 3~5 天
+      days_pool: [Mon, Tue, Wed, Thu, Fri, Sat]  # the candidate set of days
+      days_n: [3, 5]                             # choose 3 to 5 days from the pool
 ```
 
-- `days_pool`：候选日集合（Mon–Sun 三字母缩写）。
-- `days_n: [min, max]`：后台从 pool 中枚举所有满足 min ≤ n ≤ max 的合法组合，编码为整数决策变量。
-- T3 激活时，顶层 `days:` 字段不写（无固定星期）。
+- `days_pool`: the candidate set of days (three-letter abbreviations, Mon-Sun).
+- `days_n: [min, max]`: internally enumerates every legal combination from the pool satisfying min ≤ n ≤ max, encoded as an integer decision variable.
+- When T3 is active, the top-level `days:` field is not written (no fixed days).
 
-### T4：干预日期范围优化
+### T4: Intervention Date-Range Optimization
 
 ```yaml
 regimens:
   - variable: caloric_restriction
     time_start: "08:00"
     days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    label: "热量限制"
+    label: "Caloric restriction"
     optimize:
       value: [400, 800]
-      date_range:                                # 强制两组，均必填
-        - ["2026-05-01", "2026-05-30"]           # 起始日搜索窗 [lo, hi]
-        - ["2026-12-31", "2026-12-31"]           # 结束日搜索窗（固定时写同一日期两次）
+      date_range:                                # exactly two groups, both required
+        - ["2026-05-01", "2026-05-30"]           # the start date's search window [lo, hi]
+        - ["2026-12-31", "2026-12-31"]           # the end date's search window (write the same date twice to fix it)
 ```
 
-- `optimize.date_range` 必须恰好两组：第一组为起始日搜索窗，第二组为结束日搜索窗。
-- 若结束日固定，写 `["YYYY-MM-DD", "YYYY-MM-DD"]`（两值相同）。
-- T4 激活时，顶层 `date_range:` 字段不写（固定日期范围）。
-- 典型场景：治疗介入时机、季节性干预窗口、灾后救援资源投放时机。
+- `optimize.date_range` must contain exactly two groups: the first is the start date's search window, and the second is the end date's search window.
+- If the end date is fixed, write `["YYYY-MM-DD", "YYYY-MM-DD"]` with both values the same.
+- When T4 is active, the top-level `date_range:` field is not written (no fixed date range).
+- Typical scenarios: treatment intervention timing, a seasonal intervention window, the timing of post-disaster relief resource deployment.
 
-> `mode: sustained` + `time_range` 这一写法（ADR 0098）已被 ADR 0100 取代，引擎不再支持，旧 YAML 文件需改用下方 `time_start`/`time_end` 统一区间字段。
+> The `mode: sustained` plus `time_range` form (ADR 0098) was superseded by ADR 0100 and is no longer supported by the engine; old YAML files need to switch to the unified `time_start`/`time_end` interval fields below.
 
-#### 概念基础：`value`/`delivery`/`days`/`date_range` 的广延量与强度量
+#### Conceptual Foundation: Extensive and Intensive Quantities in value/delivery/days/date_range
 
-个体在日常语言里描述一项干预方案时，数值本身分属两类物理量：一类是不论内部如何拆分执行、加总后固定不变的**总量**，如"每天蛋白质 100g"；另一类是应当保持的**状态水平**，与拆分或重复次数无关，如"每小时输液速率 10ml"。这一区分对应物理学中广延量（extensive quantity，随划分可加）与强度量（intensive quantity，随划分不变）的范畴，在 LM format 里作用于两层粒度：
+When a person describes an intervention plan in ordinary language, the numeric value itself belongs to one of two kinds of physical quantity: a total that stays fixed once summed, however it is internally split up in execution, such as "100 g of protein per day"; or a state level that should be maintained, independent of how it is split up or repeated, such as "an infusion rate of 10 mL per hour." This distinction corresponds to the categories of extensive quantity (additive under subdivision) and intensive quantity (unchanged under subdivision) in physics, and it operates at two levels of granularity in LM format:
 
-- **日内跨仿真步**：同一匹配日内，`value` 如何分配到各个仿真 step，由 `delivery` 字段决定，见下方"delivery: total | level"。
-- **跨匹配日**：`days`/`date_range` 筛选出多个匹配日时，`value` 是否要按匹配日数重新分配，由核算域设计决定，见下方"value 语义"。
+- Within a day, across simulation steps: how `value` is distributed among the simulation steps within the same matching day is decided by the `delivery` field; see "delivery: total | level" below.
+- Across matching days: when `days`/`date_range` select several matching days, whether `value` should be redistributed by the number of matching days is decided by the accounting-domain design; see "value semantics" below.
 
-| 粒度层级 | 广延量（随拆分/汇总变化） | 强度量（不随拆分/汇总变化） |
+| Granularity | Extensive (changes with subdivision/aggregation) | Intensive (unchanged by subdivision/aggregation) |
 | --- | --- | --- |
-| 日内跨仿真步 | `delivery: total`（默认）：`value` 按 `N_steps` 均分，累计贡献恒等于 `value` | `delivery: level`：`value` 原样交付给每个命中 step，不做除法 |
-| 跨匹配日 | 不提供：LM format 没有"把 value 总量摊给多个匹配日"这一模式 | 唯一模式：每个匹配日各自独立按 `value` 满额交付，不因匹配日数变化而增减（ADR 0131） |
+| Within a day, across simulation steps | `delivery: total` (default): `value` is split evenly across `N_steps`, with the accumulated contribution always equal to `value` | `delivery: level`: `value` is delivered as-is to every hit step, with no division |
+| Across matching days | Not offered: LM format has no mode for "spreading a total `value` across multiple matching days" | The only mode: each matching day independently delivers the full `value`, unaffected by how many days match (ADR 0131) |
 
-两层粒度共享同一套广延/强度语言，但不对称：`delivery` 在日内层级同时提供两个选项，由建模者按变量的物理意义显式声明；跨日层级没有对应的"广延"选项——`days`/`date_range` 只负责筛选触发哪几天，不参与任何跨日的重新分配。这一设计保证 `value` 的读数不因仿真步长细化或匹配日数变化而漂移，前提是下游方程写在原生粒度上，即 `step_unit` 不粗于 `simulation.step_size`——这一前提不成立时的具体反模式，见下方"delivery 判断规则"一节。
+The two levels of granularity share the same extensive/intensive vocabulary but are not symmetric: `delivery` offers two options at the within-day level, and the modeler declares one explicitly based on the variable's physical meaning; there is no corresponding "extensive" option at the across-day level, since `days`/`date_range` only select which days trigger and never take part in any across-day redistribution. This design keeps `value`'s reading from drifting whether the simulation step size is refined or the number of matching days changes, provided the downstream equation is written at its native granularity, that is, its `step_unit` is no coarser than `simulation.step_size`; for the specific anti-pattern when this precondition does not hold, see "the delivery decision rule" below.
 
-#### value 语义：每个匹配日独立满额，按 N_steps 自适应分摊（ADR 0131，取代 0099）
+#### value Semantics: Each Matching Day Independently Delivers the Full Amount, Adaptively Split by N_steps (ADR 0131, Superseding 0099)
 
-`value`（以及 `optimize.value` 的上下界）表示**单次命中窗口（一个匹配日）内的总量**——
-与 pulse 的"一次性总量"是同一量纲，也是**每个匹配日都独立、完整地交付一次**，不因为
-`date_range`/`days` 让这个条目多匹配了几天而被稀释，也不因为少匹配几天而被加浓。这是为了
-同时满足两条不变量：`step_size` 只影响精度（Euler 离散积分章节的原则），以及"匹配了多少天"
-只影响交付的**总次数**，不影响**每次交付多少**——后者正是"日速率"这个建模意图本身的定义。
+`value` (and the bounds of `optimize.value`) represents the total quantity within a single hit window, one matching day, the same dimension as a pulse's "one-time total," and it is also delivered independently and in full on every matching day, neither diluted because `date_range`/`days` cause this entry to match more days, nor concentrated because it matches fewer. This satisfies two invariants at once: `step_size` only affects precision (the principle from the Euler discrete integration section), and "how many days matched" only affects the total number of deliveries, not how much each delivery carries, since the latter is exactly the definition of what a "daily rate" modeling intent means.
 
-引擎在装载阶段为每个 sustained 条目预计算：
+At load time, the engine precomputes, for every sustained entry:
 
 ```
-N_steps = 单次命中窗口的时长 / step_size
+N_steps = the duration of a single hit window / step_size
 ```
 
-运行时每个命中 step 写入 `value / N_steps`（仍遵循"`type: input` 不乘 `step`"规则，dynamics 方程不需要改动）。
-每个匹配日的累计贡献 = `(value / N_steps) × N_steps = value`，与 `step_size` 无关；仿真总时长、
-`date_range` 覆盖天数、`days` 星期过滤只决定**这个条目在多少天里各自独立交付一次 `value`**，
-不改变 `value` 本身的含义。窗宽=0（单 step 窗口，过去称"pulse"）是 `N_steps=1` 的特例，跟任何
-其他窗宽共用同一条规则——不是两种不同的机制。
+At run time, every hit step is written as `value / N_steps` (still following the rule that a `type: input` is not multiplied by `step`, so the dynamics equation needs no change). Each matching day's accumulated contribution equals `(value / N_steps) x N_steps = value`, independent of `step_size`; the total simulation duration, the number of days `date_range` covers, and the day-of-week filtering by `days` only decide how many days this entry independently delivers `value` on, and never change what `value` itself means. A zero-width window (a single-step window, formerly called a pulse) is simply the special case `N_steps=1`, following the exact same rule as any other window width, not a second, different mechanism.
 
-`单次命中窗口的时长` 只看这个条目自己的 `time_start`/`time_end`（缺省=全天 24h），**不看**
-`date_range` 覆盖了多少天、`days` 过滤剩多少个星期几——这两者只是"要不要在这一天触发"的
-过滤器，正如它们对 pulse 事件从来只是过滤器、从不参与 pulse 的取值一样。
+The duration of a single hit window looks only at that entry's own `time_start`/`time_end` (defaulting to all day, 24h), and never at how many days `date_range` covers or how many weekdays remain after `days` filtering; the latter two are only filters for whether to trigger on a given day, exactly as they have always been mere filters for a pulse event and never a factor in the pulse's own value.
 
-> 建模时按"这个条目每次命中（每天）投入多少"来填 `value`（例如"训练负荷 50/天"就写
-> `value: 50`），不需要手算"这个方案总共跑多少天"再乘进去；只有当这个 `value` 真正表达的是
-> "不管实际匹配几天、总量都锁定为这个数"这种预算类语义时，才需要在 YAML 之外自己控制
-> `date_range`/仿真总时长不再变化（此时 `value` 起到的是"人工设定总预算并平均摊薄"的作用，
-> 引擎不做区分，是否需要这种效果、以及匹配天数一旦变化总预算要不要连带调整，都由建模者
-> 自行判断——ADR 0099/0126 里"总量恒定"的旧语义已被本 ADR 取代，不再是引擎默认行为，
-> 需要该效果只能靠建模者自己不去改变匹配天数）。
+> When modeling, fill in `value` as "how much this entry contributes on each hit (each day)," for example writing `value: 50` for "a training load of 50 per day," with no need to manually calculate the plan's total run length and multiply it in; only when `value` genuinely expresses a budget-style semantics, "the total stays fixed at this number no matter how many days actually match," does the modeler need to control, outside the YAML, that `date_range` or the simulation's total duration no longer changes (in that case `value` is playing the role of "a manually fixed total budget spread thin," which the engine does not distinguish; whether this effect is needed, and whether the total budget should be adjusted whenever the number of matching days changes, is left entirely to the modeler's judgment. The old ADR 0099/0126 semantics of "the total stays fixed" has been superseded by this ADR and is no longer the engine's default behavior; achieving that effect now requires the modeler to simply avoid changing the number of matching days).
 
-**示例：同一个建模意图，"日速率固定"（现在的默认、唯一行为）**
+Example: the same modeling intent, "a fixed daily rate" (now the default, and the only, behavior):
 
 ```yaml
 regimens:
   - variable: training_load
     time_start: "00:00"
     time_end: "24:00"
-    value: 50.0            # 每天 50 单位，不管这个 plan 实际跑几天
-    date_range: ["2026-01-01", "2026-02-01"]  # 32 天：总交付 = 50 × 32 = 1600
+    value: 50.0            # 50 units per day, regardless of how many days this plan actually runs
+    date_range: ["2026-01-01", "2026-02-01"]  # 32 days: total delivered = 50 x 32 = 1600
     label: "constant daily training load"
 ```
 
-把 `date_range` 缩短成 16 天（其余不变），总交付变成 `50 × 16 = 800`——**每天仍是 50**，
-只是天数变了、总量跟着按比例变化，这正是"日速率"应有的行为。（对照：ADR 0099 时代的旧
-行为会反过来锁死总量、让每天的有效速率随天数缩短而翻倍到 100——已被本 ADR 取代。）
+Shortening `date_range` to 16 days (everything else unchanged) makes the total delivered `50 x 16 = 800`; it is still 50 per day, and only the day count changed, with the total scaling proportionally, which is exactly the behavior a daily rate should have. (By contrast, the old ADR 0099-era behavior locked the total instead, doubling the effective daily rate to 100 as the number of days shortened; this has been superseded by this ADR.)
 
-#### `delivery: total | level`——总量摊分 vs 恒定水平（ADR 0132）
+#### delivery: total | level: Splitting a Total Versus a Constant Level (ADR 0132)
 
-上一节的"每日独立满额"解决的是"总量应该随匹配天数正比变化"这一件事，但没解决另一件
-不同的事：**有些 `type: input` 变量的物理意义根本不是"这段时间投入了多少"，而是"当前
-处于什么状态/设定"**——如"当晚睡眠时长"、"就寝时机"、"救治强度"。这类变量在方程里从不
-被累加，而是被当瞬时读数直接用（跟基线比较、当乘法因子），本该在整个生效窗口内**保持
-不变**。ADR 0099/0131 的"总量÷N_steps"摊分规则对这类变量是错的：读数会随 `step_size`
-（乃至匹配天数）反比例漂移，模型只要换一个跑法（变步长做收敛性检验、或被 import 到
-`step_size` 不同的另一个模型里）就会悄悄失真——这个问题从 ADR 0098（sustained 最初提出，
-动机正是"持续救治强度"这类应保持恒定的变量）到 ADR 0099 重新定义 `value` 语义那天起就
-存在，只是从未在变步长场景下暴露过。
+The previous section's "each day independently delivers the full amount" solves one problem, that a total should scale proportionally with the number of matching days, but it does not solve a different problem: some `type: input` variables' physical meaning is not "how much was put in during this period" at all, but "what state or setting currently holds," such as tonight's sleep duration, bedtime timing, or care intensity. Such a variable is never accumulated in an equation; it is read as an instantaneous value directly, compared against a baseline or used as a multiplicative factor, and it should stay unchanged throughout the entire effective window. ADR 0099/0131's "total divided by N_steps" splitting rule is wrong for this kind of variable, since the reading would drift inversely with `step_size` (and even with the number of matching days), and a model would silently become inaccurate the moment it was run differently, such as a step-size variation for a convergence check, or being imported into another model with a different `step_size`. This problem has existed since ADR 0098 first proposed sustained (motivated precisely by a variable such as sustained care intensity that should stay constant) and since ADR 0099 redefined `value`'s semantics that same day; it simply had never surfaced in a variable-step-size scenario.
 
-**判断标准**：这个变量在下游方程里是被"累加"（贡献总量随时间推移增长）还是被"直接读取"
-（跟某个基线比较、当系数使用，同一时刻的读数不该因为换了 step_size 就不一样）？
+The test: is this variable accumulated downstream (its contribution to a total growing over time), or read directly (compared against some baseline, or used as a coefficient, where the reading at a given moment should not differ just because `step_size` changed)?
 
-| `delivery` | 语义 | 每个命中 step 的交付量 | 判断依据 |
+| `delivery` | Semantics | Delivered amount per hit step | Basis for the choice |
 |---|---|---|---|
-| `total`（默认，缺省不写） | 每个匹配日的窗口总量，按上一节规则摊分 | `value / N_steps` | 训练负荷、进食总量、给药总量——量本身是"这段时间投入/摄入了多少"，会被下游累加 |
-| `level` | 恒定水平，不摊分 | `value` 本身 | 睡眠时长、就寝时机、饮食质量得分、救治强度、防护水平——量本身是"当前的设定/状态"，被下游当瞬时读数比较或相乘 |
+| `total` (default, omit to use it) | The window's total for each matching day, split per the previous section's rule | `value / N_steps` | Training load, total food intake, total dose delivered, quantities that are inherently "how much was put in or consumed during this period," accumulated downstream |
+| `level` | A constant level, not split | `value` itself | Sleep duration, bedtime timing, a diet-quality score, care intensity, protection level, quantities that are inherently "the current setting or state," read downstream as an instantaneous value for comparison or multiplication |
 
 ```yaml
 regimens:
   - variable: sleep_hours
     time_start: "00:00"
     time_end: "24:00"
-    value: 6.0          # 直接就是目标水平，不需要手算乘 N_steps
-    delivery: level       # 每个命中 step 直接交付 6.0，不随 step_size/匹配天数变化
+    value: 6.0          # directly the target level, no need to manually multiply by N_steps
+    delivery: level       # each hit step delivers 6.0 directly, unaffected by step_size or the number of matching days
     days: [Mon, Tue, Wed, Thu, Fri]
-    label: "工作日睡眠时长"
+    label: "Weekday sleep duration"
 ```
 
-`delivery: level` 对单 step 窗口（pulse）是 no-op——pulse 本来就是 `N_steps=1` 的特例，
-除或不除结果相同。`days`/`date_range`/`time_start`/`time_end` 在两种 `delivery` 下语义
-完全一致，只决定"这一天要不要触发"，不影响交付量。
+`delivery: level` is a no-op for a single-step window (a pulse), since a pulse is already the special case `N_steps=1`, and dividing or not dividing gives the same result. `days`/`date_range`/`time_start`/`time_end` mean exactly the same thing under either `delivery` value, only deciding whether a given day triggers, and never affecting the amount delivered.
 
-**不是靠变量名约定实现**（如给变量名加内部后缀让引擎特殊处理）——那条路已经在讨论
-`consumed_by` 白名单方案时明确否决过（"变量名自由、引擎不认保留名"的既有原则）。
-`delivery` 是显式写在 regimen 条目上的声明，跟 `time_start`/`time_end`/`days` 是同一
-层级的属性，不是命名约定，也不是重新引入 ADR 0100 去掉的 pulse/sustained 开关——那个
-开关是真冗余（窗宽一个数就决定"点 vs 窗"，去掉不丢信息），`total`/`level` 是一个新的、
-独立的维度：Banister 的 `training_load` 和这里的 `sleep_hours` 用的是完全相同的窗宽
-（全天），仅靠窗宽无法区分二者，必须显式声明。
+This is not implemented through a variable-naming convention (such as an internal suffix on the variable name that makes the engine treat it specially); that route was already explicitly rejected while discussing a `consumed_by` allowlist scheme (the existing principle that variable names are free and the engine recognizes no reserved names). `delivery` is a declaration written explicitly on the regimen entry, at the same level as `time_start`/`time_end`/`days`, not a naming convention, and not a reintroduction of the pulse/sustained switch that ADR 0100 removed; that switch was genuinely redundant, since a single window-width number already determines point versus window with no information lost by removing it, whereas `total`/`level` is a new, independent dimension: Banister's `training_load` and this section's `sleep_hours` use exactly the same window width (all day), so window width alone cannot distinguish the two, and an explicit declaration is required.
 
-#### delivery 判断规则：结构位置检验，兼 day-lumped map 反模式识别（ADR 0133）
+#### The delivery Decision Rule: a Structural-Position Test, Also Catching the Day-Lumped-Map Anti-Pattern (ADR 0133)
 
-"下游被累加 vs 被当系数直接读"是一阶判断，但不够精确，容易掩盖一类更深层的问题：某些
-变量表面上"需要 level"，实际原因不是这个变量本身的物理性质，而是下游方程本身写成了
-粗粒度（如 `step_unit: day`）的一次性地图，而非逐步可积的动力学方程——这种情况下
-`delivery: level` 只是把"一天算一次的答案"重复分发给每个更细的 step，读数本身不漂移，
-但方程不会随步长细化收敛到更精确解，这是比"读数不变性"更弱的一种一致性，不应与真正的
-逐步动力学混同。
+"Accumulated downstream versus read as a coefficient" is a first-order test, but it is not precise enough and can mask a deeper problem: some variables appear on the surface to "need level," but the real reason is not that variable's own physical nature; it is that the downstream equation itself was written as a coarse-grained (such as `step_unit: day`), one-shot map rather than a step-by-step integrable dynamics equation. In that case, `delivery: level` merely redistributes "the answer computed once for the day" repeatedly to every finer step; the reading itself does not drift, but the equation never converges to a more precise solution as the step size is refined, which is a weaker form of consistency than genuine reading invariance and should not be conflated with true step-by-step dynamics.
 
-**规则 A**：该变量在下游方程里是否作为"系数/瞬时状态"参与运算，且这条方程写在**原生
-step 粒度**（不声明粗于 `simulation.step_size` 的 `step_unit`）上？
-- 是 → `delivery: level`，且是唯一正确、无需进一步处理的终态。例：`training_intensity`/
-  `pace`（逐分钟原生读取）、`care_intensity`/`self_protection`/`rest_hours`（逐小时原生
-  读取）——这类变量物理上没有"总量"这个维度，不存在二义性。
-- 该变量本身就是"这次投入了多少"，被下游 state 累加？→ `delivery: total`（默认）。
+Rule A: does this variable participate in the downstream equation as a coefficient or an instantaneous state, in an equation written at native step granularity (with a `step_unit` no coarser than `simulation.step_size`)?
+- If yes, use `delivery: level`, which is the only correct, final answer requiring no further treatment. Examples: `training_intensity`/`pace` (read natively minute by minute), `care_intensity`/`self_protection`/`rest_hours` (read natively hour by hour); such variables physically have no "total" dimension at all, so there is no ambiguity.
+- Is the variable itself "how much was put in this time," accumulated by a downstream state? Then use `delivery: total` (the default).
 
-**规则 B（day-lumped map 反模式检验）**：如果一个变量为了表现出"level"效果，其下游方程
-必须用一个粗于 `simulation.step_size` 的 `step_unit`（如 `day`）把多个 simulation step
-的净变化一次性算出来，再靠 `delivery: level` 把这个"一次性答案"原样重复分发给每个更细
-的 step——这是设计异味信号，**不能靠调整 `delivery` 解决**，说明这个变量选错了原语。
-正确方向：拆成"原生粒度可读的瞬时指示量（真 level）"与"由它累积出的衍生 state（真
-total，与 `lm_score` 同一模式）"两部分，方程相应改写为原生 `step_unit` 的真正 ODE。
+Rule B (the day-lumped-map anti-pattern test): if a variable, in order to display a "level" effect, forces its downstream equation to use a `step_unit` coarser than `simulation.step_size` (such as `day`) to compute the net change across multiple simulation steps in one shot, and then relies on `delivery: level` to redistribute this one-shot answer, unchanged, to every finer step, this is a design-smell signal that cannot be fixed by adjusting `delivery`; it means the variable was modeled with the wrong primitive to begin with. The correct direction is to split it into an instantaneous indicator readable at native granularity (a true level) and a derived state accumulated from it (a true total, following the same pattern as `lm_score`), rewriting the equations as genuine ODEs at their native `step_unit` accordingly.
 
-> 已知命中：`sleep_hours`/`bedtime_hour`（`sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml`，
-> `sleep_pressure_dynamics` 声明 `step_unit: day` 却用全天 sustained + `delivery: level`
-> 逐小时重复读取同一个日常量），`nutrition_score` 疑似同一模式，未逐条核实。修复方案（拆成
-> `is_asleep` 状态量 + 脉冲对，取代 duration 型 input）不在本文档处理范围，详见 ADR 0133。
+> Known hits: `sleep_hours`/`bedtime_hour` (in `sleep_schedule_sim.yaml`/`burnout_allostatic_sim.yaml`, where `sleep_pressure_dynamics` declares `step_unit: day` yet uses an all-day sustained input with `delivery: level`, repeatedly reading the same daily quantity hour by hour); `nutrition_score` is suspected of the same pattern but has not been individually verified. The fix, splitting it into an `is_asleep` state plus a pulse pair in place of a duration-type input, is outside the scope of this document; see ADR 0133 for detail.
 
-#### 何时用固定窗宽的 sustained，何时用脉冲触发+衰减态（ADR 0126/0127/0131）
+#### When to Use a Fixed-Width Sustained Input Versus a Pulse Trigger Plus a Decaying State (ADR 0126/0127/0131)
 
-`N_steps` 是引擎在**装载阶段**（仿真开始前）预计算的，不是运行时动态确定的——这意味着
-条目自己的 `[time_start, time_end)` 窗宽必须在写 YAML 时就是一个确定数字（ADR 0131 起，
-`date_range`/`days` 覆盖多少天不再参与这个计算，只是命中过滤器，因此不再需要"总时长"是
-确定数字，只需要"这一次窗口多宽"是确定数字）。据此判断：
+`N_steps` is precomputed by the engine at load time (before the simulation starts), not determined dynamically at run time, which means an entry's own `[time_start, time_end)` window width must already be a determinate number at the time the YAML is written (as of ADR 0131, how many days `date_range`/`days` covers no longer enters this calculation, since it is only a hit filter, so it no longer needs the "total duration" to be a determinate number, only "how wide this one window is"). Judge accordingly:
 
-- **这个输入自己的 `[time_start, time_end)` 窗宽，在装载阶段是否已经确定？**
-  - 是（不依赖优化器搜索结果就能算出准确窗宽，例如固定写死的 `"08:00"~"20:00"`，或
-    `days`/`date_range` 这类只影响"哪几天触发"、不影响窗宽本身的过滤条件）→ 正常按
-    ADR 0127 的默认规则或显式区间写，不需要额外机制。
-  - 否（窗宽本身是 T2/T3/T4 搜索变量，比如"每天工作到几点"起止都待搜索，或者依赖运行时才能
-    确定的状态）→ 固定窗宽的写法无法工作（`N_steps` 在装载时算不出来），改用**脉冲触发
-    （单 step 窗口）→ 写入 `type: state` 衰减态变量 → 下游方程读衰减态**。这是纯局部的
-    逐步递推机制（每步只需要"当前状态 + 当前输入"），不需要预先知道未来会跑多少步，因此
-    不受"窗宽未知"的限制。
+- Is this input's own `[time_start, time_end)` window width already determinate at load time? If yes (an accurate window width can be computed without depending on the optimizer's search result, such as a hardcoded `"08:00"~"20:00"`, or a filter condition like `days`/`date_range` that only affects which days trigger and never the window width itself), write it normally per ADR 0127's default rule or as an explicit interval, with no extra mechanism needed.
+- If no (the window width itself is a T2/T3/T4 search variable, such as "what time each day work ends" with both endpoints to be searched, or it depends on a state that can only be determined at run time), a fixed-width form cannot work, since `N_steps` cannot be computed at load time; switch instead to a pulse trigger (a single-step window) feeding into a `type: state` decaying variable that downstream equations read. This is a purely local, step-by-step recurrence mechanism (each step only needs the current state plus the current input) and does not need to know in advance how many steps will run, so it is not limited by an unknown window width.
 
-### 统一区间表示：time_start / time_end（ADR 0100/0127）
+### The Unified Interval Representation: time_start / time_end (ADR 0100/0127)
 
-任何输入的生效窗口都是同一对 `[time_start, time_end)` 字段在数轴上的取值，不是几种互斥
-的"模式"选一个，区别只在窗宽：
+Any input's effective window is the same pair of `[time_start, time_end)` fields taking a value on the timeline, not a choice among several mutually exclusive "modes"; the only difference is window width:
 
-| `time_start` / `time_end` 关系 | 含义 |
+| Relationship between `time_start` and `time_end` | Meaning |
 |---|---|
-| 两个都不写 | 全天 `["00:00","24:00")`（ADR 0127 默认规则，day-rate 输入） |
-| `time_end == time_start` | 单 step 窗口，`N_steps=1`，`value` 原样写入该 step（过去称"pulse"） |
-| `time_end != time_start`（不跨越全天） | 区间内每个 step 按 `value/N_steps`（上节方程） |
-| `time_start="00:00"`, `time_end="24:00"` | `[0,24)` 全覆盖，是窗宽=全天时的取值，跟"两个都不写"的默认结果相同，不是单独状态 |
+| Neither written | All day, `["00:00","24:00")` (ADR 0127's default rule, for a day-rate input) |
+| `time_end == time_start` | A single-step window, `N_steps=1`, with `value` written into that step as-is (formerly called a "pulse") |
+| `time_end != time_start` (not spanning the whole day) | Each step within the interval gets `value/N_steps` (the previous section's equation) |
+| `time_start="00:00"`, `time_end="24:00"` | `[0,24)` full coverage, the value taken when the window width is the whole day, identical to the result of "neither written," not a separate state |
 
 ```yaml
 regimens:
   - variable: care_intensity
     time_start: "08:00"
-    time_end: "20:00"           # [08:00, 20:00) 区间，sustained
-    date_range: ["1945-08-06", "1945-08-11"]   # 只影响哪几天触发，不影响下面的 value
-    label: "白天救治强度"
+    time_end: "20:00"           # a [08:00, 20:00) interval, sustained
+    date_range: ["1945-08-06", "1945-08-11"]   # only affects which days trigger, not the value below
+    label: "Daytime care intensity"
     optimize:
-      value: [0.0, 36.0]        # 每个匹配日的窗口总量；12h / step=1h → N_steps=12
+      value: [0.0, 36.0]        # each matching day's window total; 12h / step=1h gives N_steps=12
 ```
 
-#### 窗宽是同一范畴的量，衰减是独立于窗宽之外的下游关注点
+#### Window Width Is a Quantity Along One Axis; Decay Is a Downstream Concern Independent of It
 
-不同窗宽的 input（单 step、全天、显式区间）是同一个东西（`value` = 生效窗口内的总量，按
-`N_steps` 均分到每个命中 step）在窗口宽度上的不同取值，不是几种互斥的"input 类型"（ADR
-0127）。所有窗宽共享同一套单位约定（裸单位、不含时间分母，见前面"input 变量的单位规范"），
-`value` 的量纲不随宽度变化。
+Inputs of different window widths (a single step, all day, an explicit interval) are the same thing, `value`, the total within the effective window, split evenly across `N_steps` hit steps, taking different values along the window-width axis; they are not several mutually exclusive "input types" (ADR 0127). Every window width shares the same unit convention (a bare unit with no time denominator; see "the unit convention for input variables" above), and `value`'s dimension does not change with width.
 
-**衰减不属于"窗宽"这条轴的讨论范围**——衰减是下游 `type: state` 变量自己的 `dynamics`
-方程要不要写"随时间自然回落"这一项，是一个独立的方程维度，跟驱动它的 input 窗宽多宽无关：
-宽窗输入驱动的状态同样可能需要衰减（比如"持续输液速率"停止后，血药浓度仍按半衰期继续
-回落）。
+Decay is not part of the "window width" axis's discussion at all; decay is a matter of whether a downstream `type: state` variable's own `dynamics` equation should include a term for "naturally falling off over time," an independent equation dimension, unrelated to how wide the input driving it happens to be: a state driven by a wide-window input can just as well need decay, for instance a plasma concentration continuing to fall off by its half-life after a sustained infusion rate stops.
 
-**窄窗（单 step 窗口）有一个特有的陷阱**（宽窗没有）：窄窗只在命中的那一个 step 写入非零值，
-其余 step 该变量读到的是 0；如果某个下游方程**直接读这个变量**、而这个方程的评估频率比
-窗口更密（例如 `step_size: hour` 但窗口每天只命中一次），这个方程在 23/24 的评估里都会读到
-0——如果方程想表达的是"当前是否仍处于某种持续状态"，而不是"当天有没有发生这个一次性事件"，
-就会被这个"其余时刻是 0"的假象带偏（2026-07-09 在 `hypertension_gout_sim.yaml`/
-`smoking_stress_sim.yaml` 各发现一例，见 ADR 0126）。宽窗没有这个陷阱，因为它在整个生效
-窗口内的每个 step 都是非零的——**这也是 ADR 0127 把"完全不写时间 = 全天"定为默认值的原因
-之一**：day-rate 输入默认给宽窗，从源头上避免这个陷阱，只有真正的离散事件（进食、给药）
-才需要窄窗，需要窄窗时建模者是明确写了 `time_start` 的，不是引擎替他选的。
+A narrow window (a single-step window) has a trap of its own that a wide window does not have: a narrow window writes a nonzero value only in the one step it hits, and every other step reads 0 for that variable; if a downstream equation reads this variable directly and evaluates more frequently than the window occurs, for instance `step_size: hour` while the window only hits once a day, that equation reads 0 in 23 of every 24 evaluations. If the equation is trying to express "is a certain sustained state currently in effect" rather than "did this one-time event happen today," it gets misled by this illusion of "zero the rest of the time" (two such cases were found on 2026-07-09, one each in `hypertension_gout_sim.yaml` and `smoking_stress_sim.yaml`; see ADR 0126). A wide window has no such trap, since it is nonzero at every step within its entire effective window; this is also one reason ADR 0127 set "writing no time at all means all day" as the default: a day-rate input defaults to a wide window, avoiding this trap at the source, and only a genuinely discrete event, such as a meal or a dose, needs a narrow window, and whenever a narrow window is needed the modeler has explicitly written `time_start`, rather than the engine choosing it on their behalf.
 
-**窄窗情形下的判断标准（看这个变量出现在方程的哪个结构位置，不是看有没有 `*step`）**：
+The test for the narrow-window case (look at which structural position this variable occupies in the equation, not whether it is multiplied by `*step`):
 
-容易走进的误区：以为"这一项有没有乘 `step`"是判据。不是——`step` 在"该方程 `step_unit` 与
-`simulation.step_size` 相同"时恒等于 1（`step = step_size_sec / equation_step_sec`），乘不乘
-`*step` 在这种情况下数值上完全等价，不产生任何摊薄或增强，`*step` 只是"这个量纲是否需要跨
-step_unit 换算"的标记，跟"能不能读这个 input"无关。真正的判据是**这个 input 变量出现在方程的
-哪个结构位置**：
+An easy trap to fall into is assuming "whether this term is multiplied by `step`" is the deciding factor. It is not: `step` is identically 1 whenever the equation's `step_unit` matches `simulation.step_size` (`step = step_size_sec / equation_step_sec`), so multiplying by `*step` or not is numerically equivalent in that case and produces no dilution or amplification either way; `*step` only marks whether this quantity needs conversion across a `step_unit`, unrelated to whether this input can be read at all. The real test is which structural position this input variable occupies in the equation:
 
-- **允许**：出现在某个 `state` 自己 `dynamics` 里、**顶层加/减项**（不管这一项有没有再乘
-  `*step`），即形如 `state: state + ... ± f(input变量) ...` 的自引用累加式：
-  `body_weight: body_weight - caloric_deficit/7700`、
-  `nicotine_plasma: nicotine_plasma + eta_abs*cigarettes_per_day - k_nic*nicotine_plasma*step`
-  里的 `eta_abs*cigarettes_per_day` 项、`uric_acid: uric_acid + ... + max(0, psi_ketone
-  *caloric_deficit/700 - 15.0)*step` 里的酮体尖峰项（这里虽然乘了 `*step`，但
-  `step_unit`与`simulation.step_size`相同、`step`恒为1，跟不乘完全等价，仍然是合法的顶层
-  加项）——这是"一次性事件触发时，把它的贡献累加进自己的持久总账"，state 自己记得累计结果，
-  不需要每步重新读原始 input。
-- **不允许**：出现在**"目标值/弛豫目标"子表达式内部**（`rate*(state - 目标值)*step` 里目标值
-  那一坨），或出现在**没有 `+ 自身` 的纯代数快照方程**里——这两种结构表达的都是"当前是什么
-  状态/系统正在收敛到哪里"，只能由 `state`/`parameter` 拼出来，因为这类计算隐含假设"这个量
-  在相邻几步之间大致稳定"，而窄窗输入在 23/24 步是 0、其余步骤突然非零，会让目标值在"完全
-  无效"和"满额生效"之间剧烈闪烁，破坏弛豫动力学的前提——不是"读到 0 不对"（读到 0 本身没
-  问题，0 就是没触发时该有的值），而是"用一个会剧烈闪烁的量去扮演本该稳定的目标值"这个结构性
-  错配。两个已知 bug（`bp_dynamics` 的弛豫目标、`health_economic_index` 的代数快照）都精确落在
-  这一类；所有已知正确先例（`nicotine_plasma`/`thiazide_level`/`uric_acid` 的酮体项等）都是
-  顶层自引用加项。**给宽窗输入(如 `health_economic_index_update` 需要的"今天抽了多少")，
-  比给窄窗输入更不容易踩这个坑——这正是 ADR 0127 的"全天默认"和这里的结构判据互补的地方。**
+- Allowed: appearing inside some `state`'s own `dynamics` as a top-level added or subtracted term (whether or not that term is further multiplied by `*step`), that is, a self-referencing accumulation of the form `state: state + ... ± f(input variable) ...`. Examples: the term `eta_abs*cigarettes_per_day` in `nicotine_plasma: nicotine_plasma + eta_abs*cigarettes_per_day - k_nic*nicotine_plasma*step`, `body_weight: body_weight - caloric_deficit/7700`, and the ketone-spike term in `uric_acid: uric_acid + ... + max(0, psi_ketone*caloric_deficit/700 - 15.0)*step` (even though it is multiplied by `*step` here, since `step_unit` matches `simulation.step_size` and `step` is identically 1, this is completely equivalent to not multiplying and remains a legal top-level added term). This pattern is "when a one-time event fires, accumulate its contribution into the variable's own running ledger," with the state itself remembering the accumulated result and no need to re-read the raw input every step.
+- Not allowed: appearing inside a "target value" or "relaxation target" sub-expression (the target-value part inside `rate*(state - target)*step`), or appearing in a pure algebraic snapshot equation with no self-referencing `+ itself` term. Both structures express "what is the current state" or "where is the system converging to," which can only be constructed from `state`/`parameter`, because this kind of computation implicitly assumes the quantity is roughly stable across adjacent steps, whereas a narrow-window input is 0 for 23 of 24 steps and suddenly nonzero for one, making the target value flicker violently between "completely inactive" and "fully in effect," which breaks the premise of relaxation dynamics. The problem is not that "reading 0 is wrong" (reading 0 is fine in itself; 0 is exactly what the value should be when it has not triggered); the problem is the structural mismatch of using a violently flickering quantity to play the role of what should be a stable target value. Both known bugs (the relaxation target in `bp_dynamics` and the algebraic snapshot in `health_economic_index`) fall precisely into this category; every known correct precedent (`nicotine_plasma`/`thiazide_level`/the ketone term in `uric_acid`, etc.) is a top-level self-referencing added term. A wide-window input, such as the "how much was smoked today" that `health_economic_index_update` needs, is far less likely to fall into this trap than a narrow-window input, which is exactly where ADR 0127's "all-day default" and this structural test complement each other.
 
-> 上面这条"结构位置"判据目前只能靠建模者自己核对（尚未有引擎校验），已知会漏——已规划一个
-> 替代方向（尚未实现）：给每个 `type: input` 变量声明
-> `consumed_by: [方程名, ...]` 白名单，引擎校验该
-> input 是否只被白名单内的方程引用——解决的是"读错物理量"这一类（如 `bp_dynamics` 该读
-> `body_weight` 却读了 `caloric_deficit`，不管窗宽怎么调都修不好，只能靠白名单拦），跟
-> ADR 0127（窗宽默认规则，解决"窗太窄、别的方程读到假 0"那一类）是互补的两个机制，不是
-> 同一个方案的两个版本。
+> The "structural position" test above currently can only be checked by the modeler (the engine has no validator for it yet), and it is known to miss cases. An alternative approach has been planned (not yet implemented): declaring a `consumed_by: [equation_name, ...]` allowlist on every `type: input` variable, with the engine validating that this input is referenced only by the equations on the allowlist. This solves a different class of problem, reading the wrong physical quantity (such as `bp_dynamics` needing to read `body_weight` but reading `caloric_deficit` instead, which no window-width adjustment can fix and only an allowlist can catch), complementary to ADR 0127 (the window-width default rule, which solves the class of problem where the window is too narrow and another equation reads a false 0), not two versions of the same solution.
 
-**旧字段已废弃**（旧 YAML 文件需手动更新，旧字段不再被引擎读取）：
+Deprecated fields (old YAML files need to update manually; the engine no longer reads the old fields):
 
-| 旧字段（不再支持） | 等价的新写法 |
+| Old field (no longer supported) | Equivalent new form |
 |---|---|
-| `time: "HH:MM"`（pulse） | `time_start: "HH:MM"`（`time_end` 省略 = 默认同值 = pulse） |
-| `mode: sustained` + `time_range: [a, b]` | `time_start: a, time_end: b` |
-| `mode: sustained`（无 `time_range`） | `time_start: "00:00", time_end: "24:00"` |
+| `time: "HH:MM"` (pulse) | `time_start: "HH:MM"` (omitting `time_end` defaults to the same value, i.e. a pulse) |
+| `mode: sustained` plus `time_range: [a, b]` | `time_start: a, time_end: b` |
+| `mode: sustained` (with no `time_range`) | `time_start: "00:00", time_end: "24:00"` |
 
-直接写 `time_start`/`time_end`，不需要先判断"我要的是单点/区间/全天"——
-三者是同一对字段在数轴上的位置关系，不是三个独立的开关/分支。`days`（星期几过滤）、
-`date_range`（日历区间）字段不变，与 `time_start`/`time_end` 正交。
+Write `time_start`/`time_end` directly, with no need to first decide whether a single point, an interval, or all day is wanted; the three are simply different positions of the same pair of fields on the timeline, not three separate switches or branches. The `days` (day-of-week filter) and `date_range` (calendar interval) fields are unchanged and orthogonal to `time_start`/`time_end`.
 
-### x 向量编码规则
+### x-Vector Encoding Rules
 
-x 向量按 `optimization.startpoint.regimens` 列表顺序展开，每个条目按 `[value?, time_start?, time_end?, days?, date_start?, date_end?]` 顺序贡献维度：
+The x vector is expanded in the order of the `optimization.startpoint.regimens` list, with each entry contributing dimensions in the order `[value?, time_start?, time_end?, days?, date_start?, date_end?]`:
 
-| 条目启用的 Tier | x 贡献维度 | 变量类型 |
+| Tiers enabled on the entry | x dimensions contributed | Variable type |
 |--------------|-----------|---------|
-| T1 only | 1（value） | 连续实数 |
-| T2 only，1 维（仅 `time_start`） | 1（time_start_idx） | 整数 |
-| T2 only，2 维（`time_start`+`time_end`） | 2（time_start_idx, time_end_idx） | 整数×2 |
-| T1 + T2（1 维） | 2（value, time_start_idx） | 实数 + 整数 |
-| T1 + T2（2 维） | 3（value, time_start_idx, time_end_idx） | 实数 + 整数×2 |
-| T1 + T3 | 2（value, combo_idx） | 实数 + 整数 |
-| T1 + T4 | 2~3（value, date_start_offset[, date_end_offset]） | 实数 + 整数×1~2 |
-| 固定背景量（无 optimize） | 0 | — |
+| T1 only | 1 (value) | A continuous real number |
+| T2 only, 1 dimension (`time_start` only) | 1 (time_start_idx) | An integer |
+| T2 only, 2 dimensions (`time_start` plus `time_end`) | 2 (time_start_idx, time_end_idx) | Two integers |
+| T1 + T2 (1 dimension) | 2 (value, time_start_idx) | A real number plus an integer |
+| T1 + T2 (2 dimensions) | 3 (value, time_start_idx, time_end_idx) | A real number plus two integers |
+| T1 + T3 | 2 (value, combo_idx) | A real number plus an integer |
+| T1 + T4 | 2 to 3 (value, date_start_offset[, date_end_offset]) | A real number plus one or two integers |
+| A fixed background quantity (no optimize) | 0 | — |
 
-混合整数向量由 NSGA-II 连续松弛处理；单目标算法（L-BFGS-B / Nelder-Mead）不支持整数变量，启用 T2/T3/T4 时自动切换为 NSGA-II 并给出警告。
+A mixed-integer vector is handled through NSGA-II's continuous relaxation; a single-objective algorithm (L-BFGS-B / Nelder-Mead) does not support integer variables, so enabling T2/T3/T4 automatically switches to NSGA-II with a warning.
 
-**示例**：`meal_carbs`（T1 + T2 1维）和 `exercise_load`（T1 + T3）各贡献 2 维，x 长度为 4：
+Example: `meal_carbs` (T1 plus T2, 1 dimension) and `exercise_load` (T1 plus T3) each contribute 2 dimensions, giving an x length of 4:
 
 ```
 x = [carbs_value, time_start_idx, exercise_value, combo_idx]
     [   55.3,           1,            62.0,            2   ]
-# time_start_idx=1 → slots[1] = "08:00"；time_end = "08:00" + 固定宽度
-# combo_idx=2      → combinations(pool, n)[2] = [Mon, Wed, Fri]
+# time_start_idx=1 -> slots[1] = "08:00"; time_end = "08:00" + the fixed width
+# combo_idx=2      -> combinations(pool, n)[2] = [Mon, Wed, Fri]
 ```
 
-`optimization.results.recommended` 只存 `x`/`f` 原始向量，不存解码后的人类可读结果——解码是从 `x` + `optimization.startpoint.regimens` 的结构纯算法推导，不需要额外持久化（见 §`optimization.results` 一节）。
+`optimization.results.recommended` stores only the raw `x`/`f` vectors, not a decoded, human-readable result; decoding is a pure algorithmic derivation from `x` plus the structure of `optimization.startpoint.regimens`, needing no additional persistence (see the `optimization.results` section below).
 
 ---
 
-## optimization.results — 优化结果内嵌格式
+## optimization.results: the Embedded Format for Optimization Results
 
-优化完成后，结果写回 `optimization.results` 块，与配置并列存于同一 YAML 文件。
-这意味着**发布模型即发布结果**；有结果的模型加载时，Opt 面板的"继续计算"复选框默认开启，用户可选择热启动（warm-start）或冷启动。
+Once an optimization finishes, the result is written back into an `optimization.results` block, stored in the same YAML file alongside the configuration. This means publishing a model also publishes its results; when a model with results loads, the Opt panel's "continue from here" checkbox is on by default, and the user can choose a warm start or a cold start.
 
-### 完整结构
+### Full Structure
 
 ```yaml
 optimization:
@@ -843,57 +712,57 @@ optimization:
   startpoint: {...}
   algorithm: {...}
 
-  results:                          # ← 优化完成后由 GUI 写入，无需手动填写
-    generated_at: "YYYY-MM-DD"     # 生成日期（ISO 8601 日期部分）
-    method: nsga2                  # 使用的算法
-    n_solutions: 8                 # Pareto 前沿解的数量
-    elapsed_seconds: 87.3          # 本次运行耗时（秒）
-    pareto_front:                  # 所有非支配解（flow-style，每行一个解）
+  results:                          # written by the GUI once optimization finishes; no need to fill it in by hand
+    generated_at: "YYYY-MM-DD"     # the generation date (the date part of ISO 8601)
+    method: nsga2                  # the algorithm used
+    n_solutions: 8                 # the number of solutions on the Pareto front
+    elapsed_seconds: 87.3          # this run's elapsed time in seconds
+    pareto_front:                  # every non-dominated solution (flow style, one solution per line)
       - {x: [0.30, 0.29, 0.30], f: [65.8, 47.1]}
       - {x: [0.35, 0.33, 0.34], f: [66.9, 44.8]}
-    recommended:                    # 建模者从 Pareto 前沿中标注的推荐点（非唯一最优）
-      x: [0.30, 0.29, 0.30]       # 决策变量值（与 optimization.startpoint.regimens 决策条目顺序对应）
-      f: [65.8, 47.1]             # 目标函数值（与 objectives 顺序对应）
+    recommended:                    # a point the modeler has flagged as recommended from the Pareto front (not a unique optimum)
+      x: [0.30, 0.29, 0.30]       # decision-variable values (in the order of the decision entries in optimization.startpoint.regimens)
+      f: [65.8, 47.1]             # objective-function values (in the order of objectives)
 ```
 
-### 字段说明
+### Field Reference
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Description |
 |------|------|------|
-| `generated_at` | 日期字符串 | 写入日期，用于判断结果是否过期 |
-| `method` | string | 算法名（nsga2 / l-bfgs-b / nelder-mead） |
-| `n_solutions` | int | Pareto 前沿解的数量 |
-| `elapsed_seconds` | float | 本次运行耗时 |
-| `pareto_front` | list | 所有非支配解，每个元素为 `{x: [...], f: [...]}` |
-| `recommended.x` | list | 推荐点的决策变量值（建模者从 Pareto 前沿中选定，非唯一最优） |
-| `recommended.f` | list | 推荐点的目标值 |
+| `generated_at` | A date string | The date written, used to judge whether the results are stale |
+| `method` | string | The algorithm name (nsga2 / l-bfgs-b / nelder-mead) |
+| `n_solutions` | int | The number of solutions on the Pareto front |
+| `elapsed_seconds` | float | This run's elapsed time |
+| `pareto_front` | list | Every non-dominated solution, each element `{x: [...], f: [...]}` |
+| `recommended.x` | list | The recommended point's decision-variable values (chosen by the modeler from the Pareto front, not a unique optimum) |
+| `recommended.f` | list | The recommended point's objective values |
 
-不再存储解码后的人类可读方案/目标字典——人类可读的展示和"发送到 Sim"功能都从 `x`/`f` 现场解码（前端 `xToInputEvents`），避免维护两份格式（曾有 `recommended.regimen`/`recommended.objectives` 字典，因从未被任何代码路径读取、保存逻辑也早已不再生成，于 2026-06-21 移除）。
+A decoded, human-readable plan or objective dictionary is no longer stored; both the human-readable display and the "send to Sim" feature decode from `x`/`f` on the fly (the frontend's `xToInputEvents`), avoiding the maintenance of two parallel formats (a `recommended.regimen`/`recommended.objectives` dictionary once existed, and was removed on 2026-06-21 since no code path ever read it and the save logic had long since stopped generating it).
 
-**`x` 向量与 inputEvents 的映射关系**：x 向量按 `optimization.startpoint.regimens` 中决策条目（有 `optimize:` 块）的顺序展开，每个条目按启用的 Tier 贡献维度：T1 贡献 1 维连续实数（value），T2/T3/T4 各贡献 1 维整数（时间槽索引 / 组合索引 / 天偏移）。此映射关系由 `optimization.startpoint.regimens` 的结构隐含，不需要额外存储；前端 `xToInputEvents` 函数按相同顺序解析（见 `sim_design.md`）。
+Mapping between the x vector and inputEvents: the x vector is expanded in the order of the decision entries, those with an `optimize:` block, in `optimization.startpoint.regimens`, with each entry contributing dimensions per its enabled tiers: T1 contributes 1 continuous-real dimension (value), and T2/T3/T4 each contribute 1 integer dimension (a time-slot index, a combination index, or a day offset). This mapping is implied by the structure of `optimization.startpoint.regimens` and needs no additional storage; the frontend's `xToInputEvents` function parses it in the same order (see `sim_design.md`).
 
-### 设计原则
+### Design Principles
 
-- **`results` 整体覆写**：每次保存时用新前沿完整替换旧 `results`，不保留历史；Pareto 前沿只会随搜索改善或持平，不会退化。
-- **格式统一**：`pareto_front` 使用 YAML flow-style（`{x: [...], f: [...]}` 单行），50 个解 = 50 行，不破坏模型可读性。
-- **热/冷启动（用户选择）**：Opt 控制栏的"继续计算"复选框始终可见；有已有结果时可勾选（热启动），无结果时 disabled（冷启动）。勾选热启动后若修改了目标函数、约束或决策变量搜索范围，复选框变为橙色"⚠ 继续计算"提示匹配度可能下降，但不强制切换为冷启动。
-- **Sim 读取 opt 结果**：加载含 `recommended.x` 的模型时，Sim 面板询问是否将推荐点预填为当前 inputEvents；用户可选择加载或忽略。
-- **Opt→Sim 多输出（N-N）**：Pareto 前沿是 N 组输入组合；软件将 N 个 Pareto 解各自重组为合规的 Sim inputEvents（Plan），供 F-MPLAN 并行仿真和比较；opt.results 仅保留原始 x/f 向量。
-- **`recommended` 不代表唯一最优**：多目标优化没有单一"最优解"，`recommended` 是建模者标注的平衡点，用户应结合 `pareto_front` 自行权衡选择。命名避开 `reference`，是为了不与 `variables.<name>.reference`/`equations.<name>.reference`（文献引用字段）混淆。
-- **发布即结果**：建模者运行优化、保存模型、上传 YAML，接收者打开即看到 Pareto 前沿和推荐点；`results` 可独立阅读。
-- **无结果也合法**：`optimization.results` 是可选块；没有该字段的模型正常运行，从随机初始种群开始搜索。
+- Full overwrite of `results`: each save completely replaces the old `results` with the new front, keeping no history; a Pareto front only ever improves or holds steady, never regresses.
+- Uniform format: `pareto_front` uses YAML flow style (`{x: [...], f: [...]}` on one line), so 50 solutions means 50 lines, without harming the model's readability.
+- Warm or cold start (the user's choice): the Opt control bar's "continue from here" checkbox is always visible, selectable (a warm start) when results already exist, and disabled (a cold start) when there are none. If the objective function, a constraint, or a decision variable's search range is changed after checking warm start, the checkbox turns orange with a "continuing from here may match less well" warning, but is not forced to switch to a cold start.
+- Sim reads opt results: loading a model that has `recommended.x` prompts the Sim panel to ask whether to pre-fill the recommended point as the current inputEvents; the user can choose to load it or ignore it.
+- Opt-to-Sim, many-to-many: a Pareto front is N groups of inputs; the software reassembles each of the N Pareto solutions into a valid Sim inputEvents (a Plan) for F-MPLAN's parallel simulation and comparison; opt.results keeps only the raw x/f vectors.
+- `recommended` does not represent a unique optimum: multi-objective optimization has no single "best solution," and `recommended` is a balance point the modeler has flagged, which the user should weigh against the rest of `pareto_front` themselves. The name avoids `reference` so as not to be confused with `variables.<name>.reference`/`equations.<name>.reference` (the literature-citation fields).
+- Published means results included: once the modeler runs the optimization, saves the model, and uploads the YAML, a recipient sees the Pareto front and the recommended point the moment they open it; `results` can be read on its own.
+- No results is also valid: `optimization.results` is an optional block; a model without this field runs normally, starting its search from a random initial population.
 
-### 工作流
+### Workflow
 
 ```
-建模者                          GUI                          模型文件
-  │                              │                              │
-  │── 打开含 results 的模型 ──>  │ 显示历史 Pareto 前沿          │
-  │                              │ 工具栏：● 模型含有历史结果     │
-  │── 点击"运行优化" ──────────> │ warm-start（历史解为初始种群）  │
-  │                              │ 继续进化 n 代                │
-  │── 点击"保存结果到模型" ────> │ POST /api/optimizer/write-results
-  │                              │──────────────────────────>  │ optimization.results 覆写
-  │── 点击"下载模型" ──────────> │ GET /api/file-raw/{path}     │
-  │   接收 .yaml 文件             │                              │
+Modeler                          GUI                          Model file
+  |                              |                              |
+  |-- opens a model with results ->  | shows the historical Pareto front  |
+  |                              | toolbar: this model has historical results |
+  |-- clicks "run optimization" --> | warm start (historical solutions as the initial population) |
+  |                              | evolves for n more generations |
+  |-- clicks "save results to model" --> | POST /api/optimizer/write-results
+  |                              |-------------------------->  | optimization.results overwritten
+  |-- clicks "download model" --> | GET /api/file-raw/{path}     |
+  |   receives the .yaml file    |                              |
 ```

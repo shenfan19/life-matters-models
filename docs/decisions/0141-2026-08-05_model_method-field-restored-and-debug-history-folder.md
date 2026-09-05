@@ -1,48 +1,48 @@
-# ADR 0141 — description 恢复 method 字段 + 调试历史移入 history/ 目录
+# ADR 0141 - Restoring the method Field in description, Plus Moving Debug History into a history/ Directory
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-08-05
 
-## 背景
+## Background
 
-ADR 0097 把 `papers/` 模型的 `description` 收窄为 `problem/result/limitations` 三字段，`method` 被列入删除字段，理由是当时的 `method` 内容大量使用框架内部符号（T1/T2/T3/T4、NSGA-II 等），外行读者难以理解。
+ADR 0097 narrowed `papers/` model `description` to three fields, `problem/result/limitations`, listing `method` among the removed fields, on the grounds that `method`'s content at the time relied heavily on framework-internal notation (T1/T2/T3/T4, NSGA-II, etc.) that a lay reader would find hard to follow.
 
-随着模型数量增长，暴露出两个新问题：
+As the number of models grew, two new problems surfaced:
 
-1. **`method` 被删除后，"这个模型融合了哪些机制"这一信息在 `description` 里没有位置**：LM 的核心方法论是耦合多个独立机制而非堆叠，这恰恰是每个模型最值得在 description 里讲清楚的内容，但当前三字段里没有专门位置承载它，导致这条信息要么散落在 `problem` 里挤占篇幅，要么完全缺失。
-2. **反复调试同一个模型时，`problem`/`result` 和 `optimization.results` 容易积累过程痕迹**：实际案例见 `s1/ckd_protein/ckd_protein_opt_joint_largepop.yaml`——`problem` 字段写的是"当前搜索规模可能遗漏前沿尾端，需要扩大规模验证"，这是调试过程的自我说明，不是模型要回答的科学问题；`optimization.results` 下堆积了 `rerun_2026-07-10`、`rerun_2026-07-11_mc_fixed`、`rerun_2026-07-14`、`historical_stale_from_2026-06-15` 四个历史版本的完整运行记录，只有最后一次是当前有效结果，其余三个除了追溯调试脉络外没有对外价值，却让文件持续膨胀。这类内容违反全局 `~/.claude/CLAUDE.md`《面向最终读者的交付物：不留过程痕迹》一节，但此前该规则未明确覆盖 model YAML 的 description 和 optimization 结果块。
+1. **With `method` removed, there was no place in `description` for "which mechanisms this model combines"**: LM's core methodology is coupling several independent mechanisms rather than stacking them, which is exactly what each model's description most needs to state clearly, but the three-field structure had no dedicated place to carry it, so this information either crowded into `problem` or was left out entirely.
+2. **Repeatedly debugging the same model let process traces accumulate in `problem`/`result` and `optimization.results`**: a real example is `s1/ckd_protein/ckd_protein_opt_joint_largepop.yaml`, whose `problem` field read "the current search scale may miss the tail of the front and needs to be verified at a larger scale," which is the debugging process's own self-narration, not the scientific question the model answers; its `optimization.results` had accumulated four historical run records in full, `rerun_2026-07-10`, `rerun_2026-07-11_mc_fixed`, `rerun_2026-07-14`, and `historical_stale_from_2026-06-15`, with only the last being the currently valid result and the other three having no external value beyond tracing the debugging trail, yet letting the file keep growing. This content violates the "Deliverables for the Final Reader Carry No Process Trace" section of the global `~/.claude/CLAUDE.md`, but that rule had not previously made explicit that it covers a model YAML's description and optimization results block.
 
-## 决策
+## Decision
 
-### 1. `papers/` 模型 description 恢复为四字段：`problem / method / result / limitations`
+### 1. `papers/` model description restored to four fields: `problem / method / result / limitations`
 
-- `problem`：不变，合并原 `brief` + `need`，但额外明确排除调试/优化过程本身（搜索规模是否足够、此前表述经核查是巧合之类）——这类内容属于 `metadata.todo`/`metadata.log`/`history/`，不进 `description`。
-- **`method`（恢复）**：说明该模型融合了哪些机制/动力学模型，以及它们之间共享哪个决策变量或资源竞争通路，体现耦合而非堆叠。字段不定长，机制数量多时用列表逐条列举。
-- `result`：不变，合并原 `result` + `conclusion`，同样排除调试过程叙述，只写最终仿真/优化结果。
-- `limitations`：不变。
+- `problem`: unchanged, merging the former `brief` plus `need`, but now additionally and explicitly excludes the debugging or optimization process itself (whether the search scale is large enough, an earlier statement turning out on review to be coincidental, etc.), since that content belongs in `metadata.todo`/`metadata.log`/`history/`, not in `description`.
+- **`method` (restored)**: states which mechanisms or dynamic models the model combines and which decision variable or resource-competition pathway they share, reflecting coupling rather than stacking. The field has no fixed length; when there are many mechanisms, list them one by one.
+- `result`: unchanged, merging the former `result` plus `conclusion`, likewise excluding the debugging-process narrative and stating only the final simulation or optimization result.
+- `limitations`: unchanged.
 
-`method` 同时恢复为通用 Schema（ADR 0065 九字段集合）里的正式字段定义，措辞从"模型结构、时间步长、核心状态和输入"改为"该模型融合了哪些机制/动力学模型，以及它们之间共享哪个决策变量或资源竞争通路"，与 `papers/` 的用法保持一致——`references/` 等非 `papers/` 模型不强制要求这个字段，但新建模型时鼓励一并写上。
+`method` is also restored as a formal field definition in the general schema (the nine-field set from ADR 0065), with its wording changed from "the model's structure, time step, core states, and inputs" to "which mechanisms or dynamic models the model combines and which decision variable or resource-competition pathway they share," aligning it with `papers/`'s usage; non-`papers/` models such as `references/` are not required to include this field, but are encouraged to write it when a new model is created.
 
-### 2. 调试历史版本移入同目录 `history/` 子文件夹
+### 2. Debug history versions move into a same-directory `history/` subfolder
 
-反复调试模型时，被取代的完整版本（旧 `optimization.results`、被推翻的旧 `description` 表述）不再累积保留在主 YAML 文件内。做法：改动前把当前文件原样复制到 `history/YYYY-MM-DD_原文件名.yaml`，再在主文件中只保留反映当前状态的干净版本。`history/` 内容不受"不留过程痕迹"规则约束，可以如实保留调试细节，仅供作者本人日后复查；整个目录通过 `.gitignore` 的 `**/history/` 规则排除，不随仓库发布。
+When a model is debugged repeatedly, a superseded full version (old `optimization.results`, a rejected old `description` statement) no longer accumulates and stays inside the main YAML file. The approach: before making a change, copy the current file as-is to `history/YYYY-MM-DD_original-filename.yaml`, then keep only a clean version reflecting the current state in the main file. Content under `history/` is not bound by the "carries no process trace" rule and may honestly retain debugging detail, for the author's own later review only; the entire directory is excluded via the `.gitignore` rule `**/history/` and is not published with the repository.
 
-`metadata.log` 不受影响，继续保留在主文件——它只是一行"改了什么/为什么"的索引，体量小、对外部读者有用（追溯设计动机），不属于需要搬去 `history/` 的过程痕迹。
+`metadata.log` is unaffected and stays in the main file; it is only a one-line index of what changed and why, small in size and useful to an external reader for tracing design motivation, and does not count as a process trace that needs moving to `history/`.
 
-## 影响
+## Impact
 
-- `model.md` 已同步更新：`metadata.description` 章节恢复 `method` 定义、补充 `problem` 的过程语言排除说明；新增「调试历史版本管理：`history/` 目录」一节。
-- `models/.gitignore` 已新增 `**/history/`。
-- 全局 `~/.claude/CLAUDE.md`《面向最终读者的交付物：不留过程痕迹》一节已补充说明，明确该规则覆盖 model YAML 的 description 字段。
-- `models/papers/` 下全部模型文件按新规则批量更新：清理 `problem`/`result` 中的过程语言，新增 `method` 字段，历史调试记录迁移至各自目录的 `history/`。
+- `model.md` has been updated accordingly: the `metadata.description` section restores the `method` definition and adds a note excluding process language from `problem`; a new "Debug History Versioning: the `history/` Directory" section has been added.
+- `models/.gitignore` has gained a `**/history/` entry.
+- The "Deliverables for the Final Reader Carry No Process Trace" section of the global `~/.claude/CLAUDE.md` has been expanded to state explicitly that this rule covers a model YAML's description field.
+- Every model file under `models/papers/` has been updated in bulk under the new rule: process language cleaned out of `problem`/`result`, a `method` field added, and historical debugging records moved into each model's own `history/`.
 
-## 非目标
+## Non-Goals
 
-- 不强制 `references/` 模型采用四字段或立即回填 `method`。
-- 不把四字段变成 schema 硬约束（validator 保持宽松）。
-- `metadata.todo`/`metadata.log` 的既有规则不变，本 ADR 只新增 `history/` 这一个存放位置，不改变 `todo`/`log` 本身的用途和格式。
+- This does not require `references/` models to adopt the four-field structure or to backfill `method` immediately.
+- This does not turn the four fields into a hard schema constraint (the validator remains permissive).
+- The existing rules for `metadata.todo`/`metadata.log` are unchanged; this ADR only adds `history/` as a new storage location and does not change what `todo`/`log` themselves are for or how they are formatted.

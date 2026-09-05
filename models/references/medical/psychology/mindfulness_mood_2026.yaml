@@ -9,23 +9,34 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      正念疗法-情绪症状是心理治疗研究里被反复meta分析、效应量相对稳定收敛的干预效应之一。正念疗法相对对照组改善情绪或抑郁症状的效应量，治疗前后对比，meta分析综合样本
+      Mindfulness-based therapy for mood symptoms is one of the intervention effects in
+      psychotherapy research that has been repeatedly meta-analyzed with a relatively stable,
+      converging effect size. The effect size of mindfulness-based therapy relative to a control
+      condition for improving mood or depressive symptoms, pre-post treatment comparison, from a
+      comprehensive meta-analytic sample.
     result: |
-      用 LM format 的 evidence 节中的 cohens_d 子类型声明该效应量，population_sd=1.0，即输出变量本身以SD为单位，验证 Loader 能正确读取、换算并展示该效应量，结果与声明值精确一致，d=0.59 SD。
+      This case declares the effect size using the cohens_d subtype in the LM format's evidence
+      block, with population_sd=1.0, meaning the output variable itself is in SD units, to verify
+      that the loader correctly reads, converts, and displays this effect size, with the result
+      matching the declared value exactly, d=0.59 SD.
     limitations: |
-      本案例是"效应量编码正确性"展示，不是独立预测检验，0.59这个数字本身就是要验证的目标。心理治疗效应量普遍存在跨研究异质性，例如发表偏倚、对照类型差异等，本文件只承载一个综合meta分析点估计，不代表该效应量在所有情境下都精确稳定。
+      This case demonstrates the correctness of effect-size encoding, not an independent prediction
+      test, and the number 0.59 is itself the target being verified. Psychotherapy effect sizes
+      commonly show cross-study heterogeneity, from factors such as publication bias and differing
+      control conditions, and this file carries only one comprehensive meta-analytic point estimate,
+      which does not represent this effect size as precisely stable across all contexts.
   ratings:
-    importance: 0.25 - 心理治疗效应量族案例之一，通用参考组件，尚未被具体论文import
-    variable: 0.75 - 效应量来自meta分析综合样本，但心理治疗效应量普遍存在跨研究异质性
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.5 - 效应量来自meta分析综合样本，但心理治疗效应量的跨研究异质性未纳入编码本身
+    importance: 0.25 - One case in the psychotherapy-effect-size family, a general-purpose reference component not yet imported by a specific paper
+    variable: 0.75 - The effect size comes from a comprehensive meta-analytic sample, but psychotherapy effect sizes commonly show cross-study heterogeneity
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.5 - The effect size comes from a comprehensive meta-analytic sample, but the cross-study heterogeneity of psychotherapy effect sizes is not captured in the encoding itself
   tags: [psychology, cohens-d, evidence, validation, literature-benchmark, cohend-family]
 
 variables:
   effect_size_sd:
-    description: 干预效应量（标准差单位）
+    description: The intervention effect size (in SD units)
     value: 0.0
     unit: SD
     type: state
@@ -36,12 +47,12 @@ variables:
     value: 0.59
     population_sd: 1.0
     unit: SD
-    description: 正念疗法相对对照组改善情绪/抑郁症状的效应量(治疗前后)，meta分析综合样本
+    description: The effect size of mindfulness-based therapy relative to a control condition for improving mood/depressive symptoms (pre-post treatment), from a comprehensive meta-analytic sample
     reference: "Hofmann SG et al. (2010) J Consult Clin Psychol; meta-analytic review of mindfulness-based therapy, Hedges g=0.59"
 
 equations:
   display_effect:
-    description: "静态展示：effect_size_sd = intervention_effect（cohens_d类型：有效值=value*population_sd）"
+    description: "A static demonstration: effect_size_sd = intervention_effect (for the cohens_d type: the effective value equals value times population_sd)"
     condition: true
     priority: 3
     dynamics:
@@ -57,7 +68,7 @@ simulation:
     - effect_size_sd
   plans:
     - id: "intervention_vs_control"
-      label: "干预组 vs 对照组效应量展示"
+      label: "Intervention-versus-control effect-size demonstration"
       regimens: []
 
 references:

@@ -10,22 +10,11 @@ metadata:
       same-day span — floored to a token 1 hour (CLI) or literal 0 hours
       (GUI) — so any regimen event scheduled later in the day (here 18:00)
       never fell inside the simulated window and never fired.
-    problem_cn: >
-      用于"同日时长"bug 的回归测试：当 start_date == end_date（即单个日历日）时，模型必须仿真
-      完整的 24 小时，而不是退化为 0/1 小时的桩（stub）。类似 `_time_hours()` 的辅助函数曾以
-      `max((end-start).days * 24, floor)` 计算时长，对于同日跨度该值为 0——因而被 floor 到
-      象征性的 1 小时（CLI）或字面上的 0 小时（GUI）——导致当天晚些时候（此处为 18:00）安排的
-      任何 regimen 事件都落在仿真窗口之外，永远不会触发。
     result: >
       dose fires once at 18:00 with value=5.0. A correct same-day run covers
       the full 24 hours, so the final `dose_total` must be 5.0 (the pulse
       fired); the pre-fix bug produced 0.0 (window never reached 18:00).
-    result_cn: >
-      dose 在 18:00 触发一次，value=5.0。正确的同日仿真应覆盖完整 24 小时，因此最终
-      `dose_total` 必须为 5.0（脉冲已触发）；修复前的 bug 版本会得到 0.0（仿真窗口从未到达
-      18:00）。
     limitations: Not a physiological model; exists only to pin same-day duration handling.
-    limitations_cn: 不是生理模型；仅用于固定同日时长的处理逻辑。
   tags: [test, same-day, duration, regression]
 
 variables:

@@ -7,18 +7,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      游泳是关节冲击最低的有氧运动之一，其独特性在于技术效率，即划水效率，与体能的耦合关系。不同于跑步中配速主要由心肺能力决定，游泳速度还强烈依赖每次划水的推进效率：随着疲劳积累，神经肌肉控制精度下降，划水效率衰减，导致同等心率下速度和距离的递减。这一"技术-体能耦合"效应使游泳成为研究疲劳对运动技术影响的理想模型。
+      Swimming is one of the lowest-joint-impact aerobic sports, and its distinctiveness lies in
+      the coupling between technical efficiency (stroke efficiency) and fitness. Unlike running,
+      where pace is mainly set by cardiorespiratory capacity, swimming speed also depends strongly
+      on the propulsive efficiency of each stroke: as fatigue accumulates, neuromuscular control
+      precision declines, stroke efficiency decays, and speed and distance fall off at the same
+      heart rate. This technique-fitness coupling effect makes swimming an ideal model for studying
+      fatigue's effect on athletic technique.
     result: >
-      仿真尚未运行。理论预期：RPE 5 中等强度训练 60 分钟时，划水效率从基线 0.8 随疲劳积累在 45-60 分钟后降至约 0.6-0.7，技术评分下降约 15-20 分，游泳距离在后半段增速明显放缓。训练频率提升至 45 次/分、强度提升至 RPE 8 时，效率衰减在 30 分钟后明显加速，综合表现下降约 25%。
+      Not yet run. Theoretical expectation: in a 60-minute session at moderate intensity (RPE 5),
+      stroke efficiency declines from a baseline of 0.8 to about 0.6-0.7 after 45-60 minutes as
+      fatigue accumulates, the technique score falls by about 15-20 points, and swimming distance's
+      growth rate slows markedly in the second half. Raising the stroke rate to 45 per minute and
+      the intensity to RPE 8 makes efficiency decay noticeably faster after 30 minutes, with overall
+      performance falling by about 25%.
     limitations: >
-      未区分自由泳、蝶泳、仰泳等不同泳姿的技术特征和肌群疲劳模式；水温、水阻以及 25 m 与 50 m 两种泳道长度等环境因素未建模；心率响应基于跑步参数调整，游泳特有的低心率效应，约比跑步低 10 bpm，通过常数近似处理。
+      Does not distinguish the technical characteristics and muscle-group fatigue patterns of
+      different strokes such as freestyle, butterfly, and backstroke; environmental factors such as
+      water temperature, drag, and 25m versus 50m pool length are not modeled; the heart-rate
+      response is adjusted from running parameters, with swimming's characteristic lower heart rate
+      (about 10 bpm below running) handled by a constant approximation.
   ratings:
-    importance: 0.5 - 游泳是低冲击有氧运动，在康复和健身中有广泛应用价值；最通用有氧运动模型之一，康复场景可用
-    variable: 0.5 - 引用Costill/Toussaint等文献，但参数description较简略
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.5 - Swimming is a low-impact aerobic exercise with broad application value in rehabilitation and fitness; one of the most general aerobic-exercise models, usable in rehabilitation scenarios
+    variable: 0.5 - Cites publications such as Costill/Toussaint, but the parameter descriptions are fairly brief
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [sport, swimming, aerobic, technique, vo2, low_impact]
 
 variables:
@@ -27,95 +42,95 @@ variables:
     value: 5.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "运动感知强度"
+    description: "The rating of perceived exertion"
   stroke_rate:
     type: input
     value: 30.0
-    unit: "次/分"
+    unit: "per minute"
     bounds: [15.0, 60.0]
-    description: "划水频率（自由泳：休闲25-35，竞速45-60）"
+    description: "Stroke rate (freestyle: 25-35 recreational, 45-60 competitive)"
   stroke_efficiency:
     type: state
     value: 0.8
-    unit: "系数"
+    unit: "coefficient"
     bounds: [0.1, 1.0]
-    description: "划水效率（每次划水推进距离比；疲劳下降）"
+    description: "Stroke efficiency (the propulsion distance per stroke; declines with fatigue)"
   heart_rate:
     type: state
     value: 70.0
     unit: "bpm"
     bounds: [50.0, 190.0]
-    description: "运动心率（游泳心率比跑步低5-10bpm）"
+    description: "Exercise heart rate (swimming heart rate runs 5-10bpm lower than running)"
   distance:
     type: state
     value: 0.0
     unit: "m"
     bounds: [0.0, 10000.0]
-    description: "累计游泳距离"
+    description: "Cumulative swimming distance"
   calories_burned:
     type: state
     value: 0.0
     unit: "kcal"
     bounds: [0.0, 1500.0]
-    description: "累计热量消耗（约400-600kcal/小时）"
+    description: "Cumulative calories burned (about 400-600kcal/hour)"
   fatigue:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "肌肉疲劳（上肢为主；>60技术明显退化）"
+    description: "Muscular fatigue (mainly the upper body; above 60 shows marked technical decline)"
   technique_score:
     type: state
     value: 80.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "技术评分（疲劳导致动作变形降分）"
+    description: "A technique score (falls as fatigue distorts the stroke)"
   performance:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "综合表现（效率×体能）"
+    description: "Overall performance (efficiency times fitness)"
 
 equations:
   heart_rate_response:
-    description: "游泳心率（比跑步低约10bpm）"
+    description: "Swimming heart rate (about 10bpm lower than running)"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(190, 60 + training_intensity * 9 + fatigue * 0.3)"
   distance_accumulate:
-    description: "每分钟游距（m）=划频×效率×单次划水距离"
+    description: "Distance per minute (m) equals stroke rate times efficiency times distance per stroke"
     condition: "training_intensity > 0"
     priority: 9
     dynamics:
       distance: "distance + stroke_rate * stroke_efficiency * 1.8"
   calorie_burn:
-    description: "热量消耗（游泳约500kcal/h=8.3kcal/min，强度调整）"
+    description: "Calories burned (swimming is about 500kcal/h, that is 8.3kcal/min, adjusted by intensity)"
     condition: "training_intensity > 0"
     priority: 8
     dynamics:
       calories_burned: "calories_burned + 5.0 + training_intensity * 0.5"
   fatigue_accumulate:
-    description: "上肢疲劳积累（划水频率和强度共同驱动）"
+    description: "Upper-body fatigue accumulation (driven jointly by stroke rate and intensity)"
     condition: "training_intensity > 0"
     priority: 8
     dynamics:
       fatigue: "min(100, fatigue + training_intensity * 0.07 + stroke_rate * 0.001)"
   stroke_efficiency_decay:
-    description: "疲劳导致划水效率下降（技术退化核心机制）"
+    description: "Fatigue lowers stroke efficiency (the core technical-decline mechanism)"
     condition: "fatigue > 30"
     priority: 7
     dynamics:
       stroke_efficiency: "max(0.1, 0.8 - (fatigue - 30) * 0.007)"
   technique_decay:
-    description: "技术评分随疲劳下降"
+    description: "The technique score declines with fatigue"
     condition: true
     priority: 7
     dynamics:
       technique_score: "max(0, 80 - fatigue * 0.5)"
   performance_update:
-    description: "综合表现=效率×体能"
+    description: "Overall performance equals efficiency times fitness"
     condition: true
     priority: 6
     dynamics:
@@ -142,21 +157,21 @@ optimization:
     - variable: fatigue
       condition: "<= 9.0"
       type: soft
-      description: "疲劳感不超过9（避免过度训练）"
+      description: "Perceived fatigue should not exceed 9 (avoiding overtraining)"
   startpoint:
     regimens:
       - variable: training_intensity
         time_start: "07:00"
         time_end: "07:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "训练强度（RPE 0-10）"
+        label: "Training intensity (RPE 0-10)"
         optimize:
           value: [0.0, 10.0]
       - variable: stroke_rate
         time_start: "07:00"
         time_end: "07:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "划水频率（次/分）"
+        label: "Stroke rate (per minute)"
         optimize:
           value: [15.0, 60.0]
   algorithm:

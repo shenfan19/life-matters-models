@@ -1,122 +1,67 @@
-# 0127 — input 变量统一为 sustained（不再有独立的 pulse 模式），窗宽按显式规则默认
+# 0127 - Unifying input Variables to Sustained (No More Separate pulse Mode), Window Width Defaulted by Explicit Rule
 
-**日期**：2026-07-09
-**状态**：✅ 已实施
-**类别**：仿真引擎 / regimen 语义
+**Date**: 2026-07-09
+**Status**: Implemented
+**Category**: Simulation engine / regimen semantics
 
 ---
 
-## 背景
+## Background
 
-ADR 0126 记录了 regimen 语义完备性讨论的三处范围拍板，其中问题2（同一变量多条 regimen
-覆盖/累加）决定不改引擎、只用 baseline+增量惯例改具体文件；讨论过程中确认了两个互补的
-备选方向（内部设计待办记录方向2）：一个是给 `type: input` 增加显式白名单（未采纳为本次范围，见 ADR 0126）；另一个是
-retire "pulse" 作为独立命名概念，把它并入 sustained（`N_steps=1` 是同一条 ADR 0099 规则的
-特例，这个等价关系在 ADR 0099/0100 就已成立），窗宽由建模者显式声明或按规则默认。
+ADR 0126 recorded three scope rulings from the regimen-semantics-completeness discussion, including question 2 (override versus accumulation for several regimen entries on the same variable), where the decision was to make no engine change and only fix specific files using the baseline-plus-increment convention. During that discussion, two complementary alternative directions were identified (recorded as direction 2 in the internal design backlog): one is adding an explicit allowlist to `type: input` (not adopted this round, see ADR 0126); the other is retiring "pulse" as a separately named concept and folding it into sustained (`N_steps=1` is already a special case of the same ADR 0099 rule, an equivalence already established by ADR 0099/0100), with the window width either explicitly declared by the modeler or defaulted by a rule.
 
-本 ADR 记录第二个方向的落地决策：**不再有独立的 pulse 模式，所有 `type: input` 变量统一按
-sustained 处理，区别只在窗宽**。
+This ADR records the second direction's rollout decision: there is no longer a separate pulse mode; every `type: input` variable is handled uniformly as sustained, differing only in window width.
 
-讨论中曾质疑"窗宽统一"是否会牺牲已验证的药代动力学（PK）曲线形状——实测
-`nicotine_plasma`（20支/天，`eta_abs=1.8`，`k_nic=2.77/day`，t½=6h）三种窗宽：
+The discussion also questioned whether "unifying window width" would sacrifice an already-validated pharmacokinetic (PK) curve shape; testing `nicotine_plasma` (20 cigarettes/day, `eta_abs=1.8`, `k_nic=2.77/day`, t1/2=6h) at three window widths found:
 
-| 窗宽 | 峰值 | 谷值 | 日均 |
+| Window width | Peak | Trough | Daily mean |
 |---|---|---|---|
-| 单点脉冲（旧默认） | 38.0 | 2.3 | 13.0 |
-| 醒着的16小时铺开 | 17.7 | 6.6 | 13.0 |
-| 摊平全天24h | 13.0 | 13.0 | 13.0 |
+| A single-point pulse (the old default) | 38.0 | 2.3 | 13.0 |
+| Spread over the 16 waking hours | 17.7 | 6.6 | 13.0 |
+| Spread flat over the whole 24h day | 13.0 | 13.0 | 13.0 |
 
-结论：日均值三种情况完全一致（ADR 0099 总量不随分摊方式变化的性质严格成立），峰谷振荡在
-合理窗宽下依然存在（不是"抹平成常量"）；窗宽该选多宽是建模者自己的科研判断（真实抽烟行为
-也不是单点集中、也不是全天匀速），步长/窗宽选得不合理导致失真是建模者的科研设计责任，不是
-引擎该防的事——这是"自然保障"，不需要额外机制去防。已验证的 PK 模型（`nicotine_plasma`/
-`thiazide_level`/`allopurinol_level`）继续选窄窗（1 个 step）即可，数值零改动。
+Conclusion: the daily mean is identical across all three (ADR 0099's property that the total does not change with how it is split holds strictly), and the peak-trough oscillation still exists at a reasonable window width (it does not get "flattened into a constant"); how wide to make the window is the modeler's own scientific judgment (real smoking behavior is neither a single instantaneous spike nor a uniform rate spread across the whole day), and any distortion from an unreasonable choice of step size or window width is the modeler's scientific-design responsibility, not something the engine needs to guard against. This is a natural safeguard that needs no additional mechanism to enforce. An already-validated PK model (`nicotine_plasma`/`thiazide_level`/`allopurinol_level`) can simply keep using a narrow window (1 step), with zero numeric change.
 
-## 决策
+## Decision
 
-### 1. 废除"pulse 默认收缩到某个约定时刻"的隐式行为
+### 1. Abolish the implicit behavior of "a pulse defaulting to some arbitrary conventional moment"
 
-原引擎行为（`schedule_runner.py::_normalize_time_interval`、`loader.py`、
-`optimizer_engine.py` 三处独立实现、互不一致）：`time_start`/`time_end` 缺省时分别退化为
-`'08:00'`（`schedule_runner.py`/`optimizer_engine.py`）或 `'00:00'`（`loader.py`）——一个
-建模者从未声明过的、纯属引擎实现细节的"约定时刻"。这正是 ADR 0126 讨论中指出的问题：
-day-rate 输入（如 `caloric_deficit`）被强行套进"某个时刻触发"的框架，制造了本不该存在的
-"该阶段有没有生效"的歧义。
+The original engine behavior (three independent, mutually inconsistent implementations in `schedule_runner.py::_normalize_time_interval`, `loader.py`, and `optimizer_engine.py`): when `time_start`/`time_end` were omitted, they defaulted to `'08:00'` (in `schedule_runner.py`/`optimizer_engine.py`) or `'00:00'` (in `loader.py`), a purely engine-implementation-detail "conventional moment" the modeler never declared. This is exactly the problem the ADR 0126 discussion pointed out: a day-rate input (such as `caloric_deficit`) was forced into the framework of "triggers at some moment," creating an ambiguity about "whether this phase is in effect" that should never have existed.
 
-### 2. 新的窗宽默认规则（`resolve_time_interval`，`schedule_runner.py`）
+### 2. A new window-width default rule (`resolve_time_interval`, in `schedule_runner.py`)
 
-| 写法 | 生效窗口 | 适用场景 |
+| Form | Effective window | Applicable scenario |
 |---|---|---|
-| `time_start`/`time_end` 都不写 | 全天 `["00:00","24:00")` | day-rate 输入，没有自然的"触发时刻" |
-| 只写 `time_start` | `time_end = time_start`（单 step 窗口） | 离散事件（进食、给药），数值上等价于旧的 pulse |
-| 两个都写 | 显式区间 | 子日步长模型的"持续强度"类输入 |
+| Neither `time_start` nor `time_end` written | All day, `["00:00","24:00")` | A day-rate input, with no natural "trigger moment" |
+| Only `time_start` written | `time_end = time_start` (a single-step window) | A discrete event (a meal, a dose), numerically equivalent to the old pulse |
+| Both written | An explicit interval | A "sustained intensity"-type input in a sub-day-step-size model |
 
-三种写法共用同一套引擎机制（ADR 0099 的 `value/N_steps` 累计规则），不是三个分支——这也是
-"统一"的字面含义：不存在"pulse 分支"和"sustained 分支"两套独立代码路径，只有一个函数
-`resolve_time_interval` 决定窗宽多大。
+All three forms share the same engine mechanism (ADR 0099's `value/N_steps` accumulation rule), not three branches; this is exactly what "unified" literally means: there is no "pulse branch" and "sustained branch" as two separate code paths, only a single function, `resolve_time_interval`, deciding the window width.
 
-### 3. 代码改动
+### 3. Code changes
 
-新增 `schedule_runner.py::resolve_time_interval(entry) -> (time_start, time_end)`，实现上面
-的三段默认规则，替换原来分散在三个文件、彼此不一致的 `.get('time_start', '08:00'/'00:00')`
-写法：
+Added `schedule_runner.py::resolve_time_interval(entry) -> (time_start, time_end)`, implementing the three-tier default rule above, replacing the previously scattered, mutually inconsistent `.get('time_start', '08:00'/'00:00')` forms across three files:
 
-- `schedule_runner.py`：`precompute_sustained_divisors`/`apply_schedules` 内部调用改用
-  新函数（原 `_normalize_time_interval` 改名并重写为公开函数）。
-- `model_structure/loader.py::_parse_schedule_entries`（`simulation.plans[*].regimens`
-  解析路径）：改为调用 `resolve_time_interval`。
-- `optimizer_engine.py`（`optimization.startpoint.regimens` 解析路径，`fixed_events_map`
-  构建 + `_build_regimen_events` 的 `d0` 解码，共 3 处）：改为调用 `resolve_time_interval`。
+- `schedule_runner.py`: the internal calls in `precompute_sustained_divisors`/`apply_schedules` switch to the new function (the former `_normalize_time_interval` renamed and rewritten as a public function).
+- `model_structure/loader.py::_parse_schedule_entries` (the `simulation.plans[*].regimens` parsing path): switched to call `resolve_time_interval`.
+- `optimizer_engine.py` (the `optimization.startpoint.regimens` parsing path, in the `fixed_events_map` construction plus `_build_regimen_events`'s `d0` decoding, 3 places total): switched to call `resolve_time_interval`.
 
-四处默认逻辑合并为一处，消除了原本 `loader.py`（'00:00'）与 `optimizer_engine.py`（'08:00'）
-两条路径互不一致的隐藏 bug 面。
+Four places of default logic merged into one, eliminating the previously hidden bug surface where `loader.py` ('00:00') and `optimizer_engine.py` ('08:00') were two mutually inconsistent paths.
 
-### 4. 术语：文档不再使用"pulse"作为独立命名的模式
+### 4. Terminology: the documentation no longer uses "pulse" as a separately named mode
 
-`docs/model.md` 全文改写：不再把"pulse"和"sustained"并列为两种 input 类型；统一表述为
-"sustained，窗宽可窄到 1 个 step"。历史文档（`mode: sustained` ADR 0098 旧格式、`optimize.time`
-旧字段等已标注废弃的段落）保留原始表述，供迁移旧 YAML 参考，不追溯改写。
+`docs/model.md` has been rewritten throughout: "pulse" and "sustained" are no longer listed side by side as two input types; the unified description is "sustained, with a window width that can narrow down to 1 step." Historical documentation (already-marked-deprecated passages such as `mode: sustained`'s old ADR 0098 format, the old `optimize.time` field, etc.) keeps its original wording, for reference when migrating an old YAML, and is not rewritten retroactively.
 
-## 结果
+## Result
 
-- 已实施：`reference_engine/src/schedule_runner.py`（新增 `resolve_time_interval`，替换
-  `_normalize_time_interval`）、`reference_engine/src/model_structure/loader.py`、
-  `reference_engine/src/optimizer_engine.py`（三处默认逻辑改用新函数）。
-- 已验证：`tests/` 全量 23 个 pytest 通过（含 `test_schedule_runner.py`/
-  `test_sim_cli_consistency.py`/`tests/errors/` 全部错误检测 fixture）；CLI 冒烟测试
-  （`hypertension_gout_sim.yaml --sim`，5 plan × 5 MC run）跑通，无回归。
-- 已更新：`docs/model.md` 多处改写（regimens 字段说明新增"窗宽默认规则"表、"统一区间表示"
-  章节改写、"窗宽是同一范畴的量"章节改写），不再把 pulse 作为独立模式介绍。
-- **全库验证（2026-07-09 追加，纠正下面这条曾经的错误陈述）**：曾以为"完全不写时间"这个
-  写法此前从未被合法使用过，**核实后是错的**——实测扫描全部 205 个 `models/**/*.yaml`
-  文件，`optimization.startpoint.regimens` 里有 **18 处**真实实例（`ckd_protein_opt_*`×4 个
-  `dietary_protein`、`infant_breastfeeding_opt_*`×3 个文件各 2 处 `breast_milk`、
-  `bergman_glucose_opt_*`×3 个 `exercise_met_min`、`masld_insulin_opt_*`×3 个
-  `exercise_met_min`、`test_opt_t2.yaml` 2 处），全部同一结构：T2（`optimize.time_start`
-  1 维搜索）激活、base 条目完全不写 `time_start`/`time_end`。逐一验证（真实跑一次
-  `--opt`，pop=4/gen=1）确认**行为不变**：这类条目最终的 `time_end` 由
-  `_shift_time(搜索到的 time_start, _width_min)` 算出，旧默认下 `_width_min=0`
-  （pulse，宽度0）、新默认下 `_width_min=1440`（全天），但 `_shift_time` 对 1440 分钟
-  取模 `% 1440`，两者结果都是"搜索到的时刻，宽度0"——这是 24 小时对模运算的巧合，不是
-  设计保证，记录在案供以后排查同类问题时参考。除此之外，全库 205 个文件（papers 58 +
-  test 45 + scenarios 27 + references 75）真实跑一遍 `--sim`/`--opt`
-  （对 `--opt` 用极小 pop/gen 压缩验证时间），**ADR 0127 造成的失败为 0**——发现的 17
-  处失败全部是预存、与本次改动无关的问题（`references/medical` 断链 import + 内容 bug 14
-  处、`scenarios/` 两个文件的旧版 optimization schema 从未迁移、`test/valid` 一个孤立
-  fixture 缺 `optimize:` 块），已记录到内部任务
-  `2026-07-09_task_reference-library-broken-imports-audit.md`，
-  不在本 ADR 范围内处理。
+- Implemented: `reference_engine/src/schedule_runner.py` (added `resolve_time_interval`, replacing `_normalize_time_interval`), `reference_engine/src/model_structure/loader.py`, `reference_engine/src/optimizer_engine.py` (all three default-logic sites switched to the new function).
+- Validated: all 23 pytest cases in `tests/` pass (including `test_schedule_runner.py`/`test_sim_cli_consistency.py`/every error-detection fixture in `tests/errors/`); a CLI smoke test (`hypertension_gout_sim.yaml --sim`, 5 plans x 5 MC runs) ran through with no regression.
+- Updated: several places in `docs/model.md` rewritten (the regimens field description gains a "window-width default rules" table, the "unified interval representation" chapter rewritten, the "window width is a quantity of the same category" chapter rewritten), no longer introducing pulse as a separate mode.
+- Repository-wide validation (added 2026-07-09, correcting a previously wrong statement below): it was believed that "writing no time at all" had never been legally used before; this turned out to be wrong on verification, an actual scan of all 205 `models/**/*.yaml` files found 18 real instances in `optimization.startpoint.regimens` (`ckd_protein_opt_*` x 4 `dietary_protein` files, `infant_breastfeeding_opt_*` x 3 files with 2 occurrences of `breast_milk` each, `bergman_glucose_opt_*` x 3 `exercise_met_min`, `masld_insulin_opt_*` x 3 `exercise_met_min`, `test_opt_t2.yaml` 2 occurrences), all sharing the same structure: T2 active (a 1-dimensional `optimize.time_start` search), with the base entry writing neither `time_start` nor `time_end` at all. Checking each one individually (actually running `--opt` once, pop=4/gen=1) confirmed behavior is unchanged: such an entry's final `time_end` is computed by `_shift_time` on the searched `time_start` plus `_width_min`; under the old default `_width_min=0` (a pulse, zero width), and under the new default `_width_min=1440` (all day), but `_shift_time` takes the modulus of 1440 minutes, `% 1440`, so both give the same result, the searched moment, zero width. This is a coincidence of the modulus arithmetic over 24 hours, not a design guarantee, and is recorded here for reference when investigating a similar issue in the future. Beyond this, running `--sim`/`--opt` once over all 205 files in the repository (papers 58 + test 45 + scenarios 27 + references 75; `--opt` run with a very small pop/gen to compress validation time) found zero failures caused by ADR 0127; the 17 failures found were all pre-existing, unrelated problems (a broken import plus content bugs in 14 files under `references/medical`, an old optimization schema in 2 files under `scenarios/` never migrated, and one isolated `test/valid` fixture missing an `optimize:` block), recorded in the internal task `2026-07-09_task_reference-library-broken-imports-audit.md`, outside this ADR's scope to handle.
 
-## 未决
+## Open Questions
 
-- ADR 0126 已记录的方向1（`consumed_by` 白名单，解决"读错物理量"类 bug，如 `bp_dynagmics`
-  该读 `body_weight` 却读了 `caloric_deficit`）与本 ADR 是互补机制，不是本 ADR 的一部分，
-  仍在内部设计 backlog。
-- `docs/model.md` 中历史/已废弃段落（`mode: sustained` ADR 0098 旧格式说明、`optimize.time`
-  旧字段映射表）保留原始"pulse"表述，未追溯改写——如果这些段落将来需要整体清理，是独立的
-  文档维护任务，不在本 ADR 范围。
-- "持续量"输入（如 `lm_score` 这类累积型指标，是否也该纳入本次窗宽统一讨论）在
-  2026-07-09 讨论中被识别为一个新问题，明确记录为不在第一版解决，见内部任务
-  `2026-07-09_task_cumulative-quantity-input-design.md`。
-- 全库验证顺带发现的 17 处预存失败（`references/medical` 断链 import 等，与本 ADR 无关）
-  未修复，见内部任务 `2026-07-09_task_reference-library-broken-imports-audit.md`。
+- Direction 1 already recorded in ADR 0126 (a `consumed_by` allowlist, solving the class of bug where the wrong physical quantity is read, such as `bp_dynagmics` needing to read `body_weight` but reading `caloric_deficit`) is complementary to this ADR, not part of it, and remains in the internal design backlog.
+- The historical/deprecated passages in `docs/model.md` (the old ADR 0098 `mode: sustained` format description, the old `optimize.time` field mapping table) keep their original "pulse" wording and are not rewritten retroactively; if these passages ever need a full cleanup, that is a separate documentation-maintenance task, outside this ADR's scope.
+- Whether "sustained-quantity" inputs (an accumulating metric such as `lm_score`, whether it too should be brought into this window-width unification discussion) was identified as a new question in the 2026-07-09 discussion, explicitly recorded as not solved in this first version; see the internal task `2026-07-09_task_cumulative-quantity-input-design.md`.
+- The 17 pre-existing failures incidentally found during the repository-wide validation (a broken import under `references/medical`, etc., unrelated to this ADR) are unfixed; see the internal task `2026-07-09_task_reference-library-broken-imports-audit.md`.

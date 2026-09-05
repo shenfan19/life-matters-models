@@ -9,18 +9,33 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      棒球运动的生理特征高度不均匀：投手在 9 局比赛中每投一球都对肩关节产生极大外旋应力，累积到约 100 球时应力指数达到 MLB 规定的安全上限，这正是球数管理制度的生理依据。打者则需要在约 0.4 秒内完成识别球路、决策挥击的全流程，随着比赛进行疲劳积累导致握力下降和反应时间延长，使 180 分钟比赛末段的打击质量系统性下降。投手的肩部保护与球速维持之间的权衡是棒球运动医学的核心命题。
+      Baseball's physiology is highly uneven: over a 9-inning game, every pitch a pitcher throws
+      places substantial external-rotation stress on the shoulder, and by about 100 pitches a stress
+      index reaches MLB's designated safe ceiling, which is exactly the physiological basis for
+      pitch-count management. A batter, meanwhile, must recognize the pitch and decide to swing
+      within about 0.4 seconds, and as the game progresses, fatigue accumulation lowers grip
+      strength and lengthens reaction time, systematically degrading batting quality in the closing
+      stretch of a 180-minute game. The tradeoff between protecting a pitcher's shoulder and
+      maintaining pitch velocity is the core proposition in baseball sports medicine.
     result: >
-      仿真尚未运行。理论预期：以 90 mph 投球 180 分钟，约合 100 球，肩部疲劳指数升至约 0.45-0.50，手臂应激指数达到约 85，接近 MLB 安全上限，表现精准度从基线 100 分降至约 86 分；降速至 82 mph 可将肩部疲劳控制在约 0.35，但投手的主导优势显著降低。
+      Not yet run. Theoretical expectation: pitching at 90 mph for 180 minutes (roughly 100
+      pitches), the shoulder-fatigue index rises to about 0.45-0.50, the arm-stress index reaches
+      about 85, close to MLB's safe ceiling, and the performance-accuracy score falls from a
+      baseline of 100 to about 86; lowering velocity to 82 mph keeps shoulder fatigue at about 0.35,
+      but the pitcher's dominant advantage drops markedly.
     limitations: >
-      未区分直球、曲球、变速球等不同投球类型的生物力学应力差异；肩关节应力为综合指标，未建模肩袖具体解剖结构的损伤累积；未包含打者等待时间内肌肉温度下降和预激活状态变化对打击质量的影响。
+      Does not distinguish the biomechanical stress differences between pitch types such as a
+      fastball, curveball, and changeup; shoulder stress is a composite index and does not model
+      damage accumulation in the rotator cuff's specific anatomy; does not include the effect of a
+      batter's muscle-temperature drop and pre-activation state during waiting time on batting
+      quality.
   ratings:
-    importance: 0.25 - 棒球肩关节管理有专项研究价值，但受众限于特定运动圈；团队运动专项模型，上层引用预期低
-    variable: 0.5 - 引用Potteiger/Mangine等文献，参数覆盖基本但数量有限
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Baseball shoulder management has specialized research value, but its audience is limited to a specific sporting community; a team-sport specialty model, expected to have low reuse elsewhere
+    variable: 0.5 - Cites publications such as Potteiger/Mangine, with basic but limited parameter coverage
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [baseball, team, shoulder_stress, reaction_time, grip_strength, pitch_count, explosive]
 
 variables:
@@ -29,71 +44,71 @@ variables:
     value: 90.0
     unit: "mph"
     bounds: [60.0, 105.0]
-    description: "投球速度（MLB一般投手约85-95 mph，精英先发约90-95 mph；Potteiger 1992）"
+    description: "Pitch velocity (an average MLB pitcher is about 85-95 mph, an elite starter about 90-95 mph; Potteiger 1992)"
   batting_effort:
     type: input
     value: 7.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "打者挥击努力强度（0=观望，7=全力挥击，10=极限爆发）"
+    description: "The batter's swing effort intensity (0=taking the pitch, 7=a full swing, 10=maximal effort)"
   shoulder_fatigue:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 1.0]
-    description: "肩部疲劳指数（对应肌肉耐力下降；>0.7时投球速度和控制精度下降；Potteiger 1992）"
+    description: "The shoulder-fatigue index (corresponding to declining muscular endurance; above 0.7, pitch velocity and control precision decline; Potteiger 1992)"
   arm_stress_index:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 100.0]
-    description: "手臂应激指数（累积外旋应力代理；MLB~100球对应此指数约80；Szymanski 2011）"
+    description: "The arm-stress index (a cumulative external-rotation-stress proxy; about 100 MLB pitches corresponds to an index of about 80; Szymanski 2011)"
   reaction_time_ms:
     type: state
     value: 390.0
     unit: "ms"
     bounds: [300.0, 600.0]
-    description: "打者反应时间（MLB平均约390ms识别+决策；疲劳和脱力后延长；Mangine 2012）"
+    description: "The batter's reaction time (an MLB average of about 390ms for recognition plus decision; lengthens with fatigue and exhaustion; Mangine 2012)"
   grip_strength:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "握力指数（前臂肌肉耐力代理；控球和击球质量的基础；反复挥击后下降）"
+    description: "The grip-strength index (a forearm-endurance proxy; the basis for control and hitting quality; declines after repeated swings)"
   performance_accuracy:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "表现精准度（投手：控球率+球速维持；打者：击球接触率和时机把握）"
+    description: "Performance accuracy (for a pitcher: control rate plus velocity retention; for a batter: contact rate and timing)"
 
 equations:
   shoulder_fatigue_accumulation:
-    description: "肩部疲劳随投球速度和累积球数增加（Potteiger 1992：100球后疲劳显著）"
+    description: "Shoulder fatigue rises with pitch velocity and cumulative pitch count (Potteiger 1992: fatigue becomes significant after 100 pitches)"
     condition: "pitch_velocity > 0"
     priority: 10
     dynamics:
       shoulder_fatigue: "min(1.0, shoulder_fatigue + (pitch_velocity / 95.0) * 0.0032)"
   arm_stress_accumulation:
-    description: "手臂应激指数随每次投球累积外旋应力（MLB 100球限制对应stress~80；Szymanski 2011）"
+    description: "The arm-stress index accumulates external-rotation stress with each pitch (MLB's 100-pitch limit corresponds to a stress of about 80; Szymanski 2011)"
     condition: "pitch_velocity > 0"
     priority: 9
     dynamics:
       arm_stress_index: "min(100, arm_stress_index + (pitch_velocity / 90.0) * 0.42)"
   reaction_time_degradation:
-    description: "打者反应时间随疲劳延长（Mangine 2012：长时间比赛后反应下降约10-15%）"
+    description: "The batter's reaction time lengthens with fatigue (Mangine 2012: reaction declines about 10-15% after a long game)"
     condition: true
     priority: 8
     dynamics:
       reaction_time_ms: "min(600, 390 + shoulder_fatigue * 60 + max(0, batting_effort - 8) * 10)"
   grip_strength_decay:
-    description: "握力随比赛时间和挥击努力下降（前臂耐力有限）"
+    description: "Grip strength declines with game time and swing effort (forearm endurance is finite)"
     condition: "batting_effort > 0"
     priority: 7
     dynamics:
       grip_strength: "max(0, 100 - shoulder_fatigue * 30 - batting_effort * 0.4)"
   performance_accuracy_dynamics:
-    description: "综合精准度受肩部疲劳、握力和反应时间共同影响（Potteiger 1992）"
+    description: "Overall accuracy is affected jointly by shoulder fatigue, grip strength, and reaction time (Potteiger 1992)"
     condition: true
     priority: 6
     dynamics:
@@ -120,13 +135,13 @@ simulation:
         value: 90.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "投球速度（90 mph，先发投手）"
+        label: "Pitch velocity (90 mph, a starting pitcher)"
       - variable: batting_effort
         time_start: "13:00"
         value: 7.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "打者挥击强度（RPE=7）"
+        label: "Batter swing intensity (RPE=7)"
 
 optimization:
   method: nsga2
@@ -134,26 +149,26 @@ optimization:
     - variable: performance_accuracy
       metric: final
       direction: maximize
-      description: "最大化比赛末综合精准度"
+      description: "Maximizing overall accuracy at the end of the game"
     - variable: shoulder_fatigue
       metric: final
       direction: minimize
-      description: "最小化肩部疲劳（投手保护）"
+      description: "Minimizing shoulder fatigue (protecting the pitcher)"
   constraints:
     - variable: arm_stress_index
       condition: "<= 80"
       type: hard
-      description: "手臂应激指数不超过80（对应~100球MLB限制）"
+      description: "The arm-stress index should not exceed 80 (corresponding to MLB's about-100-pitch limit)"
     - variable: shoulder_fatigue
       condition: "<= 0.8"
       type: hard
-      description: "肩部疲劳不超过0.8（损伤风险阈值）"
+      description: "Shoulder fatigue should not exceed 0.8 (an injury-risk threshold)"
   startpoint:
     regimens:
       - variable: pitch_velocity
         time_start: "13:00"
         time_end: "13:00"
-        label: "投球速度（75-100 mph）"
+        label: "Pitch velocity (75-100 mph)"
         optimize:
           value: [75.0, 100.0]
   algorithm:
@@ -177,8 +192,8 @@ optimization:
 
 references:
   - citation: "Potteiger JA et al. (1992) Physiological and performance responses to prolonged, competitive baseball games. J Strength Cond Res 6(3):149-153."
-    description: "提供长时间比赛中的生理和表现响应数据，是肩部疲劳积累和综合精准度动力学的参数来源。"
+    description: "Supplies physiological and performance response data across a long game, the parameter source for shoulder-fatigue accumulation and overall accuracy dynamics."
   - citation: "Szymanski DJ et al. (2011) Relationship between the NSCA physical testing guidelines and baseball performance in collegiate baseball players. J Strength Cond Res 25(8):2101-2112."
-    description: "提供体能测试指标与投球表现的关系数据，是手臂应激指数与 MLB 约 100 球限制对应关系的参数来源。"
+    description: "Supplies data on the relationship between fitness-test measures and pitching performance, the parameter source for the arm-stress index's correspondence with MLB's about-100-pitch limit."
   - citation: "Mangine GT et al. (2012) The effect of recovery time on bat speed, bat path efficiency, and contact rate of NCAA division I baseball players. J Strength Cond Res 26(3):809-815."
-    description: "研究恢复时间对挥棒速度和接触率的影响，是打者反应时间随疲劳延长这一机制的参数来源。"
+    description: "Studies recovery time's effect on bat speed and contact rate, the parameter source for the batter's reaction-time lengthening with fatigue."

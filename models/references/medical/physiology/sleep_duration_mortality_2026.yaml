@@ -9,23 +9,52 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      睡眠时长与全因死亡率呈U形关联，不是"越多越好"的单调关系，过短和过长睡眠都独立于彼此对应更高的死亡风险，最低风险点在约7小时/晚附近。多个跨学科行为优化模型里，例如burnout_allostatic、infant_breastfeeding等，"睡眠"这个决策/状态变量此前都被建成了单调正效应项，即越多睡眠、恢复效果越好、无上限，与这条U形关联矛盾，是这些模型 K×4 优化结果系统性把睡眠推到搜索区间上界、丧失真实权衡的根源之一。本文件把这条U形关联单独声明为可复用的 evidence 参考，供其它模型的 equations 引用系数，避免每个模型各自重新估计或遗漏睡眠上限。
+      Sleep duration shows a U-shaped association with all-cause mortality, not a "more is
+      better" monotonic relationship, since both too little and too much sleep independently
+      correspond to higher mortality risk, with the lowest-risk point near about 7 hours/night. In
+      several cross-disciplinary behavior-optimization models, such as burnout_allostatic and
+      infant_breastfeeding, the "sleep" decision/state variable has previously been built as a
+      monotonic positive-effect term, meaning more sleep always gives better recovery with no
+      ceiling, contradicting this U-shaped association, and this is one root cause of why these
+      models' K x 4 optimization results systematically push sleep to the upper bound of the search
+      range, losing a genuine tradeoff. This file declares this U-shaped association separately as a
+      reusable evidence reference, for other models' equations to cite the coefficients, avoiding
+      each model separately re-estimating or omitting a sleep ceiling.
     result: |
-      用 LM format 的 evidence 节中的 rr 子类型声明 Cappuccio et al. (2010) 剂量-反应 meta 分析的两段式效应量：睡眠时长每比7小时/晚少1小时，全因死亡相对风险(RR)在短睡眠侧升高6%；每比7小时/晚多1小时，RR在长睡眠侧升高13%，长睡眠侧斜率约为短睡眠侧的2倍。验证 Loader 能正确读取、承载并展示这一分段效应量：给定任意sleep_hours_input，静态计算出对应相对风险倍数，最低点固定在 optimal_sleep_hours=7。
+      This declares, using the rr subtype in the LM format's evidence block, the two-segment effect
+      size from the Cappuccio et al. (2010) dose-response meta-analysis: for each hour less than
+      7 hours/night, the all-cause-mortality relative risk (RR) rises 6% on the short-sleep side; for
+      each hour more than 7 hours/night, RR rises 13% on the long-sleep side, with the long-sleep
+      slope about twice the short-sleep slope. This verifies that the loader correctly reads, carries,
+      and displays this segmented effect size: given any sleep_hours_input, it statically computes
+      the corresponding relative-risk multiplier, with the minimum fixed at
+      optimal_sleep_hours=7.
     limitations: |
-      本案例是"效应量编码正确性"展示，不是独立预测检验，两个per-hour RR系数本身就是要验证的目标，不是外推后与另一个独立来源比较。真实剂量-反应关系在两个分段间的过渡区并非严格分段线性，因为meta分析报告的是汇总斜率，不是逐小时精确曲线，供其它模型引用时应视为工程近似而非精确解析解；此外该效应量测的是"死亡率"，不是"次日工作表现"或"次日皮质醇水平"等短期结局，其它模型引用这条曲线的*方向*，即存在最优点、双侧递减，是有依据的，但如果需要短期行为结局的精确系数，应额外核实是否有更直接对应的文献，例如 Van Dongen et al. 2003 关于连续限制睡眠对认知表现累积损害的剂量-反应研究。
+      This case demonstrates the correctness of effect-size encoding, not an independent prediction
+      test, and the two per-hour RR coefficients are themselves the target being verified, not values
+      extrapolated and then compared against a separate independent source. The real dose-response
+      relationship is not strictly piecewise-linear in the transition region between the two
+      segments, because the meta-analysis reports a pooled slope, not a precise hour-by-hour curve,
+      so other models citing it should treat it as an engineering approximation rather than an exact
+      analytical solution; furthermore, this effect size measures mortality, not a short-term outcome
+      such as next-day work performance or next-day cortisol level, so other models citing this
+      curve's *direction*, the existence of an optimum with decline on both sides, have a sound
+      basis, but if a precise coefficient for a short-term behavioral outcome is needed, a more
+      directly corresponding publication should be separately checked, such as Van Dongen et al.
+      2003's dose-response study on cumulative cognitive-performance impairment from sustained sleep
+      restriction.
   ratings:
-    importance: 0.5 - 跨多个行为优化模型复用的基础机制系数，供burnout_allostatic/infant_breastfeeding等模型引用，非孤立组件
-    variable: 1.0 - Cappuccio et al. (2010) 是该领域被反复引用的经典meta分析，文献可直接追溯
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.75 - 效应量本身来自高质量独立来源(meta分析共识值)，Loader正确编码展示，非独立预测已在理由中注明
+    importance: 0.5 - A base mechanism coefficient reused across multiple behavior-optimization models, cited by models such as burnout_allostatic/infant_breastfeeding, not an isolated component
+    variable: 1.0 - Cappuccio et al. (2010) is a classic, repeatedly cited meta-analysis in this field, directly traceable to the literature
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.75 - The effect size itself comes from a high-quality independent source (a meta-analytic consensus value), and the loader's correct encoding is demonstrated; that this is not an independent prediction is noted in the rationale
   tags: [epidemiology, evidence, rr, validation, literature-benchmark, rr-family, sleep, physiology]
 
 variables:
   optimal_sleep_hours:
-    description: 最低全因死亡风险对应的睡眠时长（Cappuccio 2010 meta分析拐点；AASM共识7-8h区间的下端）
+    description: The sleep duration corresponding to the lowest all-cause mortality risk (the Cappuccio 2010 meta-analysis's inflection point; the lower end of the AASM consensus 7-8h range)
     value: 7.0
     unit: hours
     type: parameter
@@ -34,7 +63,7 @@ variables:
   rr_per_hour_short:
     type: parameter
     evidence_type: rr
-    description: 睡眠时长每比optimal_sleep_hours少1小时，全因死亡RR的增量倍数（短睡眠侧斜率）
+    description: The multiplicative increment in all-cause-mortality RR for each hour less than optimal_sleep_hours (the short-sleep-side slope)
     value: 1.06
     unit: "RR/hour"
     reference: "Cappuccio FP et al. (2010) Sleep 33(5):585-592"
@@ -42,19 +71,19 @@ variables:
   rr_per_hour_long:
     type: parameter
     evidence_type: rr
-    description: 睡眠时长每比optimal_sleep_hours多1小时，全因死亡RR的增量倍数（长睡眠侧斜率，约为短睡眠侧的2倍）
+    description: The multiplicative increment in all-cause-mortality RR for each hour more than optimal_sleep_hours (the long-sleep-side slope, about twice the short-sleep side)
     value: 1.13
     unit: "RR/hour"
     reference: "Cappuccio FP et al. (2010) Sleep 33(5):585-592"
 
   sleep_hours_input:
-    description: 待评估的睡眠时长（供其它模型/展示场景代入的探测值）
+    description: The sleep duration to be evaluated (a probe value substituted by other models/demonstration scenarios)
     value: 7.0
     unit: hours
     type: input
 
   relative_risk:
-    description: sleep_hours_input 对应的全因死亡相对风险（以optimal_sleep_hours=7为基准=1.0，双侧分段线性）
+    description: The all-cause-mortality relative risk corresponding to sleep_hours_input (with optimal_sleep_hours=7 as the reference, =1.0, piecewise linear on both sides)
     value: 1.0
     unit: "RR"
     type: state
@@ -62,9 +91,10 @@ variables:
 equations:
   relative_risk_calc:
     description: >
-      分段线性剂量-反应：短睡眠侧和长睡眠侧各自独立套用各自的per-hour RR增量，
-      在optimal_sleep_hours处两段相接、RR=1.0。这是U形关联的工程近似，不是文献给出的
-      逐小时精确曲线（见 metadata.description.limitations）。
+      A piecewise-linear dose-response: the short-sleep side and long-sleep side each apply their
+      own independent per-hour RR increment, meeting at optimal_sleep_hours where RR=1.0. This is
+      an engineering approximation of the U-shaped association, not a precise hour-by-hour curve
+      given by the literature (see metadata.description.limitations).
     condition: true
     priority: 3
     dynamics:
@@ -85,18 +115,18 @@ simulation:
     - relative_risk
   plans:
     - id: "short_sleep_5h"
-      label: "短睡眠展示（5小时/晚）"
+      label: "Short-sleep demonstration (5 hours/night)"
       regimens:
         - {variable: sleep_hours_input, time_start: "00:00", value: 5.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "5h"}
     - id: "optimal_sleep_7h"
-      label: "最优睡眠展示（7小时/晚）"
+      label: "Optimal-sleep demonstration (7 hours/night)"
       regimens:
         - {variable: sleep_hours_input, time_start: "00:00", value: 7.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "7h"}
     - id: "long_sleep_10h"
-      label: "长睡眠展示（10小时/晚）"
+      label: "Long-sleep demonstration (10 hours/night)"
       regimens:
         - {variable: sleep_hours_input, time_start: "00:00", value: 10.0, days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun], date_range: ["2026-01-01", "2026-01-01"], label: "10h"}
 
 references:
   - "Cappuccio FP, D'Elia L, Strazzullo P, Miller MA (2010) Sleep duration and all-cause mortality: a systematic review and meta-analysis of prospective studies. Sleep 33(5):585-592"
-  - "American Academy of Sleep Medicine (AASM) consensus: 7-8 hours/night appropriate for optimal adult health; ≥9-10 hours classified as long sleep duration"
+  - "American Academy of Sleep Medicine (AASM) consensus: 7-8 hours/night appropriate for optimal adult health; >=9-10 hours classified as long sleep duration"

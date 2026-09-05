@@ -7,47 +7,65 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      CKD 蛋白质-肌肉联合多目标优化前沿在更大搜索规模下的复现：验证早午餐蛋白量压至下界、限制期→标准期切换时机才是关键杠杆这一权衡结构，以及晚餐蛋白摄入时机对模型结局无因果影响这一结论，是否随搜索深度增加而改变。
+      Reproducing the CKD protein-muscle joint multi-objective optimization front at a larger search
+      scale: verifying whether the tradeoff structure, breakfast and lunch protein pressed to their
+      lower bound with the restriction-to-standard-phase switch timing being the actual key lever,
+      and the conclusion that dinner protein-intake timing has no causal effect on the model's
+      outcome, hold up as search depth increases.
     method: |
-      机制与 ckd_protein_sim.yaml 相同，完整机制列表见该文件 description.method；本文件与 ckd_protein_opt_joint.yaml 使用完全相同的联合目标结构，即 GFR、muscle_mass 与健康时长，仅将搜索预算从 pop=100/gen=200 扩大至 pop=150/gen=300，用于前沿稳健性复核。
+      The mechanism matches ckd_protein_sim.yaml; see that file's description.method for the complete
+      mechanism list. This file uses exactly the same joint objective structure as
+      ckd_protein_opt_joint.yaml, namely GFR, muscle_mass, and the healthy-duration score, only
+      expanding the search budget from pop=100/gen=200 to pop=150/gen=300, for a front-robustness
+      check.
     result: |
-      - Pareto 前沿共 31 个非劣解，GFR 范围 40.9 至 42.9 mL/min/1.73m²，muscle_mass 范围 33.4 至 38.5 kg，lm_score 在全部解中恒为 364。
-      - 前沿范围与更小搜索预算的 pop=100 版本，即 ckd_protein_opt_joint.yaml 修正前的历史值，基本重合，未发现更大搜索规模下遗漏的显著尾端，验证了权衡结构在更大搜索规模下的稳健性。
+      - The Pareto front has 31 non-dominated solutions in total, with GFR ranging 40.9 to
+        42.9 mL/min/1.73m², muscle_mass ranging 33.4 to 38.5 kg, and lm_score constant at 364 across
+        every solution.
+      - The front's range essentially coincides with the smaller-budget pop=100 version (the
+        historical value from before ckd_protein_opt_joint.yaml's correction), with no significant
+        tail found to have been missed at the larger search scale, validating the tradeoff
+        structure's robustness under a larger search.
     limitations: |
-      - 计算成本显著高于标准配置，适合发表前精化搜索；继承 s1/ckd_protein 全部建模假设与限制。
-      - 本文件最近一次完整搜索于 2026-07-10 完成，建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，尚未用当前模型重新验证；数值仅供搜索规模本身的稳健性参考，当前有效前沿见 `ckd_protein_opt_joint.yaml`。
+      - The computational cost is significantly higher than the standard configuration, suited to
+        pre-publication search refinement; it inherits every modeling assumption and limitation from
+        s1/ckd_protein.
+      - This file's most recent complete search finished on 2026-07-10, on a model version from
+        before the 2026-08-02 adherence-dimension and directionality correction, and has not yet been
+        revalidated against the current model; the numbers here are for reference on the search
+        scale's own robustness only, and the currently valid front is in `ckd_protein_opt_joint.yaml`.
   ratings:
-    importance: 0.25 - 方法论收尾验证，附录级材料，最佳定位是收敛性分析数据源
-    variable: 0.75 - 文献基础继承自 s1/ckd_protein_sim.yaml
-    equation: 0.5 - 机制继承自 s1/ckd_protein_sim.yaml，自建方程锚定文献点估计
-    simulation: 0.5 - 机制继承自 s1/ckd_protein_sim.yaml，本文件不新增仿真内容
-    optimization: 0.5 - 更大搜索预算下前沿仍非退化(31解)，确认权衡结构稳健，但建立在已过期的模型版本上
-    innovation: 0.25 - 搜索预算扩展验证，方法论意义大于科学新颖性
-    confidence: 0.0 - 结果建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，未用当前模型重新验证，当前有效前沿见 ckd_protein_opt_joint.yaml
+    importance: 0.25 - A methodological wrap-up validation, appendix-level material, best positioned as a data source for a convergence analysis
+    variable: 0.75 - The literature basis is inherited from s1/ckd_protein_sim.yaml
+    equation: 0.5 - The mechanism is inherited from s1/ckd_protein_sim.yaml, a self-built equation anchored to a literature point estimate
+    simulation: 0.5 - The mechanism is inherited from s1/ckd_protein_sim.yaml; this file adds no new simulation content
+    optimization: 0.5 - The front remains non-degenerate (31 solutions) under a larger search budget, confirming the tradeoff structure is robust, but this is on a since-superseded model version
+    innovation: 0.25 - A search-budget-expansion validation, of more methodological than scientific novelty
+    confidence: 0.0 - The result is on a model version from before the 2026-08-02 adherence-dimension and directionality correction and has not been revalidated against the current model; the currently valid front is in ckd_protein_opt_joint.yaml
   tags: [ckd, protein, muscle]
   log:
     "2026-06-15_00-00-00":
-      change: "imports 路径 papers/s1/ckd_protein_noref 改为 papers/s1/ckd_protein_HOLD"
-      reason: "--sim/--opt 均报 Cannot load model：被 import 的文件已重命名为 _HOLD 后缀，本文件的 imports 路径未同步更新。"
+      change: "The imports path papers/s1/ckd_protein_noref changed to papers/s1/ckd_protein_HOLD"
+      reason: "Both --sim/--opt reported Cannot load model: the imported file had been renamed with the _HOLD suffix, and this file's imports path had not been updated to match."
     "2026-06-25_00-00-00":
-      change: "文件从 papers/s4/ckd_protein_pareto.yaml 迁移至 papers/s1/ckd_protein/ckd_protein_opt_joint_largepop.yaml，imports 路径改为 ./ckd_protein_sim"
-      reason: "本场景是 s1/ckd_protein 案例的搜索预算扩展验证，不是独立案例，归位到其所属案例目录下。"
+      change: "The file migrated from papers/s4/ckd_protein_pareto.yaml to papers/s1/ckd_protein/ckd_protein_opt_joint_largepop.yaml, with the imports path changed to ./ckd_protein_sim"
+      reason: "This scenario is a search-budget-expansion validation of the s1/ckd_protein case, not an independent case, and belongs under that case's own directory."
     "2026-08-05_00-00-00":
-      change: "移除已解决的 metadata.todo 条目；results 精简为 2026-07-10 的最后一次完整搜索结果，其余 rerun 记录迁移至 history/2026-08-05_ckd_protein_opt_joint_largepop.yaml；description 补充 method 字段，problem 字段改为直接陈述验证目标"
-      reason: "落实 ADR 0141；同时如实标注本文件尚未用 2026-08-02 模型修正后的版本重新验证，见 results.status。"
+      change: "Removed resolved metadata.todo items; results streamlined to the last complete search's result from 2026-07-10, with the remaining rerun records moved to history/2026-08-05_ckd_protein_opt_joint_largepop.yaml; description gains a method field, and problem now states the validation goal directly"
+      reason: "Implements ADR 0141; also honestly notes that this file has not yet been revalidated against the model version corrected on 2026-08-02, see results.status."
 
 imports:
   - papers/lm_format/ckd_protein/ckd_protein_sim
 
 references:
-  - "参见 ckd_protein_sim.yaml 完整引用"
+  - "See ckd_protein_sim.yaml for the complete reference list"
   - citation: "Deb K et al. (2002) NSGA-II. IEEE Trans Evol Comput 6(2):182-197"
-    description: "NSGA-II 多目标优化算法本身的方法学来源，本文件 optimization.method 采用该算法在更大种群与代数预算下搜索 Pareto 前沿。"
+    description: "The methodological source for the NSGA-II multi-objective optimization algorithm itself; this file's optimization.method uses this algorithm to search for the Pareto front at a larger population and generation budget."
   - citation: "Kouw IWK et al. (2017) Pre-sleep protein and overnight muscle protein synthesis. J Nutr 147(12):2252-2261"
-    description: "睡前蛋白促进夜间肌肉合成的机制文献，本文件用于检验晚餐蛋白摄入时机在更大搜索规模下是否呈现该机制预期的因果模式；结果显示该决策变量在前沿各解间无一致规律，与 ckd_protein_sim.yaml 记录的机制缺口一致。"
+    description: "The mechanism literature for pre-sleep protein promoting overnight muscle synthesis, used here to test whether dinner protein-intake timing shows the causal pattern this mechanism predicts at a larger search scale; the result shows no consistent pattern for this decision variable across the front's solutions, consistent with the mechanism gap already recorded in ckd_protein_sim.yaml."
 
-# 继承 ckd_protein_sim 的全部变量、方程、约束
-# 仅覆盖 optimization 配置（更大种群 + 同一 T1+T2+T4 inputs）
+# Inherits every variable, equation, and constraint from ckd_protein_sim
+# Only overrides the optimization configuration (a larger population, with the same T1+T2+T4 inputs)
 
 optimization:
   method: nsga2
@@ -58,15 +76,15 @@ optimization:
     - variable: muscle_mass
       metric: final
       direction: maximize
-      description: "最大化52周末骨骼肌质量"
+      description: "Maximizing skeletal muscle mass at week 52"
     - variable: GFR
       metric: final
       direction: maximize
-      description: "最大化52周末 GFR"
+      description: "Maximizing GFR at week 52"
     - variable: lm_score
       metric: final
       direction: maximize
-      description: "最大化 CKD 健康时长（GFR ≥ 30、muscle_mass ≥ 22 kg、BUN ≤ 20 的累计天数）"
+      description: "Maximizing CKD healthy duration, the accumulated days with GFR at least 30, muscle_mass at least 22 kg, and BUN at most 20"
 
   constraints:
     - variable: BUN
@@ -78,38 +96,38 @@ optimization:
 
   startpoint:
     regimens:
-      # T1: 早餐蛋白量
+      # T1: breakfast protein amount
       - variable: dietary_protein
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "早餐蛋白量"
+        label: "Breakfast protein amount"
         optimize:
           value: [0.15, 0.45]
 
-      # T1: 午餐蛋白量
+      # T1: lunch protein amount
       - variable: dietary_protein
         time_start: "12:00"
         time_end: "12:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "午餐蛋白量"
+        label: "Lunch protein amount"
         optimize:
           value: [0.15, 0.40]
 
-      # T1+T2: 晚餐蛋白量 + 用餐时间窗（时间营养学）
+      # T1+T2: dinner protein amount plus meal-timing window (chrono-nutrition)
       - variable: dietary_protein
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "晚餐蛋白量与用餐时机"
+        label: "Dinner protein amount and meal timing"
         optimize:
           value: [0.15, 0.45]
           time_start: ["17:00", "22:00"]
 
-      # T4: 限制期→标准期切换时机
+      # T4: restriction-to-standard-phase switch timing
       - variable: dietary_protein
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "标准期启动时机"
+        label: "Standard-phase start timing"
         optimize:
           value: [0.27, 0.42]
           date_range: [["2026-04-01", "2026-10-01"], ["2026-12-31", "2026-12-31"]]
@@ -124,7 +142,7 @@ optimization:
     seed: 19
 
   results:
-    status: "本文件最近一次完整搜索（2026-07-10）建立在 2026-08-02 依从性维度与方向性修正之前的模型版本上，尚未用当前模型重新验证；数值仅供搜索规模本身的稳健性参考，当前有效前沿见 ckd_protein_opt_joint.yaml。"
+    status: "This file's most recent complete search (2026-07-10) is on a model version from before the 2026-08-02 adherence-dimension and directionality correction, and has not been revalidated against the current model; the numbers here are for reference on the search scale's own robustness only, and the currently valid front is in ckd_protein_opt_joint.yaml."
     generated_at: "2026-07-10"
     method: nsga2
     population_size: 150
@@ -133,8 +151,8 @@ optimization:
     pareto_front_range:
       GFR: [40.916, 42.923]
       muscle_mass: [33.419, 38.538]
-      lm_score: "全部31解恒为364.0"
+      lm_score: "constant at 364.0 across all 31 solutions"
     recommended:
       x: [0.19253420892206038, 0.2825734558841018, 0.30054613683819725, 1.9536293937682137, 0.2854986687478265, 173.73504308475066]
       f: [35.71878173323725, 42.59878875902801, 364.0000000000258]
-    note: "前沿范围与 pop=100 版本（ckd_protein_opt_joint.yaml 修正前的历史值）基本重合，未发现更大搜索规模下遗漏的显著尾端。更早的重跑记录及完整 pareto_front 见 history/2026-08-05_ckd_protein_opt_joint_largepop.yaml。"
+    note: "The front's range essentially coincides with the pop=100 version (the historical value from before ckd_protein_opt_joint.yaml's correction), with no significant tail found to have been missed at the larger search scale. See history/2026-08-05_ckd_protein_opt_joint_largepop.yaml for the earlier rerun records and the complete pareto_front."

@@ -7,22 +7,12 @@ metadata:
       in both simulation and optimiser MC modes. Deterministic mode uses the distribution mean;
       MC mode (runs=5) re-samples all three parameters independently per run. The optimiser
       also uses MC: each candidate solution is evaluated 5 times and results averaged.
-    problem_cn: >
-      在仿真与优化器的蒙特卡洛（MC）模式下，验证三种参数分布形式——normal()、uniform()
-      与 lognormal()。确定性模式使用分布均值；MC 模式（runs=5）对三个参数各自独立重新
-      采样。优化器同样使用 MC：每个候选解评估 5 次并取平均。
     result: >
       Deterministic: clearance_rate=0.30, bioavailability=0.75, volume_dist≈49 L.
       MC simulation: curves should visibly diverge across the distribution ranges.
       Optimiser Pareto front balances mean_plasma coverage against peak_plasma, with
       wider spread than a non-MC run due to bioavailability uncertainty.
-    result_cn: >
-      确定性模式：clearance_rate=0.30，bioavailability=0.75，volume_dist≈49 L。MC
-      仿真：各曲线应在分布范围内可见地发散。优化器 Pareto 前沿在 mean_plasma 覆盖度
-      与 peak_plasma 之间权衡，由于 bioavailability 的不确定性，分布范围比非 MC
-      运行更宽。
     limitations: Drug PK parameters are synthetic; not physiologically calibrated.
-    limitations_cn: 药代动力学（PK）参数为合成数据，未经生理学校准。
   tags: [test, mc, distributions, normal, uniform, lognormal, nsga2]
 variables:
   plasma_conc:

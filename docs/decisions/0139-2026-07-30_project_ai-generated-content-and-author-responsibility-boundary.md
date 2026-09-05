@@ -1,55 +1,55 @@
-# 0139 — AI 生成内容声明与作者/模型库责任边界
+# 0139 - An AI-Generated-Content Statement and the Author/Model-Library Responsibility Boundary
 
-**日期**：2026-07-30
-**状态**：✅ 已接受
+**Date**: 2026-07-30
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-模型库审计过程中反复出现同一个矛盾：作者是单人研究者，不是团队，也不是百科全书式的全领域专家；即便有 AI 协助，也不可能对模型库里每个学科的每个模型都做到专家级核实。此前没有明确说明这一点，导致两个后续问题：
+The same tension kept resurfacing during the model library audit: the author is a single researcher, not a team, and not an encyclopedic expert across every field; even with AI assistance, expert-level verification of every model in every discipline in the model library is simply not achievable within one person's capacity. This had not previously been stated explicitly, leading to two downstream problems:
 
-1. 试图让 docs、`validation_report.md` 和模型库整体达到"全面可靠"，事实上不可能在一个人的精力范围内完成，讨论陷入反复纠结、难以推进论文 S1 的发表。
-2. 公开仓库审计中发现，即使做了大量措辞清理，仍无法完全排除文字被断章取义或引发质疑的可能，需要一个显性声明来划清作者对什么负责、模型库整体是什么性质这两件事。
+1. Trying to make the docs, `validation_report.md`, and the model library as a whole reach "comprehensively reliable" is, in fact, not achievable within one person's effort, and the discussion kept getting stuck in circles, making it hard to move the S1 paper toward publication.
+2. During the public-repository audit, it became clear that even after extensive wording cleanup, the possibility that text could be taken out of context or invite challenge could not be fully ruled out, and an explicit statement was needed to draw a clear line between what the author is responsible for and what the model library as a whole is.
 
-## 决策
+## Decision
 
-采纳两条边界声明，作为项目对外沟通的基本框架：
+Adopt two boundary statements as the project's basic framework for external communication:
 
-### 1. 作者责任边界，对应"纳入→评估→输出"的输出阶段
+### 1. The author's responsibility boundary, corresponding to the output stage of "inclusion to evaluation to output"
 
-作者本人对以下内容负责，也只对这些内容的正确性负责：
+The author is personally responsible for, and only for the correctness of, the following:
 
-- LM format 格式规范本身，即 `docs/LM_format_1.0.md`
-- 配套仿真与优化引擎，即 life-matters-reference-engine 仓库
-- 首篇论文 S1 中精选的少数案例，两到三个已达 `validation_confidence` 不低于 4 的核心示范模型
+- The LM format specification itself, that is, `docs/LM_format_1.0.md`.
+- The accompanying simulation and optimization engine, that is, the life-matters-reference-engine repository.
+- A small number of curated cases in the first paper, S1, two to three core demonstration models that have already reached a `validation_confidence` of at least 4.
 
-`docs/model.md`、`models/test_validation/validation_report.md` 及模型库其余内容允许存在不完美甚至错误。这不是降低标准，而是这些文档从设计之初就是活文档，用途是如实记录当前验证状态、邀请多领域专家参与核对与修订，`models/test_validation/validation_report.md` 开篇即声明目标不是挑出若干个跑得通的模型案例，而是建立一套通用诊断框架。本 ADR 把这条已经隐含的定位显性化为项目对外沟通的一部分。
+`docs/model.md`, `models/test_validation/validation_report.md`, and the rest of the model library are allowed to contain imperfections or even errors. This is not a lowering of standards; these documents were designed from the start as living documents, meant to honestly record the current state of validation and invite experts across disciplines to review and revise them, and `models/test_validation/validation_report.md` states at the outset that its goal is not to cherry-pick a handful of working model examples but to establish a general diagnostic framework. This ADR makes this already-implicit positioning explicit as part of the project's external communication.
 
-### 2. 模型库性质声明：AI 辅助生成，未经专家核实，仅供测试与参考
+### 2. A statement on the model library's nature: AI-assisted generation, not expert-verified, for testing and reference only
 
-模型库中大部分模型文件由 AI 辅助生成与初步复核，**尚未经过相关领域专家核实**，不构成临床或科学结论。每个模型的 `metadata.ratings.validation_confidence` 字段标注当前验证程度，量表定义见 `docs/model.md`；`docs/model.md` 的纳入标准盘点表和 `models/test_validation/validation_report.md` 如实记录哪些学科、哪些模型已验证，哪些仍待评估。欢迎相关领域专家指正，这是模型以开放、可核对的 YAML 格式发布而非锁在私有工具里的原因。
+Most model files in the model library are AI-assisted in generation and initial review, have not yet been verified by an expert in the relevant field, and do not constitute a clinical or scientific conclusion. Each model's `metadata.ratings.validation_confidence` field marks its current level of validation, with the scale defined in `docs/model.md`; `docs/model.md`'s inclusion-criteria inventory table and `models/test_validation/validation_report.md` honestly record which disciplines and which models have been validated and which are still pending evaluation. Experts in the relevant fields are welcome to point out corrections, which is exactly why the models are published in an open, checkable YAML format rather than locked inside a private tool.
 
-**定位类比**：项目类似一个面向 AI 时代的、可计算的科学参考库。AI 广泛参与科研工作流已是现实而非需要回避的问题，让 AI 辅助生成的内容变得可核对、可纠错，是这类项目存在的意义之一，而不是需要隐藏的短板。
+Positioning analogy: the project is similar to a computable scientific reference library built for the AI era. AI's broad participation in the research workflow is already a reality, not a problem to avoid, and making AI-assisted content checkable and correctable is one of the reasons a project like this exists, not a shortcoming to hide.
 
-### 3. 措辞边界：不在 S1 这篇软件工具论文里论证"AI 反哺 AI"的远景
+### 3. A wording boundary: S1, a paper about a software tool, does not argue for the "AI feeding back into AI" long-term vision
 
-作者提出过一个更大的远景，即 LM 提供给 AI 可计算、有逻辑约束的反馈素材，弥补当前以 DNN 拟合为主、逻辑推理能力有限的 AI 的短板。这个愿景本身有讨论价值，但**不作为 S1 的核心论证**。S1 定位是聚焦、克制的软件工具论文，若承载与实际贡献不匹配的宏大叙事，实际贡献指的是 YAML 格式和 CLI 工具本身，反而更容易招致野心与贡献不匹配这类审稿质疑，与减少文字质疑风险这一诉求本身相悖。此类远景保留给定位为 Perspective 的后续论文，即 S3、S4，或 S1 的简短展望段落。
+The author has raised a larger vision, that LM supplies AI with computable, logically constrained feedback material to address the shortcomings of AI systems that currently rely mainly on DNN fitting with limited logical-reasoning capability. This vision has its own discussion value, but it is not S1's core argument. S1 is positioned as a focused, restrained software-tool paper, and if it carried a grand narrative mismatched with its actual contribution, the actual contribution being the YAML format and the CLI tool themselves, that would more easily invite a reviewer's challenge about ambition outstripping contribution, running counter to the very goal of reducing wording-related risk. This kind of vision is left for a follow-on paper positioned as a Perspective, namely S3 or S4, or a short outlook paragraph in S1.
 
-## 影响范围
+## Scope of Impact
 
-- `life-matters-models/README.md`：新增「内容可信度声明」一节。
-- `life-matters-reference-engine/README.md`：「免责声明」一节补充一段，明确作者对格式规范与引擎本身负责，模型库内容可信度边界见 life-matters-models README。
-- `docs/model.md`：纳入标准一节补充一句，说明盘点表大量 `?` 格子如实反映模型库当前 AI 辅助生成、未经专家核实的状态。
-- `models/test_validation/validation_report.md`：开篇引言补充一句，同上。
-- S1、S2 等论文草稿中的 AI 使用披露声明措辞，需要单独对齐投稿期刊的具体要求，例如 BMC Medical Informatics and Decision Making 的作者须知，不在本 ADR 内展开，追踪于 `life-matters-home/paper/` 相关任务记录。
+- `life-matters-models/README.md`: a new "Content Credibility Statement" section added.
+- `life-matters-reference-engine/README.md`: the "Disclaimer" section gains a paragraph clarifying that the author is responsible for the format specification and the engine itself, with the model library's credibility boundary pointed to the life-matters-models README.
+- `docs/model.md`: the inclusion-criteria section gains a sentence stating that the inventory table's many `?` cells honestly reflect the model library's current state of AI-assisted generation without expert verification.
+- `models/test_validation/validation_report.md`: the opening introduction gains a matching sentence.
+- The exact wording of the AI-use disclosure statement in drafts of S1, S2, and other papers needs to be separately aligned with the specific requirements of the target journal, such as the author guidelines of BMC Medical Informatics and Decision Making; this is not expanded on within this ADR and is tracked in the relevant task records under `life-matters-home/paper/`.
 
-## 结果
+## Result
 
-- 项目对外沟通口径统一：作者负责格式、引擎、S1 精选案例；模型库整体是 AI 辅助生成、邀请多方核对的开放资源，两者不混淆。
-- 为后续推进 S1、S2 发表提供了明确的范围锚点：不需要等模型库"全面可靠"，只需要 S1 精选的少数案例达到强验证标准，且声明边界清晰、诚实。
+- The project's external communication line is unified: the author is responsible for the format, the engine, and S1's curated cases; the model library as a whole is an open, AI-assisted resource inviting multi-party review, and the two are not conflated.
+- This provides a clear scope anchor for moving S1 and S2 toward publication: there is no need to wait for the model library to become "comprehensively reliable," only for S1's small set of curated cases to reach a strong validation standard, with the boundary stated clearly and honestly.
 
-## 未决
+## Open Questions
 
-- 是否需要在单个模型 YAML 文件的 `metadata` 里增加显式的 AI 生成标记字段，例如 `ai_generated: true`，还是维持现状，仅在仓库级 README/docs 声明一次，不逐文件标注。本 ADR 采纳后者，更简单、维护成本低；前者作为未来如有需要时的备选方案，不现在实施。
-- S1 论文正文的具体 AI 使用披露措辞待对齐目标期刊要求后确定。
+- Whether an explicit AI-generation marker field, such as `ai_generated: true`, is needed in an individual model YAML's `metadata`, or whether the current approach of stating this once at the repository-level README/docs, without per-file annotation, should be kept. This ADR adopts the latter, simpler and cheaper to maintain; the former is kept as a future fallback if needed, not implemented now.
+- The specific wording of the AI-use disclosure in the S1 paper's own text will be settled once the target journal's requirements are confirmed.

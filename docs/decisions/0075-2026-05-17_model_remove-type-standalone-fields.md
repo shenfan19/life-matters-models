@@ -1,62 +1,62 @@
-# ADR 0075 — 删除 YAML 顶层 `type` 和 `standalone` 字段
+# ADR 0075 - Removing the Top-Level YAML type and standalone Fields
 
-**日期**：2026-05-17  
-**状态**：已采纳  
-**范围**：`models/**/*.yaml`、`docs/model_design.md`、`sim_engine`、`sim_gui`
+**Date**: 2026-05-17
+**Status**: Adopted
+**Scope**: `models/**/*.yaml`, `docs/model_design.md`, `sim_engine`, `sim_gui`
 
 ---
 
-## 背景
+## Background
 
-YAML schema 历史上有两个顶层字段：
+The YAML schema historically had two top-level fields:
 
-- `type: model | story`：区分"数学组件"与"组合分析案例"
-- `standalone: true | false`：标记模型是否可以独立运行
+- `type: model | story`: distinguishing a "mathematical component" from a "combined analysis case"
+- `standalone: true | false`: marking whether a model can run independently
 
-## 问题
+## Problems
 
-### `type` 字段
+### The `type` field
 
-代码审查发现该字段**无任何行为影响**：
+A code review found this field had no behavioral effect at all:
 
-- `sim_engine` loader/validator/simulator 均不读取 `type` 字段
-- `api_server.py` 读取后仅作为元数据返回给前端
-- 前端仅将其渲染为一个蓝色 tag，无任何分支逻辑
-- 64 个实际 YAML 文件中有 `type:` 字段，却对运行结果零影响
+- The `sim_engine` loader, validator, and simulator never read the `type` field.
+- `api_server.py` only reads it to return as metadata to the frontend.
+- The frontend only renders it as a blue tag, with no branching logic.
+- 64 actual YAML files had a `type:` field, with zero impact on the run result.
 
-### `standalone` 字段
+### The `standalone` field
 
-- `models/` 下实际写了 `standalone: false` 的文件：**0 个**
-- `references/` 下 73 个"库组件"模型全部有完整的 `simulation:` 块，可以独立运行
-- UI 代码中有一处警告逻辑，但从未被触发
+- Files that actually wrote `standalone: false` under `models/`: 0.
+- All 73 "library component" models under `references/` had a complete `simulation:` block and could run independently.
+- The UI code had a warning branch for this, but it was never triggered.
 
-### 设计层面
+### At the design level
 
-"是否能独立运行"本质上是一个**工程问题**，而非**语义标签问题**：一个只建模葡萄糖吸收的模型，在没有胰岛素反馈的情况下仍然可以运行，其运行结果对组件级验证（参数隔离、吸收曲线形状校验）是有价值的，即使在临床上无意义。强行用字段阻止运行反而妨碍调试。
+Whether something "can run independently" is essentially an engineering question, not a semantic-label question: a model that only models glucose absorption can still run without an insulin feedback loop, and its run result has value for component-level validation (parameter isolation, checking the absorption curve's shape), even when it is not clinically meaningful. Forcibly using a field to block a run instead gets in the way of debugging.
 
-"组件"与"完整案例"的区分已由**文件夹位置**自然表达：`references/` 存放可复用积木，`published/` 存放完整验证案例，无需额外字段重复。
+The distinction between a "component" and a "complete case" is already naturally expressed by folder location: `references/` holds reusable building blocks, `published/` holds fully validated cases, with no need for a redundant extra field.
 
-## 决定
+## Decision
 
-**删除 `type` 和 `standalone` 两个顶层字段**，包括：
+Remove both top-level fields, `type` and `standalone`, including:
 
-- `model_design.md` schema 描述
-- 所有 YAML 文件中的 `type:` 行（64 个）
-- `api_server.py` 中收集 `model_type` 的代码
-- `Simulator.tsx` 中的 `standalone` 警告逻辑和 `model_type` tag
-- `Loader.tsx` 中的 `model_type` tag 显示
-- `types.ts` 中 `DataNode` 接口的 `model_type` 字段
+- The schema description in `model_design.md`
+- The `type:` line in every YAML file (64 of them)
+- The code collecting `model_type` in `api_server.py`
+- The `standalone` warning logic and the `model_type` tag in `Simulator.tsx`
+- The `model_type` tag display in `Loader.tsx`
+- The `model_type` field on the `DataNode` interface in `types.ts`
 
-## 影响
+## Impact
 
-| 方面 | 变化前 | 变化后 |
+| Aspect | Before | After |
 |------|--------|--------|
-| 模型文件 | 64 个有 `type:` 行 | 无该字段，YAML 更简洁 |
-| "组件"提示 | UI 显示蓝色 tag（无实际约束） | 无 tag，依赖文件夹位置区分 |
-| 运行约束 | 无（`standalone` 从未阻止运行） | 无（一致） |
-| 文件夹语义 | `references/` 隐含"库组件" | 不变，继续作为唯一区分手段 |
+| Model files | 64 had a `type:` line | No such field, cleaner YAML |
+| "Component" indicator | UI showed a blue tag (with no real constraint) | No tag; distinguished by folder location |
+| Run constraint | None (`standalone` never actually blocked a run) | None (unchanged) |
+| Folder semantics | `references/` implied "library component" | Unchanged, remains the only distinguishing means |
 
-## 不在范围
+## Out of Scope
 
-- 修改引擎对"能否运行"的实际判断逻辑（引擎始终允许任何有效 YAML 运行）
-- 修改 `variables` 下各变量的 `type:` 子字段（`input`/`state`/`parameter`/`evidence`，这些有明确行为差异，不受影响）
+- Changing the engine's actual logic for deciding whether something "can run" (the engine always allows any valid YAML to run).
+- Changing the `type:` sub-field on each variable under `variables` (`input`/`state`/`parameter`/`evidence`, which have clear behavioral differences and are unaffected).

@@ -1,73 +1,73 @@
-# 0101 — 文件名质量标记统一为 `_HOLD` + `metadata.todo` 任务列表
+# 0101 - Unifying the Filename Quality Marker into `_HOLD` Plus a `metadata.todo` Task List
 
-**日期**：2026-06-14
-**状态**：⚪ 文件名部分已被 [0120](0120-2026-06-23_model_drop-hold-filename-suffix.md) 取代（`_HOLD` 后缀废除；`metadata.todo` 字段定义保留有效，仍是当前约定）
-**类别**：模型库管理 / 工程约定
-
----
-
-## 背景
-
-ADR 0096 用 `_nosim` / `_noopt` / `_noref` 三种文件名后缀分别标记 sim、optimization、文献来源三个维度的"未完成"状态，组合写法（如 `_nosim_noopt_noref`）在实践中暴露两个问题：
-
-1. **后缀不携带诊断信息**：一个 `_noopt` 文件只说明"optimization 失败"，不说明*为什么*。每次复查（无论 AI 还是人工）都要重新跑一遍 `--opt`、重新分析日志和 Pareto 前沿，诊断过程不可复用。
-2. **二元状态表达不了"能跑但有疑点"**：用新版 CLI 跑 `models/papers/` 的修复队列时发现，部分模型 `--sim`/`--opt` 均返回成功（技术意义上的 PASS），但结果本身有问题——例如 Pareto 前沿坍缩为单点、或硬约束在模型自带的"最优方案"示例下都无法满足（联合可行域为空集）。这类"运行成功但结果不可用"的情况，在三后缀体系里无法标记，只能靠人工记忆或额外文档追踪。
+**Date**: 2026-06-14
+**Status**: Filename convention partly superseded by [0120](0120-2026-06-23_model_drop-hold-filename-suffix.md) (the `_HOLD` suffix abolished; the `metadata.todo` field definition remains valid and is still the current convention)
+**Category**: Model library management / engineering convention
 
 ---
 
-## 决策
+## Background
 
-### 1. 三种状态后缀统一为单一后缀 `_HOLD`
+ADR 0096 used three filename suffixes, `_nosim` / `_noopt` / `_noref`, to mark an incomplete state along the sim, optimization, and literature-sourcing dimensions respectively, with combined forms (such as `_nosim_noopt_noref`) exposing two problems in practice:
 
-- `_HOLD` = 该文件存在一项或多项待处理事项，详情记录在 `metadata.todo`（见下）。
-- gitignore 复用既有规则 `**/*_HOLD.yaml`（该规则此前已存在于 `.gitignore`，但未在 `docs/model.md` / ADR 中文档化）。
-- **无 `_HOLD` 后缀 且 无 `metadata.todo` = 已确认通过、可发布**（与 ADR 0096 的"无后缀=通过"语义一致，只是判定信号从"三个后缀都不在"变为"`_HOLD` 不在 + todo 为空"）。
+1. A suffix carries no diagnostic information: a `_noopt` file only states that "optimization failed," not why. Every review pass (whether by an AI or a human) had to rerun `--opt` and re-analyze the log and Pareto front from scratch; the diagnostic process was not reusable.
+2. A binary state cannot express "runs, but is questionable": running the new CLI against the fix queue for `models/papers/` found that some models had both `--sim` and `--opt` return success (a technical PASS), but the result itself was problematic, for instance a Pareto front collapsed to a single point, or a hard constraint that even the model's own "optimal solution" example could not satisfy (an empty joint feasible region). The three-suffix system had no way to mark this "runs successfully but the result is unusable" situation, leaving it to be tracked by memory or a separate document.
 
-### 2. 新增 `metadata.todo`：结构化任务列表
+---
+
+## Decision
+
+### 1. Unify the three status suffixes into a single `_HOLD` suffix
+
+- `_HOLD` means this file has one or more pending items, with detail recorded in `metadata.todo` (below).
+- gitignore reuses the existing rule `**/*_HOLD.yaml` (this rule already existed in `.gitignore` but had not been documented in `docs/model.md` or an ADR).
+- No `_HOLD` suffix and no `metadata.todo` means confirmed passing and publishable (consistent with ADR 0096's "no suffix means passing" semantics, only the signal changes from "none of the three suffixes present" to "`_HOLD` absent plus todo empty").
+
+### 2. Add `metadata.todo`: a structured task list
 
 ```yaml
 metadata:
   todo:
     - type: nosim | noopt | noref | quality | other
-      issue: "一句话描述问题"
-      evidence: "诊断依据：具体数值/现象/复现方式，使下次处理不需要重新诊断"
-      next: "建议的下一步，或留给人工判断的选项；不替人工下结论"
+      issue: "A one-sentence description of the problem"
+      evidence: "Diagnostic basis: specific values/observations/reproduction steps, so the next pass doesn't have to re-diagnose"
+      next: "A suggested next step, or an option left for human judgment; do not pre-decide on the human's behalf"
 ```
 
-- `type` 延续 ADR 0096 三种分类的语义（`nosim`/`noopt`/`noref`），新增：
-  - `quality`：sim/opt 均成功，但结果存在疑点（前沿退化、可行域为空集等）
-  - `other`：不属于以上分类的待办
-- `evidence` 是本次改动的核心价值：把诊断过程的结论（具体数值、运行条件、复现路径）写下来，AI 或人工下次直接读取即可继续，不必重新运行/重新推导。
-- `next` 给出选项而非直接执行的修复方案——涉及参数量级、约束阈值等建模判断的内容，留给人工确认。
+- `type` carries forward ADR 0096's three categories (`nosim`/`noopt`/`noref`), and adds:
+  - `quality`: both sim and opt succeed, but the result is questionable (a degenerate front, an empty feasible region, etc.)
+  - `other`: a pending item not covered by the above
+- `evidence` is this change's core value: writing down the diagnostic process's conclusion (specific values, run conditions, reproduction path) so an AI or a human can pick it up directly next time and continue, without rerunning or re-deriving it.
+- `next` offers options rather than a fix to execute directly; content involving a modeling judgment, a parameter's order of magnitude, a constraint threshold, is left for a human to confirm.
 
-### 3. 状态转换
+### 3. State transition
 
-- 所有 `metadata.todo` 项处理完毕并清空（删除该字段）后，去掉 `_HOLD` 后缀，文件回到"干净"状态。
-- 处理过程中可以保留部分 `todo` 项、去掉已解决的项；只要 `todo` 非空，文件名保留 `_HOLD`。
+- Once every `metadata.todo` item is resolved and the field is emptied (removed), the `_HOLD` suffix is dropped and the file returns to a clean state.
+- Partway through, some `todo` items can be kept while resolved ones are removed; as long as `todo` is non-empty, the filename keeps `_HOLD`.
 
-### 4. 与旧约定（ADR 0096）的关系
+### 4. Relationship to the old convention (ADR 0096)
 
-- `_nosim` / `_noopt` / `_noref` 三后缀及其 gitignore 规则已废弃，全部迁移为 `_HOLD` + `metadata.todo`（2026-06-14 完成全量迁移）。
-- 新发现的问题统一用 `_HOLD` + `metadata.todo` 记录。
+- The three suffixes `_nosim` / `_noopt` / `_noref` and their gitignore rules are deprecated, fully migrated to `_HOLD` plus `metadata.todo` (the full migration completed 2026-06-14).
+- A newly found problem is recorded uniformly using `_HOLD` plus `metadata.todo`.
 
-### 5. 与目录级 `_HOLD` 的关系
+### 5. Relationship to a directory-level `_HOLD`
 
-`models/papers/` 下已存在 `s3_HOLD/`、`s4_HOLD/` 等目录级 `_HOLD` 标记（论文结构"暂缓"信号，`.gitignore` 中 `**/*_HOLD/` 使整个目录不发布）。这是**论文结构维度**的标记，与本 ADR 的**技术/质量维度**标记（文件名 `_HOLD` + `metadata.todo`）是两个独立维度，可以共存（例如 `s3_HOLD/foo_HOLD.yaml`），互不影响。
-
----
-
-## 试点（2026-06-14）
-
-对一个 `models/papers/` 下的 `_noopt` 文件应用新约定：重命名为 `_HOLD.yaml`，添加 `metadata.todo`，记录本次用新版 `sim_cli` 跑 `--opt` 时发现的"联合可行域为空集"诊断结论（一处硬约束与当前动力学不匹配，模型自带的示例方案在仿真窗口内使受约束状态量偏离约束范围）。
-
-## 全量迁移（2026-06-14）
-
-`models/` 下其余约 100 个 `_nosim`/`_noopt`/`_noref`（含组合）文件已批量迁移为 `_HOLD` + `metadata.todo`。迁移仅做后缀→`todo` 的结构转换，`evidence` 字段标注为"迁移自旧后缀标记，尚未重新运行 --sim/--opt 诊断"；后续通过 `sim_cli/batch.py` 修复队列逐个跑 `--sim`/`--opt` 补充具体诊断证据并清空 `todo`。
+`models/papers/` already has directory-level `_HOLD` markers such as `s3_HOLD/`, `s4_HOLD/` (a paper-structure "deferred" signal, with `**/*_HOLD/` in `.gitignore` keeping the whole directory from publishing). This is a paper-structure-dimension marker, an independent dimension from this ADR's technical/quality-dimension marker (a filename `_HOLD` plus `metadata.todo`); the two can coexist (for example `s3_HOLD/foo_HOLD.yaml`) without affecting each other.
 
 ---
 
-## 关联
+## Pilot (2026-06-14)
 
-- `docs/model.md` — 文件名质量标记节
-- ADR 0096 — 三后缀约定（已被本 ADR 取代）
-- 内部任务记录 `2026-06-14_task_hold-todo-migration.md` — 全量迁移记录
+The new convention was applied to a `_noopt` file under `models/papers/`: renamed to `_HOLD.yaml`, with `metadata.todo` added recording the diagnostic finding of "an empty joint feasible region" found while running `--opt` with the new `sim_cli` (a hard constraint mismatched with the current dynamics, where the model's own example solution drives the constrained state variable outside the constraint's range within the simulation window).
+
+## Full Migration (2026-06-14)
+
+The remaining roughly 100 `_nosim`/`_noopt`/`_noref` (including combined) files under `models/` have been migrated in bulk to `_HOLD` plus `metadata.todo`. The migration only performed the structural conversion from suffix to `todo`, with the `evidence` field noted as "migrated from the old suffix marker, not yet re-run through `--sim`/`--opt` diagnosis"; the fix queue in `sim_cli/batch.py` will later run `--sim`/`--opt` on each one to add the specific diagnostic evidence and clear `todo`.
+
+---
+
+## Related
+
+- `docs/model.md` - the filename quality marker section
+- ADR 0096 - the three-suffix convention (superseded by this ADR)
+- The internal task record `2026-06-14_task_hold-todo-migration.md` - the full migration record

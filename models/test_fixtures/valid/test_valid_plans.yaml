@@ -7,19 +7,11 @@ metadata:
       Three named plans (conservative / balanced / aggressive) each define their own
       caloric deficit and exercise schedule; no global schedules block exists. Also tests
       that output_variables and output_types union rule applies correctly.
-    problem_cn: >
-      验证在不存在同级 simulation.schedules 块的情况下，simulation.plans 能否正确加载。三个
-      命名方案（保守/均衡/激进）各自定义了自己的热量赤字和运动日程，不存在全局 schedules 块。
-      同时测试 output_variables 与 output_types 的并集规则是否正确应用。
     result: >
       GUI should show all three plans as separate F-MPLAN tabs at load time. Each plan's
       trajectory should differ in slope according to its deficit and exercise combination.
       No cross-contamination between plan schedules should occur.
-    result_cn: >
-      加载时 GUI 应将三个方案分别显示为独立的 F-MPLAN 标签页。每个方案的轨迹斜率应随其赤字与
-      运动组合的不同而不同。各方案的日程之间不应出现交叉污染。
     limitations: Simplified linear weight model; no metabolic adaptation or plateau.
-    limitations_cn: 采用简化的线性体重模型，未建模代谢适应或平台期。
   tags: [test, plans, multi-plan, f-mplan, no-schedules]
 variables:
   body_weight:

@@ -9,53 +9,71 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      验证目的：跨学科拓展到心理学。Ebbinghaus (1885) 用"节省法"（savings method）测量了自己记忆无意义音节列表后，在20分钟、1小时、9小时、1天、2天、6天、31天七个时间点的记忆节省率，是心理学史上最早的定量记忆遗忘曲线。Murre & Dros (2015, PLOS ONE) 用现代被试独立重复了这套实验流程，130年后的复现数据为检验"用历史数据拟合的遗忘曲线能否预测独立现代样本"提供了罕见的跨时间尺度检验机会。
+      Validation purpose: a cross-disciplinary extension into psychology. Ebbinghaus (1885) used
+      the "savings method" to measure his own memory-savings rate after learning lists of nonsense
+      syllables, at seven time points, 20 minutes, 1 hour, 9 hours, 1 day, 2 days, 6 days, and 31
+      days, the earliest quantitative memory-forgetting curve in the history of psychology. Murre &
+      Dros (2015, PLOS ONE) independently replicated this experimental protocol with modern
+      subjects, and the 130-years-later replication data offers a rare opportunity to test whether a
+      forgetting curve fit to historical data can predict an independent modern sample.
     result: |
-      用 Ebbinghaus 1885 原始七个数据点拟合幂律遗忘曲线 retention=A·(1+t/20min)^(-beta)，代入 Murre & Dros 2015 复现实验的时间点，预测值与 2015 独立测量值相比，1 天检验点吻合最好，预测 32.2% 对实测 31.7%，误差 1.5%，其余检验点偏差在 15% 到 48% 区间，31 天检验点偏差最大，Murre & Dros 论文自己也指出这是该复现实验中最异常的一个数据点。完整逐时间点对比表见同目录 `ebbinghaus_forgetting_2026.md`。
+      A power-law forgetting curve, retention=A*(1+t/20min)^(-beta), is fit to Ebbinghaus's
+      original 1885 seven data points, and substituting the time points from the Murre & Dros 2015
+      replication experiment gives predictions that, compared with the 2015 independent measurements,
+      agree best at the 1-day test point, predicting 32.2% against a measured 31.7%, a 1.5% error,
+      with the remaining test points deviating by 15% to 48%, and the 31-day test point showing the
+      largest deviation, which the Murre & Dros paper itself also flags as the most anomalous data
+      point in that replication. The full time-point-by-time-point comparison table is in
+      `ebbinghaus_forgetting_2026.md` in the same directory.
     limitations: |
-      Ebbinghaus 1885 原始数据来自他本人一位被试的自我实验，样本量为 1，历史上从未有大规模跨个体重复，直至 2015 年才有这次复现，这是本案例被归入"跨样本/跨个体变异性"而非"模型结构错误"的直接原因：单一个体的记忆曲线本身就不足以代表群体，130 年后另一组被试出现系统性偏离是符合预期的，不是拟合曲线的问题。
+      Ebbinghaus's original 1885 data comes from a self-experiment on one of his own subjects,
+      a sample size of 1, and was never replicated across a large sample of individuals until 2015,
+      which is the direct reason this case is classified as "cross-sample/cross-individual
+      variability" rather than "a model structural error": a single individual's memory curve is not
+      by itself sufficient to represent a population, and a systematic deviation appearing in another
+      group of subjects 130 years later is expected, not a sign the fitted curve is wrong.
   ratings:
-    importance: 0.25 - 心理学基础模型，可作为跨学科组合案例的记忆/学习子模型，尚未被具体论文import
-    variable: 0.75 - Ebbinghaus 1885 是心理学奠基性历史数据，Murre & Dros 2015 是同行评审的独立复现
-    equation: 0.5 - 作者自行对历史数据做幂律拟合，非独立复现的标准方程形式
-    simulation: 0.5 - 1天检验点吻合(偏差1.5%)，其余多数检验点偏差15-48%，方向正确但量级偏差较大
-    optimization: 0.0 - 本文件不含optimization，不涉及决策变量
-    confidence: 0.5 - 部分对标：1天检验点精确吻合，其余检验点偏差源于1885原始数据样本量为1，代表性有限，已在理由中注明
+    importance: 0.25 - A foundational psychology model, usable as a memory/learning submodel in cross-disciplinary composite cases, not yet imported by a specific paper
+    variable: 0.75 - Ebbinghaus 1885 is a foundational historical dataset in psychology, and Murre & Dros 2015 is a peer-reviewed independent replication
+    equation: 0.5 - The author independently fit a power law to the historical data, not an independently reproduced standard equation form
+    simulation: 0.5 - The 1-day test point agrees well (a 1.5% deviation), while most other test points deviate by 15-48%, correct in direction but with substantial magnitude deviation
+    optimization: 0.0 - This file contains no optimization block and involves no decision variables
+    confidence: 0.5 - A partial benchmark, the 1-day test point matches precisely, while the deviation at other test points stems from the 1885 original data's sample size of 1 and limited representativeness, as noted in the rationale
   tags: [psychology, memory, forgetting-curve, validation, literature-benchmark, cross-domain]
 
 variables:
   time_since_learning:
-    description: 学习后经过的时间（分钟），仿真时钟的直接累加
+    description: Time elapsed since learning (minutes), the direct accumulation of the simulation clock
     value: 0.0
     unit: minute
     type: state
 
   retention_pct:
     description: >
-      预测的记忆节省率（%），用 Ebbinghaus 1885 原始七点数据拟合的幂律曲线
-      retention = retention_A·(1+t/20min)^(-retention_beta) 计算，静态代数方程，
-      不是独立的动力学积分。
+      The predicted memory-savings rate (%), computed from a power-law curve fit to Ebbinghaus
+      1885's original seven data points, retention = retention_A*(1+t/20min)^(-retention_beta), a
+      static algebraic equation, not an independent dynamics integral.
     value: 0.0
     unit: "%"
     type: state
 
   retention_A:
-    description: 幂律拟合系数（作者对 Ebbinghaus 1885 七点数据的最小二乘拟合，非文献直接给出）
+    description: The power-law fit coefficient (the author's least-squares fit to Ebbinghaus (1885)'s seven data points, not given directly by the literature)
     value: 0.5975
     unit: dimensionless
     type: parameter
-    reference: "本文件作者对 Ebbinghaus (1885) 数据的幂律拟合"
+    reference: "This file's author's power-law fit to Ebbinghaus (1885) data"
 
   retention_beta:
-    description: 幂律拟合指数，拟合方式同 retention_A
+    description: The power-law fit exponent, fit the same way as retention_A
     value: 0.1442
     unit: dimensionless
     type: parameter
-    reference: "本文件作者对 Ebbinghaus (1885) 数据的幂律拟合"
+    reference: "This file's author's power-law fit to Ebbinghaus (1885) data"
 
 equations:
   clock_tick:
-    description: "时钟累加：time_since_learning 逐步跟踪学习后经过的分钟数"
+    description: "Clock accumulation: time_since_learning tracks the minutes elapsed since learning step by step"
     step_unit: minute
     condition: true
     priority: 5
@@ -63,7 +81,7 @@ equations:
       time_since_learning: "time_since_learning + step"
 
   retention_calc:
-    description: "静态幂律计算：retention_pct = A·(1+t/20)^(-beta)，不随时间积分，只读当前 time_since_learning"
+    description: "A static power-law calculation: retention_pct = A*(1+t/20)^(-beta), not integrated over time, just reading the current time_since_learning"
     condition: true
     priority: 3
     dynamics:
@@ -80,7 +98,7 @@ simulation:
     - retention_pct
   plans:
     - id: "single_study_session"
-      label: "单次学习后遗忘曲线追踪（无输入事件，纯时钟驱动的静态曲线评估）"
+      label: "Tracking the forgetting curve after a single study session (no input events, a purely clock-driven static curve evaluation)"
       regimens: []
 
 references:

@@ -1,21 +1,21 @@
-# 模型评分体系（Model Ratings）
+# Model Ratings
 
-> 本文件是 LM 框架中 YAML 模型 `metadata.ratings` 字段的规范说明。
-> 适用范围：`models/papers/`、`models/scenarios/`、`models/references/`、`models/plan/`。
+> This file is the specification for the `metadata.ratings` field of YAML models in the LM framework.
+> Scope: `models/papers/`, `models/scenarios/`, `models/references/`, `models/plan/`.
 
 ---
 
-## 一、总体说明
+## 1. Overview
 
-`ratings` 是 `metadata` 下的可选块，用于在模型文件内嵌入对该模型的结构化评估。
-评分不替代 `description` 中的文字说明；两者互补——文字说明讲"是什么"，评分回答"值多少"。
+`ratings` is an optional block under `metadata` for embedding a structured assessment of a model inside the model file itself.
+A rating does not replace the prose in `description`; the two are complementary, with the prose explaining what the model is and the rating answering how much it is worth.
 
-**位置**：`metadata.ratings`，置于 `description` 之后、`tags` 之前。
+Position: `metadata.ratings`, placed after `description` and before `tags`.
 
-评价标准分两大类，字段按这个分类组织：
+The evaluation criteria fall into two categories, and the fields are organized accordingly:
 
-- **技术类（VESO）**：`variable`/`equation`/`simulation`/`optimization`，回答"这一层有没有可查证的证据/支撑"，对应模型完备性本身，判断有相对客观的锚点可以核对（参数有没有文献出处、方程是不是公认形式、仿真能不能对上独立数据、有没有真实权衡证据）。这四层与 `life-matters-home/process/veso_debug_checklist.md` 用于 debug 归因的 V/E/S/O 四层是同一个框架的两种应用，设计过程见 ADR 0150。
-- **非技术类**：`importance`（重要性，合并了原来分散的话题现实重要性/框架内需求/论文贡献/学术通用度/社会讨论价值这几种"值不值得做"的判断）、`innovation`（新颖度）、`confidence`（整体可信度）。这几项没有可核对的客观清单，本质是自由裁量，跟 VESO 四层的判断方式不同。
+- **Technical (VESO)**: `variable`/`equation`/`simulation`/`optimization`, answering whether verifiable evidence or support exists at this layer, corresponding to the model's completeness itself, with a relatively objective anchor to check against, such as whether a parameter has a literature source, whether an equation is a recognized form, whether the simulation matches independent data, and whether real trade-off evidence exists. These four layers are the same framework as the V/E/S/O four-layer breakdown used for debug attribution in `life-matters-home/process/veso_debug_checklist.md`, applied in two different ways; see ADR 0150 for the design process.
+- **Non-technical**: `importance` (merging the previously scattered judgments of whether something is worth doing, including a topic's real-world importance, demand within the framework, contribution to a paper, academic generality, and value for social discussion), `innovation` (novelty), and `confidence` (overall credibility). These have no checkable objective list and are essentially discretionary, a different mode of judgment from the VESO four layers.
 
 ```yaml
 metadata:
@@ -23,230 +23,230 @@ metadata:
   description:
     brief: ...
   ratings:
-    variable: 0.75 - 说明               # 技术类（VESO），通用字段
-    equation: 1.0 - 说明                # 技术类（VESO），通用字段
-    simulation: 0.75 - 说明             # 技术类（VESO），通用字段
-    optimization: 0.75 - 说明           # 技术类（VESO），通用字段，即 tradeoff 是否成立
-    importance: 0.75 - 说明             # 非技术类，通用字段
-    innovation: 0.75 - 说明             # 非技术类，papers/ 和 scenarios/
-    confidence: 0.5 - 说明              # 非技术类，通用字段，须先跑仿真验证才能打分
+    variable: 0.75 - explanation               # technical (VESO), shared field
+    equation: 1.0 - explanation                # technical (VESO), shared field
+    simulation: 0.75 - explanation             # technical (VESO), shared field
+    optimization: 0.75 - explanation           # technical (VESO), shared field, i.e. whether the tradeoff holds
+    importance: 0.75 - explanation             # non-technical, shared field
+    innovation: 0.75 - explanation             # non-technical, papers/ and scenarios/
+    confidence: 0.5 - explanation              # non-technical, shared field, requires the simulation to have been run and validated before scoring
   tags: [...]
 ```
 
 ---
 
-## 二、评分标尺（0-1，五个锚点）
+## 2. Rating Scale (0-1, Five Anchors)
 
-| 锚点 | 含义 |
+| Anchor | Meaning |
 |------|------|
-| **1.0** | 最高：充分、显著、独特 |
-| **0.75** | 较高：良好，有小瑕疵或轻微局限 |
-| **0.5** | 中等：尚可，存在明确弱点或尚未精化 |
-| **0.25** | 偏低：辅助性或衍生性，独立价值有限 |
-| **0.0** | 最低：纯占位、高度估算，或仅用作测试 |
+| **1.0** | Highest: sufficient, significant, distinctive |
+| **0.75** | High: good, with minor flaws or limitations |
+| **0.5** | Medium: adequate, with a clear weakness or something not yet refined |
+| **0.25** | Low: supporting or derivative, of limited independent value |
+| **0.0** | Lowest: pure placeholder, heavily estimated, or used only for testing |
 
-**格式**：`field: N - 一句解释`
+Format: `field: N - a one-sentence explanation`
 
 ```yaml
-variable: 0.5 - 安慰剂效应未建模，菌群稳定性为聚合代理，生态效度有限
+variable: 0.5 - Placebo effect not modeled, microbiome stability is an aggregate proxy, limited ecological validity
 ```
 
-评分数字与解释之间用 ` - ` 分隔（空格-连字符-空格）。解释控制在 30 字以内，聚焦决定分值的核心依据。
+The score and its explanation are separated by ` - ` (space, hyphen, space). Keep the explanation to about 30 words, focused on the core basis for the score.
 
-**精度**：允许打在两个锚点之间的任意数值（如 0.6、0.4），不强制卡在五个锚点上——评分反映的是主观判断，不是测量值，给出的精度应该是"能在一句话里讲清楚为什么比某个锚点高/低"这个程度，不追求小数点后多位的假精度。默认情况下直接落在最近的锚点上；只有确实有明确理由要往某个方向偏离锚点时才打非锚点数值，理由里要说清楚"比 X 锚点高/低，因为……"，不能只给数字不给相对锚点的定位说明。
+Precision: any value between two anchors is allowed, such as 0.6 or 0.4, and is not forced to land exactly on one of the five anchors, since the rating reflects subjective judgment rather than a measurement, and the precision it warrants is only enough to explain in one sentence why it is higher or lower than a given anchor, not spurious precision to several decimal places. By default, land directly on the nearest anchor; only use a non-anchor value when there is a clear reason to shift in a given direction, and the explanation must state which anchor it is above or below and why, not give a bare number without that relative positioning.
 
-**展示**：面向读者的界面可以把 0-1 数值转成五星展示，星数 = 评分 × 5（如 0.7 → 3.5 颗星），半星对应 0.1 的整数倍精度，底层存储的数值本身不因展示折算而改变精度。
-
----
-
-## 三、技术类字段（VESO，通用，模型完备性）
-
-以下四项适用于 papers/、scenarios/、references/、plan/ 中的任何模型，与 `veso_debug_checklist.md` 共用同一套 V/E/S/O 四层分解。`docs/authoring/README.md` 与各建模 agent 打这四项分时，直接读本节定义，不在各自文档里另外定义一套标准。
-
-### `variable` — 变量证据（V）
-
-支撑该模型参数/变量取值的客观依据质量，含原 evidence_quality 的判断范围（跨全部参数与机制的证据质量），两者合并为一个字段。
-
-| 锚点 | 标准 |
-|------|------|
-| **1.0** | 全部关键参数有高质量 RCT/meta/大样本队列等公认数值来源，文献可直接追溯 |
-| **0.75** | 主要参数有良好文献支撑，个别系数为合理估算 |
-| **0.5** | 历史推算或自建方程但锚定文献点估计；参数来源混合，部分有文献、部分为合理推算 |
-| **0.25** | 多数参数为估算或经验值，文献支撑薄弱（含 _noref 模型） |
-| **0.0** | 无锚点纯虚构，或 TODO 占位 |
-
-> **注**：标注 `TODO:SOURCE` 的参数每项直接降 0.25；文件名含 `_noref` 的模型 `variable` ≤ 0.5；TODO 存根模型 `variable` = 0.0。
-
-### `equation` — 方程支撑（E）
-
-| 锚点 | 标准 |
-|------|------|
-| **1.0** | 被广泛引用且独立复现的标准方程形式（如 Lemaire/FJK/DLNM 级别） |
-| **0.75** | 有明确文献方程，但复现范围有限或非独立课题组交叉验证 |
-| **0.5** | 自建方程但锚定文献点估计，或简化了公认标准模型的一部分子机制 |
-| **0.25** | 方程结构存在但复杂度高、未见独立复现 |
-| **0.0** | 纯叙事自建，无文献依据 |
-
-### `simulation` — 仿真能力（S）
-
-| 锚点 | 标准 |
-|------|------|
-| **1.0** | 已用真实数据/独立文献轨迹逐点验证过的仿真 |
-| **0.75** | 可产出合理时间序列，方向和量级基本符合预期，未逐点验证 |
-| **0.5** | 仿真配置完整但未运行验证，或能跑通但缺乏独立数据比对 |
-| **0.25** | 仅能定性推断，未实际验证 |
-| **0.0** | 无仿真配置，或未运行 |
-
-### `optimization` — 优化权衡（O，即 tradeoff 是否成立）
-
-判断这个模型的决策变量对目标是否构成真实权衡，不是"多个指标都想变好"，而是"改善一个会真实牺牲另一个"。候选阶段基于方程推导的方向性判断，模型建成并跑通验证后结合数值结果重新评估，数字本身可以随建模进展更新（覆写旧值，版本控制保留历史，见第六节）。
-
-| 锚点 | 标准 |
-|------|------|
-| **1.0** | 有独立量化研究给出的具体双向真实伤害证据（数值证据支撑的真实非退化权衡） |
-| **0.75** | 有 RCT/meta 级证据支撑真实权衡，但证据链需要跨文献拼接 |
-| **0.5** | 方向性成立，有先例支撑但未数值验证 |
-| **0.25** | 弱证据，方向不确定，或数值验证显示退化迹象 |
-| **0.0** | 无权衡，或结构性不适用（经追踪确认目标同向无权衡，或模型设计上不含决策变量） |
-
-**与定性预判文字的关系**：`optimization` 这个数字可以覆写更新，但方程定稿后写进 `metadata.description.method` 的定性预判文字本身不得因为看到数值结果而悄悄改写——数字允许迭代，已经落笔的预判文字必须原样保留、不一致时另外记录差异，这是两件不同的事，后者延续 `lm-modeling-design.md`"定性预判 Pareto 结构"一节已经确立的原则。
+Display: a reader-facing interface may convert the 0-1 value into a five-star display, with the star count equal to the score times 5 (for example 0.7 becomes 3.5 stars), and a half star corresponding to an increment of 0.1; the underlying stored value's precision is unaffected by this display conversion.
 
 ---
 
-## 四、非技术类字段（自由裁量）
+## 3. Technical Fields (VESO, Shared, Model Completeness)
 
-以下三项没有可核对的客观清单，本质是主观综合判断。
+The following four fields apply to any model under papers/, scenarios/, references/, or plan/, and share the same V/E/S/O four-layer breakdown as `veso_debug_checklist.md`. `docs/authoring/README.md` and the modeling agents read this section's definitions directly when scoring these four fields, rather than defining a separate standard in their own documents.
 
-### `importance` — 重要性
+### `variable`, Variable Evidence (V)
 
-合并原来分散的多种"值不值得做"判断：话题现实重要性（受影响人群规模、科学基础地位、社会关注度）、框架内需求（被其他模型 import 或引用的预期强度）、论文贡献价值、学术通用度、社会/伦理/历史讨论价值。这些都是"有多种类型的价值"里的具体类型，不再拆成独立字段，一句话理由里指明这次驱动分数的主要是哪一种或哪几种即可，不要求每次写全。
+The quality of the objective basis behind the model's parameter and variable values, merging in the scope of what used to be a separate `evidence_quality` judgment, that is, evidence quality across all parameters and mechanisms; the two have been combined into one field.
 
-| 锚点 | 标准 |
+| Anchor | Standard |
 |------|------|
-| **1.0** | 全球性问题影响数十亿人或基础科学核心机制；或框架内核心积木被多个上层模型依赖；或论文旗舰案例；或教科书级通用基准；或触及普世伦理/重大历史教训 |
-| **0.75** | 重要专科/社会问题影响数亿人；或被多个场景/论文依赖；或论文核心案例之一 |
-| **0.5** | 特定人群或学科问题；或特定子领域中等频率使用 |
-| **0.25** | 小众话题受众有限；或低频引用/纯辅助附录 |
-| **0.0** | 纯占位或测试，无现实对应；或纯娱乐展示无实质讨论价值 |
+| **1.0** | Every key parameter has a recognized numeric source, such as high-quality RCT, meta-analysis, or a large cohort, directly traceable to the literature |
+| **0.75** | Main parameters are well supported by literature, with a few coefficients reasonably estimated |
+| **0.5** | A historically derived or self-built equation anchored to a literature point estimate; parameter sources are mixed, some from literature and some reasonably derived |
+| **0.25** | Most parameters are estimated or based on rules of thumb, with weak literature support (includes `_noref` models) |
+| **0.0** | Pure fabrication with no anchor, or a TODO placeholder |
 
-### `innovation` — 新颖度（仅 papers/、scenarios/）
+Note: each parameter tagged `TODO:SOURCE` drops the score by 0.25 directly; a model whose filename contains `_noref` has `variable` at most 0.5; a TODO-stub model has `variable` equal to 0.0.
 
-方法论/科学创新度：区分于已有文献的独特贡献，与"重不重要"是两件独立的事——一个话题可以很重要但建模方法毫无新意，也可以是冷门话题但建模视角很新。创新不等于复杂度，一个简单模型若引入了之前未在该问题上尝试过的机制或优化视角，得分高于一个复杂但重复已知路径的模型。判断标准：**"reviewer 是否能在已发表文献中找到几乎相同的模型？"**
+### `equation`, Equation Support (E)
 
-| 锚点 | 标准 |
+| Anchor | Standard |
 |------|------|
-| **1.0** | 独特首创，reviewer 难找先例对比 |
-| **0.75** | 高质量先例存在，但组合形式/应用场景是新贡献 |
-| **0.5** | 部分新意，核心机制沿用已知路径 |
-| **0.25** | 增量贡献有限 |
-| **0.0** | 已有充分先例，增量贡献极小 |
+| **1.0** | A widely cited, independently reproduced standard equation form (at the level of Lemaire/FJK/DLNM) |
+| **0.75** | A clear literature equation exists, but reproduction is limited in scope or has not been cross-validated by an independent research group |
+| **0.5** | A self-built equation anchored to a literature point estimate, or a simplification of part of a recognized standard model's sub-mechanism |
+| **0.25** | An equation structure exists but is highly complex and has not been independently reproduced |
+| **0.0** | Purely narrative and self-built, with no literature basis |
 
-> `models/plan/` 下的候选材料，`innovation` 待候选被采纳、确定进入 `papers/` 还是 `scenarios/` 后再补上，候选阶段可留空。
+### `simulation`, Simulation Capability (S)
 
-### `confidence` — 置信度
+| Anchor | Standard |
+|------|------|
+| **1.0** | A simulation already validated point by point against real data or an independent literature trajectory |
+| **0.75** | Produces a reasonable time series, with direction and magnitude broadly matching expectations, not yet validated point by point |
+| **0.5** | Simulation configuration is complete but has not been run and validated, or runs successfully but lacks an independent data comparison |
+| **0.25** | Only qualitative inference is possible, not actually validated |
+| **0.0** | No simulation configuration, or never run |
 
-评的是这个模型的仿真/优化输出实测有没有对上独立文献目标，是一次性的整体信心判断，跟 `variable`/`equation` 这类可以逐项核对文献出处的判断方式不同，不要混用。只写一个 0-1 的数字加一句话理由，不展开成子字段，更新时间跟随该文件本身的 `metadata.updated`，不单独维护日期。
+### `optimization`, Optimization Trade-off (O, Whether the Tradeoff Holds)
+
+Judges whether the model's decision variables constitute a real trade-off against its objectives, not "several metrics all want to improve" but "improving one truly costs another." At the candidate stage this is a directional judgment based on equation derivation; once the model is built and runs validated, it is reassessed together with the numeric results, and the number itself can be updated as modeling progresses (overwriting the old value, with version control keeping the history; see Section 6).
+
+| Anchor | Standard |
+|------|------|
+| **1.0** | Specific, independently quantified research gives concrete two-directional real-harm evidence (a genuine non-degenerate trade-off backed by numeric evidence) |
+| **0.75** | RCT/meta-analysis-level evidence supports a real trade-off, but the evidence chain has to be pieced together across publications |
+| **0.5** | The direction holds, with precedent support but no numeric validation |
+| **0.25** | Weak evidence, direction uncertain, or numeric validation shows signs of degeneration |
+| **0.0** | No trade-off, or structurally inapplicable (confirmed by tracing that the objectives move in the same direction with no trade-off, or the model by design has no decision variable) |
+
+Relationship to the qualitative prediction text: the `optimization` number can be overwritten and updated, but the qualitative prediction text written into `metadata.description.method` once the equations are finalized must not be quietly rewritten just because numeric results came in later. The number is allowed to iterate; prediction text that has already been committed must be kept as written, with any discrepancy recorded separately. These are two different things, and the latter continues the principle already established in the "Qualitative Prediction of Pareto Structure" section of `lm-modeling-design.md`.
+
+---
+
+## 4. Non-Technical Fields (Discretionary)
+
+The following three fields have no checkable objective list and are essentially subjective, holistic judgments.
+
+### `importance`
+
+Merges what used to be several separate "is it worth doing" judgments: a topic's real-world importance (the size of the affected population, its standing as basic science, the level of social attention), demand within the framework (the expected strength of being imported or referenced by other models), contribution to a paper, academic generality, and social, ethical, or historical discussion value. These are all specific types within "there are several kinds of value" and are no longer split into separate fields; the one-sentence reason only needs to name which type or types are mainly driving the score this time, without being required to cover all of them every time.
+
+| Anchor | Standard |
+|------|------|
+| **1.0** | A global issue affecting billions or a core mechanism of basic science; or a core framework building block that multiple upper-level models depend on; or a paper's flagship case; or a textbook-level general benchmark; or touches a universal ethical or major historical lesson |
+| **0.75** | An important specialty or social issue affecting hundreds of millions; or depended on by multiple scenarios or papers; or one of a paper's core cases |
+| **0.5** | A specific population's or discipline's issue; or moderate-frequency use in a specific subfield |
+| **0.25** | A niche topic with a limited audience; or low-frequency citation, a purely supplementary appendix |
+| **0.0** | Pure placeholder or test, with no real-world counterpart; or purely for entertainment display with no substantive discussion value |
+
+### `innovation` (papers/ and scenarios/ Only)
+
+Methodological or scientific novelty, the distinctive contribution relative to existing literature, a separate matter from how important the topic is. A topic can be important while the modeling approach has nothing new, or an obscure topic can carry a very novel modeling angle. Innovation is not the same as complexity; a simple model introducing a mechanism or optimization angle not previously tried on this problem scores higher than a complex model that repeats a known path. Test: could a reviewer find an almost identical model already published in the literature?
+
+| Anchor | Standard |
+|------|------|
+| **1.0** | Distinctively original, hard for a reviewer to find a precedent for comparison |
+| **0.75** | High-quality precedent exists, but the combination or application context is a new contribution |
+| **0.5** | Partially novel, with the core mechanism following a known path |
+| **0.25** | Limited incremental contribution |
+| **0.0** | Ample precedent already exists, with a negligible incremental contribution |
+
+Candidate material under `models/plan/` leaves `innovation` blank until the candidate is adopted and it is settled whether it goes into `papers/` or `scenarios/`.
+
+### `confidence`
+
+Assesses whether the model's simulation or optimization output, once actually measured, matches an independent literature target; this is a one-time, holistic confidence judgment, a different mode of judgment from fields like `variable`/`equation` that can be checked item by item against a literature source, and the two should not be conflated. Write only a 0-1 number plus a one-sentence reason, without expanding into sub-fields; its update timing follows the file's own `metadata.updated` rather than maintaining a separate date.
 
 ```yaml
 metadata:
   ratings:
-    confidence: 0.75 - 一句话说明依据（如"BP降幅分解后落在文献区间，UA升幅因场景混杂未达标"）
+    confidence: 0.75 - one-sentence basis (e.g. "The BP reduction, once decomposed, falls within the literature range; the UA increase does not meet the bar due to scenario confounding")
 ```
 
-| 锚点 | 含义 |
+| Anchor | Meaning |
 | --- | --- |
-| **0.0** | 尚未验证：仅有静态参数声明，未跑通 `--sim`/`--opt`，或已知存在阻断性 bug |
-| **0.25** | 跑通但未对上文献：能正常输出仿真轨迹，但未与独立文献目标比较，或比较后方向性不符（系数疑似不同源、单位/时间尺度换算未被追踪等） |
-| **0.5** | 部分对标：与文献目标部分吻合，或吻合但场景/样本存在明显局限（混杂因素未剥离、单一样本代表性有限等） |
-| **0.75** | 基本吻合：核心验证点落在文献目标范围内，偏差在可接受量级；或所声明的 evidence 效应量本身来自高质量独立来源、Loader 正确编码展示（非独立预测时需在理由文本注明） |
-| **1.0** | 独立预测检验通过：用不参与拟合的独立数据点做留一法预测，结果与文献报告吻合，或多个独立来源交叉印证一致 |
+| **0.0** | Not yet validated: only a static parameter declaration exists, `--sim`/`--opt` has not been run successfully, or a known blocking bug exists |
+| **0.25** | Runs but does not match the literature: produces a simulation trajectory normally, but it has not been compared against an independent literature target, or the comparison shows the wrong direction (a coefficient suspected to come from a different source, unit or timescale conversion not tracked, etc.) |
+| **0.5** | Partially benchmarked: partially matches a literature target, or matches but the scenario or sample has a clear limitation, such as confounders not separated out or limited representativeness from a single sample |
+| **0.75** | Broadly matches: the core validation point falls within the literature target's range, with deviation at an acceptable magnitude; or the declared evidence effect size itself comes from a high-quality independent source and the loader encodes and displays it correctly (note in the reason text when this is not an independent prediction) |
+| **1.0** | Passes independent predictive testing: a leave-one-out prediction using independent data points not involved in fitting matches what the literature reports, or multiple independent sources cross-confirm consistently |
 
-跨学科验证案例汇总与逐模型详细依据见 `models/test_validation/validation_report.md`；论文引用模型时，优先选 `confidence >= 0.75` 的模型作为核心案例，0.5 及以下的模型适合用于展示方法论/框架能力，但需要在论文正文里说明局限，不宜作为强定量结论的支撑。
+The cross-discipline validation case summary and per-model detailed basis are in `models/test_validation/validation_report.md`; when a paper cites a model, prefer models with `confidence >= 0.75` as core cases, while models at 0.5 or below are suitable for demonstrating methodology or framework capability but need their limitations stated in the paper's own text and should not support a strong quantitative conclusion.
 
-对候选/新起草的模型，`lm-modeling-design.md`"外部文献核验"一节产出的可信度判断，就是在给这个字段打分，打分时直接读本节定义，不要在 agent 文档里另外定义一套"高/中/低"的口语化标准。
-
----
-
-## 五、语义说明
-
-### variable 的跨类型一致性
-
-对于历史场景，"证据"是历史文献和物理/生理文献；对于参考模型，是直接引用的原始研究；对于论文模型，是 RCT 和 meta 来源。定义统一，语境自然适配。
-
-### optimization 与 confidence 的区别
-
-两者都跟"这个模型的权衡站不站得住"有关，但角度不同：`optimization` 判断的是权衡的**结构**是否成立（决策变量对目标是不是真的存在真实异号效应），`confidence` 判断的是**实测结果**跟独立文献对不对得上（数值是否落在合理区间、有没有被外部证据印证）。一个模型可以 `optimization` 打高分（结构上真的有权衡）但 `confidence` 只打中等分（数值验证时发现细节问题，比如缺某个饱和机制），两个数字不互相决定。
+For a candidate or newly drafted model, the credibility judgment produced by the "External Literature Verification" section of `lm-modeling-design.md` is exactly the score for this field; read this section's definitions directly when scoring, rather than defining a separate colloquial high/medium/low standard in the agent documents.
 
 ---
 
-## 六、评分更新规则
+## 5. Semantic Notes
 
-- 每次参数精化后（如 TODO:SOURCE 填写完毕），同步更新 `variable`。
-- 模型定位变化（如晋升为旗舰案例或降为附录）后，同步更新 `importance`。
-- `optimization`、`confidence` 随每次重新验证更新，覆写旧值；但已经写进 `metadata.description.method` 的定性预判文字本身不得因为看到数值结果而悄悄改写，见第三节 `optimization` 条目下的说明。
-- 评分是建模者的主观判断，版本控制保留历史；不要删除旧评分注释，而是直接覆写值。
-- 评分不进入引擎计算，仅供建模者和协作者参考。
-- 本文件之外的 agent 文档（`lm-modeling-design.md`、`lm-modeling-inspiration.md`、`lm-paper-case-writer.md` 等）涉及打分时，一律读取本文件当前版本的定义，不在各自文档内复制或另行定义量表；调整评分标准只改本文件一处。
+### Cross-Type Consistency of `variable`
+
+For historical scenarios, the evidence is historical literature and physical or physiological literature; for reference models, it is the original studies cited directly; for paper models, it is RCT and meta-analysis sources. The definition is unified, and it adapts naturally to context.
+
+### The Difference Between `optimization` and `confidence`
+
+Both concern whether the model's trade-off holds up, but from different angles: `optimization` judges whether the trade-off's structure holds, that is, whether the decision variable truly has an opposite-signed effect on the objectives; `confidence` judges whether the measured result matches independent literature, that is, whether the numbers fall in a reasonable range and are corroborated by external evidence. A model can score high on `optimization` (the trade-off is structurally real) while scoring only medium on `confidence` (numeric validation turned up a detail problem, such as a missing saturation mechanism); the two numbers do not determine each other.
 
 ---
 
-## 七、示例
+## 6. Rating Update Rules
 
-### papers/ 完整示例
+- After each round of parameter refinement, such as filling in a `TODO:SOURCE`, update `variable` accordingly.
+- After a model's positioning changes, such as being promoted to a flagship case or demoted to an appendix, update `importance` accordingly.
+- `optimization` and `confidence` are updated with each revalidation, overwriting the old value; but the qualitative prediction text already written into `metadata.description.method` must not be quietly rewritten just because numeric results came in, per the note under the `optimization` entry in Section 3.
+- A rating is the modeler's subjective judgment, and version control keeps its history; do not delete an old rating's comment, just overwrite the value.
+- Ratings do not enter the engine's computation and are for the modeler's and collaborators' reference only.
+- Whenever an agent document outside this file (`lm-modeling-design.md`, `lm-modeling-inspiration.md`, `lm-paper-case-writer.md`, etc.) touches on scoring, it reads this file's current definitions rather than copying or separately defining a scale in its own document; a scoring-standard change is made in this one file only.
+
+---
+
+## 7. Examples
+
+### Full papers/ Example
 
 ```yaml
 metadata:
   name: a5_hypertension_gout
   description:
-    brief: HCTZ 治疗高血压导致尿酸升高的临床冲突，T2+T4 时间药理学优化。
+    brief: The clinical conflict of HCTZ treating hypertension while raising uric acid, a T2+T4 chronopharmacology optimization.
   ratings:
-    importance: 1.0 - 高血压+痛风是最常见药物冲突之一，患者群体庞大，论文核心案例
-    variable: 0.75 - MAPEC RCT 证据支撑，尿酸昼夜节律系数待精化
-    equation: 0.75 - 时间药理学方程有明确文献依据，组合形式为本文原创
-    innovation: 0.75 - 时间药理学框架化，高质量先例存在但多目标组合形式为新贡献
+    importance: 1.0 - Hypertension plus gout is one of the most common drug conflicts, affecting a large patient population, a paper's core case
+    variable: 0.75 - Supported by MAPEC RCT evidence, with the uric acid circadian-rhythm coefficient still to be refined
+    equation: 0.75 - The chronopharmacology equations have a clear literature basis, with the combined form original to this paper
+    innovation: 0.75 - A chronopharmacology framing; high-quality precedent exists, but the multi-objective combined form is a new contribution
   tags: [paper2, hypertension, gout, ...]
 ```
 
-### scenarios/ 完整示例
+### Full scenarios/ Example
 
 ```yaml
 metadata:
   name: ad1847_hu_semmelweis
   description:
-    brief: 塞麦尔维斯洗手倡导仿真场景（1847–1865）。
+    brief: A simulation scenario of Semmelweis's handwashing advocacy (1847-1865).
   ratings:
-    importance: 0.75 - 医学史最著名的知识阻力案例，医学/科学政策圈高度关注，直接关联循证医学政策讨论价值
-    variable: 0.75 - Rogers 扩散理论和 Carter 传记提供良好文献基础
-    innovation: 1.0 - 首次将科学创新接受度动力学建模为可优化问题
+    importance: 0.75 - Medical history's most famous case of resistance to new knowledge, drawing high attention in medical and science-policy circles, with direct relevance to evidence-based-medicine policy discussion
+    variable: 0.75 - Rogers's diffusion theory and Carter's biography provide a good literature basis
+    innovation: 1.0 - The first modeling of scientific-innovation acceptance dynamics as an optimizable problem
   tags: [historical, semmelweis, ...]
 ```
 
-### plan/ 完整示例（含 VESO 四问，2026-08-20 新增）
+### Full plan/ Example (Including the VESO Four Questions, Added 2026-08-20)
 
 ```yaml
 metadata:
   name: aircrew_circadian_sim
   description:
-    brief: 空勤人员跨时区排班的运营成本 vs 执勤疲劳权衡。
+    brief: The trade-off between operating cost and on-duty fatigue for aircrew scheduling across time zones.
   ratings:
-    importance: 0.75 - 影响全球航空机组，安全与运营效率的真实竞争；目前是孤立候选，暂无被 import 的预期
-    variable: 0.75 - FJK 模型核心参数已发表且转引 Rea 2022 标定版本，光疗强度/半宽为工程标定
-    equation: 1.0 - FJK 三阶 ODE 是被广泛引用、1999 年至今持续复现的标准形式
-    simulation: 0.75 - 再同步时间尺度与 Serkh & Forger 独立吻合，但未做逐点数据比对
-    optimization: 0.75 - 机组排班运营/疲劳竞争关系有文献支撑，数值验证后前沿量级独立吻合
-    confidence: 0.75 - 光照时机反常发现被证实为独立预测检验通过，够 1.0，但睡眠债缺失机制、验证预算不足拉低整体
+    importance: 0.75 - Affects flight crews worldwide, a real contest between safety and operating efficiency; currently an isolated candidate with no expectation yet of being imported
+    variable: 0.75 - The FJK model's core parameters are published and cite the Rea 2022 calibrated version; light-therapy intensity and half-width are engineering calibrations
+    equation: 1.0 - The FJK third-order ODE is a widely cited standard form reproduced continuously since 1999
+    simulation: 0.75 - The resynchronization timescale independently matches Serkh & Forger, but has not been compared point by point against data
+    optimization: 0.75 - The competing relationship between crew-scheduling operations and fatigue is literature-supported, and the front's magnitude independently matches after numeric validation
+    confidence: 0.75 - The counterintuitive finding about light-therapy timing was confirmed by passing independent predictive testing, which alone would warrant 1.0, but the missing sleep-debt mechanism and insufficient validation budget pull the overall score down
   tags: [aircrew, circadian, fatigue, ...]
 ```
 
-### references/ 完整示例
+### Full references/ Example
 
 ```yaml
 metadata:
   name: ckd_protein_muscle
   description:
-    brief: CKD 蛋白质摄入 vs 肌肉保持动态模型。
+    brief: A dynamic model of protein intake versus muscle preservation in CKD.
   ratings:
-    importance: 0.75 - CKD 影响全球数亿患者，营养管理是核心临床问题；已被 A4 系列论文场景导入，肾病领域基础地位良好
-    variable: 0.75 - KDIGO 指南和多项 RCT 支撑，个别系数估算
+    importance: 0.75 - CKD affects hundreds of millions of patients worldwide, and nutrition management is a core clinical issue; already imported by the A4 paper series' scenarios, with a solid standing in the nephrology field
+    variable: 0.75 - Supported by KDIGO guidelines and several RCTs, with a few coefficients estimated
   tags: [nephrology, ckd, ...]
 ```

@@ -1,31 +1,38 @@
 metadata:
   todo:
     - type: quality
-      issue: "优化器 Pareto 前沿坍缩为单点；默认仿真从未触发 latch（lm_alive 始终为1，lm_score_irreversible 与 lm_score 从未分化）"
+      issue: "The optimizer's Pareto front collapses to a single point; the default simulation never triggers latch (lm_alive stays at 1 the whole time, and lm_score_irreversible never diverges from lm_score)"
       evidence: >
-        2026-06-14_16-27-43 批量结果：8 代全部 "Pareto CSV: ... (1 solutions)"，最终解 lm_score=729,
-        sbp=60.28（x0≈50.4mg, x1≈111.1mg）——maximize lm_score 与 minimize sbp(mean) 方向一致
-        （sbp 越低，sbp<=160 的天数越多），不构成真正的多目标权衡。
-        同时默认 plan（50mg/80mg）使 sbp 单调趋向 60 的下限，从未接近 220 的 stroke 阈值，
-        problem 中描述的 "Latch mode" 在 sim 和 opt 输出中均未被实际验证。
+        The 2026-06-14_16-27-43 batch result: all 8 generations report "Pareto CSV: ... (1 solutions)",
+        with the final solution lm_score=729, sbp=60.28 (x0 approximately 50.4mg, x1 approximately 111.1mg).
+        Maximizing lm_score and minimizing sbp(mean) point in the same direction (a lower sbp means more
+        days with sbp<=160), so this is not a genuine multi-objective tradeoff. The default plan (50mg/80mg)
+        also drives sbp monotonically toward its lower bound of 60, never approaching the stroke threshold
+        of 220, so the "Latch mode" described in problem is never actually exercised in either the sim or
+        the opt output.
       next: >
-        本次已调整：(1) optimization 第二目标改为 minimize antihypertensive(mean)，与
-        maximize lm_score 形成真实的"用药量 vs 健康天数"权衡；(2) 提高 bp_natural_rise
-        并调整默认 plan（前 ~235 天停药）使 sbp 在默认仿真中越过 220 触发 latch。
-        重新跑 --sim/--opt 后验证：Pareto 前沿应出现多点解；默认 sim 中 lm_alive 应在约
-        第235天变为0，此后 lm_score 与 lm_score_irreversible 应分化（lm_score 在停药期暂停、
-        给药后恢复累积，lm_score_irreversible 永久冻结）。若数值与预期偏差较大，按实际结果
-        调整 bp_natural_rise / plan 切换时间点。
+        Adjusted this round: (1) optimization's second objective changed to minimize antihypertensive(mean),
+        forming a genuine dose-versus-healthy-days tradeoff against maximize lm_score; (2) bp_natural_rise
+        raised, and the default plan adjusted (withholding medication for the first approximately 235 days)
+        so that sbp crosses 220 and triggers latch within the default simulation.
+        After rerunning --sim/--opt, verify: the Pareto front should show multiple solutions; in the default
+        sim, lm_alive should drop to 0 around day 235, after which lm_score and lm_score_irreversible should
+        diverge (lm_score pausing while medication is withheld and resuming accumulation once it restarts,
+        lm_score_irreversible frozen permanently). If the numbers deviate substantially from expectation,
+        adjust bp_natural_rise or the plan's switch timing based on the actual result.
   log:
     "2026-06-14_20-57-26":
       change: >
-        optimization 第二目标 sbp(mean,minimize) -> antihypertensive(mean,minimize)；
-        bp_natural_rise 0.05 -> 0.3 mmHg/day；默认 plan 第一段改为停药(0mg)
-        覆盖 2026-01-01~2026-08-23（约235天），第二段(80mg)覆盖其后至 2027-12-31。
+        optimization's second objective changed from sbp(mean,minimize) to antihypertensive(mean,minimize);
+        bp_natural_rise changed from 0.05 to 0.3 mmHg/day; the default plan's first segment changed to
+        withholding medication (0mg), covering 2026-01-01~2026-08-23 (about 235 days), with the second
+        segment (80mg) covering the rest through 2027-12-31.
       reason: >
-        原配置下两个优化目标方向一致（都偏好更低 sbp），Pareto 前沿坍缩为单点；
-        且默认 plan 下 sbp 从未接近 220，problem 中声明要验证的 latch/lm_alive/
-        lm_score_irreversible 机制从未被实际触发，与模型主旨不符。
+        Under the original configuration, the two optimization objectives pointed in the same direction
+        (both favoring a lower sbp), collapsing the Pareto front to a single point; and under the default
+        plan, sbp never approached 220, so the latch/lm_alive/lm_score_irreversible mechanism problem
+        declares it should validate was never actually triggered, inconsistent with the model's stated
+        purpose.
   name: test_valid_lm_score
   lm_format_version: "1.0"
   description:
@@ -35,12 +42,6 @@ metadata:
       resume on recovery. Latch mode: once SBP exceeds the stroke threshold (220 mmHg),
       lm_alive permanently flips to 0 — no further accumulation even if BP normalises. BP
       is controlled via an antihypertensive dose input; thresholds are set to be reachable.
-    problem_cn: >
-      在一个高血压管理模型上验证 lm_score 的两种语义。累积（Cumulative）模式：当 SBP
-      （收缩压）≤ 160 mmHg 时健康天数累积，在高血压发作期间暂停，恢复后继续累积。
-      锁存（Latch）模式：一旦 SBP 超过卒中阈值（220 mmHg），lm_alive 永久变为 0——
-      即使血压之后恢复正常也不再累积。血压通过降压药剂量（input）控制；各阈值均设置
-      为可实际触及。
     result: >
       Default plan (withhold dosing for ~235 days, then 80mg/day): sbp rises from 150 at
       +0.3 mmHg/day. lm_score accumulates on days 1-33 (sbp<=160) then pauses while sbp
@@ -53,18 +54,7 @@ metadata:
       optimization: maximize lm_score (final) vs minimize antihypertensive (mean) now form
       a genuine trade-off bounded by the sbp<=220 / sbp>=90 hard constraints, so the
       Pareto front should contain multiple solutions (not collapse to one point).
-    result_cn: >
-      默认给药方案（停药约 235 天，之后每天 80mg）：sbp 从 150 开始，以 +0.3 mmHg/day
-      上升。lm_score 在第 1-33 天（sbp<=160）累积，此后在 sbp 升破 160 期间暂停。约第
-      235 天，sbp（在病情进展前）超过 220，触发 stroke_latch，使 lm_alive 永久置 0，
-      lm_score_irreversible 冻结在约 234。此后治疗使 sbp 在约第 242 天回落到 160 以下；
-      lm_score 恢复累积（最终约达 520），而 lm_score_irreversible 始终冻结在约 234——
-      两个计数器出现明显分化，体现累积（可恢复）与锁存（不可逆）两种语义的差异。具体
-      天数以重新运行 --sim 的结果为准。优化器：maximize lm_score（final）与 minimize
-      antihypertensive（mean）在 sbp<=220 / sbp>=90 硬约束下现已构成真正的权衡，因此
-      Pareto 前沿应包含多个解（而非坍缩为单点）。
     limitations: Simplified first-order BP dynamics; not validated clinically.
-    limitations_cn: 简化的一阶血压动力学；未经临床验证。
   tags: [test, lm_score, latch, cumulative, hypertension, irreversible]
 
 variables:
@@ -214,7 +204,7 @@ optimization:
     - variable: sbp
       condition: ">= 90"
       type: hard
-      description: "避免降压过度导致医源性低血压（正常收缩压下限约90 mmHg）"
+      description: "Avoids overcorrection into iatrogenic hypotension; a normal systolic pressure lower bound is about 90 mmHg"
   startpoint:
     regimens:
       - variable: antihypertensive

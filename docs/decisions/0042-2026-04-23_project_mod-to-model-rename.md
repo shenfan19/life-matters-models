@@ -1,98 +1,98 @@
-# ADR 0042 — mod → model 全面重命名
-**日期**：2026-04-23  
-**状态**：已实施
+# ADR 0042 - A Project-Wide Rename from mod to model
+**Date**: 2026-04-23
+**Status**: Implemented
 
 ---
 
-## 背景
+## Background
 
-项目中 `mod` 一词存在双重含义：
+The word `mod` carried a double meaning in the project:
 
-- **game mod**：社区用户制作的自定义历史场景（game modification 的惯用缩写）。
-- **model 缩写**：仿真框架中的动力学模型（YAML 文件，位于 `mods/` 目录下）。
+- Game mod: a custom historical scenario made by a community user (the conventional abbreviation for game modification).
+- An abbreviation of model: a dynamics model in the simulation framework (a YAML file, located under `mods/`).
 
-这导致多处混乱：
-- `mod_design.md` / `mod_requirements.md` / `mod_impl.md` 被设计为描述动力学模型的文档，但读者（和 AI 辅助工具）会误解为"游戏 MOD 系统"。
-- 目录 `mods/models/` 语义重复（"模组的模型"），且 `mods/` 给人"欢迎 MOD"的暗示，与非游戏的科研建模定位不符。
-- Python 模块 `mod_structure`、`mod_generator`、`mod_merger` 等同样受到歧义污染。
+This caused confusion in several places:
+- `mod_design.md` / `mod_requirements.md` / `mod_impl.md` were designed to describe the dynamics models, but a reader (and an AI-assisted tool) would misread them as being about a "game MOD system."
+- The directory `mods/models/` was semantically redundant ("a mod's models"), and `mods/` implied "MODs welcome," which does not match the non-game, research-modeling positioning.
+- The Python modules `mod_structure`, `mod_generator`, `mod_merger` and others were likewise contaminated by this ambiguity.
 
-同期讨论了 `sim_xxx` 是否也应改为 `simulation_xxx`，结论是**不改**（见下方）。
+Whether `sim_xxx` should also be changed to `simulation_xxx` was discussed at the same time, and the conclusion was not to change it (see below).
 
 ---
 
-## 决策
+## Decision
 
-### 决策一：docs 文件重命名
+### Decision 1: renaming docs files
 
-| 原文件 | 新文件 | 说明 |
+| Old file | New file | Note |
 |--------|--------|------|
-| `mod_requirements.md` | `model_requirements.md` | 模型数据规范（`description`/`reference`/`comments` 强制要求） |
-| `mod_design.md` | `model_design.md` | YAML 建模规范，从 `sim_design.md` 分离 |
-| `mod_impl.md` | `model_impl.md` | 模型相关实现说明 |
+| `mod_requirements.md` | `model_requirements.md` | The model data specification (the required `description`/`reference`/`comments` fields) |
+| `mod_design.md` | `model_design.md` | The YAML modeling specification, split out from `sim_design.md` |
+| `mod_impl.md` | `model_impl.md` | Model-related implementation notes |
 
-`mod_xxx.md` 中原有的 Game MOD 社区内容迁移至 `game_design.md` 和 `game_requirements.md`，`mod_xxx.md` 随后删除。
+The Game MOD community content that used to be in `mod_xxx.md` moved into `game_design.md` and `game_requirements.md`, and `mod_xxx.md` was then deleted.
 
-`sim_design.md` 中的 YAML 格式规范章节提取至新建的 `model_design.md`，`sim_design.md` 保留原有仿真引擎设计内容。
+The YAML format specification chapter in `sim_design.md` was extracted into the newly created `model_design.md`, and `sim_design.md` kept its original simulation-engine design content.
 
-### 决策二：目录结构重命名
+### Decision 2: renaming the directory structure
 
-| 旧路径 | 新路径 |
+| Old path | New path |
 |--------|--------|
 | `mods/` | `models/` |
 | `mods/models/` | `models/source/` |
 | `mods/stories/` | `models/stories/` |
 | `mods/scenarios/` | `models/scenarios/` |
 
-`mods/models/` → `models/source/` 的原因：内层 `models` 与外层 `mods` 语义重叠；`components` 更准确描述"可复用的动力学组件库"。
+Reason for `mods/models/` becoming `models/source/`: the inner `models` overlapped semantically with the outer `mods`; `components` more accurately describes "a library of reusable dynamics components."
 
-### 决策三：代码目录与模块重命名
+### Decision 3: renaming code directories and modules
 
-| 旧名称 | 新名称 |
+| Old name | New name |
 |--------|--------|
 | `plugins/preprocessors/mod_generator/` | `model_generator/` |
 | `plugins/preprocessors/mod_merger/` | `model_merger/` |
 | `sim_engine/src/mod_structure/` | `model_structure/` |
 
-所有 Python 文件中的 `mods_directory` 参数默认值由 `"mods"` 改为 `"models"`；import 路径 `from .mod_structure import` 改为 `from .model_structure import`。
+Every Python file's `mods_directory` parameter default value changed from `"mods"` to `"models"`; the import path `from .mod_structure import` changed to `from .model_structure import`.
 
-### 决策四：前后端路径字符串同步更新
+### Decision 4: updating frontend and backend path strings accordingly
 
-- `api_server.py`：`PROJECT_ROOT / "mods"` → `/ "models"`；API 路由 `/api/mods/` → `/api/models/`；`/api/files` 返回的根节点 key 由 `'mods'` 改为 `'models'`。
-- `game/vite.config.ts`：`modsDir` 指向 `'models'`，`/mods/` URL handler → `/models/`。
-- `game/src/App.tsx`、`StorySelect.tsx`：storyPath 前缀 `` `mods/${p}` `` → `` `models/${p}` ``。
-- `sim_gui` 各组件：`n.key === 'mods'` → `'models'`；`n.key === 'models'`（原内层组件目录）→ `'components'`；`ModsManager` 可见性过滤器从 `models/` + `scenarios/` 改为 `components/` + `scenarios/`。
-
----
-
-## 决策五：保留 sim_xxx 不改
-
-讨论了将 `sim_xxx`（文件名、变量名、参数名）改为 `simulation_xxx` 的可能性。
-
-**结论：保留 `sim` 前缀，不改。**
-
-理由：
-- `sim` 是仿真工程领域的公认缩写（MATLAB Simulink、SimPy、OpenSim 等均使用），无歧义风险。
-- `mod` 的歧义来自与 game mod 含义冲突，`sim` 不存在对应的歧义来源。
-- 改动量远大于 `mod` 重命名（涉及 URL 路径、Python 类名、参数名、前端组件名），出错面更宽，收益为零。
+- `api_server.py`: `PROJECT_ROOT / "mods"` became `/ "models"`; the API route `/api/mods/` became `/api/models/`; the root node key returned by `/api/files` changed from `'mods'` to `'models'`.
+- `game/vite.config.ts`: `modsDir` now points to `'models'`, and the `/mods/` URL handler became `/models/`.
+- `game/src/App.tsx`, `StorySelect.tsx`: the storyPath prefix `` `mods/${p}` `` became `` `models/${p}` ``.
+- Various `sim_gui` components: `n.key === 'mods'` became `'models'`; `n.key === 'models'` (the former inner components directory) became `'components'`; `ModsManager`'s visibility filter changed from `models/` + `scenarios/` to `components/` + `scenarios/`.
 
 ---
 
-## 结果
+## Decision 5: keeping sim_xxx unchanged
+
+The possibility of renaming `sim_xxx` (filenames, variable names, parameter names) to `simulation_xxx` was discussed.
+
+Conclusion: keep the `sim` prefix, do not change it.
+
+Reasoning:
+- `sim` is a recognized abbreviation in the simulation-engineering field (used by MATLAB Simulink, SimPy, OpenSim, etc.), with no risk of ambiguity.
+- `mod`'s ambiguity came from a genuine conflict with the meaning of game mod; `sim` has no corresponding source of ambiguity.
+- The scope of change would be far larger than the `mod` rename (URL paths, Python class names, parameter names, frontend component names), a much wider surface for errors, with zero benefit.
+
+---
+
+## Result
 
 ```
-models/                     ← 原 mods/
-  components/               ← 原 mods/models/（可复用动力学组件）
-  scenarios/                ← 仿真场景配置
-  stories/                  ← 游戏故事包
+models/                     <- formerly mods/
+  components/               <- formerly mods/models/ (reusable dynamics components)
+  scenarios/                <- simulation scenario configuration
+  stories/                  <- game story packages
 
 plugins/preprocessors/
-  model_generator/          ← 原 mod_generator/
-  model_merger/             ← 原 mod_merger/
+  model_generator/          <- formerly mod_generator/
+  model_merger/              <- formerly mod_merger/
 
 sim_engine/src/
-  model_structure/          ← 原 mod_structure/
+  model_structure/          <- formerly mod_structure/
 ```
 
-docs 中 `mod_xxx.md` 已删除，Game MOD 内容归入 `game_xxx.md`，YAML 建模规范独立为 `model_design.md`。
+`mod_xxx.md` has been removed from docs, its Game MOD content folded into `game_xxx.md`, and the YAML modeling specification split out as its own `model_design.md`.
 
-所有代码与文档中不再出现 `mods/` 路径或 `mod_` 模块前缀。`sim_xxx` 命名保持不变。
+No `mods/` path or `mod_` module prefix appears anywhere in the code or documentation any longer. The `sim_xxx` naming is unchanged.

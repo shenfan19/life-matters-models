@@ -7,107 +7,117 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      诸葛亮 228 年至 234 年北伐的核心张力来自"食少事烦，其能久乎"的历史叙述：战略进度由军务强度驱动，同时受疲劳、士气和营养三重调制，即 strategy_gain = work_intensity × (1−fatigue/100) × (morale/80) × (nutrition/70)。在蜀汉国力有限的约束下，如何分配军务强度与休息，才能在保全丞相健康的同时最大化北伐进度？
+      The core tension of Zhuge Liang's 228-234 Northern Expeditions comes from the historical
+      account that "he eats little yet handles much, how can he last long": strategic progress is
+      driven by military-affairs intensity, jointly modulated by fatigue, morale, and nutrition,
+      that is, strategy_gain = work_intensity x (1 minus fatigue/100) x (morale/80) x
+      (nutrition/70). Under the limited national strength of Shu Han, how should military-affairs
+      intensity and rest be allocated to maximize the expedition's progress while preserving the
+      chancellor's health?
     result: >
-      仿真显示 180 天北伐季中疲劳积累与战略进度之间的日动态权衡；三目标优化（2026-09-04 验证，60 代收敛，100% 可行）收敛至单一前沿点（strategy=100, health=97, morale=67.9），与此前"方向性权衡成立"的预判不一致，数值上未见真实权衡。
-    limitations: 历史参数，如蜀军营养、军务强度上限，为文献推算；过劳动力学系数基于 Xie & Boven（2006）当代研究，时代适用性需审慎。
+      The simulation shows the daily dynamic tradeoff between fatigue accumulation and strategic
+      progress across the 180-day campaign season; a three-objective optimization (verified on
+      2026-09-04, converging over 60 generations, 100% feasible) converges to a single front point
+      (strategy=100, health=97, morale=67.9), which does not match the earlier expectation that "a
+      directional tradeoff holds," showing no genuine numerical tradeoff.
+    limitations: Historical parameters, such as the Shu army's nutrition and the military-affairs-intensity ceiling, are estimated from the literature; the overwork-dynamics coefficient is based on the contemporary study of Xie & Boven (2006), whose applicability to the historical period should be treated with caution.
 
   ratings:
-    variable: 0.5 - 过劳系数据Xie & Boven(2006)，历史数值多为文献推算
-    equation: 0.5 - 多因子调制方程自建，锚定过劳动力学文献概念
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出180天合理轨迹，未与独立历史数据逐点比对
-    optimization: 0.0 - 2026-09-04人工复核：work_intensity驱动strategy的同时会经fatigue累积拖累health/morale，但rest_quality/food_intake是独立决策变量，可分别直接抵消fatigue累积（-12/步）和营养不足损耗，四个决策变量可同时逼近各自上限而不产生相互制约，可达空间内不存在真实权衡，--opt收敛至单一前沿点与此一致
-    importance: 0.5 - 诸葛亮是中国文化史最具代表性人物之一，但为历史叙事场景，非框架依赖模块
-    innovation: 0.5 - 将慢性过劳动力学应用于历史人物叙事是新颖组合，核心过劳机制沿用当代研究
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立历史文献数值目标逐点比对
+    variable: 0.5 - The overwork coefficient is based on Xie & Boven (2006), and most historical values are literature-derived estimates
+    equation: 0.5 - The multi-factor modulation equation is self-built, anchored to overwork-dynamics literature concepts
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 180-day trajectory normally, not yet compared point-by-point against independent historical data
+    optimization: 0.0 - Manual review on 2026-09-04, work_intensity drives strategy while dragging down health/morale through accumulated fatigue, but rest_quality/food_intake are independent decision variables that can directly offset fatigue accumulation (-12/step) and nutritional-deficit depletion respectively, so the four decision variables can all approach their own upper bounds simultaneously without constraining each other; no genuine tradeoff exists within the reachable space, consistent with --opt converging to a single front point
+    importance: 0.5 - Zhuge Liang is one of the most representative figures in Chinese cultural history, but this is a historical-narrative scenario, not a module the framework depends on
+    innovation: 0.5 - Applying chronic-overwork dynamics to a historical-figure narrative is a novel combination, with the core overwork mechanism carried over from contemporary research
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared point-by-point against an independent historical-literature target value
   tags: [historical, china, three-kingdoms, cognition, strategy, overwork]
   period: "228-234"
   location: "Qishan Camp, Wei-Shu Border, China"
 variables:
-  # ── 行为输入（玩家/优化器控制）────────────────────────────────────────────────
+  # ── Behavioral inputs (player/optimizer controlled) ────────────────────────────────────────────────
   work_intensity:
     type: input
     value: 2.0
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 3.0]
-    description: "军务强度：0=完全休息, 1=轻务处理, 2=军事谋划, 3=亲临督战"
+    description: "Military-affairs intensity: 0=full rest, 1=light administrative work, 2=military planning, 3=personally overseeing the front"
 
   rest_quality:
     type: input
     value: 0.6
-    unit: "系数"
+    unit: "coefficient"
     bounds: [0.0, 1.0]
-    description: "休息质量（0=失眠忧思, 1=充分休养）；直接影响体力与疲劳恢复"
+    description: "Rest quality (0=insomnia and worry, 1=full recuperation); directly affects physical-strength and fatigue recovery"
 
   food_intake:
     type: input
     value: 120.0
     unit: "g"
     bounds: [0.0, 400.0]
-    description: "每日食物摄入量（史载'日食不过数升'，基线约120g）"
+    description: "Daily food intake (historical accounts say 'he eats no more than a few sheng a day,' a baseline of about 120g)"
 
   political_address:
     type: input
     value: 0.5
-    unit: "强度"
+    unit: "intensity"
     bounds: [0.0, 1.5]
-    description: "应对朝廷/盟军关系的精力投入（过低→朝中掣肘；过高→消耗精力）"
+    description: "Effort invested in managing court/allied relations (too low leads to obstruction from the court; too high depletes energy)"
 
-  # ── 核心生理状态 ──────────────────────────────────────────────────────────────
+  # ── Core physiological state ──────────────────────────────────────────────────────────────
   health:
     type: state
     value: 70.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "丞相体力/生命力（史载诸葛亮多病，北伐前已体力不支）"
+    description: "The chancellor's physical strength/vitality (historical accounts record Zhuge Liang as frequently ill, already physically depleted before the expeditions)"
 
   fatigue:
     type: state
     value: 30.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "身心疲劳积累（>70时战略效率显著下降；睡眠和休息恢复）"
+    description: "Accumulated physical and mental fatigue (above 70, strategic efficiency declines markedly; recovers through sleep and rest)"
 
   nutrition:
     type: state
     value: 55.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "营养状态（<30时触发健康损耗；'食少事烦'的生理根源）"
+    description: "Nutritional state (below 30 triggers health depletion; the physiological root of 'eating little yet handling much')"
 
-  # ── 战略/社会状态 ─────────────────────────────────────────────────────────────
+  # ── Strategic/social state ─────────────────────────────────────────────────────────────
   strategy:
     type: state
     value: 0.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "北伐战略筹划进度（目标100=完成一次战役规划）"
+    description: "Progress on the Northern Expedition's strategic planning (target 100 = completing one campaign plan)"
 
   supply_level:
     type: state
     value: 90.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
-    description: "军粮储备水平（每日自然消耗；<30时士气大跌；北伐前充分征调，初始储备较足）"
+    description: "The army's grain-reserve level (naturally consumed daily; below 30, morale drops sharply; sufficiently requisitioned before the expedition, so the initial reserve is fairly ample)"
 
   morale:
     type: state
     value: 70.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
     io_role: output
-    description: "军心士气（供给、胜负、丞相亲临共同影响；调制战略效率）"
+    description: "Troop morale (jointly affected by supply, victory or defeat, and the chancellor's presence at the front; modulates strategic efficiency)"
 
   court_stability:
     type: state
     value: 60.0
-    unit: "分"
+    unit: "score"
     bounds: [0, 100]
-    description: "后方朝廷稳定度（不处理则缓慢下降；<30时掣肘前线）"
+    description: "The rear court's stability (declines slowly without attention; below 30, it obstructs the front)"
 
 simulation:
   step_size:
@@ -126,107 +136,107 @@ simulation:
     - work_intensity
 equations:
 
-  # 1. 饮食消化：食物→营养
-  # 120g/天 × 0.18 = 21.6 nutrition/天，自然衰减抵消后净增量适中
+  # 1. Digesting food: food -> nutrition
+  # 120g/day x 0.18 = 21.6 nutrition/day; the net gain is moderate after offsetting natural decay
   eating:
-    description: "每日饮食补充营养（丞相个人饮食，由幕府自备，不计入全军军粮储备）"
+    description: "Daily food intake replenishes nutrition (the chancellor's personal diet, self-supplied by his staff, not counted against the army's overall grain reserve)"
     condition: food_intake > 0
     priority: 10
     dynamics:
       nutrition: "min(100, nutrition + food_intake * 0.18)"
 
-  # 2. 营养自然代谢衰减
+  # 2. Natural metabolic decay of nutrition
   nutrition_decay:
-    description: "每日代谢消耗营养；需进食补偿"
+    description: "Daily metabolism consumes nutrition; must be replenished by eating"
     condition: true
     priority: 5
     dynamics:
       nutrition: "max(0, nutrition - 16)"
 
-  # 3. 军务产生战略进度（核心方程）
-  # 工作强度2，fatigue=40，morale=70，nutrition=55
-  # gain/day = 2 × (1-40/100) × (70/80) × (55/70) × 8.0
-  #          = 2 × 0.6 × 0.875 × 0.786 × 8.0 ≈ 6.6/天
-  # 180天不可能满强度，目标100需约15天有效强度2的工作
+  # 3. Military affairs generate strategic progress (the core equation)
+  # work intensity 2, fatigue=40, morale=70, nutrition=55
+  # gain/day = 2 x (1-40/100) x (70/80) x (55/70) x 8.0
+  #          = 2 x 0.6 x 0.875 x 0.786 x 8.0 is about 6.6/day
+  # 180 days cannot sustain full intensity; reaching the target of 100 needs about 15 days at effective intensity 2
   strategy_planning:
-    description: "军务筹划积累战略进度；疲劳、士气、营养三重调制效率"
+    description: "Military-affairs work accumulates strategic progress; fatigue, morale, and nutrition jointly modulate efficiency"
     condition: work_intensity > 0
     priority: 10
     dynamics:
       strategy: "min(100, strategy + work_intensity * 8.0 * max(0.2, 1 - fatigue / 100) * max(0.3, morale / 80) * max(0.3, nutrition / 70))"
       fatigue: "min(100, fatigue + work_intensity * 3.5)"
 
-  # 4. 休息恢复（睡眠/静养）
-  # rest_quality=0.6：fatigue恢复 = 0.6 × 12 = 7.2/天（基线适中）
+  # 4. Rest recovery (sleep/recuperation)
+  # rest_quality=0.6: fatigue recovery = 0.6 x 12 = 7.2/day (a moderate baseline)
   rest_recovery:
-    description: "休息恢复疲劳和体力；但不能完全弥补过劳积累"
+    description: "Rest recovers fatigue and physical strength; but cannot fully offset accumulated overwork"
     condition: rest_quality > 0
     priority: 8
     dynamics:
       fatigue: "max(0, fatigue - rest_quality * 12)"
       health: "min(100, health + rest_quality * 0.8)"
 
-  # 5. 供给自然消耗
+  # 5. Natural supply consumption
   supply_consumption:
-    description: "全军每日军粮消耗（与军队规模挂钩；固定消耗）"
+    description: "The whole army's daily grain consumption (tied to army size; a fixed consumption rate)"
     condition: true
     priority: 6
     dynamics:
       supply_level: "max(0, supply_level - 0.4)"
 
-  # 6. 供给不足→士气下跌
+  # 6. Supply shortage -> morale decline
   low_supply_morale:
-    description: "军粮不足时士气急速下跌（'兵马未动，粮草先行'）"
+    description: "Morale falls sharply when grain is scarce ('before troops move, provisions go first')"
     condition: supply_level < 30
     priority: 7
     dynamics:
       morale: "max(0, morale - (30 - supply_level) * 0.15)"
 
-  # 7. 朝廷干预处理
+  # 7. Managing court affairs
   court_management:
-    description: "处理后方政务维持朝廷稳定；neglect→稳定度缓慢下降"
+    description: "Handling rear-court affairs maintains court stability; neglect causes stability to decline slowly"
     condition: true
     priority: 5
     dynamics:
       court_stability: "min(100, court_stability + (political_address - 0.3) * 4)"
 
-  # 8. 朝廷不稳定→前线掣肘→战略受损
+  # 8. Court instability -> obstruction of the front -> strategic damage
   court_interference:
-    description: "朝廷稳定度过低时，宦官掣肘导致前线资源削减和战略迟滞"
+    description: "When court stability is too low, eunuch obstruction cuts resources to the front and delays strategy"
     condition: court_stability < 30
     priority: 7
     dynamics:
       strategy: "max(0, strategy - (30 - court_stability) * 0.08)"
       supply_level: "max(0, supply_level - 0.5)"
 
-  # 9. 过劳损耗体力（fatigue > 70）
+  # 9. Overwork depletes physical strength (fatigue > 70)
   overwork_penalty:
-    description: "严重过劳（疲劳>70）加速体力崩溃（'食少事烦，其能久乎'）"
+    description: "Severe overwork (fatigue above 70) accelerates the collapse of physical strength ('he eats little yet handles much, how can he last long')"
     condition: fatigue >= 70
     priority: 9
     dynamics:
       health: "max(0, health - (fatigue - 70) * 0.04)"
 
-  # 10. 营养不足损耗体力
+  # 10. Malnutrition depletes physical strength
   malnutrition_health:
-    description: "长期营养不足（<30）损耗体力"
+    description: "Sustained malnutrition (below 30) depletes physical strength"
     condition: nutrition < 30
     priority: 7
     dynamics:
       health: "max(0, health - (30 - nutrition) * 0.05)"
 
-  # 11. 亲临督战鼓舞士气（work_intensity=3时额外效果）
+  # 11. Personally overseeing the front boosts morale (an extra effect at work_intensity=3)
   frontline_morale:
-    description: "丞相亲临督战显著鼓舞军心（但同时加重体力负担）"
+    description: "The chancellor personally overseeing the front markedly boosts troop morale (but also adds to his physical burden)"
     condition: work_intensity >= 3
     priority: 9
     dynamics:
       morale: "min(100, morale + 3)"
       health: "max(0, health - 0.5)"
 
-  # 12. 士气低落影响战略执行
+  # 12. Low morale impairs strategic execution
   low_morale_penalty:
-    description: "士气严重低落（<30）时将士消极，战略难以执行"
+    description: "When morale is severely low (below 30), troops become passive and strategy is hard to execute"
     condition: morale < 30
     priority: 6
     dynamics:
@@ -252,13 +262,13 @@ optimization:
   constraints:
     - variable: health
       condition: ">= 40"
-      description: "丞相健康不能低于40（历史约束：需维持基本军务能力）"
+      description: "The chancellor's health should not fall below 40 (a historical constraint: he must maintain basic capacity for military affairs)"
     - variable: supply_level
       condition: ">= 10"
-      description: "军粮不能完全耗尽"
+      description: "Grain should not be completely exhausted"
     - variable: morale
       condition: ">= 20"
-      description: "军心不能崩溃"
+      description: "Troop morale should not collapse"
 
   startpoint:
     regimens:
@@ -266,35 +276,36 @@ optimization:
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "每日军务强度"
+        label: "Daily military-affairs intensity"
         optimize:
           value: [0.5, 3.0]
       - variable: rest_quality
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "每日休息质量"
+        label: "Daily rest quality"
         optimize:
           value: [0.3, 1.0]
       - variable: food_intake
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "每日食物摄入量"
+        label: "Daily food intake"
         optimize:
           value: [60.0, 300.0]
       - variable: political_address
         time_start: "09:00"
         time_end: "09:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "朝廷事务投入"
+        label: "Investment in court affairs"
         optimize:
           value: [0.0, 1.5]
 
   analysis:
     pareto_description: |
-      帕累托前沿揭示：提高work_intensity在fatigue<50时线性提升strategy，
-      但fatigue>70后效率骤降且health加速损耗。
-      最优解通常在work_intensity=2.0–2.3、rest_quality=0.7–0.8区间——
-      这与历史记录矛盾：诸葛亮实际长期处于work_intensity≈3、rest_quality≈0.4，
-      即历史证明他选择了帕累托前沿之外的"忠诚最优"而非"健康最优"解。
+      The Pareto front reveals: raising work_intensity linearly raises strategy while fatigue is
+      below 50, but once fatigue exceeds 70 efficiency drops sharply and health depletes faster.
+      The optimal solutions typically fall in the range work_intensity=2.0-2.3, rest_quality=0.7-0.8,
+      which contradicts the historical record: Zhuge Liang actually operated for a long period at
+      work_intensity of about 3 and rest_quality of about 0.4,
+      meaning history shows he chose a "loyalty-optimal" solution outside the Pareto front rather than a "health-optimal" one.

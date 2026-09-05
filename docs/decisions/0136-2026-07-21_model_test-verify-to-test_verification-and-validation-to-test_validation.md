@@ -1,101 +1,51 @@
-# 0136 — `test_verify/` 改名为 `test_verification/`，`models/validation/` 改回 `models/test_validation/`
+# 0136 - Renaming test_verify/ to test_verification/, Renaming models/validation/ Back to models/test_validation/
 
-**日期**：2026-07-21
-**状态**：✅ 已接受
+**Date**: 2026-07-21
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-同一天（2026-07-21）稍早的 ADR 0135 把名实不符的 `models/test_validation/`（内容其实是
-verification 用的 `valid`/`invalid` fixture）拆分成 `models/test_fixtures/`（fixture）+
-新建的 `models/validation/`（真正的文献对标/优化合理性结果），并在决策正文里明确讨论过、
-否决了"把 `test_fixtures` 改叫 `test_verification`"的方案——理由是这会跟 life-matters-reference-engine
-的 `test_verify/` 撞得更严重。
+Earlier the same day (2026-07-21), ADR 0135 split the mismatched `models/test_validation/` (whose content was actually the `valid`/`invalid` fixtures used for verification) into `models/test_fixtures/` (the fixtures) plus the newly created `models/validation/` (the genuine literature-benchmarking/optimization-plausibility results), and its decision text explicitly discussed and rejected the option of renaming `test_fixtures` to `test_verification`, on the grounds that it would collide even more badly with life-matters-reference-engine's `test_verify/`.
 
-当天晚些时候，在实际更新 `validation_report.md` 的仿真结果时，用户提出两个独立的命名疑问：
-(1) 能否把这次新产出的验证 CSV 放进 `test_fixtures/`；(2) `test_verify/` 能否改名为
-`test_verification/`，好和它里面的 `verification_report.md` 对齐，也让"validate/verify"
-两侧的目录名更对称。
+Later that day, while actually updating `validation_report.md`'s simulation results, the user raised two separate naming questions: (1) can the newly produced validation CSVs go into `test_fixtures/`; (2) can `test_verify/` be renamed to `test_verification/`, to align with the `verification_report.md` it contains and to make the validate/verify sides' directory names more symmetric.
 
-第(1)个问题很好回答：不行，会破坏 ADR 0135 当天刚刚建立起来的"fixture 数据 vs validation
-结果"边界，`test_fixtures/README.md`、`validation_report.md` 开篇都专门写明"两者是两回事、
-互不依赖"，混进去等于抹掉这条线。
+Question (1) is easy to answer: no, since it would break the boundary between "fixture data" and "validation results" that ADR 0135 had just established that same day; both `test_fixtures/README.md` and `validation_report.md`'s opening specifically state that the two are separate and independent, and mixing them together would erase that line.
 
-第(2)个问题触发了本 ADR：**如果 `test_verify/` 改名为 `test_verification/`，ADR 0135 当时
-"避免和 test_verify 撞名"这条否决 `test_fixtures→test_verification` 的理由本身也随之改变**
-——`test_verify` 这个名字将不复存在，`test_fixtures` 和 `test_verification` 不会撞名。但
-`test_fixtures` 这个名字本身已经准确描述内容（可复用的测试 YAML 数据），不需要再改，
-ADR 0135 那部分决策不受影响，不用重新讨论。
+Question (2) triggered this ADR: if `test_verify/` is renamed to `test_verification/`, the very reasoning ADR 0135 used to reject `test_fixtures` to `test_verification`, avoiding a name collision with `test_verify`, changes along with it, since the name `test_verify` would no longer exist and `test_fixtures` and `test_verification` would not collide. But the name `test_fixtures` already accurately describes its content (reusable test YAML data) and does not need changing again; that part of ADR 0135's decision is unaffected and does not need revisiting.
 
-真正需要重新讨论的是 `models/validation/`：ADR 0135 把它命名为不带 `test_` 前缀的裸名字，
-主要是因为当时 `test_validation` 这个名字刚刚因为"名实不符"（装着 fixture 而非 validation
-结果）被否决掉，直接复用会造成"同一个名字，此刻却装着完全不同的东西"的混淆——所以退而求其次
-选了裸名字。但现在的情况不同：**`models/validation/` 里现在只装真正的 validation 内容**
-（`validation_report.md` + `reports/` CSV，ADR 0135 建好之后没有再混入别的东西），"名实不符"
-这个否决理由已经不成立了。如果同时把 `test_verify/` 改名为 `test_verification/`，`models/
-test_validation/`（对，改回这个名字）与 `test_verification/` 会形成"validation ↔
-verification"的整齐配对，比裸名字 `models/validation/` 更贴合两仓库一直在用的"V&V 术语对称
-命名"惯例（ADR 0134 最早就是这个动机）。
+What genuinely needs revisiting is `models/validation/`: ADR 0135 named it with a bare name, no `test_` prefix, mainly because `test_validation` had just been rejected for being mismatched (holding fixtures rather than validation results), and reusing it right away would create confusion, "the same name now holding something entirely different," so a bare name was chosen as the next-best option. But the situation is now different: `models/validation/` currently holds only genuine validation content (`validation_report.md` plus the `reports/` CSVs; nothing else has been mixed in since ADR 0135 set it up), so the "mismatch between name and content" reason for rejecting it no longer applies. If `test_verify/` is also renamed to `test_verification/` at the same time, `models/test_validation/` (renamed back to this name) and `test_verification/` would form a clean "validation <-> verification" pairing, fitting the two repositories' long-standing convention of symmetric V&V terminology (ADR 0134's original motivation) better than the bare name `models/validation/`.
 
-## 决策
+## Decision
 
-### 1. `test_verify/` → `test_verification/`（life-matters-reference-engine 仓库）
+### 1. `test_verify/` to `test_verification/` (the life-matters-reference-engine repository)
 
-改名，`README.md`/`verification_report.md`/`errors/`/`models/` 子目录内容不变，只改目录名
-本身；所有引用该路径的文件同步更新（见下方"影响范围"）。
+Renamed; the content of `README.md`/`verification_report.md`/`errors/`/`models/` subdirectories is unchanged, only the directory name itself changes; every file referencing this path is updated accordingly (see "Scope of Impact" below).
 
-### 2. `models/validation/` → `models/test_validation/`（life-matters-models 仓库）
+### 2. `models/validation/` to `models/test_validation/` (the life-matters-models repository)
 
-**不是重新打开 ADR 0135 关于"要不要把 fixture 和 validation 内容分开放"的判断**——那个判断
-（`test_fixtures/` 只装 fixture、真正的 validation 结果单独放一个目录）本次完全保留，两块内容
-继续物理分离在两个目录里。本次只改"真正的 validation 结果那个目录该不该带 `test_` 前缀"这一
-个更小的问题：ADR 0135 建立时因为名字刚被否决过一次而选了裸名字，现在名实不符的前提已经解除
-（该目录自建立起只装过 validation 内容），且 `test_verify→test_verification` 改名让"两个
-`test_` 前缀目录对称配对"这个 ADR 0134 就想要的效果第一次真正成立，所以改回来。
+This does not reopen ADR 0135's judgment about whether to keep fixture content and validation content in separate directories; that judgment (`test_fixtures/` holds only fixtures, with the genuine validation results in a directory of their own) is fully preserved, and the two kinds of content stay physically separated in two directories. This only changes the smaller question of whether the genuine-validation-results directory should carry a `test_` prefix: when ADR 0135 set it up, a bare name was chosen because the name had just been rejected once, and now that the mismatch no longer holds (this directory has held only validation content since it was created), and the `test_verify` to `test_verification` rename lets the effect ADR 0134 originally wanted, "two `test_`-prefixed directories paired symmetrically," genuinely hold for the first time, it is renamed back.
 
-`validation_report.md`、`reports/` 子目录内容不变，只改父目录名；所有引用该路径的文件同步
-更新。
+The content of `validation_report.md` and the `reports/` subdirectory is unchanged, only the parent directory name changes; every file referencing this path is updated accordingly.
 
-## 影响范围
+## Scope of Impact
 
-**life-matters-reference-engine 仓库**：`pytest.ini`（`testpaths`）、`.gitignore`（路径注释）、
-`scripts/check_hardcoded_constants.py`（`EXCLUDE_DIR_PARTS`）、`test_verification/` 目录内
-`README.md`/`verification_report.md`/`errors/README.md`/`models/README.md` 及其下 3 个
-`test_*.py` 的自引用注释、根 `README.md`、`docs/reference_engine/{DECISIONS.md,cli.md,
-evidence/conversion.md,impl.md,mc.md}`、`reference_engine/scripts/validate_banister{,_step_grid}.py`
-的模块 docstring、`gui/e2e/specs/run-simulation.spec.ts` 的注释。历史 ADR 0056 正文里的
-`test_verify` 引用按"历史记录不做追溯性改写"惯例不动。
+**life-matters-reference-engine repository**: `pytest.ini` (`testpaths`), `.gitignore` (a path comment), `scripts/check_hardcoded_constants.py` (`EXCLUDE_DIR_PARTS`), the self-references in `README.md`/`verification_report.md`/`errors/README.md`/`models/README.md` inside `test_verification/` and in the 3 `test_*.py` files under it, the root `README.md`, `docs/reference_engine/{DECISIONS.md,cli.md,evidence/conversion.md,impl.md,mc.md}`, the module docstrings in `reference_engine/scripts/validate_banister{,_step_grid}.py`, and a comment in `gui/e2e/specs/run-simulation.spec.ts`. The `test_verify` reference in the body of historical ADR 0056 is left unchanged, per the convention that historical records are not rewritten retroactively.
 
-**life-matters-models 仓库**：`models/test_fixtures/{README.md,fixture_catalog.md,invalid/README.md}`
-及 `valid/`、`invalid/` 下引用 `test_verify/errors/`、`test_verify/verification_report.md`
-的 fixture YAML 注释（`test_invalid_*.yaml` 8 个 + `test_valid_banister_v1_*.yaml` 系列 7 个
-+ `banister_step_convergence_grid_POINTER.yaml`）；`models/test_validation/validation_report.md`
-自身对 `test_verify/verification_report.md` 的 4 处引用，以及对 `models/validation/reports/`
-CSV 路径的 3 处引用（本次改名前一天由另一次验证任务新写入，路径需要跟着父目录改名同步更新）。
-`models/test_fixtures/README.md` 里"和 `models/validation/`、`test_verification/` 的关系"一节
-额外补充了一句说明：本目录曾经短暂用过 `test_validation` 这个名字（ADR 0135 拆分前），当天下午
-本 ADR 又把新建的 validation 结果目录改回同一个名字——两次是不同的目录，只是先后用过同名字，
-避免读者误以为改名被撤销。
+**life-matters-models repository**: `models/test_fixtures/{README.md,fixture_catalog.md,invalid/README.md}`, and the fixture YAML comments under `valid/` and `invalid/` referencing `test_verify/errors/` and `test_verify/verification_report.md` (8 `test_invalid_*.yaml` files plus the 7-file `test_valid_banister_v1_*.yaml` series plus `banister_step_convergence_grid_POINTER.yaml`); `models/test_validation/validation_report.md`'s own 4 references to `test_verify/verification_report.md`, and its 3 references to the `models/validation/reports/` CSV path (newly written in the day before this rename by a separate validation task, and needing to be updated in step with the parent directory's rename). A note has been added to the "relationship to `models/validation/` and `test_verification/`" section of `models/test_fixtures/README.md`, explaining that this directory once briefly used the name `test_validation` (before the ADR 0135 split), and this ADR, that same afternoon, renamed the newly created validation-results directory back to that same name, two different directories that happened to use the same name at different times, so a reader does not mistake it for the rename having been undone.
 
-**life-matters-home**：`process/model_validation_workflow.md` 的 `models/validation/`、
-`test_verify/` 路径引用；`tasks/2026-07-21_report_validation.md`（同一天更早的验证任务记录，
-按"不追溯改写"原则保留原始路径描述，改为末尾追加一条说明当前路径已变更）。历史归档文件
-`tasks/archive/2026-07-17_task_docs-code-drift-engine-cli-gui.md` 按惯例不动。
+**life-matters-home**: the `models/validation/` and `test_verify/` path references in `process/model_validation_workflow.md`; `tasks/2026-07-21_report_validation.md` (an earlier validation task record from the same day, whose original path description is kept per the "no retroactive rewriting" principle, with a note appended at the end stating the current path has since changed). The historical archive file `tasks/archive/2026-07-17_task_docs-code-drift-engine-cli-gui.md` is left unchanged per convention.
 
-**历史 ADR 正文不动**：`docs/decisions/README.md` 里 0134、0135 两行索引摘要描述的是这两个
-ADR 当时的决策内容，本次不追溯改写，仅新增本 ADR 的索引行。
+**Historical ADR body text left unchanged**: the two index-summary lines for 0134 and 0135 in `docs/decisions/README.md` describe what those two ADRs decided at the time, and are not rewritten retroactively; only a new index line for this ADR is added.
 
-## 结果
+## Result
 
-- 改名：`test_verify/` → `test_verification/`（life-matters-reference-engine）
-- 改名：`models/validation/` → `models/test_validation/`（life-matters-models）
-- 同步：两仓库 + life-matters-home 共约 35 处路径引用（详见上）
-- ADR 0135 的核心判断（fixture 与 validation 结果物理分离到两个目录）保持不变，本次只调整
-  validation 结果目录是否带 `test_` 前缀这一项
+- Rename: `test_verify/` to `test_verification/` (life-matters-reference-engine)
+- Rename: `models/validation/` to `models/test_validation/` (life-matters-models)
+- Updated accordingly: about 35 path references across both repositories plus life-matters-home
+- ADR 0135's core judgment (physically separating fixtures from validation results into two directories) is unchanged; this only adjusts whether the validation-results directory carries a `test_` prefix
 
-## 未决
+## Open Questions
 
-- `docs/reference_engine/decisions/0056-2026-05-04_project_three-tier-validation-framework.md`
-  正文里的 `test_verify` 引用未同步（历史记录惯例不动），下次有读者从该 ADR 点进去时可能需要
-  自行心算一次改名映射，不阻塞本次改名。
+- The `test_verify` reference in the body of `docs/reference_engine/decisions/0056-2026-05-04_project_three-tier-validation-framework.md` was not updated (per the convention that historical records are left unchanged); a reader clicking through from that ADR in the future may need to mentally apply the rename mapping themselves, which does not block this rename.

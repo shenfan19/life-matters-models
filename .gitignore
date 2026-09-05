@@ -9,6 +9,7 @@ _saved_/
 # lm-modeling-advisor agents/), any depth, any suffix after temp_
 **/temp_*/
 
-# per-model literature cache: reference/ 下的 .bib 与 cite_review.md 随仓库发布，
-# 但 PDF 原文（多为付费墙文献）不发布，仅本地保留供人工/AI 核对引用位置用
+# per-model literature cache: the .bib and cite_review.md files under reference/ are published
+# with the repository, but the original PDFs (mostly paywalled literature) are not published,
+# kept locally only for human/AI use in checking citation locations
 **/reference/*.pdf

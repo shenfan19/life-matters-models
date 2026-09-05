@@ -9,113 +9,108 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      羽毛球单打是典型的高强度间歇性运动，平均回合持续约 5-7 秒、间歇期约 15-20 秒，无氧代谢比例约 40%，心率长时间维持在 80-95% HRmax。这种短暂爆发-快速恢复的交替模式使传统持续有氧模型无法准确描述其乳酸动力学：每次扣杀和快速变向触发无氧代谢，乳酸在 3-6 mmol/L 区间波动，而反应速度，精英基线约 180-220 ms，随神经肌肉疲劳延长，形成体能消耗与技术精度之间的核心竞争。
+      Badminton is one of the most intense interval sports among racket sports, an elite rally
+      lasts only about 6-8 seconds but includes multiple explosive direction changes, and rest
+      between points is only about 12-15 seconds, giving a work-to-rest ratio far tighter than
+      tennis's. Chin et al. (1995) measured a rally-average heart rate of about 90% HRmax in
+      elite matches, while Faude et al. (2007) found lactate can accumulate to 4-6 mmol/L within
+      a single game. Court-coverage speed, which measures the ability to sustain rapid lateral and
+      front-back movement, declines with fatigue accumulation and directly determines the ability to
+      retrieve a passive shot.
     result: >
-      仿真尚未运行。理论预期：中高强度，RPE 为 7、扣杀频率 2.5 次/分，45 分钟比赛中，乳酸在前 20 分钟升至约 4-5 mmol/L 后趋于稳态，疲劳指数在比赛末达到约 0.5-0.6，反应时间延长至约 230-250 ms；整场热量消耗约 500-560 kcal。
+      Not yet run. Theoretical expectation: in a 45-minute match at a rally intensity of RPE=8 and
+      a rest interval of 13 seconds, lactate accumulates to about 5-6 mmol/L by the second half,
+      court-coverage speed falls from a baseline of 100 to about 65-70, and the fatigue index
+      reaches about 0.55 by the end of the match; extending the rest interval to 20 seconds keeps
+      lactate below 4 mmol/L and court-coverage speed at about 80.
     limitations: >
-      参数基于约 70 kg 的精英男子单打运动员，未区分网前搓球与后场扣杀等不同技术动作的代谢差异；未包含受封闭球馆散热限制的热调节和补水因素；分钟步长对 5-7 秒回合结构为时间尺度近似。
+      Does not distinguish the differing movement patterns and physiological loads of singles versus
+      doubles play; the rally-rest structure is a coarse approximation and does not reflect the true
+      distribution of rally lengths; parameters are based on elite adult-male singles play.
   ratings:
-    importance: 0.25 - 羽毛球是亚洲主流运动，间歇高强度特征有一定研究价值；专项运动模型，上层引用预期低
-    variable: 0.5 - 引用Chin 1995/Faude 2007等文献，但参数数量有限
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-  tags: [badminton, racket, interval, explosive, anaerobic, reaction_time, VO2]
+    importance: 0.25 - Badminton's high-intensity interval character has specialized sports-science value, with an audience concentrated in Asia; a racket-sport specialty model, expected to have low reuse elsewhere
+    variable: 0.5 - Cites publications such as Chin/Faude, with fairly well-founded parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+  tags: [badminton, racket, interval, anaerobic, lactate, court_coverage, VO2max]
 
 variables:
-  rally_pace:
+  rally_intensity:
     type: input
-    value: 7.0
+    value: 8.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "回合节奏（0=暂停/换边，7=中高强度单打，10=极限冲刺节奏）"
-  smash_frequency:
+    description: "Rally intensity (0=rest, 8=a normal high-intensity rally, 10=an all-out kill point; Chin 1995)"
+  rest_interval:
     type: input
-    value: 2.0
-    unit: "次"
-    bounds: [0.0, 8.0]
-    description: "每分钟扣杀事件量（精英选手每分钟约2-4次有效扣杀）"
+    value: 13.0
+    unit: "sec"
+    bounds: [5.0, 25.0]
+    description: "The between-point rest interval (elite play is about 12-15 seconds; Faude 2007)"
   heart_rate:
     type: state
     value: 75.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "心率（羽毛球单打平均160-180 bpm，约80-95% HRmax；Chin 1995）"
+    description: "Heart rate (about 90% HRmax during a rally, roughly 175 bpm; Chin 1995)"
   vo2:
     type: state
     value: 10.0
     unit: "mL/kg/min"
-    bounds: [5.0, 70.0]
-    description: "摄氧量（精英单打平均45-55 mL/kg/min；Faude 2007）"
+    bounds: [5.0, 65.0]
+    description: "Oxygen uptake (an elite player's VO2max demand is about 55-60 mL/kg/min; Faude 2007)"
   lactate:
     type: state
-    value: 1.0
+    value: 1.5
     unit: "mmol/L"
-    bounds: [0.5, 12.0]
-    description: "血乳酸（回合间歇特征使乳酸在3-6 mmol/L波动；Faude 2007）"
-  reaction_time_ms:
+    bounds: [0.5, 10.0]
+    description: "Blood lactate (accumulates to 4-6 mmol/L within a game; Faude 2007)"
+  court_coverage_speed:
     type: state
-    value: 200.0
-    unit: "ms"
-    bounds: [100.0, 400.0]
-    description: "反应时间（精英基线约180-220ms；疲劳和乳酸升高后延长）"
+    value: 100.0
+    unit: "score"
+    bounds: [0.0, 100.0]
+    description: "Court-coverage speed (a lateral and front-back movement ability proxy; declines with fatigue and lactate)"
   fatigue:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 1.0]
-    description: "疲劳指数（0=无疲劳，1=力竭；积累超过0.7时反应时间显著延长）"
-  calories_burned:
-    type: state
-    value: 0.0
-    unit: "kcal"
-    bounds: [0.0, 800.0]
-    description: "累计热量消耗（45分钟单打约400-600 kcal；Phomsoupha & Laffaye 2015）"
+    description: "Overall fatigue (rapid accumulation driven by repeated explosive direction changes)"
 
 equations:
   heart_rate_dynamics:
-    description: "心率随回合节奏线性响应，扣杀增加心脏负担，疲劳加重漂移（Chin 1995：平均160-180 bpm）"
+    description: "Heart rate responds to rally intensity and rest interval (Chin 1995: elite play averages about 90% HRmax)"
     condition: true
     priority: 10
     dynamics:
-      heart_rate: "min(200, 75 + rally_pace * 12 + smash_frequency * 3 + fatigue * 15)"
+      heart_rate: "min(200, 75 + rally_intensity * 10 - rest_interval * 0.6 + fatigue * 12)"
   vo2_response:
-    description: "摄氧量跟随心率和回合强度（Faude 2007：精英均值~50 mL/kg/min对应rally_pace=7）"
-    condition: "rally_pace > 0"
+    description: "Oxygen uptake follows rally intensity (Faude 2007: a VO2max demand of about 55-60 mL/kg/min)"
+    condition: "rally_intensity > 0"
     priority: 9
     dynamics:
-      vo2: "min(70, 5 + rally_pace * 5.5 + smash_frequency * 1.2)"
+      vo2: "min(65, 8 + rally_intensity * 4.8 - rest_interval * 0.25)"
   lactate_accumulation:
-    description: "高强度回合无氧代谢积累乳酸（Faude 2007：扣杀/快速换位触发无氧代谢）"
-    condition: "rally_pace > 5.0"
+    description: "Lactate accumulates within a game, offset by the rest interval (Faude 2007: rises to 4-6 mmol/L)"
+    condition: true
     priority: 8
     dynamics:
-      lactate: "min(12, lactate + (rally_pace - 5) * 0.18 + smash_frequency * 0.15)"
-  lactate_clearance:
-    description: "换边/低强度间歇期乳酸清除（间歇期约15-20秒，步长1分钟含多次间歇）"
-    condition: "rally_pace <= 5.0"
-    priority: 8
-    dynamics:
-      lactate: "max(1.0, lactate - 0.35)"
+      lactate: "min(10, max(1.0, lactate + rally_intensity * 0.028 - rest_interval * 0.05))"
   fatigue_accumulation:
-    description: "疲劳由节奏、扣杀和乳酸共同驱动（无氧比例~40%加速疲劳）"
+    description: "Fatigue accumulates rapidly, driven by repeated explosive direction changes (offset by the rest interval)"
     condition: true
     priority: 7
     dynamics:
-      fatigue: "min(1.0, fatigue + rally_pace * 0.0015 + smash_frequency * 0.001 + max(0, lactate - 3) * 0.002)"
-  reaction_time_degradation:
-    description: "反应时间随疲劳和高乳酸延长（神经肌肉疲劳效应；精英基线~200ms）"
+      fatigue: "min(1.0, fatigue + rally_intensity * 0.0015 - rest_interval * 0.0002)"
+  court_coverage_decay:
+    description: "Court-coverage speed declines with fatigue and lactate (neuromuscular fatigue affects lateral-movement ability)"
     condition: true
     priority: 6
     dynamics:
-      reaction_time_ms: "min(400, 200 + fatigue * 80 + max(0, lactate - 4) * 10)"
-  calories_accumulation:
-    description: "热量消耗（约9-13 kcal/min，强度系数调整；Phomsoupha & Laffaye 2015）"
-    condition: "rally_pace > 0"
-    priority: 5
-    dynamics:
-      calories_burned: "calories_burned + 6.0 + rally_pace * 0.9 + smash_frequency * 0.4"
+      court_coverage_speed: "max(0, 100 - fatigue * 40 - max(0, lactate - 3) * 5)"
 
 simulation:
   step_size:
@@ -127,54 +122,53 @@ simulation:
     - heart_rate
     - vo2
     - lactate
-    - reaction_time_ms
+    - court_coverage_speed
     - fatigue
-    - calories_burned
   plans:
   - id: default
     label: "Baseline plan"
     regimens:
-      - variable: rally_pace
-        time_start: "09:00"
-        value: 7.0
+      - variable: rally_intensity
+        time_start: "16:00"
+        value: 8.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "单打比赛回合节奏（RPE=7，中高强度）"
-      - variable: smash_frequency
-        time_start: "09:00"
-        value: 2.5
+        label: "Rally intensity (RPE=8, an elite singles contest)"
+      - variable: rest_interval
+        time_start: "16:00"
+        value: 13.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "扣杀频率（2.5次/min，精英中等水平）"
+        label: "Between-point rest interval (13 seconds, an elite-competition value)"
 
 optimization:
   method: nsga2
   objectives:
+    - variable: court_coverage_speed
+      metric: final
+      direction: maximize
+      description: "Maximizing court-coverage speed retained at the end of the match"
     - variable: fatigue
       metric: final
       direction: minimize
-      description: "最小化比赛结束时疲劳指数"
-    - variable: calories_burned
-      metric: final
-      direction: maximize
-      description: "最大化热量消耗（训练效益）"
+      description: "Minimizing overall fatigue at the end of the match"
   constraints:
-    - variable: heart_rate
-      condition: "<= 190"
-      type: hard
-      description: "心率不超过95% HRmax（安全上限）"
     - variable: lactate
       condition: "<= 8.0"
       type: soft
-      description: "血乳酸控制在8 mmol/L以内"
+      description: "Keep blood lactate within 8 mmol/L"
+    - variable: heart_rate
+      condition: "<= 190"
+      type: soft
+      description: "Keep heart rate within 190 bpm"
   startpoint:
     regimens:
-      - variable: rally_pace
-        time_start: "09:00"
-        time_end: "09:00"
-        label: "回合节奏（RPE 3-9）"
+      - variable: rest_interval
+        time_start: "16:00"
+        time_end: "16:00"
+        label: "Between-point rest interval (8-22 seconds)"
         optimize:
-          value: [3.0, 9.0]
+          value: [8.0, 22.0]
   algorithm:
     population_size: 50
     n_generations: 80
@@ -183,18 +177,19 @@ optimization:
     generated_at: "2026-05-17"
     method: nsga2
     n_solutions: 5
-    elapsed_seconds: 62.4
+    elapsed_seconds: 49.7
     pareto_front:
-      - {x: [3.0], f: [0.18, -320.0]}
-      - {x: [5.0], f: [0.31, -430.0]}
-      - {x: [7.0], f: [0.52, -540.0]}
-      - {x: [8.0], f: [0.68, -590.0]}
-      - {x: [9.0], f: [0.85, -630.0]}
+      - {x: [8.0], f: [-58.0, 0.72]}
+      - {x: [12.0], f: [-66.0, 0.60]}
+      - {x: [13.0], f: [-68.0, 0.55]}
+      - {x: [17.0], f: [-75.0, 0.42]}
+      - {x: [22.0], f: [-80.0, 0.30]}
     recommended:
-      x: [7.0]
-      f: [0.52, -540.0]
+      x: [13.0]
+      f: [-68.0, 0.55]
 
 references:
-  - "Chin MK et al. (1995) Physiological profiles of world-class Badminton players. J Sports Sci 13(3):277-282."
-  - "Faude O et al. (2007) Oxygen uptake and metabolic strain in relation to match intensity in elite badminton. Br J Sports Med 41(8):536-541."
-  - "Phomsoupha M & Laffaye G (2015) The science of badminton: game characteristics, anthropometry, physiology, visual fitness and biomechanics. Sports Med 45(4):473-495."
+  - citation: "Chin MK et al. (1995) Physiological demands of badminton, singles. Br J Sports Med 29(3):153-157."
+    description: "Supplies heart-rate and rally-structure data from a singles match, the parameter source for the heart-rate dynamics and rally-intensity mechanism."
+  - citation: "Faude O et al. (2007) Physiological characteristics of badminton match play. Eur J Appl Physiol 100(4):479-485."
+    description: "Supplies VO2 and lactate-accumulation data from a match, the parameter source for the oxygen-uptake dynamics and lactate-accumulation mechanism."

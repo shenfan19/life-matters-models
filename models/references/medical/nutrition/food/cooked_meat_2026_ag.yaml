@@ -9,34 +9,38 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      游戏专用烤肉食物组件：将以克为单位的烤肉摄入量转换为蛋白质和脂肪营养素。
-      每 100g 含蛋白质 26g、脂肪 15g、碳水化合物 0g、水分 58g，数值来自食品成分表。
+      A game-specific cooked-meat food component: converts cooked-meat intake in grams into
+      protein and fat nutrients. Per 100g: 26g protein, 15g fat, 0g carbohydrate, 58g water, values
+      from a food-composition table.
     result: >
-      摄入触发时，对应营养素按比例注入上层场景的胃缓冲区。作为独立文件运行 --sim-only
-      时，因未声明摄入事件，meat_intake 维持默认值 0，换算方程不触发，各输出量全程为
-      0，符合组件模型的预期行为。--opt-only 中 meat_intake 作为决策变量在 0至1000g
-      范围内搜索，蛋白质与脂肪产出随之线性变化，验证了换算方程本身可正确执行。
-    limitations: 极简食物转换组件，不包含消化动力学；参数应在上层场景中结合具体上下文校准。
+      When intake is triggered, the corresponding nutrients are injected proportionally into the
+      upstream scenario's stomach buffer. Run as a standalone file with --sim-only, since no intake
+      event is declared, meat_intake stays at its default value of 0, the conversion equation never
+      fires, and all outputs remain 0 throughout, matching the expected behavior of a component
+      model. In --opt-only, meat_intake as a decision variable is searched across the 0 to 1000g
+      range, with protein and fat output varying linearly, verifying that the conversion equation
+      itself executes correctly.
+    limitations: A minimalist food-conversion component that does not include digestion dynamics; parameters should be calibrated in the upstream scenario against its specific context.
   ratings:
-    importance: 0.0 - 游戏专用食物组件，仅提供基本营养成分转换，无研究复用价值
-    variable: 0.5 - 烤肉营养成分数值来自食品成分表，数据本身可靠
-    equation: 0.0 - 纯累加记账，不含任何消化/代谢机制
-    simulation: 0.5 - 2026-09-04验证：--sim-only跑通无报错，因组件模型无摄入事件默认保持零值；换算方程正确性经--opt-only变量扫描交叉验证
-    optimization: 0.0 - 2026-09-04验证：50点前沿沿meat_intake全范围铺开、数值非退化，但food_protein与food_fat由同一决策变量按固定0.26:0.15比例线性决定，二者不可独立操纵，不构成真实权衡
-    confidence: 0.25 - 2026-09-04验证：跑通且换算算术正确，但未与独立文献数据比对
+    importance: 0.0 - A game-specific food component supplying only basic nutrient conversion, with no research reuse value
+    variable: 0.5 - The cooked-meat nutrient-composition values come from a food-composition table, the data itself is reliable
+    equation: 0.0 - Pure additive bookkeeping, containing no digestion/metabolism mechanism
+    simulation: 0.5 - Verified on 2026-09-04, --sim-only runs without error since the component model has no intake event and defaults to holding zero; the conversion equation's correctness is cross-verified via the --opt-only variable sweep
+    optimization: 0.0 - Verified on 2026-09-04, the 50-point front spreads across the full meat_intake range and is non-degenerate in value, but food_protein and food_fat are both determined linearly from the same decision variable at a fixed 0.26:0.15 ratio, so they cannot be manipulated independently and do not constitute a genuine tradeoff
+    confidence: 0.25 - Verified on 2026-09-04, runs and the conversion arithmetic is correct, but not yet compared against independent literature data
   tags: [food, diet, meat]
 
 variables:
-  # ========== 输入变量 ==========
+  # ========== Input variables ==========
   meat_intake:
     type: input
     value: 0
     unit: "g"
     bounds: [0, 1000]
     io_role: input
-    description: "摄入烤肉的重量"
+    description: "Weight of cooked meat consumed"
 
-  # ========== 输出指标 (供 nutrition_intake 使用) ==========
+  # ========== Output metrics (for use by nutrition_intake) ==========
   food_carbohydrate:
     type: state
     value: 0
@@ -95,7 +99,7 @@ optimization:
         time_start: "12:00"
         time_end: "12:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "熟肉摄入量（g）"
+        label: "Cooked-meat intake (g)"
         optimize:
           value: [0, 1000]
   algorithm:

@@ -7,46 +7,55 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      自然灾害，例如地震、洪水、飓风，的急性响应动力学由危害强度、基础设施损毁和人群安全三个状态变量刻画，基于 Sendai 框架的减灾逻辑：救援资源到位速度与损毁扩散速度之间的竞争决定人员伤亡。前 72 小时为黄金救援期（Guha-Sapir 2016），延迟救援与救援资源错配是真实的决策优化问题。
+      A natural disaster's, such as an earthquake, flood, or hurricane, acute response dynamics
+      are characterized by three state variables, hazard intensity, infrastructure damage, and
+      population safety, based on the Sendai Framework's disaster-reduction logic: the competition
+      between how quickly rescue resources arrive and how quickly damage spreads determines
+      casualties. The first 72 hours are the golden rescue window (Guha-Sapir 2016), and delayed
+      rescue and misallocated rescue resources form a genuine decision-optimization problem.
     result: >
-      仿真模拟 7 级地震后 72 小时响应，预期显示灾后损毁指数上升与救援资源注入后人群安全恢复的对比轨迹，仿真尚未运行。
+      Simulating the 72-hour response to a magnitude-7 earthquake is expected to show the contrast
+      between rising post-disaster damage and population safety recovering once rescue resources
+      arrive; the simulation has not been run yet.
     limitations: >
-      未包含灾害扩散前锋的空间传播；未区分地震、洪水、飓风的特异性动力学；参数来自典型地震研究，须按具体灾害类型校准。
+      The spatial propagation of the disaster's expanding front is not included; the specific
+      dynamics of earthquake, flood, and hurricane are not distinguished; parameters come from
+      typical earthquake research and must be calibrated for the specific disaster type.
   ratings:
-    importance: 0.75 - 灾害响应动力学是全球公共安全研究核心，Sendai框架是国际标准；灾难场景通用基础组件，被历史/灾难场景引用预期中等
-    variable: 0.5 - 引用Sendai框架/FEMA等权威来源，但模型参数较简略
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-27实测--sim/--opt均可正常运行(--opt第1代即100%可行)，nosim/noopt标记已清理，但未与独立文献目标数值比对
+    importance: 0.75 - Disaster-response dynamics are a core topic in global public-safety research, and the Sendai Framework is an international standard; a general-purpose disaster-scenario component, expected moderate citation from historical/disaster scenarios
+    variable: 0.5 - Cites authoritative sources such as the Sendai Framework/FEMA, but the model parameters are fairly sparse
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed on 2026-07-27 that --sim/--opt both run normally (--opt reaches 100% feasibility by generation 1), the nosim/noopt markers have been cleared, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed on 2026-07-27 that --sim/--opt both run normally (--opt reaches 100% feasibility by generation 1), the nosim/noopt markers have been cleared, but not yet compared against an independent literature target value
   tags: [disaster, earthquake, emergency_response, Sendai_framework, risk]
 variables:
   hazard_intensity:
-    description: 灾害强度
+    description: Hazard intensity
     value: 0
-    unit: 级
+    unit: level
     type: state
     bounds:
       - 0
       - 10
   damage_index:
-    description: 设施受损指数
+    description: The infrastructure-damage index
     value: 0
-    unit: 分
+    unit: score
     type: state
     bounds:
       - 0
       - 100
   population_safety:
-    description: 人群安全评分
+    description: The population-safety score
     value: 100
-    unit: 分
+    unit: score
     type: state
     bounds:
       - 0
       - 100
   rescue_progress:
-    description: 救援任务进度
+    description: Rescue-operation progress
     value: 0
     unit: '%'
     type: state
@@ -54,23 +63,23 @@ variables:
       - 0
       - 100
   supplies_delivery:
-    description: 物资投送
+    description: Supply delivery
     value: 0
-    unit: 吨
+    unit: tons
     type: input
   evacuation_order:
-    description: 撤离指令强度
+    description: Evacuation-order intensity
     value: 0
-    unit: 级
+    unit: level
     type: input
   infrastructure_repair:
-    description: 修缮投入
+    description: Repair investment
     value: 0
-    unit: 万
+    unit: 10k
     type: input
 equations:
   damage_dynamics:
-    description: 灾害导致损毁
+    description: The disaster causes damage
     step_unit: hour
     condition: hazard_intensity > 3
     dynamics:
@@ -78,7 +87,7 @@ equations:
       population_safety: max(0, population_safety - hazard_intensity * 2 * step)
     priority: 5
   rescue_dynamics:
-    description: 救援提升安全并修复设施
+    description: Rescue raises safety and repairs infrastructure
     step_unit: hour
     condition: supplies_delivery > 0
     dynamics:
@@ -86,7 +95,7 @@ equations:
       population_safety: min(100, population_safety + supplies_delivery * 0.2 * step)
     priority: 5
   repair_dynamics:
-    description: 灾后重建
+    description: Post-disaster reconstruction
     step_unit: hour
     condition: infrastructure_repair > 0 and hazard_intensity < 5
     dynamics:
@@ -116,28 +125,28 @@ optimization:
     - variable: damage_index
       condition: "<= 0.8"
       type: soft
-      description: "灾害损毁指数控制在0.8以内"
+      description: "Keep the disaster-damage index within 0.8"
   startpoint:
     regimens:
       - variable: supplies_delivery
         time_start: "06:00"
         time_end: "06:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "物资投送（0=无，1=满负荷）"
+        label: "Supply delivery (0=none, 1=full capacity)"
         optimize:
           value: [0, 1]
       - variable: evacuation_order
         time_start: "06:00"
         time_end: "06:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "撤离指令强度（0=不撤离，1=强制撤离）"
+        label: "Evacuation-order intensity (0=no evacuation, 1=mandatory evacuation)"
         optimize:
           value: [0, 1]
       - variable: infrastructure_repair
         time_start: "08:00"
         time_end: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "基础设施修复力度（0=无，1=全力修复）"
+        label: "Infrastructure-repair effort (0=none, 1=full-effort repair)"
         optimize:
           value: [0, 1]
   algorithm:

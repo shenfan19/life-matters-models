@@ -7,52 +7,65 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      慢性酒精摄入通过累积性肝细胞毒性损伤推动肝纤维化进展，从F1-F2期轻度损伤到F4期肝硬化，过程往往经历数年甚至数十年。戒酒是目前证实有效的干预手段，F1-F2期的早期纤维化在持续戒酒后可部分逆转，但F3-F4期的晚期纤维化逆转极为有限，形成难以弥补的损伤累积。这一损伤快、修复慢的时间非对称性决定了早期干预的不可替代价值，也是本模型描述的核心现象。
+      Chronic alcohol intake drives liver-fibrosis progression through cumulative hepatocyte
+      toxicity, advancing from mild F1-F2 damage to F4 cirrhosis, a process that often takes years
+      or even decades. Abstinence is currently the only proven effective intervention, and early
+      F1-F2 fibrosis can partially reverse with sustained abstinence, but late F3-F4 fibrosis reverses
+      only to a very limited extent, creating an irrecoverable accumulation of damage. This
+      asymmetry, fast damage and slow repair, determines the irreplaceable value of early
+      intervention, and is the core phenomenon this model describes.
     result: >
-      默认仿真90天，设定为每日摄入约20至30克乙醇的中度饮酒场景，肝损伤指数从0逐步累积至约0.18。若切换为戒酒干预，损伤指数以约0.0005/天的速率缓慢回落。仿真尚未运行系统化的多剂量对比，理论预期为饮酒剂量越高损伤积累越快，戒酒越早总损伤越低。
+      A default 90-day simulation, set as a moderate-drinking scenario of about 20 to 30 grams of
+      ethanol per day, shows the liver-damage index accumulating from 0 to about 0.18. If abstinence
+      is then adopted, the damage index declines slowly at a rate of about 0.0005/day. A systematic
+      multi-dose comparison has not yet been run; theoretical expectation is that a higher drinking
+      dose accumulates damage faster, and earlier abstinence yields lower total damage.
     limitations: >
-      损伤积累采用线性近似，真实纤维化进展为非线性过程，呈Sigmoid曲线。未包含遗传修饰因素，例如ALDH2、ADH1B基因型，及营养状态的影响，也不适用于急性酒精中毒的短时尺度预测。
+      Damage accumulation uses a linear approximation, whereas real fibrosis progression is a
+      nonlinear process following a sigmoid curve. Genetic modifying factors, such as ALDH2 and
+      ADH1B genotype, and nutritional status are not included, and the model is not suited to
+      short-timescale prediction of acute alcohol intoxication.
   ratings:
-    importance: 0.5 - 酒精性肝病是全球重大公卫问题，剂量-纤维化因果链有复用价值；潜在被社会/生活方式场景使用，中等复用预期
-    variable: 0.75 - 引用Rehm 2010、Stickel 2017等权威文献，损伤函数有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.5 - Alcoholic liver disease is a major global public-health problem, and the dose-fibrosis causal chain has reuse value; potentially usable by social/lifestyle scenarios, moderate reuse expected
+    variable: 0.75 - Cites authoritative literature such as Rehm 2010 and Stickel 2017, with a documented damage function
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [alcohol, liver_disease, fibrosis, dose_response, chronic]
 variables:
   alcohol_dose:
-    description: "酒精剂量水平 (0=无, 1=轻度饮酒, 2=中度, 3=重度)"
+    description: "Alcohol dose level (0=none, 1=light drinking, 2=moderate, 3=heavy)"
     value: 0.0
-    unit: "剂量级别"
+    unit: "dose level"
     type: input
     bounds: [0.0, 3.0]
     reference: ["Alcohol consumption levels in epidemiology", "NIAAA drinking guidelines"]
     comments: ["Simulate via user input.", "Higher doses accelerate damage."]
 
   liver_damage_effect:
-    description: "肝损伤效果指数，0-1之间，1表示严重损伤"
+    description: "The liver-damage index, between 0 and 1, where 1 indicates severe damage"
     value: 0.0
-    unit: "损伤指数"
+    unit: "damage index"
     type: state
     bounds: [0.0, 1.0]
     reference: ["Fibrosis progression models", "Liver enzyme dynamics in ALD"]
     comments: ["Cumulative metric.", "Threshold 0.6 for cirrhosis risk."]
 
   liver_health_score:
-    description: "肝健康评分，受损伤影响（0=严重损伤，100=健康）"
+    description: "The liver-health score, affected by damage (0=severe damage, 100=healthy)"
     value: 100.0
-    unit: "分"
+    unit: "score"
     type: state
     bounds: [0.0, 100.0]
 
 equations:
   dose_response_accumulation:
     description: |
-      酒精剂量导致肝损伤日积累（日步长：step=1/day）。
-      0级（戒酒）→0，1级（轻度<14g/day）→+0.001/day，2级（中度20-30g/day）→+0.002/day，
-      3级（重度>40g/day）→+0.004/day。
-      来源：Rehm et al. (2010)酒精相对风险函数线性近似，90天中度饮酒损伤约0.18。
+      Alcohol dose drives daily liver-damage accumulation (a daily step: step=1/day).
+      Level 0 (abstinence) contributes 0, level 1 (light, <14g/day) contributes +0.001/day, level 2 (moderate, 20-30g/day) contributes +0.002/day,
+      level 3 (heavy, >40g/day) contributes +0.004/day.
+      Source: a linear approximation of Rehm et al. (2010)'s alcohol relative-risk function; 90 days of moderate drinking gives about 0.18 damage.
     step_unit: day
     condition: "alcohol_dose > 0"
     priority: 7
@@ -62,9 +75,9 @@ equations:
 
   damage_recovery:
     description: |
-      戒酒时损伤缓慢恢复（纤维化逆转：约0.05%/day）。
-      早期纤维化（F1-F2）可通过持续戒酒逆转（1-3年）；
-      晚期纤维化/肝硬化（F3-F4）逆转极为有限（Stickel 2017）。
+      Damage recovers slowly with abstinence (fibrosis reversal is about 0.05%/day).
+      Early fibrosis (F1-F2) can reverse with sustained abstinence (1-3 years);
+      late fibrosis/cirrhosis (F3-F4) reversal is very limited (Stickel 2017).
     step_unit: day
     condition: "alcohol_dose == 0 and liver_damage_effect > 0"
     priority: 6
@@ -73,7 +86,7 @@ equations:
     reference: "Stickel F et al. (2017) Nat Rev Gastroenterol Hepatol 14:45-60"
 
   liver_health_score_update:
-    description: "肝健康评分（100=健康肝脏，0=终末期肝硬化）。"
+    description: "The liver-health score (100=a healthy liver, 0=end-stage cirrhosis)."
     step_unit: day
     condition: true
     priority: 3
@@ -95,7 +108,7 @@ simulation:
       value: 2.0
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
       date_range: ["2026-01-01", "2026-04-01"]
-      label: "每日中度饮酒（约20-30g乙醇）"
+      label: "Daily moderate drinking (about 20-30g ethanol)"
 
 optimization:
   method: nsga2
@@ -112,7 +125,7 @@ optimization:
       time_start: "19:00"
       time_end: "19:00"
       days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-      label: "每日饮酒剂量（0=戒酒，3=重度饮酒）"
+      label: "Daily alcohol dose (0=abstinence, 3=heavy drinking)"
       optimize:
         value: [0.0, 3.0]
   algorithm:

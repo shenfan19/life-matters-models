@@ -9,18 +9,34 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      阻力训练中训练量，即总次数，与训练强度，即 %1RM，对力量增益和肌肥大的贡献机制不同：高强度低量，85-95% 1RM、每组 1-5 次，以神经适应为主，快速提升 1RM；中强度高量，65-80% 1RM、每组 8-12 次，通过 mTOR 通路刺激蛋白合成，主导肌肥大。两种策略各有优势，但累积训练负荷也驱动疲劳积累，当疲劳超过恢复能力时力量表现反而下降。如何在 12 周内平衡训练刺激与恢复，实现最大 1RM 提升，是力量训练周期化的核心生理问题。
+      In resistance training, training volume, the total rep count, and training intensity,
+      %1RM, contribute to strength gain and hypertrophy through different mechanisms: high
+      intensity with low volume, 85-95% 1RM at 1-5 reps per set, is dominated by neural adaptation
+      and rapidly raises 1RM; moderate intensity with high volume, 65-80% 1RM at 8-12 reps per set,
+      stimulates protein synthesis through the mTOR pathway and drives hypertrophy. Each strategy has
+      its advantages, but accumulated training load also drives fatigue, and once fatigue exceeds
+      recovery capacity strength performance instead declines. Balancing training stimulus against
+      recovery over 12 weeks to maximize 1RM gain is the core physiological problem in strength
+      training periodization.
     result: >
-      仿真尚未运行。理论预期：75% 1RM、4×10 方案 12 周末 1RM 从 100 kg 提升至约 113-116 kg，平均疲劳评分约 36-42；切换至 85% 1RM 时力量增益略高，约 117 kg，但疲劳均值升至约 52，过度训练风险增加；两者形成力量-疲劳空间的 Pareto 权衡前沿。
+      Not yet run. Theoretical expectation: with a 75% 1RM, 4x10 protocol, 1RM rises from 100 kg to
+      about 113-116 kg by the end of week 12, with an average fatigue score of about 36-42; switching
+      to 85% 1RM yields a slightly higher strength gain, about 117 kg, but the mean fatigue score
+      rises to about 52, increasing overtraining risk; the two form a Pareto tradeoff front in
+      strength-versus-fatigue space.
     limitations: >
-      1RM 基线设为成年男性中级训练者的 100 kg，未区分深蹲、卧推、硬拉等具体动作的差异；未包含蛋白质摄入量和热量盈余对肌肥大速率的调节；疲劳采用 Banister 提出的单室指数衰减简化模型，忽略中枢疲劳与外周疲劳的分离机制。
+      The 1RM baseline is set at 100 kg for an intermediate adult male trainee, without
+      distinguishing differences between specific lifts such as the squat, bench press, and
+      deadlift; protein intake and caloric surplus's modulating effect on the hypertrophy rate are
+      not included; fatigue uses the single-compartment exponential-decay model Banister proposed as
+      a simplification, disregarding the separate mechanisms of central and peripheral fatigue.
   ratings:
-    importance: 0.5 - 阻力训练是健身/肌少症/力量训练的核心，渐进超负荷原则广泛应用；力量训练通用组件，被肌少症/健身场景引用预期中等
-    variable: 0.75 - 引用Kraemer/Schoenfeld/ACSM等权威文献，参数有据可查
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.5 - Resistance training is central to fitness, sarcopenia management, and strength training, and the progressive-overload principle is widely applied; a general-purpose strength-training component, expected moderate citation from sarcopenia/fitness scenarios
+    variable: 0.75 - Cites authoritative literature such as Kraemer/Schoenfeld/ACSM, with well-documented parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [weightlifting, strength, hypertrophy, 1RM, progressive_overload, fatigue, protein_synthesis, ACSM]
 
 variables:
@@ -29,101 +45,100 @@ variables:
     value: 40.0
     unit: reps_total
     bounds: [10.0, 100.0]
-    description: "每次训练总次数（组数×次数，如 4 组×10 次 = 40 次）。Schoenfeld 2017：每周 10-20 组/肌群为增肌最优区间"
+    description: "Total reps per session (sets times reps, e.g. 4 sets x 10 reps = 40 reps). Schoenfeld 2017: 10-20 sets per muscle group per week is the optimal hypertrophy range"
   training_load_pct_1rm:
     type: input
     value: 75.0
     unit: "%1RM"
     bounds: [50.0, 95.0]
-    description: "训练负荷（%1RM）。神经力量：85-95%；肌肥大：65-80%；肌耐力：50-65%（ACSM 2009）"
+    description: "Training load (%1RM). Neural strength: 85-95%; hypertrophy: 65-80%; muscular endurance: 50-65% (ACSM 2009)"
   muscle_strength_1rm:
     type: state
     value: 100.0
     unit: kg
     bounds: [40.0, 400.0]
-    description: "最大力量（1RM，kg）。中级男性深蹲基线约 100 kg；初级约 60-80 kg；精英 >200 kg"
+    description: "Maximal strength (1RM, kg). An intermediate male's squat baseline is about 100 kg; a beginner is about 60-80 kg; an elite lifter is >200 kg"
     io_role: output
   muscle_hypertrophy:
     type: state
     value: 50.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "肌肥大指数（标准化评分；初始 50 代表普通成年男性基线肌肉量，100 为极限肌肉量）"
+    description: "The hypertrophy index (a standardized score; an initial value of 50 represents an average adult male's baseline muscle mass, with 100 as a theoretical ceiling)"
     io_role: output
   fatigue_level:
     type: state
     value: 0.0
     unit: score
     bounds: [0.0, 100.0]
-    description: "训练疲劳积分（Banister 模型简化；>60 影响力量表现，>80 需减量恢复）"
+    description: "The cumulative training-fatigue score (a simplified Banister model; above 60 it affects strength performance, above 80 a deload is needed)"
     io_role: output
   protein_synthesis_rate:
     type: state
     value: 1.0
     unit: fold
     bounds: [1.0, 5.0]
-    description: "肌肉蛋白合成速率倍数（相对基线）。训练后 24-48h 达峰 2-5 倍（Schoenfeld 2010），然后指数回落"
+    description: "The muscle protein synthesis rate, as a multiple of baseline. It peaks at 2-5 times baseline 24-48h post-training (Schoenfeld 2010), then decays exponentially"
     io_role: output
 
-  # ── 参数 ──────────────────────────────────────────────────────────────────────
   strength_gain_rate:
     type: parameter
     value: 0.008
     unit: fraction/session
-    description: "每次训练 1RM 基础增益率（相对当前值的分数）。初级训练者每周增 1-2%（约 0.003-0.007/session × 3 sessions）"
+    description: "The base 1RM gain rate per session (a fraction of the current value). A beginner gains about 1-2% per week (about 0.003-0.007/session across 3 sessions)"
     reference: "Kraemer WJ & Ratamess NA (2004) Med Sci Sports Exerc 36(4):674-688"
   hypertrophy_gain_rate:
     type: parameter
     value: 0.15
     unit: score/session
-    description: "每次训练肌肥大基础增益（score/session）。8-12 RM 区间（65-80%1RM）时最高（Schoenfeld 2010）"
+    description: "The base hypertrophy gain per session (score/session). Highest in the 8-12 RM range, 65-80% 1RM (Schoenfeld 2010)"
     reference: "Schoenfeld BJ (2010) J Strength Cond Res 24(10):2857-2872"
   fatigue_decay:
     type: parameter
     value: 0.15
     unit: fraction/day
-    description: "疲劳每日恢复率（指数衰减系数；Banister 模型 τ_fatigue ≈ 15 天，对应 k = 1/15 ≈ 0.067/day；此处取略快值用于短周期建模）"
+    description: "The daily fatigue-recovery rate (an exponential-decay coefficient; the Banister model's tau_fatigue is about 15 days, corresponding to k = 1/15, about 0.067/day; a somewhat faster value is used here for short-cycle modeling)"
     reference: "Banister EW et al. (1975) A systems model of training for athletic performance. Aust J Sports Med 7:57-61"
   protein_synthesis_decay:
     type: parameter
     value: 0.4
     unit: fraction/day
-    description: "蛋白合成速率每日衰减系数（合成高峰后约 36-48h 回到基线，k ≈ 0.4/day）"
+    description: "The daily decay coefficient for the protein-synthesis rate (it returns to baseline about 36-48h after the peak, k is about 0.4/day)"
     reference: "Schoenfeld BJ (2010) J Strength Cond Res 24(10):2857-2872"
 
 equations:
   strength_gain:
-    description: "1RM 增长：高强度（>80%1RM）偏重神经适应，中强度偏重肌肥大，均有增益；疲劳抑制增长"
+    description: "1RM growth: high intensity, above 80% 1RM, leans on neural adaptation, moderate intensity leans on hypertrophy, both contribute gain; fatigue suppresses growth"
     condition: "training_volume > 0"
     priority: 9
     dynamics:
       muscle_strength_1rm: "muscle_strength_1rm * (1.0 + strength_gain_rate * (training_load_pct_1rm / 75.0) * max(0.0, 1.0 - fatigue_level / 80.0))"
   hypertrophy_gain:
-    description: "肌肥大：中等负荷（65-80%1RM）训练量主导；高负荷超过 85% 时效率降低（低次数限制总机械张力）"
+    description: "Hypertrophy: driven mainly by training volume at moderate load, 65-80% 1RM; efficiency declines above 85% load, since low reps limit total mechanical tension"
     condition: "training_volume > 0"
     priority: 8
     dynamics:
       muscle_hypertrophy: "min(100.0, muscle_hypertrophy + hypertrophy_gain_rate * (training_volume / 40.0) * max(0.1, 1.0 - abs(training_load_pct_1rm - 72.5) * 0.02) * (1.0 - hypertrophy_gain_rate * muscle_hypertrophy / 200.0))"
   fatigue_accumulate:
-    description: "疲劳积累：训练量和强度共同驱动；高强度高量叠加时非线性增加"
+    description: "Fatigue accumulation: jointly driven by volume and intensity, rising nonlinearly when both are high"
     condition: "training_volume > 0"
     priority: 7
     dynamics:
       fatigue_level: "min(100.0, fatigue_level + training_volume * 0.04 * (training_load_pct_1rm / 75.0) ** 2)"
   fatigue_recovery:
-    description: "非训练日疲劳恢复（每日指数衰减）"
+    description: "Fatigue recovery on a non-training day (daily exponential decay)"
     condition: "training_volume == 0"
     priority: 7
     dynamics:
       fatigue_level: "max(0.0, fatigue_level * (1.0 - fatigue_decay))"
   protein_synthesis_response:
-    description: "训练后蛋白合成速率脉冲：训练日升高（峰值 2-5 倍），非训练日指数衰减回基线"
+    description: "The post-training protein-synthesis pulse: rises on a training day, peaking at 2-5 times baseline, and decays exponentially back to baseline on a non-training day"
     condition: "training_volume > 0"
     priority: 6
     dynamics:
       protein_synthesis_rate: "min(5.0, 1.0 + training_volume * 0.05 * (training_load_pct_1rm / 100.0))"
   protein_synthesis_decay:
-    description: "非训练日蛋白合成速率衰减回基线"
+    description: "Protein-synthesis-rate decay back to baseline on a non-training day"
     condition: "training_volume == 0"
     priority: 6
     dynamics:
@@ -145,13 +160,13 @@ simulation:
         value: 40.0
         days: [Mon, Wed, Fri]
         date_range: ["2026-01-01", "2026-03-26"]
-        label: "训练日：4×10 次（总量 40 次）"
+        label: "Training day: 4x10 reps (a total volume of 40 reps)"
       - variable: training_load_pct_1rm
         time_start: "08:00"
         value: 75.0
         days: [Mon, Wed, Fri]
         date_range: ["2026-01-01", "2026-03-26"]
-        label: "训练强度：75%1RM（肌肥大优化区间）"
+        label: "Training intensity: 75%1RM (the hypertrophy-optimal range)"
 
 optimization:
   method: nsga2
@@ -159,22 +174,22 @@ optimization:
     - variable: muscle_strength_1rm
       metric: final
       direction: maximize
-      description: "最大化 12 周末 1RM 力量"
+      description: "Maximizing 1RM strength at the end of week 12"
     - variable: fatigue_level
       metric: mean
       direction: minimize
-      description: "最小化平均疲劳水平（过度训练风险代理指标）"
+      description: "Minimizing average fatigue level (a proxy for overtraining risk)"
   constraints:
     - variable: fatigue_level
       condition: "<= 70"
       type: hard
-      description: "疲劳上限 70 分（超过此值影响训练质量和受伤风险）"
+      description: "A fatigue ceiling of 70 points (above this, training quality and injury risk are affected)"
   startpoint:
     regimens:
       - variable: training_load_pct_1rm
         time_start: "08:00"
         time_end: "08:00"
-        label: "训练强度（%1RM，60=低强度耐力，92=极高强度力量）"
+        label: "Training intensity (%1RM, 60=low-intensity endurance, 92=very high-intensity strength)"
         optimize:
           value: [60.0, 92.0]
   algorithm:

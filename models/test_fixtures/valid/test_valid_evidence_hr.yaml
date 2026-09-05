@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_hr
   lm_format_version: "1.0"
   description:
@@ -12,23 +12,13 @@ metadata:
       `statin_cvd_hr` must equal `baseline_cvd_ir × HR`
       (hr: effective = baseline_ir × value, requires `baseline_ref`
       pointing at an `ir` evidence variable in the same section).
-    problem_cn: >
-      验证 Loader 对 `hr`（风险比，hazard ratio）证据子类型的独立处理。
-      `statin_cvd_hr` 必须等于 `baseline_cvd_ir × HR`（hr 类型：有效值 = baseline_ir ×
-      value，需要 `baseline_ref` 指向同一 section 内的一个 `ir` 证据变量）。
     result: >
       `hr_display` = statin_cvd_hr = 0.012 × 0.75 = 0.009 (constant, every step).
       `statin_protected_risk` accumulates at 0.009/365 ≈ 0.0000247/day,
       reaching ≈0.00074 after 30 days.
       `statin_protected_risk_auto` (generated via `applies_to`, no hand-written dynamics)
       must track `statin_protected_risk` exactly every step.
-    result_cn: >
-      `hr_display` = statin_cvd_hr = 0.012 × 0.75 = 0.009（每一步恒定）。
-      `statin_protected_risk` 按 0.009/365 ≈ 0.0000247/天 累积，30 天后达到约
-      0.00074。`statin_protected_risk_auto`（通过 `applies_to` 自动生成，没有手写
-      dynamics）必须在每一步都与 `statin_protected_risk` 精确一致。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, hr]
 
 variables:

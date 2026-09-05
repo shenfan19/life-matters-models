@@ -1,9 +1,9 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_ir
   lm_format_version: "1.0"
   description:
@@ -11,23 +11,13 @@ metadata:
       Validates Loader handling of the `ir` (incidence rate) evidence subtype in isolation.
       `baseline_cvd_ir` must equal `value` (ir: effective = value, no auxiliary
       fields), and the effective value must be usable as a daily accumulation rate.
-    problem_cn: >
-      验证 Loader 对 `ir`（发病率，incidence rate）证据子类型的独立处理。
-      `baseline_cvd_ir` 必须等于 `value`（ir 类型：有效值 = value，无需辅助字段），
-      且该有效值必须能够作为按天的累积速率使用。
     result: >
       `ir_display` = baseline_cvd_ir = 0.012 (constant, every step, prob/year).
       `cvd_risk_baseline` accumulates at 0.012/365 ≈ 0.0000329/day,
       reaching ≈0.000986 after 30 days.
       `cvd_risk_baseline_auto` (generated via `applies_to`, no hand-written dynamics)
       must track `cvd_risk_baseline` exactly every step.
-    result_cn: >
-      `ir_display` = baseline_cvd_ir = 0.012（每一步恒定，单位 prob/year）。
-      `cvd_risk_baseline` 按 0.012/365 ≈ 0.0000329/天 累积，30 天后达到约 0.000986。
-      `cvd_risk_baseline_auto`（通过 `applies_to` 自动生成，没有手写 dynamics）
-      必须在每一步都与 `cvd_risk_baseline` 精确一致。
     limitations: Values are illustrative; no clinical interpretation intended. TEST file.
-    limitations_cn: 数值仅作示例，不作临床解读用途。测试文件。
   tags: [test, evidence, ir]
 
 variables:

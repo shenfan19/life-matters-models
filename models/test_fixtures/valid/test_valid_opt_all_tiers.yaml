@@ -8,22 +8,12 @@ metadata:
       days), and value + date-start search (metformin start date). A fifth input is fixed
       background (no optimize block). Total decision vector is 7 dimensions (mixed types),
       targeting two objectives: maximise lm_score and minimise glucose peak.
-    problem_cn: >
-      在单个模型中同时验证优化器全部四个档位（tier）：仅数值搜索（胰岛素剂量）、数值+
-      时间窗搜索（进餐时间）、数值+每周模式搜索（运动日）、以及数值+起始日期搜索
-      （二甲双胍起始日期）。第五个 input 为固定背景变量（无 optimize 配置块）。决策向量
-      总维度为 7（混合类型），优化目标为最大化 lm_score 与最小化血糖峰值。
     result: >
       The optimiser should produce a Pareto front with 7-dimensional solutions decoded into
       human-readable regimens (dose, meal time, exercise days, metformin start date). The
       background drug must not appear in the decision vector. Dimension-indexing errors or
       tier-decoding mismatches should surface here.
-    result_cn: >
-      优化器应生成一个 7 维解的 Pareto 前沿，并解码为可读的给药方案（剂量、进餐时间、
-      运动日、二甲双胍起始日期）。背景药物不应出现在决策向量中。此测试应能暴露维度
-      索引错误或档位解码不匹配的问题。
     limitations: Diabetes dynamics are intentionally simplified; not clinically validated.
-    limitations_cn: 糖尿病动力学经过刻意简化，未经临床验证。
   tags: [test, optimization, t1, t2, t3, t4, all-tiers, mixed-integer, nsga2]
 variables:
   blood_glucose:

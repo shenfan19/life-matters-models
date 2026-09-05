@@ -1,54 +1,54 @@
-# metadata.description 与顶层 references 写作规范
+# Writing Conventions for metadata.description and Top-Level references
 
 ### `metadata.description`
 
-`description` 支持两种写法：
+`description` supports two forms. A plain form:
 
 ```yaml
 metadata:
-  description: "一段简短说明。"
+  description: "A short explanation."
 ```
 
-或结构化写法：
+Or a structured form:
 
 ```yaml
 metadata:
   description:
-    problem: "模型要回答的科学问题，以及为什么单篇来源文献回答不了。"
-    method: "融合的机制之间共享哪个决策变量或资源竞争通路。"
-    result: "仿真结论或 Pareto 前沿摘要；未运行时写理论预期并注明。"
-    limitations: "已知建模边界与待精化参数。"
+    problem: "The scientific question the model answers, and why a single source publication cannot answer it."
+    method: "Which decision variable or resource-competition pathway the combined mechanisms share."
+    result: "A summary of the simulation conclusion or Pareto front; if not yet run, state the theoretical expectation and note that it has not been run."
+    limitations: "Known modeling boundaries and parameters that still need refinement."
 ```
 
-结构化写法推荐使用英文键名。字段不固定，GUI 会按 YAML 中的字段顺序显示所有非空字段；没有写的字段不会显示，也不会占用空白。
+The structured form is recommended to use English field keys. The set of fields is not fixed; the GUI displays every non-empty field in the order it appears in the YAML, and fields that are not written neither display nor take up blank space.
 
-**`papers/` 模型标准结构，method 字段于 ADR 0141 恢复，problem 的分组写法、写作建议与 references 注释写法于 ADR 0142 新增**：使用四字段 `problem / method / result / limitations`。这四个字段是写作建议，不是 schema 硬约束，具体分工如下：
+For the standard structure of `papers/` models, the `method` field was restored in ADR 0141, and the grouped writing style for `problem`, writing guidance, and the annotation style for `references` were added in ADR 0142. Use the four fields `problem` / `method` / `result` / `limitations`. These four fields are a writing recommendation, not a hard schema constraint, and divide responsibilities as follows.
 
-**触发时机（ADR 0143）**：不是只有新写或专门批量迁移时才应用这套结构。此后任何原因编辑某个 `papers/` 模型文件，哪怕只是核对引用、修一个字段、修一处 bug，都应顺带把该模型的 `description` 迁移到本节的四字段列表结构、把顶层 `references` 迁移到下方的 `{citation, description}` 写法，不必等待、也不必以"这次任务范围不含迁移"为理由跳过——除非用户在具体任务中明确说明本次范围不含迁移。
+Trigger timing (ADR 0143): this structure is not reserved only for new files or dedicated batch migrations. From now on, whenever a `papers/` model file is edited for any reason, even just to check a citation, fix one field, or fix a bug, its `description` should be migrated to this section's four-field list structure and its top-level `references` migrated to the `{citation, description}` form below in the same pass, with no need to wait, and no skipping it on the grounds that "this task's scope does not include migration," unless the user explicitly states in the specific task that migration is out of scope.
 
-- `problem`：先用一句话点出模型要回答的科学问题，再按机制分组逐条列出这个问题为什么单篇来源文献回答不了，即每一组机制各自止步于哪里。每组机制的缺口描述优先取该文献自己承认的局限，不是建模者自己的猜测；逐条核实原始局限比较耗时，暂时没有精力核实时可以留空，交给后续研究者补充，不强制 AI 完成。每篇来源文献具体贡献了什么机制或数据，写在顶层 `references` 对应条目的 `description` 里，见下方"`references` 的可选注释写法"一节，不写进 `problem`，这样 `problem` 只留机制层面的判断，不会被逐条文献注释拖长。用非专业读者可理解的语言描述，去掉框架内部符号，例如 T1/T2/T3/T4、K×4、NSGA-II，也不写调试/优化过程本身，例如"搜索规模是否足够""此前的表述经核查是巧合"之类，`problem` 描述的是模型要回答的科学问题，不是模型开发/调试历史，后者属于 `metadata.todo`/`metadata.log` 或 `history/` 目录，见"调试历史版本管理"节，不进 `description`，详见全局 `~/.claude/CLAUDE.md`《面向最终读者的交付物：不留过程痕迹》一节。
-- `method`：不列出来源文献本身，只说明 `problem` 里列出的这些机制是怎么被组合起来的，即共享哪个决策变量或资源竞争通路，联合仿真或联合优化具体怎么把它们接在一起，见本文件开头"LM 的核心方法论"节。字段不定长，耦合关系多时逐条列举。
-- `result`：合并原 `result` + `conclusion`，描述仿真输出或 Pareto 前沿。每条结果先用一句话给出结论本身，再补充支撑这句结论的细节；多篇来源文献融合后到底改变了什么、保留了什么不变，是这个字段最应该说清楚的信息，不要把结论和推导过程混在同一句话里、让读者自己从数字堆里找结论。单解或多解均可，长度随结果复杂度自然变化；同样不写调试过程，只写最终仿真/优化结果本身。
-- `limitations`：保留，给后来者提供改进方向，这是本模型自身的局限；与 `problem` 里"单篇来源文献各自的局限"是两个不同层次，不要混在一起。
-- 删除：`brief`、`need`、`simulation`、`optimization`、`conclusion`。
+- `problem`: state the scientific question the model answers in one sentence, then list, grouped by mechanism, why a single source publication cannot answer it, that is, where each group of mechanisms individually stops short. Each mechanism's gap should preferentially draw on the limitation the source publication itself acknowledges rather than the modeler's own guess; verifying each original limitation individually takes time, and when there is not yet capacity to verify, the field can be left blank for a later researcher to fill in, since this is not required of an AI. What specific mechanism or data each source publication contributes belongs in that entry's `description` under the top-level `references`, per the "optional annotation style for references" section below, not in `problem`, so that `problem` stays limited to mechanism-level judgments and is not lengthened by per-citation annotation. Describe it in language a non-specialist reader can follow, dropping framework-internal notation such as T1/T2/T3/T4, K×4, or NSGA-II, and do not describe the debugging or optimization process itself, such as whether the search scale was large enough or whether an earlier statement turned out on review to be coincidental; `problem` describes the scientific question the model answers, not the model's development or debugging history, which belongs in `metadata.todo`, `metadata.log`, or the `history/` directory (see the "Debug History Versioning" section) and does not belong in `description`; see the "Deliverables for the Final Reader Carry No Process Trace" section of the global `~/.claude/CLAUDE.md`.
+- `method`: does not list the source publications themselves, only explains how the mechanisms listed in `problem` are combined, that is, which decision variable or resource-competition pathway they share and specifically how joint simulation or joint optimization connects them; see the "LM's core methodology" section at the top of this document. The field has no fixed length; list entries one by one when there are multiple coupling relationships.
+- `result`: merges the former `result` and `conclusion`, describing the simulation output or Pareto front. State the conclusion itself in one sentence for each result, then add the detail that supports it; the most important information this field should convey is what combining multiple source publications actually changed and what it left unchanged, so do not mix the conclusion and its derivation into the same sentence and leave the reader to find the conclusion buried among numbers. Either a single solution or multiple solutions is fine, and length varies naturally with the complexity of the result; as with `problem`, do not describe the debugging process, only the final simulation or optimization result itself.
+- `limitations`: retained to give future contributors a direction for improvement; this covers the model's own limitations, a different layer from the "limitations of each individual source publication" covered in `problem`, and the two should not be mixed together.
+- Removed: `brief`, `need`, `simulation`, `optimization`, `conclusion`.
 
-**写作结构建议**：`problem`/`method`/`result` 只要出现并列的多条事实，就用 `- ` 起始的列表逐条写，不要挤成一段连续长文字，列表结构本身能让"这一条到底想说什么"和"哪两条前后矛盾"一目了然，混在一起的长段落即使内容正确也难以核对。只有确实是单一整体判断、不存在并列结构时才写成一句连续的话。这四个字段里如果确实需要在正文里点名某篇文献，统一用作者年份的句末括号夹注，例如"一阶胃排空速率常数，用于计算胃内奶量随时间下降的动力学（Cavell 1981）"，不用句首叙述式引用，也不用数字编号；句首叙述式引用只适合专门讨论某位作者做了什么的场合，这四个字段陈述的通常是机制或结论本身，作者不是句子的主语。全局的括号/破折号/硬换行规则同样适用于 `description` 的每个字段，见 `~/.claude/CLAUDE.md`：除数学分组、引文格式、缩写释义、枚举编号外禁止使用括号，引文格式指作者年份这类学术引用惯例本身不算插入语，破折号一律不用；YAML 里用 `|` 块写多行时，每个列表项各占一行，但列表项内部和非列表的整句话都不能按字符宽度手动断行，一句话无论多长都写在同一行，交由前端渲染换行。
+Writing structure recommendation: whenever `problem`, `method`, or `result` contains multiple parallel facts, write them as a `- `-prefixed list item by item rather than crowding them into one continuous paragraph; the list structure itself makes it obvious what each item is claiming and which two items contradict each other, whereas a mixed-together long paragraph is hard to check even when its content is correct. Only write a single continuous sentence when the content really is one unified judgment with no parallel structure. Whenever these four fields need to name a specific publication in running text, use a parenthetical author-year citation at the end of the sentence, for example "a first-order gastric-emptying rate constant used to compute the decline of stomach milk volume over time (Cavell 1981)," rather than a sentence-initial narrative citation or a numbered reference; a sentence-initial narrative citation only fits contexts specifically discussing what a particular author did, whereas these four fields usually state a mechanism or conclusion itself, with the author not the sentence's subject. The global rules on parentheses, dashes, and hard-wrapping apply to every field of `description` as well, per `~/.claude/CLAUDE.md`: parentheses are prohibited except for mathematical grouping, citation format, abbreviation glosses, and enumeration numbering, where citation format means an author-year academic citation convention and does not count as an inserted aside; dashes are never used. When writing multiple lines with `|` in YAML, each list item occupies its own line, but neither the inside of a list item nor a non-list full sentence should be manually wrapped by character width; no matter how long a sentence is, it stays on one line and the renderer handles the wrapping.
 
-**顶层 `references` 的推荐默认写法（ADR 0143）**：数组的每一项可以是一个纯字符串，即完整的文献引用本身，也可以是一个对象 `{citation: "完整引用字符串", description: "这篇文献在本模型里具体贡献了什么机制或数据"}`，两种写法可以在同一个数组里混用。`papers/` 模型应默认写成带 `description` 的对象形式，不是可有可无的锦上添花——每篇来源文献具体贡献了什么机制或数据，正是这个模型相对单篇源文献的价值所在，也是审阅者核对"耦合是否成立"最直接的依据，理应随手写清楚；只有确实一时说不清楚贡献点、或明显是背景性引用，例如引用 LM format 规范本身的文献，才保留纯字符串。GUI 把带 `description` 的条目显示成两列，左边是引用本身，右边是贡献说明；没有 `description` 的条目只显示一列。这样"这篇文献贡献了什么"这条信息紧挨着它所属的文献本身，`problem` 不需要重复这段内容，也不需要为了对照方便而给引用编号，GUI 的引用列表按引用字符串本身的字母序显示，不带编号。
+Recommended default form for top-level `references` (ADR 0143): each entry in the array can be a plain string, the full citation text itself, or an object `{citation: "full citation text", description: "the specific mechanism or data this publication contributes to this model"}`, and the two forms may be mixed within the same array. `papers/` models should default to the object form with `description`, which is not an optional nicety, since exactly what mechanism or data each source publication contributes is the model's value relative to any single source publication and the most direct basis a reviewer has for checking whether the coupling actually holds, so it should be written out as a matter of course; only when the contribution genuinely cannot yet be pinned down, or the citation is clearly background, for instance citing the LM format specification itself, should the plain-string form be kept. The GUI displays entries with `description` as two columns, the citation on the left and the contribution note on the right; entries without `description` display as a single column. This way the information about what a publication contributes sits right next to the publication itself, `problem` does not need to repeat it, and citations do not need numbering for cross-reference; the GUI's citation list displays in alphabetical order of the citation string itself, unnumbered.
 
-**`references/` 和其他非论文模型**：可按需使用任意字段，不受四字段限制。
+`references/` and other non-paper models: any fields can be used as needed, with no four-field restriction.
 
-科学依据、文献解释、机制方程、时间尺度和建模假设也放在 `description` 内，但应尽量拆成更具体的字段，例如 `evidence`、`mechanism`、`time_scale`、`sources`、`assumption`。不使用同级的 `metadata.science_note` 或顶层 `science_note`，也不推荐在 `description` 内继续使用笼统的 `science_note`。
+Scientific basis, literature interpretation, mechanism equations, time scales, and modeling assumptions also belong inside `description`, but should be split into more specific fields where possible, such as `evidence`, `mechanism`, `time_scale`, `sources`, or `assumption`. Do not use a sibling `metadata.science_note` or a top-level `science_note`, and using a catch-all `science_note` inside `description` is likewise not recommended.
 
-文献来源能定位到具体变量或方程时，优先写入 `variables.<name>.reference` 或 `equations.<name>.reference`，让 GUI 的变量/方程视图能直接显示依据；只有无法明确分配的场景级背景来源，才保留在 `description.sources`。
+When a literature source can be pinned to a specific variable or equation, prefer writing it into `variables.<name>.reference` or `equations.<name>.reference` so the GUI's variable and equation views can show the basis directly; only background sources for the scenario as a whole, which cannot be clearly assigned, stay in `description.sources`.
 
-短文本可以直接写成普通标量；需要保留换行时可用 `|`：
+Short text can be written as a plain scalar; use `|` when line breaks need to be preserved:
 
 ```yaml
 description:
   problem: |
-    第一段。
-    第二段。
+    First paragraph.
+    Second paragraph.
 ```
 
 ---

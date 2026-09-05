@@ -9,18 +9,32 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      排球是以垂直起跳为核心爆发动作的间歇性运动，每次扣球或拦网跳约持续 3-5 秒，间歇期约 15-20 秒，用于发球和准备。精英男子运动员每场垂直跳次数可超过 300 次，跳跃能力，即起跳高度，随疲劳积累系统性衰减，Sheppard 等（2008）研究表明高强度比赛后弹跳力可降低约 10-15%。拦网触及高度直接影响防守成功率，因此跳跃能力维持与比赛强度之间的权衡是排球体能管理的核心生理问题。
+      Volleyball is an intermittent sport centered on the vertical jump as its core explosive
+      action; each spike or block jump lasts about 3-5 seconds, followed by a rest of about
+      15-20 seconds for serving and preparation. An elite male player can exceed 300 vertical jumps
+      per match, and jump ability (jump height) declines systematically with fatigue accumulation;
+      Sheppard et al. (2008) found that jump power can drop by about 10-15% after a high-intensity
+      match. Blocking-reach height directly affects defensive success, so the tradeoff between
+      maintaining jump ability and match intensity is the core physiological problem in volleyball
+      conditioning.
     result: >
-      仿真尚未运行。理论预期：扣球强度 RPE=7、防守频率 1 次/分钟的 90 分钟比赛中，跳跃能力指数从基线 100 降至约 72，拦网触及高度从 320 cm 降至约 296-302 cm，疲劳指数在比赛末达到约 0.48；降低扣球强度至 RPE=5 时跳跃能力维持在约 82-85，两者在跳跃能力-疲劳空间形成 Pareto 权衡前沿。
+      Not yet run. Theoretical expectation: in a 90-minute match at a spike intensity of RPE=7 and a
+      defensive frequency of 1 per minute, the jump-power index falls from a baseline of 100 to
+      about 72, blocking reach falls from 320 cm to about 296-302 cm, and the fatigue index reaches
+      about 0.48 by the end of the match; lowering spike intensity to RPE=5 keeps jump power at
+      about 82-85, with the two forming a Pareto tradeoff front in jump-power-versus-fatigue space.
     limitations: >
-      未区分二传、主攻、自由人等不同位置的代谢负荷和跳跃频次差异；跳跃次数模型未细分助跑扣球与原地拦网的生物力学差异；参数基于精英男子排球运动员。
+      Metabolic-load and jump-frequency differences between positions such as setter, outside
+      hitter, and libero are not distinguished; the jump-count model does not separate the
+      biomechanics of an approach spike from an in-place block; the parameters are based on elite
+      male volleyball players.
   ratings:
-    importance: 0.25 - 排球爆发力衰减建模有一定运动科学价值，受众较专项；团队运动专项模型，上层引用预期低
-    variable: 0.5 - 引用Sheppard/Gabbett等文献，参数基本有据
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 2026-07-22实测--sim(及部分--opt抽查)已可正常跑通，2026-07-27复核nosim/noopt标记已清理（--sim/--opt均可正常跑通），但未与独立文献目标数值比对
+    importance: 0.25 - Modeling volleyball's explosive-power decay has some exercise-science value, with a fairly specialized audience; a team-sport specialty model, expected to have low reuse elsewhere
+    variable: 0.5 - Cites publications such as Sheppard/Gabbett, with fairly well-founded parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - Confirmed runnable on 2026-07-22 (--sim, plus a spot check of --opt); reconfirmed on 2026-07-27 that the nosim/noopt markers have been cleared (both --sim/--opt run normally), but not yet compared against an independent literature target value
   tags: [volleyball, team, interval, explosive, jump_power, blocking, VO2]
 
 variables:
@@ -29,83 +43,83 @@ variables:
     value: 7.0
     unit: "RPE(0-10)"
     bounds: [0.0, 10.0]
-    description: "扣球/拦网爆发强度（0=无跳跃，7=中等对抗，10=全力扣杀）"
+    description: "Spike/block explosive intensity (0=no jumping, 7=moderate contest, 10=an all-out kill)"
   dive_frequency:
     type: input
     value: 1.0
-    unit: "次/min"
+    unit: "per min"
     bounds: [0.0, 5.0]
-    description: "防守滑步/鱼跃频率（精英自由人约每分钟1-3次）"
+    description: "Defensive slide/dive frequency (an elite libero is about 1-3 per minute)"
   heart_rate:
     type: state
     value: 75.0
     unit: "bpm"
     bounds: [50.0, 200.0]
-    description: "心率（排球平均约150-165 bpm，约75-85% HRmax；Gabbett 2007）"
+    description: "Heart rate (volleyball averages about 150-165 bpm, roughly 75-85% HRmax; Gabbett 2007)"
   vo2:
     type: state
     value: 10.0
     unit: "mL/kg/min"
     bounds: [5.0, 65.0]
-    description: "摄氧量（排球间歇特征，平均约30-40 mL/kg/min）"
+    description: "Oxygen uptake (volleyball's intermittent character averages about 30-40 mL/kg/min)"
   jump_power_index:
     type: state
     value: 100.0
-    unit: "分"
+    unit: "score"
     bounds: [0.0, 100.0]
-    description: "跳跃能力指数（100=比赛初始状态；精英垂直跳高均约80-90cm；Sheppard 2008）"
+    description: "The jump-ability index (100=the match's starting state; an elite vertical jump averages about 80-90cm; Sheppard 2008)"
   fatigue:
     type: state
     value: 0.0
-    unit: "无量纲"
+    unit: "dimensionless"
     bounds: [0.0, 1.0]
-    description: "综合疲劳指数（0=无疲劳，1=力竭；>0.5时跳跃能力明显衰减）"
+    description: "An overall fatigue index (0=no fatigue, 1=exhaustion; above 0.5, jump ability declines markedly)"
   blocking_reach:
     type: state
     value: 320.0
     unit: "cm"
     bounds: [200.0, 380.0]
-    description: "拦网触及高度（精英男子约320-340cm；疲劳导致起跳高度下降）"
+    description: "Blocking-reach height (an elite male is about 320-340cm; fatigue lowers jump height)"
   calories_burned:
     type: state
     value: 0.0
     unit: "kcal"
     bounds: [0.0, 1000.0]
-    description: "累计热量消耗（90分钟比赛约400-700 kcal；Palao 2014）"
+    description: "Cumulative calories burned (a 90-minute match burns about 400-700 kcal; Palao 2014)"
 
 equations:
   heart_rate_dynamics:
-    description: "心率随扣球强度和防守活动响应（Gabbett 2007：排球间歇性心率波动）"
+    description: "Heart rate responds to spike intensity and defensive activity (Gabbett 2007: volleyball's heart rate fluctuates intermittently)"
     condition: true
     priority: 10
     dynamics:
       heart_rate: "min(200, 75 + spike_intensity * 9 + dive_frequency * 6 + fatigue * 12)"
   vo2_response:
-    description: "摄氧量跟随运动强度（排球间歇特征均值约35 mL/kg/min）"
+    description: "Oxygen uptake follows exercise intensity (volleyball's intermittent average is about 35 mL/kg/min)"
     condition: "spike_intensity > 0"
     priority: 9
     dynamics:
       vo2: "min(65, 8 + spike_intensity * 3.5 + dive_frequency * 2.0)"
   jump_power_decay:
-    description: "跳跃能力随疲劳积累下降（Sheppard 2008：精英运动员跳跃力在高强度比赛后衰减约10-15%）"
+    description: "Jump ability declines with fatigue accumulation (Sheppard 2008: an elite athlete's jump power declines about 10-15% after a high-intensity match)"
     condition: true
     priority: 8
     dynamics:
       jump_power_index: "max(0, 100 - fatigue * 45 - max(0, spike_intensity - 7) * 1.0)"
   fatigue_accumulation:
-    description: "疲劳由扣球跳跃和防守动作共同驱动（每小时约300次垂直跳跃；Palao 2014）"
+    description: "Fatigue is driven jointly by spike jumping and defensive actions (about 300 vertical jumps per hour; Palao 2014)"
     condition: true
     priority: 7
     dynamics:
       fatigue: "min(1.0, fatigue + spike_intensity * 0.0014 + dive_frequency * 0.0008)"
   blocking_reach_decay:
-    description: "拦网高度随疲劳下降（起跳能力衰减导致触球点降低）"
+    description: "Blocking height declines with fatigue (declining jump ability lowers the contact point)"
     condition: true
     priority: 6
     dynamics:
       blocking_reach: "max(200, 320 - fatigue * 50)"
   calories_accumulation:
-    description: "热量消耗（排球约5-8 kcal/min，间歇特性下强度调整）"
+    description: "Calories burned (volleyball is about 5-8 kcal/min, adjusted for its intermittent character and intensity)"
     condition: "spike_intensity > 0"
     priority: 5
     dynamics:
@@ -133,13 +147,13 @@ simulation:
         value: 7.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "扣球强度（RPE=7，中高强度对抗）"
+        label: "Spike intensity (RPE=7, a moderate-to-high-intensity contest)"
       - variable: dive_frequency
         time_start: "09:00"
         value: 1.0
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
         date_range: ["2026-01-01", "2026-01-01"]
-        label: "防守鱼跃频率（1次/min）"
+        label: "Defensive dive frequency (1 per minute)"
 
 optimization:
   method: nsga2
@@ -147,26 +161,26 @@ optimization:
     - variable: jump_power_index
       metric: final
       direction: maximize
-      description: "最大化比赛末跳跃能力维持"
+      description: "Maximizing jump ability retained by the end of the match"
     - variable: fatigue
       metric: final
       direction: minimize
-      description: "最小化比赛末疲劳指数"
+      description: "Minimizing the fatigue index at the end of the match"
   constraints:
     - variable: heart_rate
       condition: "<= 185"
       type: soft
-      description: "心率控制在185 bpm以内"
+      description: "Keep heart rate within 185 bpm"
     - variable: blocking_reach
       condition: ">= 280"
       type: soft
-      description: "拦网高度不低于280cm（技战术下限）"
+      description: "Blocking height should not fall below 280cm (a tactical lower bound)"
   startpoint:
     regimens:
       - variable: spike_intensity
         time_start: "09:00"
         time_end: "09:00"
-        label: "扣球强度（RPE 4-10）"
+        label: "Spike intensity (RPE 4-10)"
         optimize:
           value: [4.0, 10.0]
   algorithm:
@@ -190,8 +204,8 @@ optimization:
 
 references:
   - citation: "Sheppard JM et al. (2008) Relative importance of strength, power, and anthropometric measures on jump performance in elite volleyball players. J Strength Cond Res 22(3):758-765."
-    description: "研究表明高强度比赛后弹跳力可降低约 10-15%，是跳跃能力随疲劳衰减这一机制的直接参数来源。"
+    description: "Found that jump power can decline by about 10-15% after a high-intensity match, the direct parameter source for jump ability's decay with fatigue."
   - citation: "Palao JM et al. (2014) Physical actions and physiological load during short-duration volleyball competitions. Int J Perform Anal Sport 14(1):119-131."
-    description: "提供比赛中身体动作和生理负荷数据，是热量消耗和疲劳积累机制的参数来源。"
+    description: "Supplies data on in-match physical actions and physiological load, the parameter source for the calorie-burn and fatigue-accumulation mechanisms."
   - citation: "Gabbett TJ et al. (2007) Physiological and anthropometric characteristics of junior elite and sub-elite volleyball players with consideration for the positions played. J Sports Sci 25(5):583-592."
-    description: "提供不同位置运动员的生理和人体测量特征数据，是心率和摄氧量动力学的参数来源。"
+    description: "Supplies physiological and anthropometric data across positions, the parameter source for the heart-rate and oxygen-uptake dynamics."

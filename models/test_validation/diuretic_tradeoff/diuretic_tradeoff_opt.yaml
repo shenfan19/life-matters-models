@@ -2,14 +2,14 @@ metadata:
   name: diuretic_tradeoff_opt
   lm_format_version: "1.0"
   description:
-    problem: "单一决策变量 thiazide_dose 的双目标优化，最小化血压加最小化血尿酸。两个目标的文献依据彼此独立，Law 2009 降压、Choi 2012 升尿酸，检验联合可行域是否为空，或是否呈现连续的剂量-反应权衡前沿。完整物理机制见 imports 的 diuretic_tradeoff_sim。"
-    method: "机制与 diuretic_tradeoff_sim.yaml 相同，完整机制列表见该文件 description.method；本文件只对该单一决策变量跑双目标优化，检验联合可行域的形状。"
+    problem: "A two-objective optimization on the single decision variable thiazide_dose, minimizing blood pressure and minimizing blood uric acid. The two objectives' literature bases are independent of each other, Law 2009 for blood-pressure lowering and Choi 2012 for uric-acid raising, testing whether the joint feasible region is empty or shows a continuous dose-response tradeoff front. See the imported diuretic_tradeoff_sim for the complete physical mechanism."
+    method: "The mechanism matches diuretic_tradeoff_sim.yaml; see that file's description.method for the complete mechanism list. This file only runs a two-objective optimization on this single decision variable, testing the joint feasible region's shape."
 
 imports:
   - ./diuretic_tradeoff_sim
 
 references:
-  - "见 ./diuretic_tradeoff_sim.yaml"
+  - "See ./diuretic_tradeoff_sim.yaml"
 
 optimization:
   method: nsga2
@@ -23,18 +23,18 @@ optimization:
     - variable: blood_pressure
       metric: final
       direction: minimize
-      description: "26周末收缩压，越低越好"
+      description: "Systolic blood pressure at week 26, lower is better"
     - variable: uric_acid
       metric: final
       direction: minimize
-      description: "26周末血尿酸，越低越好"
+      description: "Blood uric acid at week 26, lower is better"
 
   startpoint:
     regimens:
       - variable: thiazide_dose
         time_start: "08:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "HCTZ 每日剂量（唯一决策变量）"
+        label: "HCTZ's daily dose (the sole decision variable)"
         optimize:
           value: [0.0, 50.0]
 
@@ -112,10 +112,17 @@ optimization:
       x: [24.8743]
       f: [150.1378, 428.8705]
     comments: |
-      60个解的剂量x在[0,50]mg区间内连续分布，blood_pressure随剂量单调递减（155.0→145.2mmHg），
-      uric_acid随剂量单调递增（420.2→438.1μmol/L）——整条前沿是一条连续、非退化的剂量-反应曲线，
-      没有任何剂量同时严格劣于另一剂量（每个点都是非支配解），即联合可行域非空且连续。
-      这与同目录homair_ogtt（A2a）案例的"部分个体被两套标准给出矛盾分类、可行域受限"形成对照：
-      本案例（A2b）展示的是权衡（tradeoff），不是矛盾（contradiction）——两条独立文献的效应量
-      装入同一框架后，没有产生空集，只是确认了"降压与控尿酸不能同时免费获得"这一臨床常识。
-      recommended点（24.87mg）取前沿中点附近，不代表临床推荐剂量，仅为展示用途。
+      The 60 solutions' dose x is distributed continuously across the [0,50]mg range, with
+      blood_pressure decreasing monotonically with dose (155.0 to 145.2mmHg) and uric_acid
+      increasing monotonically with dose (420.2 to 438.1μmol/L). The whole front is a continuous,
+      non-degenerate dose-response curve, with no dose strictly worse on both objectives than
+      another (every point is a non-dominated solution), meaning the joint feasible region is
+      non-empty and continuous.
+      This contrasts with the homair_ogtt (A2a) case in the same directory, where some individuals
+      are given contradictory classifications by the two standards, restricting the feasible
+      region: this case (A2b) shows a tradeoff, not a contradiction. Loading two independent
+      publications' effect sizes into the same framework did not produce an empty set; it simply
+      confirmed the clinical common sense that lowering blood pressure and controlling uric acid
+      cannot both be had for free.
+      The recommended point (24.87mg) is taken from near the front's midpoint and does not
+      represent a clinically recommended dose; it is for display purposes only.

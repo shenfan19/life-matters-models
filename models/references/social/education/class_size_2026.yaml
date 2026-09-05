@@ -9,23 +9,36 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      验证目的：跨学科拓展到教育学。Tennessee STAR（Student Teacher Achievement Ratio）实验是教育经济学里最常被引用的随机对照实验之一：幼儿园学生被随机分配到约 15 人的小班与约 22 人的常规班，检验班级规模对标准化测试成绩的因果效应。
+      Validation purpose: a cross-disciplinary extension into education. The Tennessee STAR
+      (Student Teacher Achievement Ratio) experiment is one of the most frequently cited randomized
+      controlled trials in the economics of education: kindergarten students were randomly assigned
+      to a small class of about 15 students or a regular class of about 22 students, testing the
+      causal effect of class size on standardized test scores.
     result: |
-      班级缩减 7 到 8 人，约 32%，对应标准化测试成绩提升约 0.22 个标准差的 Cohen's d 效应量，由 Krueger 1999 分析得出。本文件用 LM format 的 evidence 节以 cohens_d 子类型直接声明这一效应量，验证 Loader 能正确承载并展示这一教育经济学地标实验的效应量。
+      A class-size reduction of 7 to 8 students, about 32%, corresponds to a standardized-test-
+      score improvement of about a 0.22 standard-deviation Cohen's d effect size, from Krueger's
+      1999 analysis. This file declares this effect size directly using the cohens_d subtype in the
+      LM format's evidence block, verifying that the loader correctly carries and displays the
+      effect size of this landmark education-economics experiment.
     limitations: |
-      本案例是效应量编码正确性展示，不是独立预测检验，不像 statin_ldl 或 epoc_recovery 那样有一个未参与拟合的独立数据点做对照，0.22 这个数字本身就是要验证的目标，不是外推出来和另一个独立来源比较。population_sd 按输出变量本身即以标准差为单位的约定取 1.0，不换算为具体测试量表的原始分数单位。
+      This case demonstrates the correctness of effect-size encoding, not an independent prediction
+      test, unlike statin_ldl or epoc_recovery which have an independent data point outside the fit
+      to compare against; the number 0.22 is itself the target being verified, not a value
+      extrapolated and then compared against a separate independent source. population_sd is set to
+      1.0 by the convention that the output variable itself is already in standard-deviation units,
+      and is not converted to the raw-score units of any specific test scale.
   ratings:
-    importance: 0.25 - 方法论验证展示，social/education分类下首个案例
-    variable: 1.0 - Tennessee STAR是教育经济学地标级随机对照实验，文献可直接追溯
-    equation: 1.0 - evidence_type换算是LM format规范定义的标准机制，非自建结构
-    simulation: 0.5 - 效应量编码正确性已验证展示，但明确非独立预测检验，属循环验证
-    optimization: 0.0 - 本文件不含optimization，纯效应量编码展示，不涉及决策变量
-    confidence: 0.75 - 效应量本身来自高质量独立来源(Tennessee STAR RCT)，Loader正确编码展示，非独立预测已在理由中注明
+    importance: 0.25 - A methodology-validation demonstration, the first case under the social/education category
+    variable: 1.0 - Tennessee STAR is a landmark randomized controlled trial in education economics, directly traceable to the literature
+    equation: 1.0 - The evidence_type conversion is a standard mechanism defined by the LM format specification, not a self-built structure
+    simulation: 0.5 - The correctness of the effect-size encoding has been verified and demonstrated, but this is explicitly not an independent prediction test, a form of circular verification
+    optimization: 0.0 - This file contains no optimization block, being a pure effect-size encoding demonstration with no decision variables
+    confidence: 0.75 - The effect size itself comes from a high-quality independent source (the Tennessee STAR RCT), and the loader's correct encoding is demonstrated; that this is not an independent prediction is noted in the rationale
   tags: [education, class-size, evidence, validation, literature-benchmark, cross-domain]
 
 variables:
   test_score_gain_sd:
-    description: 班级缩减7-8人对应的标准化测试成绩提升（标准差单位）
+    description: The standardized-test-score improvement corresponding to a 7-8 student class-size reduction (in SD units)
     value: 0.0
     unit: SD
     type: state
@@ -37,14 +50,15 @@ variables:
     population_sd: 1.0
     unit: SD
     description: >
-      Tennessee STAR 实验：小班（~15人）vs 常规班（~22人）幼儿园学生标准化测试成绩差异
-      的效应量（Krueger 1999 分析）。population_sd=1.0 是"输出变量本身即以SD为单位"
-      这一约定的直接体现。
+      The Tennessee STAR experiment: the effect size of the standardized-test-score difference
+      between kindergarten students in a small class (~15) versus a regular class (~22)
+      (Krueger 1999 analysis). population_sd=1.0 directly reflects the convention that the output
+      variable itself is already in SD units.
     reference: "Krueger AB (1999) Q J Econ 114(2):497-532"
 
 equations:
   display_effect:
-    description: "静态展示：test_score_gain_sd = class_size_effect（cohens_d 类型：有效值=value*population_sd）"
+    description: "A static demonstration: test_score_gain_sd = class_size_effect (for the cohens_d type: the effective value equals value times population_sd)"
     condition: true
     priority: 3
     dynamics:
@@ -60,7 +74,7 @@ simulation:
     - test_score_gain_sd
   plans:
     - id: "small_class_vs_regular"
-      label: "小班（~15人）vs 常规班（~22人）效应量展示"
+      label: "Small class (~15) versus regular class (~22) effect-size demonstration"
       regimens: []
 
 references:

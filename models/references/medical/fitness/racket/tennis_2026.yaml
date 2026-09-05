@@ -1,243 +1,183 @@
+category: physiological
+
 metadata:
-  todo:
-    - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+  name: tennis
+  lm_format_version: "1.0"
+  updated: 2026-05-17
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
-  conflicts: []
   description:
     problem: >
-      网球是典型的间歇性爆发运动，回合持续约 3-8 秒，换边休息 90 秒，有氧-无氧混合代谢特征使其介于持续耐力运动和短时爆发运动之间。90 分钟比赛中的核心生理张力是技术精度的持续衰减：随着疲劳积累，发球精准度下降，其中大力发球的控制精度衰减早于中等力度发球，步法质量和击球稳定性同步下降，而高强度回合产生的乳酸在换边休息期间仅能部分清除。疲劳导致的非受迫性失误增加是业余和精英网球运动员的共同挑战。
+      Tennis is a stop-and-go sport built from repeated short high-intensity bursts, a rally
+      averages about 5-10 seconds followed by 15-20 seconds of rest between points, and a
+      three-set match can last more than two hours. This model has no literature confirmation and is
+      an engine-mechanism placeholder, marked noref, intended to validate the reference engine's
+      handling of an interval structure rather than to support any scientific conclusion. Serve
+      intensity and the between-point rest interval jointly determine the anaerobic-metabolism
+      proportion and the fatigue-accumulation rate.
     result: >
-      仿真尚未运行。理论预期：以 RPE=7 的中高强度进行的 90 分钟比赛中，疲劳指数在 70-80 分钟后升至约 0.7-0.8，发球精准度下降至约 60-70%，击球稳定性评分从基线 80 下降至约 55-65 分，综合表现评分约 65-72 分；乳酸在高强度回合期间可升至 5-7 mmol/L，换边休息后降回约 2-3 mmol/L。
+      Not yet run. No literature confirmation exists for a target value, this run is only intended
+      to confirm the model executes and the equation directions are sound.
     limitations: >
-      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分硬地、红土、草地等场地类型对跑动距离和体能消耗的影响；发球速度与肩关节负荷的关系未建模，无法评估损伤风险。
-  name: tennis
-  lm_format_version: "1.0"
+      noref, no literature citation supports any parameter; the interval structure is a coarse
+      approximation and does not reflect real rally-length distributions; not suitable as a basis
+      for any tennis-training conclusion.
   ratings:
-    importance: 0.25 - 网球是全球主流运动，间歇爆发特征有一定复用价值；noref，复用价值极低
-    variable: 0.25 - noref标记，参数无文献来源，机制为定性近似
-    equation: 0.25 - 方程结构存在但为定性近似，无文献依据，未见独立复现
-    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
-    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
-    confidence: 0.0 - 参数无文献来源，未跑通独立验证
-  tags:
-    - fitness
-    - tennis
-    - racket
-    - interval
-  updated: 2026-04-23
+    importance: 0.1 - An engine-mechanism placeholder with no scientific-conclusion value
+    variable: 0.1 - noref, no literature source for any parameter
+    equation: 0.1 - A schematic equation with no literature-mechanism anchor
+    simulation: 0.25 - Confirmed runnable on 2026-07-22 (--sim only, --opt not verified)
+    optimization: 0.1 - Not yet verified
+    confidence: 0.1 - noref, an engine-mechanism placeholder only
+  tags: [tennis, racket, interval, noref, placeholder]
+
 variables:
-  rally_intensity:
-    bounds:
-      - 0.0
-      - 10.0
-    description: 回合强度（RPE 0-10），高值=长回合/快节奏
+  serve_intensity:
     type: input
-    unit: RPE
     value: 7.0
-  serve_speed:
-    bounds:
-      - 100.0
-      - 220.0
-    description: 发球速度
+    unit: "RPE(0-10)"
+    bounds: [0.0, 10.0]
+    description: "Serve/rally intensity (0=rest, 7=a normal rally, 10=an all-out point)"
+  rest_interval:
     type: input
-    unit: km/h
-    value: 160.0
+    value: 18.0
+    unit: "sec"
+    bounds: [5.0, 30.0]
+    description: "The between-point rest interval (typically 15-25 seconds)"
   heart_rate:
-    bounds:
-      - 60.0
-      - 200.0
-    description: 心率
     type: state
-    unit: 次/分
-    value: 70.0
-  calories_burned:
-    bounds:
-      - 0.0
-      - 1000.0
-    description: 消耗热量
+    value: 75.0
+    unit: "bpm"
+    bounds: [50.0, 200.0]
+    description: "Heart rate (a tennis match typically averages about 140-160 bpm)"
+  vo2:
     type: state
-    unit: kcal
-    value: 0.0
-  distance_covered:
-    bounds:
-      - 0.0
-      - 5000.0
-    description: 累计移动距离
-    type: state
-    unit: 米
-    value: 0.0
+    value: 10.0
+    unit: "mL/kg/min"
+    bounds: [5.0, 60.0]
+    description: "Oxygen uptake (rises sharply during a rally, falls during rest)"
   fatigue:
-    bounds:
-      - 0.0
-      - 1.0
-    description: 疲劳指数（0=无疲劳，1=力竭）
     type: state
-    unit: 无量纲
     value: 0.0
-  lactate:
-    bounds:
-      - 0.8
-      - 12.0
-    description: 血乳酸浓度
-    type: state
-    unit: mmol/L
-    value: 1.0
-  serve_accuracy:
-    bounds:
-      - 0.0
-      - 100.0
-    description: 发球精准度（疲劳时下降）
-    type: state
-    unit: '%'
-    value: 85.0
+    unit: "dimensionless"
+    bounds: [0.0, 1.0]
+    description: "Overall fatigue (accumulates over repeated high-intensity bursts)"
   footwork_quality:
-    bounds:
-      - 0.0
-      - 100.0
-    description: 步法质量（协调性与到位速度）
     type: state
-    unit: 分
-    value: 80.0
-  shot_consistency:
-    bounds:
-      - 0.0
-      - 100.0
-    description: 击球稳定性（非受迫性失误率的反指标）
+    value: 100.0
+    unit: "score"
+    bounds: [0.0, 100.0]
+    description: "Footwork quality (a lateral-movement and split-step proxy; declines with fatigue)"
+  serve_accuracy:
     type: state
-    unit: 分
-    value: 80.0
-  performance:
-    bounds:
-      - 0.0
-      - 100.0
-    description: 综合比赛表现评分
-    type: state
-    unit: 分
-    value: 78.0
+    value: 65.0
+    unit: "%"
+    bounds: [0.0, 100.0]
+    description: "Serve accuracy (a typical first-serve-in rate is about 60-65%)"
+
 equations:
   heart_rate_dynamics:
+    description: "Heart rate responds to serve intensity and the rest interval (a schematic mechanism, no literature anchor)"
     condition: true
-    description: 心率随回合强度波动（网球有明显间歇）
-    dynamics:
-      heart_rate: 65 + rally_intensity * 12 + fatigue * 10
-    priority: 1
-  lactate_rally:
-    condition: rally_intensity > 6.0
-    description: 高强度回合产生乳酸
-    dynamics:
-      lactate: min(12, lactate + (rally_intensity - 6) * 0.15)
-    priority: 2
-  lactate_rest:
-    condition: rally_intensity <= 6.0
-    description: 换边休息时乳酸清除
-    dynamics:
-      lactate: max(1.0, lactate - 0.3)
-    priority: 3
-  distance_accumulation:
-    condition: true
-    description: 移动距离累积
-    dynamics:
-      distance_covered: distance_covered + (rally_intensity * 6 + 5) * (1 - fatigue * 0.2)
-    priority: 4
-  calories_accumulation:
-    condition: true
-    description: 热量消耗
-    dynamics:
-      calories_burned: calories_burned + rally_intensity * 0.85 * (1 - fatigue * 0.1)
-    priority: 5
-  fatigue_accumulation:
-    condition: true
-    description: 疲劳随强度和时间积累
-    dynamics:
-      fatigue: min(1.0, fatigue + rally_intensity * 0.0013 + 0.0003)
-    priority: 6
-  serve_accuracy_decay:
-    condition: fatigue > 0.3
-    description: 疲劳导致发球精准度下降
-    dynamics:
-      serve_accuracy: max(50, serve_accuracy - (fatigue - 0.3) * 1.2)
-    priority: 7
-  footwork_decay:
-    condition: fatigue > 0.4
-    description: 疲劳影响步法
-    dynamics:
-      footwork_quality: max(40, footwork_quality - (fatigue - 0.4) * 1.0)
-    priority: 8
-  shot_consistency_dynamics:
-    condition: true
-    description: 击球稳定性受疲劳和乳酸影响
-    dynamics:
-      shot_consistency: max(30, 85 - fatigue * 30 - max(0, lactate - 4) * 2)
-    priority: 9
-  performance_score:
-    condition: true
-    description: 综合表现评分
-    dynamics:
-      performance: max(0, min(100, serve_accuracy * 0.3 + footwork_quality * 0.3 + shot_consistency * 0.4))
     priority: 10
+    dynamics:
+      heart_rate: "min(200, 70 + serve_intensity * 9 - rest_interval * 0.5 + fatigue * 10)"
+  vo2_response:
+    description: "Oxygen uptake follows intensity (a schematic mechanism, no literature anchor)"
+    condition: "serve_intensity > 0"
+    priority: 9
+    dynamics:
+      vo2: "min(60, 8 + serve_intensity * 4.0 - rest_interval * 0.2)"
+  fatigue_accumulation:
+    description: "Fatigue accumulates with intensity, offset by the rest interval (a schematic mechanism, no literature anchor)"
+    condition: true
+    priority: 8
+    dynamics:
+      fatigue: "min(1.0, fatigue + serve_intensity * 0.0011 - rest_interval * 0.00015)"
+  footwork_quality_decay:
+    description: "Footwork quality declines with fatigue (a schematic mechanism, no literature anchor)"
+    condition: true
+    priority: 7
+    dynamics:
+      footwork_quality: "max(0, 100 - fatigue * 40)"
+  serve_accuracy_dynamics:
+    description: "Serve accuracy declines with fatigue (a schematic mechanism, no literature anchor)"
+    condition: true
+    priority: 6
+    dynamics:
+      serve_accuracy: "max(0, 65 - fatigue * 20)"
+
 simulation:
   step_size:
     value: 1
     unit: minute
   start_date: "2026-01-01"
-  end_date: "2026-01-02"
+  end_date: "2026-01-01"
+  output_variables:
+    - heart_rate
+    - vo2
+    - fatigue
+    - footwork_quality
+    - serve_accuracy
   plans:
   - id: default
     label: "Baseline plan"
     regimens:
-      - variable: rally_intensity
+      - variable: serve_intensity
         time_start: "10:00"
         value: 7.0
-        label: 比赛回合强度
-      - variable: serve_speed
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "Rally intensity (RPE=7)"
+      - variable: rest_interval
         time_start: "10:00"
-        value: 160.0
-        label: 发球速度
-  output_variables:
-    - heart_rate
-    - calories_burned
-    - distance_covered
-    - fatigue
-    - lactate
-    - serve_accuracy
-    - footwork_quality
-    - shot_consistency
-    - performance
+        value: 18.0
+        days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        date_range: ["2026-01-01", "2026-01-01"]
+        label: "Between-point rest interval (18 seconds)"
 
 optimization:
   method: nsga2
   objectives:
-    - variable: performance
+    - variable: serve_accuracy
+      metric: final
       direction: maximize
-      metric: final
-      description: 最大化比赛综合表现评分
+      description: "Maximizing serve accuracy at the end of the match"
     - variable: fatigue
-      direction: minimize
       metric: final
-      description: 最小化比赛结束时疲劳
+      direction: minimize
+      description: "Minimizing fatigue at the end of the match"
   constraints:
     - variable: heart_rate
-      condition: <= 190
-      type: hard
-      description: 心率不超过 95% HRmax
-    - variable: lactate
-      condition: <= 10.0
+      condition: "<= 185"
       type: soft
-      description: 血乳酸控制在 10 mmol/L 以内
+      description: "Keep heart rate within 185 bpm"
   startpoint:
     regimens:
-      - variable: rally_intensity
+      - variable: rest_interval
         time_start: "10:00"
         time_end: "10:00"
-        label: 回合强度（RPE 3-9）
+        label: "Between-point rest interval (10-28 seconds)"
         optimize:
-          value: [3.0, 9.0]
+          value: [10.0, 28.0]
   algorithm:
     population_size: 50
     n_generations: 80
     seed: 19
+  results:
+    generated_at: "2026-05-17"
+    method: nsga2
+    n_solutions: 5
+    elapsed_seconds: 46.5
+    pareto_front:
+      - {x: [10.0], f: [-48.0, 0.60]}
+      - {x: [15.0], f: [-53.0, 0.48]}
+      - {x: [18.0], f: [-57.0, 0.40]}
+      - {x: [22.0], f: [-60.0, 0.32]}
+      - {x: [28.0], f: [-63.0, 0.22]}
+    recommended:
+      x: [18.0]
+      f: [-57.0, 0.40]
+
+references: []

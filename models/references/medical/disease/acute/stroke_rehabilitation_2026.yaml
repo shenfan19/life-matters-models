@@ -9,24 +9,41 @@ metadata:
     email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      缺血性脑卒中后，大脑存在一个神经可塑性高峰期，出现在发病后前30天内，此时康复训练的效益最大。然而，过早进行高强度物理训练会增加疲劳累积和再卒中风险，使干预窗口期的利用产生内在矛盾。同时，约30%的卒中患者伴有失语症，言语治疗对语言功能的恢复具有独立作用，与肢体康复需要协同安排但资源有限。如何在90天康复期内合理分配物理治疗强度与言语治疗时间，是影响长期残疾程度的核心临床决策。
+      After an ischemic stroke, the brain has a peak neuroplasticity window in the first 30 days
+      post-onset, when rehabilitation training yields the greatest benefit. However, overly intense
+      physical training too early raises fatigue accumulation and recurrent-stroke risk, creating an
+      inherent tension in how to use this intervention window. At the same time, about 30% of stroke
+      patients have aphasia, and speech therapy has an independent effect on language recovery, but
+      it must be coordinated with limb rehabilitation under limited resources. Allocating physical-
+      therapy intensity and speech-therapy time appropriately within the 90-day rehabilitation
+      period is a core clinical decision affecting long-term disability level.
     result: >
-      默认仿真90天显示：神经可塑性指数从发病时的1.0按指数衰减，在30天后降至约0.4。在急性期强度3、亚急性期强度5的标准康复方案下，NIHSS评分从12分下降至约4至5分，上肢Fugl-Meyer评分从24分恢复至约43分，mRS残疾评分降至约2.5分，接近功能独立阈值。优化结果显示，增加康复强度可同时改善Fugl-Meyer和mRS，但在可塑性窗口期关闭后，即30天后，边际收益下降。
+      A default 90-day simulation shows: the neuroplasticity index decays exponentially from 1.0 at
+      onset, falling to about 0.4 after 30 days. Under a standard rehabilitation protocol of
+      intensity 3 in the acute phase and intensity 5 in the subacute phase, the NIHSS score falls
+      from 12 to about 4 to 5, upper-limb Fugl-Meyer score recovers from 24 to about 43, and the mRS
+      disability score falls to about 2.5, close to the functional-independence threshold. The
+      optimization result shows that increasing rehabilitation intensity improves both Fugl-Meyer and
+      mRS simultaneously, but returns diminish once the plasticity window closes, after day 30.
     limitations: >
-      未区分梗死部位，例如前循环与后循环、皮质与皮质下，也不包含静脉溶栓或动脉取栓的急性期效应。神经可塑性指数为概念性描述，无法直接测量；个体差异，例如年龄、梗死体积，未纳入建模。
+      Infarct location, such as anterior versus posterior circulation or cortical versus
+      subcortical, is not distinguished, and the acute-phase effects of intravenous thrombolysis or
+      mechanical thrombectomy are not included. The neuroplasticity index is a conceptual
+      description that cannot be directly measured; individual differences, such as age and infarct
+      volume, are not included in the model.
   ratings:
-    importance: 0.75 - 脑卒中是全球第二大死亡原因，康复时序优化是神经科研究热点；急性病模型，上层场景复用少
-    variable: 0.75 - 引用AHA指南及Langhorne 2011等高质量文献，参数有据可查
-    equation: 0.5 - 自建方程锚定文献机制方向，非独立复现的标准形式
-    simulation: 0.5 - 未发现阻断性todo，但未与独立文献目标数值比对
-    optimization: 0.5 - 决策变量搜索前沿方向合理，未独立验证是否退化
-    confidence: 0.25 - 未发现阻断性todo，但未与独立文献目标数值比对
+    importance: 0.75 - Stroke is the world's second-leading cause of death, and optimizing rehabilitation timing is a neuroscience research focus; an acute-disease model, with low reuse from upstream scenarios
+    variable: 0.75 - Cites the AHA guidelines and high-quality literature such as Langhorne 2011, with well-documented parameters
+    equation: 0.5 - A self-built equation anchored to the literature mechanism's direction, not an independently reproduced standard form
+    simulation: 0.5 - No blocking todo found, but not yet compared against an independent literature target value
+    optimization: 0.5 - The decision-variable search front's direction is plausible, not yet independently verified for degeneration
+    confidence: 0.25 - No blocking todo found, but not yet compared against an independent literature target value
   tags: [stroke, rehabilitation, NIHSS, mRS, Fugl-Meyer, neuroplasticity, aphasia]
 variables:
   nihss_score:
     description: |
-      NIHSS神经功能缺损评分（0-42分）。0=无症状；1-4=轻度；5-15=中度；>15=重度。
-      急性期典型值8-12（中度）；30天内约40%患者改善≥4分（Powers 2019）。
+      The NIHSS neurological-deficit score (0-42). 0=asymptomatic; 1-4=mild; 5-15=moderate; >15=severe.
+      A typical acute-phase value is 8-12 (moderate); about 40% of patients improve by >=4 points within 30 days (Powers 2019).
     value: 12.0
     unit: points
     type: state
@@ -35,8 +52,8 @@ variables:
 
   modified_rankin_score:
     description: |
-      改良Rankin量表（mRS，0-6）。0=无症状；2=轻度残疾（独立）；3=中度残疾（需帮助）；
-      5=重度残疾；6=死亡。目标：90天mRS≤2（功能独立）。
+      The modified Rankin Scale (mRS, 0-6). 0=asymptomatic; 2=mild disability (independent); 3=moderate disability (needs help);
+      5=severe disability; 6=death. The target is a 90-day mRS <=2 (functional independence).
     value: 4.0
     unit: points
     type: state
@@ -45,8 +62,8 @@ variables:
 
   upper_limb_fugl_meyer:
     description: |
-      上肢Fugl-Meyer运动评估（0-66分）。0=完全瘫痪；66=正常。
-      急性中度卒中约20-30分；强化康复后90天可恢复至35-50分。
+      The upper-limb Fugl-Meyer motor assessment (0-66). 0=complete paralysis; 66=normal.
+      An acute moderate stroke is typically 20-30; intensive rehabilitation can restore it to 35-50 by day 90.
     value: 24.0
     unit: points
     type: state
@@ -55,8 +72,8 @@ variables:
 
   aphasia_quotient:
     description: |
-      失语商（0-100%）。100%=正常语言；<93.8%=失语症。
-      约30%卒中患者伴发失语，言语治疗效果显著（Langhorne 2011）。
+      The aphasia quotient (0-100%). 100%=normal language; <93.8%=aphasia.
+      About 30% of stroke patients have concurrent aphasia, and speech therapy has a marked effect (Langhorne 2011).
     value: 60.0
     unit: "%"
     type: state
@@ -65,9 +82,9 @@ variables:
 
   neuroplasticity_index:
     description: |
-      神经可塑性指数（0-1）。代表大脑可塑性窗口期强度。
-      卒中后第1天最高（=1.0），随后指数衰减，30天后约0.4，90天约0.15。
-      可塑性越高，康复训练效益越大。
+      The neuroplasticity index (0-1), representing the intensity of the brain's plasticity window.
+      Highest on day 1 post-stroke (=1.0), then decays exponentially, to about 0.4 by day 30 and about 0.15 by day 90.
+      Higher plasticity yields greater rehabilitation-training benefit.
     value: 1.0
     unit: index
     type: state
@@ -76,9 +93,9 @@ variables:
 
   physiotherapy_intensity:
     description: |
-      每日物理治疗强度（0-10分制，1=每天30分钟标准，5=每天2.5小时，10=每天5小时）。
-      Langhorne 2011：每增加1h/day PT → 额外mRS改善≈0.5分/月。
-      ESC/AHA指南推荐急性期后每天≥3小时总康复时间（所有治疗合计）。
+      Daily physical-therapy intensity (a 0-10 scale, 1=a standard 30 minutes per day, 5=2.5 hours per day, 10=5 hours per day).
+      Langhorne 2011: each additional 1h/day of PT gives an additional mRS improvement of about 0.5 points/month.
+      ESC/AHA guidelines recommend at least 3 hours of total daily rehabilitation time, across all therapies, after the acute phase.
     value: 0.0
     unit: intensity (0-10)
     type: input
@@ -86,8 +103,8 @@ variables:
 
   speech_therapy_hours_per_day:
     description: |
-      每日言语治疗时间（小时/天）。标准：0.5h/天；强化：2h/天。
-      仅对伴失语症患者有效（aphasia_quotient < 93.8%）。
+      Daily speech-therapy time (hours/day). Standard: 0.5h/day; intensive: 2h/day.
+      Effective only for patients with concurrent aphasia (aphasia_quotient < 93.8%).
     value: 0.0
     unit: hours/day
     type: input
@@ -95,8 +112,8 @@ variables:
 
   nihss_natural_recovery:
     description: |
-      NIHSS自然恢复速率（分/day），无干预时神经功能自发恢复。
-      卒中后第1周最快（约0.3分/day），之后减慢。
+      The natural NIHSS recovery rate (points/day), spontaneous neurological recovery without intervention.
+      Fastest in the first week post-stroke (about 0.3 points/day), slowing thereafter.
     value: 0.15
     unit: points/day
     type: parameter
@@ -104,16 +121,16 @@ variables:
 
   pt_mrs_effect:
     description: |
-      物理治疗对mRS的每单位强度每日改善量。
-      Langhorne 2011：每1h/day额外PT → 约0.5分/月 → 约0.017分/day。
-      intensity单位（0-10），intensity=2≈1h，效果系数≈0.008/intensity unit/day。
+      The daily mRS improvement per unit of physical-therapy intensity.
+      Langhorne 2011: each additional 1h/day of PT gives about 0.5 points/month, about 0.017 points/day.
+      On the intensity scale (0-10), intensity=2 is about 1h, giving an effect coefficient of about 0.008/intensity unit/day.
     value: 0.008
     unit: mRS points/day per intensity unit
     type: parameter
     reference: "Langhorne P et al. (2011) Lancet 377:1693-1702"
 
   plasticity_decay_rate:
-    description: 神经可塑性指数衰减速率（/day）。30天后约0.4 → 衰减率≈0.031/day（Krakauer 2012）。
+    description: The neuroplasticity-index decay rate (/day). About 0.4 after 30 days corresponds to a decay rate of about 0.031/day (Krakauer 2012).
     value: 0.031
     unit: 1/day
     type: parameter
@@ -121,7 +138,7 @@ variables:
 
 equations:
   neuroplasticity_decay:
-    description: 神经可塑性随时间指数衰减（卒中后关键窗口期逐渐关闭）
+    description: Neuroplasticity decays exponentially over time (the critical post-stroke window gradually closes)
     step_unit: day
     condition: neuroplasticity_index > 0.05
     priority: 10
@@ -130,7 +147,7 @@ equations:
         max(0.05, neuroplasticity_index - plasticity_decay_rate * neuroplasticity_index * step)
 
   nihss_recovery:
-    description: NIHSS自发恢复（神经可塑性加速，PT强化训练进一步改善）
+    description: NIHSS spontaneous recovery, accelerated by neuroplasticity and further improved by intensive PT
     step_unit: day
     condition: nihss_score > 0
     priority: 8
@@ -140,7 +157,7 @@ equations:
         * neuroplasticity_index * step)
 
   mrs_recovery:
-    description: mRS随物理治疗和神经可塑性窗口改善，自然恢复与PT效应叠加
+    description: mRS improves with physical therapy and the neuroplasticity window, combining natural recovery with the PT effect
     step_unit: day
     condition: modified_rankin_score > 0
     priority: 7
@@ -150,7 +167,7 @@ equations:
         * neuroplasticity_index * step)
 
   fugl_meyer_recovery:
-    description: 上肢Fugl-Meyer随PT强度恢复，可塑性窗口期内效益最大
+    description: Upper-limb Fugl-Meyer recovers with PT intensity, with the greatest benefit within the plasticity window
     step_unit: day
     condition: upper_limb_fugl_meyer < 66
     priority: 7
@@ -160,7 +177,7 @@ equations:
         * neuroplasticity_index * step)
 
   aphasia_recovery:
-    description: 失语商随言语治疗时间改善，可塑性窗口期内效益显著（Langhorne 2011）
+    description: The aphasia quotient improves with speech-therapy time, with a marked benefit within the plasticity window (Langhorne 2011)
     step_unit: day
     condition: aphasia_quotient < 93.8
     priority: 6
@@ -185,19 +202,19 @@ simulation:
       value: 3.0
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-01", "2026-01-14"]
-      label: "急性期物理治疗（强度3，约1.5h/day）"
+      label: "Acute-phase physical therapy (intensity 3, about 1.5h/day)"
     - variable: physiotherapy_intensity
       time_start: "09:00"
       value: 5.0
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-15", "2026-04-01"]
-      label: "亚急性康复期强化物理治疗（强度5，约2.5h/day）"
+      label: "Subacute intensive physical therapy (intensity 5, about 2.5h/day)"
     - variable: speech_therapy_hours_per_day
       time_start: "14:00"
       value: 1.0
       days: [Mon, Tue, Wed, Thu, Fri]
       date_range: ["2026-01-01", "2026-04-01"]
-      label: "言语治疗1h/day（失语症康复）"
+      label: "Speech therapy, 1h/day (aphasia rehabilitation)"
 
 optimization:
   method: nsga2
@@ -205,26 +222,26 @@ optimization:
   - variable: upper_limb_fugl_meyer
     metric: final
     direction: maximize
-    description: "最大化第90天上肢Fugl-Meyer评分（运动功能恢复）"
+    description: "Maximizing the upper-limb Fugl-Meyer score on day 90 (motor-function recovery)"
   - variable: modified_rankin_score
     metric: final
     direction: minimize
-    description: "最小化第90天mRS评分（残疾程度最低）"
+    description: "Minimizing the mRS score on day 90 (lowest disability level)"
   constraints:
   - variable: modified_rankin_score
     condition: "<= 3"
     type: soft
-    description: "目标：mRS≤3（能在帮助下行走）"
+    description: "Target: mRS <=3 (able to walk with assistance)"
   - variable: physiotherapy_intensity
     condition: "<= 10"
     type: hard
-    description: "PT强度上限（每天不超过5小时）"
+    description: "A PT-intensity ceiling (not exceeding 5 hours per day)"
   startpoint:
     regimens:
     - variable: physiotherapy_intensity
       time_start: "09:00"
       time_end: "09:00"
-      label: "物理治疗强度（0-10）"
+      label: "Physical-therapy intensity (0-10)"
       optimize:
         value: [1.0, 8.0]
   algorithm:

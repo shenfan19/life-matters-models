@@ -1,80 +1,80 @@
-# 0121 — 跨 step_unit 参数换算：线性除法 vs 开根，按动力学项类型区分
+# 0121 - Cross-step_unit Parameter Conversion: Linear Division Versus a Root, Distinguished by Dynamics-Term Type
 
-**日期**：2026-06-25
-**状态**：✅ 已采纳
-**关联**：[0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md)（per-formula step_unit）、[0105](0105-2026-06-16_model_step-unit-conditional-and-deprecate-dt.md)
+**Date**: 2026-06-25
+**Status**: Adopted
+**Related**: [0104](0104-2026-06-16_model_step-unit-per-formula-and-sim-step-size.md) (per-formula step_unit), [0105](0105-2026-06-16_model_step-unit-conditional-and-deprecate-dt.md)
 
 ---
 
-## 背景
+## Background
 
-ADR 0104 确立了 `step = simulation.step_size / formula.step_unit` 的换算机制，但这个机制**只换算公式自身的 `step` 符号**，不会对嵌入 dynamics 表达式里的字面参数值做单位换算——如果建模者按"天"速率推导出一个参数值，却把它用在 `step_unit: hour` 的公式里，引擎不会自动发现或纠正这个不匹配，换算责任完全在建模者。
+ADR 0104 established the conversion `step = simulation.step_size / formula.step_unit`, but this mechanism only converts the formula's own `step` symbol; it does not convert the literal parameter values embedded in a dynamics expression. If a modeler derives a parameter value at a daily rate but uses it in a formula with `step_unit: hour`, the engine does not automatically detect or correct this mismatch; the conversion responsibility rests entirely with the modeler.
 
-这类"day 量级参数被直接代入 hour 量级公式，按每小时全额触发一次，相当于放大24倍"的 bug 已经在多个模型里独立发现：
+This kind of bug, a day-scale parameter plugged directly into an hour-scale formula, firing at full strength every single hour, a 24x amplification, has already been found independently in several models:
 
-- `papers/s1/ckd_protein/ckd_protein_sim.yaml`：`beta0`/`mu_d`/`mu_u`（2026-06-20 发现，三个 opt 场景因此全程 0% feasible）
-- 另有内部模型库排查中发现的同类案例，参数经推导得到日粒度速率、被直接代入小时粒度公式，导致状态量冲上界或提前锁死。
+- `papers/s1/ckd_protein/ckd_protein_sim.yaml`: `beta0`/`mu_d`/`mu_u` (found 2026-06-20; three opt scenarios were consequently at 0% feasible throughout)
+- Additional similar cases found during an internal model-library review, where a parameter derived as a day-granularity rate was plugged directly into an hour-granularity formula, driving the state variable to its upper bound or locking it prematurely.
 
-多例都曾被此前数轮"手工调小系数试图凑出合理曲线"的尝试掩盖——越调越偏离原文献数值，且没有解决根因。修复时进一步发现一个更细的问题：简单"除以24"对**所有**这类参数都精确适用吗？答案是否定的——取决于该参数所在的动力学项是哪一类。
+Several cases had previously been masked by rounds of "manually tuning the coefficient smaller to force a plausible-looking curve," which drifted further from the original literature value with each attempt and never addressed the root cause. Fixing this surfaced a more subtle question: does a simple "divide by 24" apply exactly to every such parameter? The answer is no; it depends on which category of dynamics term the parameter sits in.
 
-## 决策
+## Decision
 
-### 1. 按动力学项类型二分
+### 1. Split into two categories by dynamics-term type
 
-**类型 A：状态无关通量项**——系数本身不依赖被更新的同一个状态变量（不构成"状态向目标值衰减/恢复"的反馈结构），形式如：
+Category A, a state-independent flux term: the coefficient does not itself depend on the same state variable being updated (it does not form a feedback structure of "the state decaying/recovering toward a target"), of the form:
 
 ```
-X: X + rate * f(其他变量) * step
+X: X + rate * f(other variables) * step
 ```
 
-例：`liver_fat_dynamics` 里 `+ gamma_IR_liverfat * max(0, HOMA_IR - 2.5) * step`（驱动 `liver_fat` 的这一项不反过来依赖 `liver_fat` 自身）。
+Example: the term `+ gamma_IR_liverfat * max(0, HOMA_IR - 2.5) * step` in `liver_fat_dynamics` (this term driving `liver_fat` does not itself depend on `liver_fat`).
 
-跨 step_unit 换算是**精确线性**的：天速率 ÷ 24 = 时速率。该通量在每个小时内的取值近似不变（取决于其他状态变量在小时尺度上的变化速度，通常远慢于24小时一个周期），24个小时步的累加和精确等于1个天步的结果。
+Cross-step_unit conversion here is exactly linear: a daily rate divided by 24 gives the hourly rate. This flux stays approximately constant within any given hour (depending on how fast the other state variables change on an hourly scale, usually far slower than a 24-hour cycle), so the sum across 24 hourly steps equals exactly the result of 1 daily step.
 
-**类型 B：自指数衰减/恢复项**——系数乘以"状态自身与某目标值（可以是0）的差"，形式如：
+Category B, a self-exponential decay or recovery term: the coefficient multiplies the difference between the state itself and some target (which can be 0), of the form:
 
 ```
 X: X - k * (X - target) * step
 ```
 
-例：`ckd_protein_sim.yaml` 的 `gfr_decline` 里 `- beta0 * GFR * step`（target=0 的特例）；内部模型库排查中另发现一例 $k_{day}=0.15$ 量级的同类项。这是一阶线性 ODE $dX/dt=-k(X-\text{target})$ 的前向 Euler 离散形式。把 $k_{day}$ 换算到 $k_{hour}$ **不是线性除法**——24个 hour 步的复合效应是乘法性的（$(1-k_{hour})^{24}$），要与1个 day 步的效应（$1-k_{day}$）相等，必须：
+Example: the term `- beta0 * GFR * step` in `ckd_protein_sim.yaml`'s `gfr_decline` (a special case with target=0); another similar term at roughly $k_{day}=0.15$ was found during the internal model-library review. This is the forward-Euler discretization of the first-order linear ODE $dX/dt=-k(X-\text{target})$. Converting $k_{day}$ to $k_{hour}$ is not a linear division; the compound effect of 24 hourly steps is multiplicative ($(1-k_{hour})^{24}$), and for it to equal the effect of 1 daily step ($1-k_{day}$), it must satisfy:
 
 $$k_{hour} = 1-(1-k_{day})^{1/24}$$
 
-（更一般地，从粒度 $n_{large}$ 换算到 $n_{small}$，$n=n_{large}/n_{small}$：$k_{small}=1-(1-k_{large})^{1/n}$。）
+(More generally, converting from a coarse granularity $n_{large}$ to a fine one $n_{small}$, with $n=n_{large}/n_{small}$: $k_{small}=1-(1-k_{large})^{1/n}$.)
 
-线性近似 $k_{hour}\approx k_{day}/24$ 只在 $k_{day}$ 较小时误差可忽略；$k_{day}=0.15$ 量级时两者相差约8%，不可忽略。
+The linear approximation $k_{hour}\approx k_{day}/24$ has negligible error only when $k_{day}$ is small; at $k_{day}=0.15$, the two differ by about 8%, which is not negligible.
 
-### 2. 两种算法成本相同，类型 B 必须用精确公式
+### 2. The two computations cost the same; category B must use the exact formula
 
-开根运算和除法运算都是模型加载时算一次的单条浮点指令，**没有性能差异**——所以没有理由为了"省事"选线性近似（这不是精度-性能的权衡，纯粹是"算对不算对"的问题）。决策：**类型 B 必须用开根公式精确换算，不接受线性近似**；类型 A 用线性除法（或让该参数所在公式的 `step_unit` 自动换算）即可，本身已是精确解。
+Both a root operation and a division are a single floating-point instruction computed once when the model loads, with no performance difference, so there is no reason to choose the linear approximation for convenience (this is not a precision-versus-performance trade-off; it is purely a matter of getting it right or wrong). Decision: category B must use the exact root formula and does not accept a linear approximation; category A uses linear division (or lets the formula's own `step_unit` conversion handle it), which is already an exact solution.
 
-### 3. 不能简单改 `formula.step_unit` 了事
+### 3. Simply changing `formula.step_unit` is not an acceptable fix
 
-`step_unit` 是**整条公式**的属性，不是单个参数的属性。如果一条公式内混有"已经按 hour 正确标定的项"和"按 day 标定但忘记换算的项"（本次三个真实案例都是这种混合情况），整体改 `step_unit` 会把前者也错误地按24倍稀释。正确做法是**只修改该参数自身的 `value`**（连同 `unit` 字段、`description` 里的换算说明一起更新），保持公式的 `step_unit` 不变。
+`step_unit` is a property of the entire formula, not of a single parameter. If a formula mixes a term already correctly calibrated to hour with a term calibrated to day but never converted (all three real cases this time were exactly this kind of mix), changing the overall `step_unit` would incorrectly dilute the former by 24x as well. The correct fix is to change only that parameter's own `value` (updating the `unit` field and the conversion note in `description` together), keeping the formula's `step_unit` unchanged.
 
-### 4. 判断方法（实操步骤）
+### 4. How to judge it (a practical procedure)
 
-1. 检查参数的 `unit` 字段是否标注了与所在公式 `step_unit` 不同的时间单位（如 `unit: 1/day` 出现在 `step_unit: hour` 的公式里）。
-2. 若是，看该参数所在的动力学项形式：是否为"系数 ×（状态变量 − 目标值）"（类型B，需开根）还是"系数 × 其他变量的函数"（类型A，线性除法即可）。
-3. 按对应类型换算出新值，写回参数的 `value`，更新 `unit` 为公式实际使用的时间粒度，并在 `description` 中记录换算依据（原始文献日速率 + 换算公式 + 结果），方便溯源；在 `metadata.todo` 追加 `severity: resolved` 条目说明发现与修复过程。
+1. Check whether a parameter's `unit` field is annotated with a time unit different from the formula's own `step_unit` (such as `unit: 1/day` appearing in a formula with `step_unit: hour`).
+2. If so, look at the form of the dynamics term the parameter sits in: is it "a coefficient times (a state variable minus a target)" (category B, needing a root) or "a coefficient times a function of other variables" (category A, linear division suffices)?
+3. Convert to the new value per the matching category, write it back into the parameter's `value`, update `unit` to the formula's actual time granularity, and record the conversion basis in `description` (the original literature's daily rate, the conversion formula, and the result) for traceability; append a `severity: resolved` entry to `metadata.todo` describing the discovery and fix.
 
-## 取舍
+## Trade-Offs
 
-**放弃**：试图让引擎自动检测/换算参数级单位——这要求引擎理解每条 dynamics 表达式的物理结构（是否构成自指数衰减），超出了 LM format "公式即数学表达式，引擎不做语义推断"的设计原则（同 ADR 0070 asteval 沙箱的精神：引擎不解释表达式语义，只执行）。
+Given up: trying to have the engine auto-detect or auto-convert parameter-level units, which would require the engine to understand each dynamics expression's physical structure (whether it forms a self-exponential decay), beyond LM format's design principle that "a formula is a mathematical expression, and the engine does not perform semantic inference" (the same spirit as ADR 0070's asteval sandbox: the engine does not interpret an expression's meaning, only executes it).
 
-**获得**：把这类 bug 的判断方法和修复公式写成显式规则（见 `docs/model.md`"公式步长规则"节），避免未来新模型重复踩同一个坑；建模者在写 `description` 时如果用了"半衰期 X 天"、"每年下降 Y" 这类天/年粒度的文献原始表述，现在有明确的检查清单：先确认这条 dynamics 项是类型A还是类型B，再决定换算方式。
+Gained: writing this class of bug's judgment method and fix formula into an explicit rule (see the "Formula Step-Size Rules" section of `docs/model.md`), so future new models do not repeat the same mistake; when a modeler uses a day- or year-granularity literature statement such as "a half-life of X days" or "declines by Y per year" in `description`, there is now a clear checklist: first confirm whether this dynamics term is category A or category B, then decide the conversion method.
 
-## 已知应用此规则修复的模型文件
+## Model Files Known to Have Been Fixed Under This Rule
 
-| 文件 | 参数 | 类型 | 说明 |
+| File | Parameter | Category | Note |
 |---|---|---|---|
-| `s1/ckd_protein/ckd_protein_sim.yaml` | `beta0`、`mu_d`、`mu_u` | B（均为 `-k*state*step` 形式的自衰减/损耗项，target=0） | 2026-06-20 已用线性除法修复；$k_{day}$ 量级很小（<0.002），线性近似与精确解相差<0.1%，可忽略，未重新精算 |
-| 内部模型库另 3 处同类参数 | — | B×1、A×2 | 2026-06-25 分别按对应类型换算修复，详见内部记录 |
+| `s1/ckd_protein/ckd_protein_sim.yaml` | `beta0`, `mu_d`, `mu_u` | B (all of the form `-k*state*step`, a self-decay/loss term with target=0) | Fixed with linear division on 2026-06-20; $k_{day}$ is very small (< 0.002), so the linear approximation differs from the exact solution by < 0.1%, negligible, and was not recomputed exactly |
+| 3 more similar parameters elsewhere in the internal model library | — | B x1, A x2 | Each converted and fixed per its matching category on 2026-06-25; see the internal records for detail |
 
-## 关联
+## Related
 
-- ADR 0104 — per-formula `step_unit` 机制本身
-- `docs/model.md`"公式步长规则"节 — 本规则的建模指南落地位置
-- 内部任务记录 `2026-06-20_task_s2-minipaper-rewrite-eval.md` — 本 bug 的发现过程记录
-- 内部任务记录 `2026-06-25_task_s2-model-bugfix-handoff.md` — 修复执行清单
+- ADR 0104 - the per-formula `step_unit` mechanism itself
+- The "Formula Step-Size Rules" section of `docs/model.md` - where this rule's modeling guidance lives
+- The internal task record `2026-06-20_task_s2-minipaper-rewrite-eval.md` - the record of how this bug was found
+- The internal task record `2026-06-25_task_s2-model-bugfix-handoff.md` - the fix execution checklist

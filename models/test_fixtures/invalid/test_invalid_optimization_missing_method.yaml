@@ -6,18 +6,10 @@ metadata:
       ERROR-DETECTION FIXTURE (intentionally invalid). The `optimization:` block
       declares objectives/startpoint/algorithm but omits the required
       `method` field, which `Validator.validate_model` (validator.py) requires.
-    problem_cn: >
-      错误检测夹具（故意设计成非法）。`optimization:` 块声明了
-      objectives/startpoint/algorithm，但缺少必填的 `method` 字段，
-      而 `Validator.validate_model`（validator.py）要求必须提供该字段。
     result: >
       Loading this model must raise ValueError containing
-      "optimization 缺少 method". See test_verification/errors/test_structural_errors.py.
-    result_cn: >
-      加载该模型时必须抛出 ValueError，错误信息须包含
-      "optimization 缺少 method"。参见 test_verification/errors/test_structural_errors.py。
+      "optimization is missing method". See test_verification/errors/test_structural_errors.py.
     limitations: Not a real model; exists only to exercise this one validator check.
-    limitations_cn: 并非真实模型；仅用于验证这一项校验器检查。
   tags: [test, error-detection, structural, optimization]
 
 variables:

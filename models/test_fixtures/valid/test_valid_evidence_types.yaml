@@ -1,13 +1,13 @@
 metadata:
   todo:
     - type: nosim
-      issue: "仿真未验证通过（从旧文件名后缀 _nosim 迁移而来）"
-      evidence: "迁移自旧版 _nosim 后缀标记，尚未用当前版本 sim_cli 重新运行 --sim 复现，无具体数值或报错记录。"
-      next: "运行 --sim 复现具体报错或异常输出，记录诊断结果（数值/现象）后再判断修复方案。"
+      issue: "Simulation not yet validated (migrated from the old _nosim filename suffix)"
+      evidence: "Migrated from the old _nosim suffix marker; not yet reproduced with the current sim_cli by rerunning --sim, so no specific value or error has been recorded."
+      next: "Run --sim to reproduce the specific error or abnormal output, record the diagnostic finding (a value or observation), then decide on a fix."
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: test_valid_evidence_types
   lm_format_version: "1.0"
   description:
@@ -16,19 +16,11 @@ metadata:
       in a single file. Each evidence variable is auto-converted in place (same name, no suffix)
       and referenced in equations directly. No simulation run needed — this is a loader and
       equation correctness test.
-    problem_cn: >
-      验证 Loader 对单个文件中全部 8 种 evidence 子类型（rr, or, hr, ard, cohens_d, ir, beta,
-      pk）的处理：每个 evidence 变量原地自动转换（同名，无后缀），并直接在 equation 中引用。
-      无需运行仿真——这是一个 Loader 与方程正确性测试。
     result: >
       Each converted evidence value must match the known derivation:
       rr→2.5, ir→0.012/yr, hr→0.009/yr, or→≈1.53, ard→0.008/yr,
       cohens_d→4.08 mL/kg/min, beta→0.45 mmHg/yr, pk→0.0347/h.
-    result_cn: >
-      每个转换后的 evidence 值须与已知推导结果一致：rr→2.5, ir→0.012/yr, hr→0.009/yr,
-      or→≈1.53, ard→0.008/yr, cohens_d→4.08 mL/kg/min, beta→0.45 mmHg/yr, pk→0.0347/h。
     limitations: Values are illustrative; no clinical interpretation intended.
-    limitations_cn: 数值仅为示意，不作临床解读。
   tags: [test, evidence, rr, or, hr, ard, cohens_d, ir, beta, pk]
 
 variables:

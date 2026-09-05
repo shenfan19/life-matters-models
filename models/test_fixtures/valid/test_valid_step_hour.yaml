@@ -7,19 +7,11 @@ metadata:
       dose at 08:00, running 30 days (720 steps). Elimination constant ke = ln(2)/t½ where
       t½ ≈ 20 h; steady state expected within a few days. Also tests the Nelder-Mead
       single-objective solver as an alternative to NSGA-II.
-    problem_cn: >
-      端到端验证 1 小时步长：一室 PK 模型，每天 08:00 口服一次剂量，运行 30 天（720 步）。
-      消除速率常数 ke = ln(2)/t½，其中 t½ ≈ 20 小时；预期在数天内达到稳态。同时测试
-      Nelder-Mead 单目标求解器作为 NSGA-II 之外的替代方案。
     result: >
       Plasma concentration should exhibit a daily peak-and-decay pattern reaching periodic
       steady state by roughly day 5. The optimiser should find the dose that maximises mean
       concentration subject to a peak ceiling constraint, converging in seconds.
-    result_cn: >
-      血浆浓度应呈现每日"达峰-衰减"模式，大约在第 5 天左右达到周期性稳态。优化器应在峰值上限
-      约束下找到使平均浓度最大化的剂量，并在数秒内收敛。
     limitations: Not physiologically calibrated; values chosen for numeric clarity only.
-    limitations_cn: 未经生理学标定；参数取值仅为使数值结果清晰易辨而选定。
   tags: [test, step_size, hour, pharmacokinetics, nelder-mead, single-objective]
 variables:
   plasma_conc:

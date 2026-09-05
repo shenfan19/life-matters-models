@@ -1,29 +1,44 @@
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Missing sufficient literature citation support (migrated from the old _noref filename suffix)"
+      evidence: "Migrated from the old _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check for and fill in missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   authors:
     - name: Fan Shen
       email: shenfan@mail.sysu.edu.cn
   conflicts: []
   description:
     problem: >
-      足球是全球参与人数最多的运动，90 分钟比赛中职业球员平均跑动距离约 10-13 km，其中高速冲刺占 800-1200 m。其生理特征是有氧耐力与无氧爆发的结合：持续中强度跑动消耗肌糖原，而高频冲刺触发无氧代谢并升高乳酸；技术表现，即传球精准度和控球质量，在 60-75 分钟后随疲劳显著下降，糖原在后半段成为关键限制因素。冲刺战术比例是疲劳积累速率的核心调控杠杆。
+      Football (soccer) is the world's most participated-in sport; a professional player covers
+      about 10-13 km on average over a 90-minute match, of which 800-1200 m is high-speed
+      sprinting. Its physiological character combines aerobic endurance with anaerobic bursts:
+      sustained moderate-intensity running depletes muscle glycogen, while frequent sprints trigger
+      anaerobic metabolism and raise lactate; technical performance, meaning passing accuracy and
+      ball control, declines markedly with fatigue after 60-75 minutes, with glycogen becoming a
+      key limiting factor in the second half. The sprint-tactic proportion is the core lever
+      controlling the fatigue-accumulation rate.
     result: >
-      仿真尚未运行。理论预期：RPE=6、冲刺占比 25% 的 90 分钟比赛中，肌糖原从 100% 满储量逐步消耗至约 40-50%，疲劳指数在 80 分钟后升至约 0.7-0.8，技术表现评分从 80 分降至约 60-65 分，综合表现评分约 55-65 分；全场热量消耗约 800-1000 kcal。
+      Not yet run. Theoretical expectation: in a 90-minute match at RPE=6 with a sprint proportion
+      of 25%, muscle glycogen depletes gradually from a full store of 100% to about 40-50%, the
+      fatigue index rises to about 0.7-0.8 after 80 minutes, the technique score falls from 80 to
+      about 60-65, and the overall performance score is about 55-65; the match burns roughly
+      800-1000 kcal overall.
     limitations: >
-      此文件标记为 noref，模型参数缺乏正式文献来源，机制为定性近似，不适合用于高精度定量预测。未区分前锋、中场、后卫等位置的跑动模式和体能消耗差异；补液策略和环境温度对糖原消耗和疲劳的影响未建模。
+      This file is marked noref, and its model parameters lack a formal literature source, with the
+      mechanism a qualitative approximation not suited to high-precision quantitative prediction.
+      Running-pattern and fitness-expenditure differences between positions such as forward,
+      midfielder, and defender are not distinguished; the effect of hydration strategy and ambient
+      temperature on glycogen depletion and fatigue is not modeled.
   name: football
   lm_format_version: "1.0"
   ratings:
-    importance: 0.25 - 足球是全球第一大运动，间歇高强度生理特征有广泛研究价值；noref，复用价值极低
-    variable: 0.25 - noref标记，参数无文献来源，机制为定性描述
-    equation: 0.25 - 方程结构存在但为定性描述，无文献依据，未见独立复现
-    simulation: 0.25 - 未发现阻断性todo但未确认实测跑通，也未与独立文献目标数值比对
-    optimization: 0.25 - 决策变量搜索结构存在，但缺乏文献支撑的权衡证据
-    confidence: 0.0 - 参数无文献来源，未跑通独立验证
+    importance: 0.25 - Football is the world's biggest sport, and its intermittent high-intensity physiology has broad research value; noref, so reuse value is very low
+    variable: 0.25 - Marked noref, with parameters having no literature source and the mechanism a qualitative description
+    equation: 0.25 - An equation structure exists but is a qualitative description with no literature basis and no independent reproduction seen
+    simulation: 0.25 - No blocking todo found, but not confirmed to actually run, and not compared against an independent literature target value
+    optimization: 0.25 - A decision-variable search structure exists, but lacks literature-backed tradeoff evidence
+    confidence: 0.0 - Parameters have no literature source, and no independent validation has been run
   tags:
     - fitness
     - football
@@ -36,7 +51,7 @@ variables:
     bounds:
       - 0.0
       - 10.0
-    description: 当前运动强度（RPE 0-10）
+    description: The current exercise intensity (RPE 0-10)
     type: input
     unit: RPE
     value: 6.0
@@ -44,23 +59,23 @@ variables:
     bounds:
       - 0.0
       - 1.0
-    description: 冲刺占比（0-1），高值=快速反击/逼抢战术
+    description: The sprint proportion (0-1), higher means a fast-break or high-pressing tactic
     type: input
-    unit: 比例
+    unit: fraction
     value: 0.25
   heart_rate:
     bounds:
       - 60.0
       - 200.0
-    description: 心率
+    description: Heart rate
     type: state
-    unit: 次/分
+    unit: bpm
     value: 70.0
   vo2:
     bounds:
       - 0.0
       - 70.0
-    description: 摄氧量
+    description: Oxygen uptake
     type: state
     unit: mL/kg/min
     value: 5.0
@@ -68,23 +83,23 @@ variables:
     bounds:
       - 0.0
       - 15000.0
-    description: 累计跑动距离
+    description: Cumulative running distance
     type: state
-    unit: 米
+    unit: meters
     value: 0.0
   sprint_distance:
     bounds:
       - 0.0
       - 3000.0
-    description: 高速冲刺累计距离
+    description: Cumulative high-speed sprint distance
     type: state
-    unit: 米
+    unit: meters
     value: 0.0
   calories_burned:
     bounds:
       - 0.0
       - 1500.0
-    description: 消耗热量
+    description: Calories burned
     type: state
     unit: kcal
     value: 0.0
@@ -92,15 +107,15 @@ variables:
     bounds:
       - 0.0
       - 1.0
-    description: 疲劳指数（0=无疲劳，1=力竭）
+    description: The fatigue index (0=no fatigue, 1=exhaustion)
     type: state
-    unit: 无量纲
+    unit: dimensionless
     value: 0.0
   lactate:
     bounds:
       - 0.8
       - 15.0
-    description: 血乳酸浓度
+    description: Blood lactate concentration
     type: state
     unit: mmol/L
     value: 1.0
@@ -108,7 +123,7 @@ variables:
     bounds:
       - 0.0
       - 100.0
-    description: 肌糖原储量百分比
+    description: Muscle glycogen store percentage
     type: state
     unit: '%'
     value: 100.0
@@ -116,90 +131,90 @@ variables:
     bounds:
       - 0.0
       - 100.0
-    description: 有氧适能指数（VO2max代理）
+    description: An aerobic-fitness index (a VO2max proxy)
     type: parameter
-    unit: 分
+    unit: score
     value: 65.0
   technical_performance:
     bounds:
       - 0.0
       - 100.0
-    description: 技术发挥评分（传球、控球质量）
+    description: A technique score (passing and ball-control quality)
     type: state
-    unit: 分
+    unit: score
     value: 80.0
   performance:
     bounds:
       - 0.0
       - 100.0
-    description: 综合比赛表现评分
+    description: An overall match-performance score
     type: state
-    unit: 分
+    unit: score
     value: 75.0
 equations:
   heart_rate_dynamics:
     condition: true
-    description: 心率随强度和疲劳变化
+    description: Heart rate changes with intensity and fatigue
     dynamics:
       heart_rate: 60 + game_intensity * 13 + fatigue * 15
     priority: 1
   vo2_dynamics:
     condition: true
-    description: 摄氧量跟随心率
+    description: Oxygen uptake follows heart rate
     dynamics:
       vo2: max(5, (heart_rate - 60) / 140 * aerobic_fitness)
     priority: 2
   distance_accumulation:
     condition: true
-    description: 跑动距离累积（步长单位：分钟）
+    description: Running distance accumulates (the step unit is minutes)
     dynamics:
       distance_covered: distance_covered + (100 + game_intensity * 10) * (1 - fatigue * 0.3)
     priority: 3
   sprint_distance_accumulation:
     condition: sprint_ratio > 0.15
-    description: 冲刺距离累积
+    description: Sprint distance accumulates
     dynamics:
       sprint_distance: sprint_distance + sprint_ratio * 30 * (1 - fatigue * 0.4)
     priority: 4
   lactate_sprint:
     condition: sprint_ratio > 0.3
-    description: 高冲刺比时乳酸升高
+    description: Lactate rises at a high sprint proportion
     dynamics:
       lactate: min(15, lactate + sprint_ratio * 0.8 * (1 - fatigue * 0.2))
     priority: 5
   lactate_clearance:
     condition: sprint_ratio <= 0.3
-    description: 低强度时乳酸清除
+    description: Lactate clears at a low intensity
     dynamics:
       lactate: max(1.0, lactate - 0.15 * (1 - game_intensity / 15))
     priority: 6
   glycogen_depletion:
     condition: true
-    description: 肌糖原随时间消耗，冲刺加速消耗
+    description: Muscle glycogen depletes over time, accelerated by sprinting
     dynamics:
       muscle_glycogen: max(0, muscle_glycogen - (0.05 + sprint_ratio * 0.08) * game_intensity / 10)
     priority: 7
   fatigue_accumulation:
     condition: true
-    description: 疲劳积累，糖原耗尽时加速
+    description: Fatigue accumulates, accelerating once glycogen runs low
     dynamics:
       fatigue: min(1.0, fatigue + (game_intensity * 0.0012 + sprint_ratio * 0.0008) * (1 + max(0, (50 - muscle_glycogen) / 100)))
     priority: 8
   calories_accumulation:
     condition: true
-    description: 热量消耗
+    description: Calories burned
     dynamics:
       calories_burned: calories_burned + (game_intensity * 1.1 + sprint_ratio * 0.8) * (1 - fatigue * 0.1)
     priority: 9
   technical_performance_decay:
     condition: fatigue > 0.4
-    description: 疲劳影响技术表现
+    description: Fatigue affects technical performance
     dynamics:
       technical_performance: max(40, technical_performance - (fatigue - 0.4) * 0.8)
     priority: 10
   performance_score:
     condition: true
-    description: 综合表现评分
+    description: Overall performance score
     dynamics:
       performance: max(0, min(100, technical_performance * 0.5 + (1 - fatigue) * 30 + (muscle_glycogen / 100) * 20))
     priority: 11
@@ -216,11 +231,11 @@ simulation:
       - variable: game_intensity
         time_start: "15:00"
         value: 6.0
-        label: 比赛强度
+        label: Match intensity
       - variable: sprint_ratio
         time_start: "15:00"
         value: 0.25
-        label: 冲刺占比
+        label: Sprint proportion
   output_variables:
     - heart_rate
     - vo2
@@ -239,26 +254,26 @@ optimization:
     - variable: distance_covered
       direction: maximize
       metric: final
-      description: 最大化全场跑动距离
+      description: Maximizing the total running distance for the match
     - variable: fatigue
       direction: minimize
       metric: final
-      description: 最小化比赛结束时疲劳
+      description: Minimizing fatigue at the end of the match
   constraints:
     - variable: lactate
       condition: <= 12.0
       type: hard
-      description: 血乳酸不超过 12 mmol/L
+      description: Blood lactate should not exceed 12 mmol/L
     - variable: muscle_glycogen
       condition: ">= 20"
       type: soft
-      description: 保留 20% 肌糖原储备
+      description: Keep a 20% muscle-glycogen reserve
   startpoint:
     regimens:
       - variable: game_intensity
         time_start: "15:00"
         time_end: "15:00"
-        label: 比赛强度（RPE 3-9）
+        label: Match intensity (RPE 3-9)
         optimize:
           value: [3.0, 9.0]
   algorithm:

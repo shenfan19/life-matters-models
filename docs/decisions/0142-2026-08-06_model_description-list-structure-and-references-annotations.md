@@ -1,64 +1,64 @@
-# ADR 0142 — description 改列表结构，来源文献贡献说明搬进 references
+# ADR 0142 - Changing description to a List Structure, Moving Source-Literature Contribution Notes into references
 
-## 状态
+## Status
 
-✅ 已实施
+Implemented
 
-## 日期
+## Date
 
 2026-08-06
 
-## 背景
+## Background
 
-ADR 0141 把 `papers/` 模型的 `description` 定为 `problem/method/result/limitations` 四字段，但实际写作中暴露出两个问题。
+ADR 0141 set `papers/` model `description` to the four fields `problem/method/result/limitations`, but writing against it in practice exposed two problems.
 
-第一，来源文献混在 `method` 的叙述里，读者要从整段文字里自己挑出这个模型到底用了哪些论文，而这恰恰是 LM 相对单篇论文复现最值得凸显的信息，理应有清楚的位置直接列出。
+First, source literature was mixed into `method`'s prose, leaving the reader to pick out from a whole paragraph which papers this model actually used, when that is exactly the information LM most needs to highlight relative to reproducing a single paper, and it deserved a clear place to be listed directly.
 
-第二，`problem`/`result` 写成不换行的单个长段落时，多个并列事实、多组数字、多个来源文献的贡献挤在一起，读者难以分辨一句话到底在说哪一条，也难以核对相邻两句话是否前后矛盾。`s1/infant_breastfeeding` 下几个演示变体文件的 `result` 字段是典型案例：单段文字里同时包含结论、支撑数据、诊断过程和下一步计划，读完之后抓不住这段话真正的结论是什么。
+Second, when `problem`/`result` were written as a single unbroken long paragraph, several parallel facts, several groups of numbers, and several source publications' contributions were all crowded together, making it hard for a reader to tell which sentence was saying what, and hard to check whether two adjacent sentences contradicted each other. The `result` field in a few demonstration-variant files under `s1/infant_breastfeeding` was a typical case: a single paragraph mixed together a conclusion, its supporting data, the diagnostic process, and the next step, leaving a reader unable to grasp what the paragraph's actual conclusion was after reading it.
 
-## 决策过程
+## Decision Process
 
-这次改动分三步收敛，记录下来是为了让后来者知道中间两个方案为什么被放弃，不用重新试一遍。
+This change converged in three steps; recording them here so a later reader knows why the two intermediate approaches were abandoned and does not need to try them again.
 
-**第一步，独立 `citation` 字段。** 把来源文献单独列成一个新字段，放在 `problem` 和 `method` 之间，格式为"作者 年份：这篇文献在本模型里具体提供什么机制或数据"。在 `s1/infant_breastfeeding` 全部当前版本文件上试写一遍后发现这个字段和 `problem` 里"每篇来源为什么单独回答不了这个问题"这一条目内容高度重复，读者要在两个字段之间来回对照才能知道某篇文献解决的是哪一个缺口，反而增加了阅读负担，`citation` 作为独立字段的方案被放弃。
+**Step 1, a standalone `citation` field.** Source literature was split out into a new field, placed between `problem` and `method`, formatted as "Author Year: what mechanism or data this publication specifically supplies to this model." After trying this out on every current-version file under `s1/infant_breastfeeding`, it turned out to overlap heavily with the item in `problem` explaining why each source alone cannot answer the question, forcing a reader to cross-reference between the two fields to see which gap a given publication filled, which added reading burden instead of reducing it; the standalone `citation` field approach was abandoned.
 
-**第二步，并入 `problem` 的嵌套子条目。** 把来源文献的贡献说明直接挂在 `problem` 里它所属的机制条目下面，形成两级列表：外层是机制缺口，内层是该机制依赖的具体文献。这一步解决了字段间来回对照的问题，但很快暴露出新的问题：一个模型融合的文献一多，`problem` 本身被拖得很长，两层缩进的列表读起来依然吃力，机制层面的判断被具体文献的细节淹没。
+**Step 2, a nested sub-item under `problem`.** The literature-contribution note was attached directly under the mechanism item it belonged to inside `problem`, forming a two-level list, an outer level of mechanism gaps and an inner level of the specific literature each mechanism depends on. This solved the cross-referencing problem, but quickly exposed a new one: once a model combined many publications, `problem` itself grew very long, a two-level indented list was still hard to read, and the mechanism-level judgment got buried under specific-literature detail.
 
-**第三步，贡献说明搬进 `metadata.references`。** 每篇文献具体贡献了什么，本质上是这篇文献自身的属性，不是 `problem` 的属性，应该挂在它所属的 reference 条目上，而不是复制一份塞进 `problem`。`metadata.references` 的每一项因此从纯字符串扩展为可选的 `{citation, description}` 对象，`problem` 只保留机制分组和缺口陈述这一层判断，不再嵌套列出具体文献。GUI 侧边栏与导出报告的参考文献框同步支持两列显示：左边是引用本身，右边是贡献说明。
+**Step 3, moving the contribution note into `metadata.references`.** What a given publication specifically contributes is, in essence, a property of that publication itself, not a property of `problem`, and it should hang off the reference entry it belongs to rather than being copied and stuffed into `problem`. Each entry in `metadata.references` was accordingly expanded from a plain string into an optional `{citation, description}` object, and `problem` kept only the mechanism-grouping and gap-statement layer of judgment, no longer nesting specific literature inside it. The GUI sidebar and exported-report reference box were updated to support a two-column display accordingly, the citation itself on the left and the contribution note on the right.
 
-引用格式上比较过作者年份，即 Chicago 风格，和数字编号两种写法。数字编号更短，但 GUI 是纯文本渲染，没有点击跳转，读者仍要手动去数编号对应第几条；这批 YAML 又是反复迭代改写的常态，一旦引用列表增删顺序变化，正文里所有编号都要跟着重新核对，没有校验能提醒漏改；而且 `variables.<name>.reference`、`formulas.<name>.reference` 等字段已经统一使用作者年份格式，编号会在同一个文件里制造两套引用风格。最终确定统一用作者年份，不引入数字编号；年份用括号夹注，这是全局括号规则里引文格式这一类的豁免范围。
+For citation format, an author-year style (Chicago style) was compared against numbered citations. Numbering is shorter, but the GUI renders plain text with no click-through, so a reader still has to manually count which entry a number refers to; these YAML files are also routinely rewritten iteratively, so any change to the reference list's order requires re-checking every number in the body text with no validation to flag a missed one; and fields such as `variables.<name>.reference` and `formulas.<name>.reference` already uniformly use an author-year format, so numbering would create two citation styles within the same file. Author-year was settled on, with no numbered citations introduced; the year is set in a parenthetical, which falls under the citation-format exemption in the global parenthesis rule.
 
-引用在句子里的位置上比较过句首叙述式，即"Cavell（1981）报告了……"，和句末夹注式，即"……（Cavell 1981）"两种写法。句首写法能让读者一眼扫到是谁的文献，但学术引用惯例里叙述式引用是留给专门讨论某位作者做了什么的场合，这批文字陈述的是机制本身，作者不是句子的主语，按惯例应该用句末夹注；按作者扫读的需求已经由 `metadata.references` 的完整书目满足，不需要在正文里重复。最终确定统一用句末括号夹注。
+For a citation's position within a sentence, a sentence-initial narrative form, such as "Cavell (1981) reported that...," was compared against a sentence-final parenthetical form, such as "...(Cavell 1981)." The sentence-initial form lets a reader spot whose publication it is at a glance, but academic citation convention reserves a narrative citation for contexts specifically discussing what a particular author did, whereas this text states the mechanism itself, with the author not the sentence's subject, so a sentence-final parenthetical is the conventional choice; a reader's need to scan by author is already served by `metadata.references`'s full bibliography and does not need repeating in the body text. A sentence-final parenthetical was settled on uniformly.
 
-GUI 参考文献框此前用数组下标编号显示，即 `[1]` `[2]`，这次一并去掉了编号，改成按引用字符串本身的字母序排列：这批引用清一色是"姓氏 (年份) 标题……"的格式，直接按字符串排序等价于按第一作者姓氏字母序，读者从正文的作者年份夹注去查对应条目时，靠姓氏定位比数编号更直接，也避免了可见的连续数字让人误以为正文引用是按编号交叉引用的。
+The GUI's reference box used to display entries with an array-index number, such as `[1]` `[2]`; this change also removed the numbering, switching to ordering by the citation string's own alphabetical order: these citations are uniformly in a "Surname (Year) Title..." format, so sorting directly by string is equivalent to sorting by the first author's surname, and a reader looking up an entry from the body text's author-year parenthetical can locate it by surname more directly than by counting a number, which also avoids the visible run of consecutive numbers giving the false impression that body-text citations cross-reference by number.
 
-## 决策
+## Decision
 
-### 1. `papers/` 模型 description 保持四字段：`problem / method / result / limitations`
+### 1. `papers/` model description keeps its four fields: `problem / method / result / limitations`
 
-- `problem`：先给主题句，再按机制分组逐条列出每组机制各自没有覆盖的边界，这是模型需要融合多篇文献的原因；边界描述优先取文献自己承认的局限，暂时无法逐篇核实时可以留空，不强制 AI 完成。不列出具体文献，那是 `metadata.references` 的职责。
-- `method`：不列出来源文献本身，只说明 `problem` 里的机制是怎么被组合起来的，即共享哪个决策变量或资源竞争通路。
-- `result`：每条结果先给结论本身，再补充支撑细节，重点说明多篇文献融合后改变了什么、保留了什么不变。
-- `limitations`：不变，是模型自身的局限，与 `problem` 里单篇来源的局限是两个不同层次。
+- `problem`: state a topic sentence first, then list, grouped by mechanism, the boundary each group of mechanisms fails to cover on its own, which is the reason the model needs to combine several publications; the boundary description should preferentially draw on a limitation the publication itself acknowledges, and can be left blank when it cannot yet be verified paper by paper, without requiring an AI to complete it. Specific publications are not listed here; that is `metadata.references`'s job.
+- `method`: does not list the source publications themselves, only explains how the mechanisms in `problem` are combined, that is, which decision variable or resource-competition pathway they share.
+- `result`: state the conclusion itself for each result first, then add supporting detail, focusing on what combining several publications changed and what it left unchanged.
+- `limitations`: unchanged, the model's own limitations, a different layer from the per-source limitations in `problem`.
 
-四字段是写作建议，不是 schema 硬约束，`references/` 等非 `papers/` 模型不受此限制。
+The four fields are a writing recommendation, not a hard schema constraint; non-`papers/` models such as `references/` are not bound by this.
 
-### 2. `metadata.references` 新增可选的两字段对象写法
+### 2. `metadata.references` adds an optional two-field object form
 
-数组的每一项可以是纯字符串，即完整的文献引用本身，也可以是对象 `{citation: "完整引用字符串", description: "这篇文献在本模型里具体贡献了什么机制或数据"}`，两种写法可以在同一个数组里混用。`description` 优先克制，只写这篇文献在这个具体模型里的角色，不是文献摘要。
+Each array entry can be a plain string, the full citation text itself, or an object `{citation: "full citation text", description: "the specific mechanism or data this publication contributes to this model"}`, and the two forms can be mixed within the same array. `description` should stay restrained, stating only this publication's role in this specific model, not a summary of the publication.
 
-### 3. 写作结构建议：并列事实用列表，引用统一句末夹注
+### 3. Writing-structure recommendation: parallel facts as a list, citations uniformly as a sentence-final parenthetical
 
-`problem`/`method`/`result` 只要出现并列的多条事实就用 `- ` 起始的列表逐条写；只有确实是单一整体判断时才写成一句连续的话。引用作者年份统一放在句末括号夹注，不放句首。全局的括号/破折号/硬换行规则同样适用于 `description` 的每个字段，YAML 用 `|` 块写多行时，列表项各占一行，但列表项内部和非列表的整句话都不能按字符宽度手动断行。
+Whenever `problem`/`method`/`result` contains several parallel facts, write them item by item as a `- `-prefixed list; write a single continuous sentence only when it truly is one unified judgment. An author-year citation is always placed in a parenthetical at the end of the sentence, never at the start. The global rules on parentheses, dashes, and hard-wrapping apply to every field of `description` as well; when YAML writes multiple lines with a `|` block, each list item occupies its own line, but neither the inside of a list item nor a non-list full sentence should be manually wrapped by character width.
 
-## 影响
+## Impact
 
-- `docs/model.md` 的 `metadata.description` 章节和 `metadata.references` 章节已更新为最终写法。
-- `gui/src/components/sim_tab/SimIntroTab.tsx`、`gui/src/components/sim_tab/ReportButton.tsx` 已支持 `references` 的对象写法、字母序排列和两列渲染，四个 `locales/engine/*.json` 已补充对应的列标题翻译。
-- `models/papers/s1/infant_breastfeeding/infant_breastfeeding_sim.yaml`、`infant_breastfeeding_night_tradeoff_demo.yaml` 两个真正带完整引用列表的文件已按最终写法重写；同目录其余变体文件本来就是指针写法，指向这两个文件，不受影响。
+- The `metadata.description` and `metadata.references` sections of `docs/model.md` have been updated to the final form.
+- `gui/src/components/sim_tab/SimIntroTab.tsx` and `gui/src/components/sim_tab/ReportButton.tsx` now support the object form of `references`, alphabetical ordering, and two-column rendering; the four `locales/engine/*.json` files have gained the corresponding column-header translations.
+- The two files with a genuine full reference list, `models/papers/s1/infant_breastfeeding/infant_breastfeeding_sim.yaml` and `infant_breastfeeding_night_tradeoff_demo.yaml`, have been rewritten to the final form; the other variant files in the same directory already use a pointer form referring to these two files and are unaffected.
 
-## 非目标
+## Non-Goals
 
-- 不把四字段、`references` 的对象写法变成 schema 硬约束，`references/` 模型不受影响。
-- 不引入数字编号引用。
-- 不追溯批量重写 `models/papers/` 下其余模型，本 ADR 只新增字段定义和写作建议，历史模型的迁移是后续独立工作。
+- This does not turn the four fields or `references`'s object form into a hard schema constraint; `references/` models are unaffected.
+- This does not introduce numbered citations.
+- This does not rewrite the rest of the models under `models/papers/` retroactively in bulk; this ADR only adds the field definitions and writing recommendations, and migrating historical models is separate follow-up work.

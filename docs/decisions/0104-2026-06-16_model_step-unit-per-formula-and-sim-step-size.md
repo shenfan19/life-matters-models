@@ -1,33 +1,33 @@
-# ADR 0104 — 步长设计重构：per-formula step_unit + simulation.step_size
+# ADR 0104 - A Step-Size Design Refactor: per-formula step_unit + simulation.step_size
 
-**日期**：2026-06-16  
-**状态**：已采纳  
-**替代**：ADR 0046（metadata.step_size 设计）
-
----
-
-## 背景
-
-ADR 0046 将 `step_size` 放在 `metadata` 下，作为整个模型的全局步长，同时赋予它两个角色：
-
-1. **公式语义单位**：公式中 `step` 符号所代表的时间长度
-2. **仿真执行步长**：引擎每步实际推进的时间
-
-此外，`optimization.step_size` 可选地覆盖仿真执行步长用于优化。
-
-**问题**：
-
-- `metadata` 的定位是描述性字段（name、tags、description），包含计算语义的步长在语义上不属于此处。
-- `optimization.step_size` 的存在使得这两个角色已经分离，但仿真侧没有对称字段，导致不对称。
-- 公式的步长单位是*公式本身的属性*（系数按什么时间尺度标定），而不是模型级别的全局属性——跨模块 import 时，同一运行中的不同公式可能来自不同步长的源模型，全局 metadata 字段无法准确表达这一差异。
+**Date**: 2026-06-16
+**Status**: Adopted
+**Supersedes**: ADR 0046 (the metadata.step_size design)
 
 ---
 
-## 决策
+## Background
 
-将两个角色彻底分离，使用两个独立字段：
+ADR 0046 placed `step_size` under `metadata` as a whole model's global step size, giving it two roles at once:
 
-### 1. `formulas.<name>.step_unit`（必填，字符串）
+1. A formula's semantic unit: the length of time the `step` symbol represents inside a formula.
+2. The simulation's execution step size: the amount of time the engine actually advances per step.
+
+In addition, `optimization.step_size` could optionally override the simulation's execution step size for optimization.
+
+Problems:
+
+- `metadata`'s purpose is descriptive fields (name, tags, description); a step size carrying computational semantics does not semantically belong there.
+- `optimization.step_size`'s existence already separates the two roles, but the simulation side had no symmetric field, creating an asymmetry.
+- A formula's step-size unit is a property of the formula itself (the time scale its coefficients were calibrated at), not a model-level global property; when importing across modules, different formulas within the same run may come from source models with different step sizes, and a global metadata field cannot accurately express this difference.
+
+---
+
+## Decision
+
+Fully separate the two roles into two independent fields:
+
+### 1. `formulas.<name>.step_unit` (required, a string)
 
 ```yaml
 formulas:
@@ -39,12 +39,12 @@ formulas:
     priority: 7
 ```
 
-- 声明该条公式中 `step` 符号所代表的时间单位。
-- **必填**：validator 强制检查，缺失即报错。
-- 无 `value` 字段——公式校准单位的 value 永远是 1，不需要声明。
-- 跨模块 import 时，每条公式携带自己的 `step_unit`，loader 直接读取，无需查询来源模块的 metadata。
+- Declares the time unit the `step` symbol represents inside this formula.
+- Required: enforced by the validator, raising an error if missing.
+- No `value` field: a formula's calibration-unit value is always 1 and needs no declaration.
+- When importing across modules, each formula carries its own `step_unit`, read directly by the loader with no need to look up the source module's metadata.
 
-### 2. `simulation.step_size`（必填，`{value, unit}`）
+### 2. `simulation.step_size` (required, `{value, unit}`)
 
 ```yaml
 simulation:
@@ -55,59 +55,59 @@ simulation:
   end_date:   "YYYY-MM-DD"
 ```
 
-- 声明仿真执行的步长，与 `optimization.step_size` 完全对称。
-- **必填**：validator 强制检查。
-- `optimization.step_size` 保持可选（缺省沿用 API 传入的覆盖值）。
+- Declares the simulation's execution step size, fully symmetric with `optimization.step_size`.
+- Required: enforced by the validator.
+- `optimization.step_size` stays optional (defaulting to an override value passed in through the API, when omitted).
 
-### 3. `step` 数值的计算方式
+### 3. How the `step` value is computed
 
-引擎每步将 `simulation.step_size` 换算为秒（`step_size_sec`），将 `formula.step_unit` 也换算为秒（`step_unit_sec`），两者相除得到注入公式的 `step` 数值：
+At each step, the engine converts `simulation.step_size` to seconds (`step_size_sec`) and `formula.step_unit` to seconds as well (`step_unit_sec`), dividing the two to get the `step` value injected into the formula:
 
 ```
 step = step_size_sec / step_unit_sec
 ```
 
-示例：`simulation.step_size = 1 day`，`formula.step_unit = hour` → `step = 86400 / 3600 = 24`。
+Example: `simulation.step_size = 1 day`, `formula.step_unit = hour` gives `step = 86400 / 3600 = 24`.
 
-### 4. `metadata.step_size` 移除
+### 4. `metadata.step_size` removed
 
-- 从 metadata 中删除 `step_size` 字段。
-- 现有 YAML 文件全部迁移：`metadata.step_size` 拆分为 `simulation.step_size` + 每条 `formula.step_unit`。
+- The `step_size` field is removed from metadata.
+- Every existing YAML file is migrated: `metadata.step_size` is split into `simulation.step_size` plus a `step_unit` on each formula.
 
 ---
 
-## 引擎适配
+## Engine Adaptation
 
-| 模块 | 变更 |
+| Module | Change |
 |------|------|
-| `loader.py` | 读取 `simulation.step_size` 而非 `metadata.step_size`；为每条公式读取 `form_data['step_unit']` 并设 `formula.step_unit` 和 `formula.step_size_sec` |
-| `validator.py` | 新增：`simulation.step_size` 必填检查；每条 formula 的 `step_unit` 必填且值域检查 |
-| `base.py` | `Formula` dataclass 新增 `step_unit: Optional[str]` 字段 |
-| `optimizer_engine.py` | 不变（已独立读取 `optimization.step_size`） |
-| `simulator_engine.py` | 不变（读取 loader 注入的 `simulator['step_size']`） |
+| `loader.py` | Reads `simulation.step_size` instead of `metadata.step_size`; for each formula, reads `form_data['step_unit']` and sets `formula.step_unit` and `formula.step_size_sec` |
+| `validator.py` | New: a required check for `simulation.step_size`; a required-plus-value-range check for each formula's `step_unit` |
+| `base.py` | The `Formula` dataclass gains a `step_unit: Optional[str]` field |
+| `optimizer_engine.py` | Unchanged (already reads `optimization.step_size` independently) |
+| `simulator_engine.py` | Unchanged (reads the `simulator['step_size']` injected by the loader) |
 
 ---
 
-## 跨模块 import 行为
+## Cross-Module Import Behavior
 
-跨步长 import 之前依赖 `merged_sources['step_sizes']` 字典（记录每个来源模块的 metadata.step_size）。
+Cross-step-size imports used to rely on the `merged_sources['step_sizes']` dict (recording each source module's `metadata.step_size`).
 
-新方案：每条公式的 `step_unit` 字段在 import 合并后仍保留在 formula 数据中，loader 直接读取——不再需要来源模块的 step_sizes 索引。
+New approach: each formula's `step_unit` field stays with the formula's data after import merging, and the loader reads it directly, with no need for a source-module step_sizes index anymore.
 
-示例：top 模型（step=1 hour）import base 模型（step=1 day）：
-- `mass_decay`（来自 base）：`step_unit: day` → `step_size_sec = 86400`
-- `drug_decay`（top 本身）：`step_unit: hour` → `step_size_sec = 3600`
+Example: a top model (step = 1 hour) imports a base model (step = 1 day):
+- `mass_decay` (from base): `step_unit: day` gives `step_size_sec = 86400`
+- `drug_decay` (the top model's own): `step_unit: hour` gives `step_size_sec = 3600`
 
-引擎在每步对每条公式分别注入正确的 `step` 值。
+The engine injects the correct `step` value for each formula independently at each step.
 
 ---
 
-## 取舍
+## Trade-Offs
 
-**放弃**：`metadata.step_size` 作为全局默认，可以让用户在单模块模型中少写一个字段。
+Given up: `metadata.step_size` as a global default, which let a user write one fewer field in a single-module model.
 
-**获得**：
-- 语义显式：公式步长是公式的属性，不是模型的属性
-- 对称性：sim 和 opt 各自独立声明步长，地位平等
-- 无隐式继承：validator 强制全显式，符合 LM format 的平直表达原则
-- 跨模块 import 自包含：每条公式携带自己的单位，无需全局索引
+Gained:
+- Explicit semantics: a formula's step size is the formula's own property, not the model's property.
+- Symmetry: sim and opt each independently declare their step size, on equal footing.
+- No implicit inheritance: the validator forcibly requires everything explicit, matching LM format's flat-expression principle.
+- Self-contained cross-module import: each formula carries its own unit, with no global index needed.

@@ -1,118 +1,69 @@
-# 0131 — sustained value 语义修正：每个匹配日独立满额，取代 0099 的"整跨度总量"
+# 0131 - A Correction to Sustained value Semantics: Each Matching Day Independently Delivers the Full Amount, Superseding 0099's "Total Across the Whole Span"
 
-**日期**：2026-07-13
-**状态**：✅ 已实施（取代 0099 的 N_steps 公式，取代 0126 第3条）
-**类别**：仿真引擎 / regimen 语义
+**Date**: 2026-07-13
+**Status**: Implemented (supersedes 0099's N_steps formula, supersedes item 3 of 0126)
+**Category**: Simulation engine / regimen semantics
 
 ---
 
-## 背景
+## Background
 
-ADR 0099 把 sustained `value` 定义为"整个生效窗口内的总量"：`N_steps = 生效窗口总时长 /
-step_size`，其中"生效窗口总时长" = `date_range` 覆盖的全部匹配日天数 × 每日窗宽
-（`_n_active_days` × `_time_range_day_seconds`）。ADR 0126（2026-07-09）第3条重新确认了
-这条规则。这套设计的目标是"`step_size` 只管精度，不改变总贡献量"——在**固定的活跃天数**下，
-这个目标确实达到了。
+ADR 0099 defined sustained's `value` as "the total quantity across the whole effective window": `N_steps = the effective window's total duration / step_size`, where "the effective window's total duration" equals the number of matching days `date_range` covers times the daily window width (`_n_active_days` times `_time_range_day_seconds`). ADR 0126 (2026-07-09) item 3 reconfirmed this rule. The goal of this design was that "`step_size` should only affect precision, never the total contribution"; under a fixed number of active days, this goal was indeed met.
 
-2026-07-13 排查论文 S1 Banister 数值精度验证时，用户指出这套定义有反直觉的副作用：**`value`
-的累计总量与"实际匹配了多少天"成反比**——同一个 `value`，`date_range` 覆盖的天数越多，
-每天摊到的实际数值反而越小；改变仿真总时长、`date_range`、或 `days` 星期过滤，都会在不改
-`value` 的前提下悄悄改变"每天实际交付多少"。这与"日速率"这一常见建模意图（如"每天恒定
-50 单位训练负荷，不管这个方案跑多少天"）正好相反：真正的日速率应该是"每天交付量不变，
-总量随天数正比例变化"，而不是"总量不变，每天交付量随天数反比变化"。
+While verifying the S1 Banister numeric-precision validation on 2026-07-13, the user pointed out that this definition has a counterintuitive side effect: `value`'s accumulated total is inversely proportional to how many days actually matched. For the same `value`, the more days `date_range` covers, the smaller the actual amount spread across each day; changing the simulation's total duration, `date_range`, or the `days` filter, without touching `value`, silently changes how much is actually delivered per day. This is the opposite of a common modeling intent, a "daily rate" (such as "a constant daily training load of 50 units, no matter how many days this plan runs"): a genuine daily rate should mean the per-day delivered amount stays fixed while the total scales proportionally with the number of days, not the total staying fixed while the per-day delivered amount scales inversely with the number of days.
 
-**关键证据**：`models/test/valid/test_sustained_mode.yaml` 的 `sustained` plan 一直以来的
-`label` 字段就写着"same daily totals (work +60/day...) final cumulative_output/fatigue
-should match the pulse plan"——但该 plan 从未设 `date_range`（默认覆盖整个 5 天仿真），
-按 ADR 0099 的公式，`value: 60.0` 会被除以"整个 5 天窗口的总步数"，导致实际每小时只交付
-`60/(5×12)=1/hr`，5 天累计仅 60，而不是 fixture 自己期望且 ADR 0100"实施记录"当年就已经
-测出来并如实记录的"sustained 5天=60"——这行记录本身就是"这个 bug 从 ADR 0099/0100 落地
-第一天就存在，只是从未有人拿它跟 fixture 自己的文字期望做交叉核对"的直接证据。
+Key evidence: the `sustained` plan in `models/test/valid/test_sustained_mode.yaml` had always carried a `label` field reading "same daily totals (work +60/day...) final cumulative_output/fatigue should match the pulse plan," but that plan never set a `date_range` (defaulting to cover the entire 5-day simulation), and under ADR 0099's formula, `value: 60.0` would be divided by "the total step count across the whole 5-day window," so it would actually deliver only `60/(5x12)=1/hr`, accumulating to just 60 over 5 days, not the "sustained over 5 days = 60" that the fixture itself expected and that ADR 0100's "Implementation Record" had already measured and honestly recorded at the time; this line of the record is itself direct evidence that this bug existed from day one of ADR 0099/0100's rollout, and simply no one had ever cross-checked it against the fixture's own stated expectation.
 
-## 决策
+## Decision
 
-**sustained `value` 改为"每个匹配日独立交付的窗口总量"，与该条目在整个 `date_range`/
-仿真跨度内实际匹配了多少天无关**：
+Change sustained's `value` to "the window total independently delivered on each matching day," unrelated to how many days this entry actually matched across the entire `date_range`/simulation span:
 
 ```
-N_steps = 单次命中窗口时长 / step_size
+N_steps = the single hit window's duration / step_size
         = _time_range_day_seconds(time_start, time_end) / step_size
 per_step_value = value / N_steps
 ```
 
-不再计算"活跃天数"（`_n_active_days` 整个函数删除）。`days`（星期过滤）、`date_range`/
-`valid_start`/`valid_end`（日历区间）**降级为纯粹的"是否命中"过滤器**，只决定"这一天要不要
-触发"，不再参与 `N_steps` 的计算——语义上与 pulse 事件的 `days`/`date_range` 完全对称
-（pulse 从来就是"命中就交付满额 `value`，不命中就是 0"，从未按天数摊分过）。
+"Active days" is no longer computed (the `_n_active_days` function is removed entirely). `days` (the day-of-week filter) and `date_range`/`valid_start`/`valid_end` (the calendar interval) are downgraded to pure "does this hit" filters, only deciding whether a given day triggers, no longer taking part in the `N_steps` computation, exactly symmetric with a pulse event's `days`/`date_range` (a pulse has always meant "deliver the full `value` when it hits, 0 when it doesn't," never split across days).
 
-`state` 公式侧不需要任何改动，继续遵循既有的"`type: input` 变量不乘 `step`"规则。验证：
+No change is needed on the `state`-formula side, continuing to follow the existing rule that a `type: input` variable is not multiplied by `step`. Verification:
 
 ```
-每个匹配日的累计贡献 = per_step_value × N_steps = value
+Each matching day's accumulated contribution = per_step_value x N_steps = value
 ```
 
-与 `step_size` 无关（ADR 0099 的目标保留），也与匹配了多少天无关（新增的不变量）——
-`test_sustained_mode.yaml` 的 `sustained` plan 用 `value: 60.0`（不做任何改动）在新规则下
-直接给出 60/day、5 天 300 的正确结果，与 `pulse` plan 完全一致，实测验证见下方"影响与验证"。
+Unrelated to `step_size` (ADR 0099's goal is preserved), and unrelated to how many days matched (a newly added invariant). The `sustained` plan in `test_sustained_mode.yaml`, using `value: 60.0` unchanged, now directly gives the correct result of 60/day, 300 over 5 days, under this new rule, matching the `pulse` plan exactly; see "Impact and Validation" below for the actual test.
 
-## 与 0099/0126 的关系
+## Relationship to 0099/0126
 
-- **取代 ADR 0099** 的 N_steps 公式（"整跨度总量"），保留其"step_size 只管精度"的不变量，
-  新增"匹配天数不影响每日交付量"的不变量。
-- **取代 ADR 0126 第3条**（"sustained 的 value 表示整个生效窗口内的总量……这要求生效窗口
-  总时长在装载阶段就是确定数字"）——该条描述的正是本 ADR 现在改掉的旧规则；ADR 0126 其余
-  三条（pulse-decay 定位、多条目覆盖/累加维持现状、`valid_range` 日期对齐独立处理）不受影响。
-- 原计划中"给 regimen 补一个新的 `rate` 字段"的方向（见已归档内部任务
-  `2026-07-13_task_step-size-adaptive-input-rate-design.md`）
-  **不再需要**：本 ADR 修正后，`value` 本身天然就是"日速率"语义，不需要额外并行字段。
+- Supersedes ADR 0099's N_steps formula ("the total across the whole span"), keeping its "step_size only affects precision" invariant, and adding a new invariant that "the number of matching days does not affect the per-day delivered amount."
+- Supersedes ADR 0126 item 3 ("sustained's value represents the total quantity across the whole effective window... this requires the effective window's total duration to already be a determinate number at load time"), which describes exactly the old rule this ADR now changes; ADR 0126's other three items (the pulse-decay positioning, keeping the status quo for multi-entry override/accumulation, and handling `valid_range` date alignment independently) are unaffected.
+- The originally planned direction of "adding a new `rate` field to regimen" (see the archived internal task `2026-07-13_task_step-size-adaptive-input-rate-design.md`) is no longer needed: after this ADR's fix, `value` itself now naturally carries the "daily rate" semantics, with no need for a separate parallel field.
 
-## 实现记录
+## Implementation Record
 
-- `reference_engine/src/schedule_runner.py`：删除 `_n_active_days`（连同 `math` import）；
-  `precompute_sustained_divisors` 签名简化为 `(schedules, step_size_sec)`（去掉不再需要的
-  `total_steps`/`sim_start_date`），`_n_steps` 直接等于 `day_sec / step_size_sec`；
-  `apply_schedules` 的 docstring 同步改写"每个匹配日独立满额"。
-- 4 处调用点（`session_manager.py`、`reference_engine.py` ×2、`optimizer_eval.py`）同步
-  去掉调用时多传的 `total_steps`/`sim_start_date` 实参。
-- `docs/model.md`：value 语义章节、N_steps 公式表、窗宽默认规则一节改写为新规则，新增
-  多天重复触发的 regimen 示例（区分"总量固定"与"日速率固定"两种历史语义，明确后者是
-  现在唯一支持的语义）。
+- `reference_engine/src/schedule_runner.py`: removed `_n_active_days` (along with the `math` import); `precompute_sustained_divisors`'s signature simplified to `(schedules, step_size_sec)` (dropping the no-longer-needed `total_steps`/`sim_start_date`), with `_n_steps` now simply `day_sec / step_size_sec`; `apply_schedules`'s docstring rewritten to match, "each matching day independently delivers the full amount."
+- The 4 call sites (`session_manager.py`, `reference_engine.py` x2, `optimizer_eval.py`) updated accordingly, dropping the now-unneeded `total_steps`/`sim_start_date` arguments at the call.
+- `docs/model.md`: the value-semantics chapter, the N_steps formula table, and the window-width default rules section rewritten to the new rule, with a new multi-day repeated-trigger regimen example added (distinguishing the old "fixed total" semantics from the new "fixed daily rate" semantics, and stating clearly that the latter is now the only supported one).
 
-## 迁移：5 个受影响文件的 value/optimize.value
+## Migration: value/optimize.value in 5 Affected Files
 
-审计范围：`simulation.plans[*].regimens` + `optimization.startpoint.regimens` 中，
-`time_start != time_end`（sustained，非 pulse）且旧规则下"匹配天数 > 1"的条目。
+Audit scope: entries in `simulation.plans[*].regimens` plus `optimization.startpoint.regimens` where `time_start != time_end` (sustained, not pulse) and, under the old rule, "matched days > 1."
 
-**核心判断标准**（逐条目核实，不是无脑除以旧活跃天数）：条目的 `label`/注释是否有
-"`= 日速率 × 旧N_steps`"这类痕迹，证明作者当年是按 ADR 0099 手动把日速率乘成了总量——
-有则说明当前 `value` 是"被旧规则要求手算出来的总量"，需要除以旧活跃天数换回日速率；
-没有（`value` 本身就是作者写下的日速率、只是被 ADR 0099 的 bug 悄悄稀释/加浓）则不touch，
-新规则下这个数字自动就是对的。
+Core judgment (checked entry by entry, not blindly divided by the old active-day count): does the entry's `label`/comment carry a trace such as "= daily rate x old N_steps," proving the author had manually multiplied the daily rate into a total under ADR 0099? If so, the current `value` is "a total the old rule forced to be hand-computed," and needs to be divided by the old active-day count to recover the daily rate; if not (the `value` was already the author's own daily rate, just silently diluted or concentrated by ADR 0099's bug), it is left untouched, and under the new rule this number is automatically correct.
 
-| 文件 | 处理 | 备注 |
+| File | Handling | Note |
 |---|---|---|
-| `models/test/valid/test_sustained_mode.yaml` | plan 级 `sustained.work_rate/recovery_rate` **不变**（60.0/24.0）；`optimization.startpoint` 两条目除以旧活跃天数 5（`[60,600]→[12,120]`，`120→24`） | plan 级注释("5/hour"、"same daily totals")证明 60/24 本来就是日速率，是 ADR 0099 的 bug 一直在稀释它，不是作者预乘过；optimization 部分注释明确写着"old per-hour bounds x 60"，证明是预乘过的，要除回来 |
-| `models/papers/s3/burnout_allostatic/burnout_allostatic_sim.yaml` | 6 个 plan、21 处 `value` 全部除以各自旧活跃天数（86/62/24） | 每处 label 都带"×2064"/"×1488"/"×576"字样，直接证明是"日速率×旧N_steps"手算出来的总量；除以旧活跃天数后数值验证（见下）与旧引擎+旧值完全一致 |
-| `models/papers/s3/sleep_schedule/sleep_schedule_sim.yaml` | 7 个 plan、22 处 `value` 除以各自旧活跃天数（28/20/8） | 同上，label 带"×672"/"×480"/"×192" |
-| 内部另一个场景文件 | `optimization.startpoint.regimens` 4 处 `optimize.value` 除以各自旧活跃天数（6/11/15） | 注释"= [0,3] × 144"等直接证明预乘过 |
-| `models/test/valid/test_opt_t2.yaml` | **不改**，从"受影响文件"名单中移除 | 初次审计脚本对这两个 T2 条目误判：YAML 里没写 `time_start`/`time_end`，静态看是"全天默认"，但这两条目都配了 `optimize.time_start` 区间搜索；`optimizer_engine._build_regimen_events` 解码时按条目自身 `_width_min`（用同一个默认全天窗口算出的 1440 分钟）重新推算 `time_end`，正好整圈绕回 `time_start`，运行时实际总是退化成 pulse（`time_start==time_end`），从未真正走过 sustained 的 `N_steps` 除法，从来不受 ADR 0099 影响 |
+| `models/test/valid/test_sustained_mode.yaml` | The plan-level `sustained.work_rate/recovery_rate` unchanged (60.0/24.0); the two `optimization.startpoint` entries divided by the old active-day count of 5 (`[60,600]` becomes `[12,120]`, `120` becomes `24`) | The plan-level comment ("5/hour," "same daily totals") proves 60/24 was already the daily rate, and ADR 0099's bug had been diluting it all along, not something the author had pre-multiplied; the optimization section's comment explicitly states "old per-hour bounds x 60," proving it was pre-multiplied and needs dividing back |
+| `models/papers/s3/burnout_allostatic/burnout_allostatic_sim.yaml` | All 21 `value` occurrences across 6 plans divided by their respective old active-day counts (86/62/24) | Every label carries a "x2064"/"x1488"/"x576" marker, directly proving these were totals hand-computed as "daily rate x old N_steps"; after dividing by the old active-day count, numeric validation (below) matched the old engine plus old values exactly |
+| `models/papers/s3/sleep_schedule/sleep_schedule_sim.yaml` | All 22 `value` occurrences across 7 plans divided by their respective old active-day counts (28/20/8) | Same as above, labels carry "x672"/"x480"/"x192" |
+| Another internal scenario file | 4 `optimize.value` occurrences in `optimization.startpoint.regimens` divided by their respective old active-day counts (6/11/15) | Comments such as "= [0,3] x 144" directly prove pre-multiplication |
+| `models/test/valid/test_opt_t2.yaml` | Not changed, removed from the "affected files" list | The initial audit script misjudged these two T2 entries: the YAML writes no `time_start`/`time_end`, so statically it looks like "the all-day default," but both entries have an `optimize.time_start` interval search configured; when `optimizer_engine._build_regimen_events` decodes them, it recomputes `time_end` using the entry's own `_width_min` (1440 minutes, computed from the same default all-day window), which wraps all the way around back to `time_start`, so at run time this always degenerates into a pulse (`time_start==time_end`), never actually going through sustained's `N_steps` division, and was never affected by ADR 0099 |
 
-**双重验证方法**：对 `burnout_allostatic_sim.yaml`/`sleep_schedule_sim.yaml` 的迁移，用
-`git stash` 切换回"旧引擎代码 + 旧 value"跑一遍 baseline plan（`--sim`），再切回"新引擎 +
-新 value"跑同一个 plan，逐字段比对最终状态——`cortisol_chronic`/`cvd_risk`/
-`health_risk_index`/`cognitive_performance` 等全部数值精确一致，确认迁移未改变任何已发布
-仿真结果的数值行为。`test_sustained_mode.yaml` 用新引擎跑 `sustained` plan，5 天后
-`cumulative_output=300.0`，与 `pulse` plan 一致（此前是 60.0，ADR 0100 当年的"实施记录"
-记的正是这个被本 ADR 判定为 bug 的数字）。
+Double-validation method: for the `burnout_allostatic_sim.yaml`/`sleep_schedule_sim.yaml` migration, `git stash` was used to switch back to "the old engine code plus old values" and run the baseline plan (`--sim`), then switch back to "the new engine plus new values" and run the same plan, comparing the final state field by field; `cortisol_chronic`/`cvd_risk`/`health_risk_index`/`cognitive_performance` and other values all matched exactly, confirming the migration did not change the numeric behavior of any already-published simulation result. `test_sustained_mode.yaml`'s `sustained` plan, run with the new engine, gives `cumulative_output=300.0` after 5 days, matching the `pulse` plan (it had been 60.0 before, exactly the number ADR 0100's original "Implementation Record" recorded, which this ADR has now judged to be the bug).
 
-## 已知后续（不在本 ADR 处理，留给独立 task）
+## Known Follow-On (Not Handled in This ADR, Left for a Separate Task)
 
-- `test_plan.md` 层1数值精度验证协议补一节"步长收敛性检验"（与解析解对比并列的独立步骤）。
-- `burnout_allostatic_opt_*`/`sleep_schedule_opt_*` 三个优化场景需要用修正后的 startpoint
-  边界重新跑 `--opt`，核对论文 S3 稿（`c_paper_s3_cn.md`）里已写的具体数字（workoutput/
-  cvdrisk/joint 前沿数值、cognitive_performance/health_risk_index 等）是否随之变化——
-  这两个场景的 `optimize.value` 语义本来就依赖"每日搜索一个值，工作日/周末各自独立"，
-  本 ADR 修正的是"多日期跨度会怎样摊分"这一层，会直接影响这两个场景的 T1 搜索边界数值。
-- 详见内部任务 `2026-07-13_task_s3-opt-rerun-after-adr0131.md`（已从已归档内部任务
-  `2026-07-13_task_step-size-adaptive-input-rate-design.md`
-  的"第二批遗留"拆分为独立仍活跃的 task）。
+- `test_plan.md`'s tier-1 numeric-precision validation protocol needs a new "step-size convergence testing" section added (a separate step alongside the comparison against the analytical solution).
+- The three optimization scenarios `burnout_allostatic_opt_*`/`sleep_schedule_opt_*` need `--opt` rerun with the corrected startpoint bounds, checking whether the specific numbers already written into the S3 paper draft (`c_paper_s3_cn.md`; the workoutput/cvdrisk/joint front values, cognitive_performance/health_risk_index, etc.) change accordingly; these two scenarios' `optimize.value` semantics already depend on "searching one value per day, weekday and weekend independent," and this ADR's correction affects exactly the layer of "how a multi-day span gets split," which directly affects these two scenarios' T1 search-bound values.
+- See the internal task `2026-07-13_task_s3-opt-rerun-after-adr0131.md` for detail (split out as its own still-active task from "batch 2 leftovers" in the archived internal task `2026-07-13_task_step-size-adaptive-input-rate-design.md`).

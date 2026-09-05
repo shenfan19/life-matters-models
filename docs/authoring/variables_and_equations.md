@@ -1,59 +1,42 @@
-# 变量、方程与证据类型
+# Variables, Equations, and Evidence Types
 
-## 变量类型（3 种）+ evidence_type 原地换算
+## Variable Types (3) and In-Place evidence_type Conversion
 
-`variables:` 块下的 `type` 只接受 3 个值：
+Under the `variables:` block, `type` only accepts 3 values:
 
-| 类型 | 引擎读取 | 建模者填入 | 用途 | 优化归属 |
+| Type | What the engine reads | What the modeler fills in | Purpose | Optimization ownership |
 |------|---------|----------|------|---------|
-| `state` | `value`（随时间更新） | 初始值 | 随时间演化的状态变量 | — |
-| `input` | `value`（用户可调） | 控制量 | 用户干预量（行为、剂量） | **外环 opt（Simulator）** |
-| `parameter` | `value`（不变；MC 模式每 run 采样一次） | 动力学系数或分布表达式 | 直接进方程的机制系数（PK速率、方程斜率、Bergman p1/p2/p3 等）；值由内环 opt 对文献数据拟合后确定。`value` 可写为 `normal(μ, σ)` 等分布形式，表示个体间差异；确定性模式取均值，MC 模式每 run 采样一次。 | **内环 opt（Modeller，待实现）** |
+| `state` | `value` (updated over time) | Initial value | A state variable that evolves over time | — |
+| `input` | `value` (user-adjustable) | A control quantity | A user intervention quantity (behavior, dose) | **Outer-loop opt (Simulator)** |
+| `parameter` | `value` (constant; sampled once per run in MC mode) | A dynamics coefficient or distribution expression | A mechanism coefficient that feeds directly into an equation (a PK rate, an equation slope, Bergman's p1/p2/p3, etc.); its value is determined by fitting the inner-loop optimizer to literature data. `value` may be written as a distribution such as `normal(μ, σ)` to represent individual variation; a deterministic run uses the mean, and MC mode samples once per run. | **Inner-loop opt (Modeller, not yet implemented)** |
 
-> **`probability_constant` 已退役**：发病率、病死率等概率值统一用 `evidence_type: ir` 表示。现有 YAML 中的 `probability_params:` 节仍可解析，Loader 会自动映射。
+> `probability_constant` has been retired: incidence, case-fatality, and similar probability values are now uniformly expressed as `evidence_type: ir`. A `probability_params:` section in an existing YAML file still parses, and the loader maps it automatically.
 
-**`evidence_type` 不是第 4 种 `type`，而是 `variables:` 条目上的一个可选字段**（原为独立的顶层
-`evidence:` 节，后并入 `variables:`——evidence 本质上仍是变量，独立成节反而制造了两套平行命名
-空间，制造混乱，见 ADR 0137，取代 ADR 0040 的顶层节设计）：
-文献直接给出的效应量（OR/HR/RR/Cohen's d 等）声明为某个 `variables:` 条目的 `evidence_type`
-字段，`value` 填原始文献数值，`type` 必须是 `parameter`，Loader 在加载阶段原地把 `value` 换算
-为可进方程的系数（同名，不加后缀），`equations`/`dynamics` 直接写该名字即可——不需要额外记一个
-`_effective` 之类的衍生名字。
-换算后的变量额外携带两个溯源字段（不在 YAML 里声明，由 Loader 自动填入，仅供查询/调试用）：
+`evidence_type` is not a fourth `type`, but an optional field on a `variables:` entry (formerly a separate top-level `evidence:` section, later merged into `variables:`, since evidence is essentially still a variable and giving it its own section only created two parallel naming spaces and confusion; see ADR 0137, which supersedes ADR 0040's top-level-section design). An effect size given directly by the literature (OR/HR/RR/Cohen's d, etc.) is declared as the `evidence_type` field of a `variables:` entry, with `value` holding the raw literature figure and `type` required to be `parameter`; at load time the loader converts `value` in place into a coefficient ready for use in an equation, under the same name with no suffix, so `equations`/`dynamics` can reference that name directly, with no need to track a derived name such as an `_effective` variant.
 
-| 字段 | 含义 |
+After conversion, the variable additionally carries two provenance fields (not declared in the YAML, filled in automatically by the loader, for lookup and debugging only):
+
+| Field | Meaning |
 |------|------|
-| `evidence_type` | 原始效应量的类型（如 `rr`/`or`/`hr`），非 evidence 来源的 parameter 为 `None` |
-| `evidence_raw_value` | 换算前的原始文献数值（如 OR=1.65），与换算后的 `value` 分开保留，用于审查/溯源 |
+| `evidence_type` | The type of the original effect size (such as `rr`/`or`/`hr`); `None` for a parameter that is not sourced from evidence |
+| `evidence_raw_value` | The original literature figure before conversion (such as OR=1.65), kept separate from the converted `value` for review and traceability |
 
-**没有单独建 `VariableType.evidence`**：换算结果合并进 `parameter` 类型，靠上面两个字段做标记，
-不引入第 4 种类型——原因是内环优化器（Modeller）尚未实现，目前没有任何代码路径会对 `parameter`
-做自动调参，无需用类型隔离防止误优化；等 Modeller 实现时，只需让它跳过 `evidence_type is not None`
-的 parameter 即可，不必现在为一个还不存在的优化器预留类型膨胀。这也是 evidence_type 没有和
-`type`（state/input/parameter，变量在动力学里的角色）合并成一个复合字符串字段（如
-`type: evidence-rr`）的原因：角色和"数据来源的统计效应量类型"是两个正交的维度，合并会让
-`type` 枚举从 3 个膨胀到 11 个，且把两件事绑进同一个字段，后续按角色做判断（比如找所有
-parameter）要从等值匹配退化成前缀匹配。声明了 `evidence_type` 的条目，`type` 必须是
-`parameter`，否则 Loader 报错拒绝。
+No separate `VariableType.evidence` was created: a conversion result is merged into the `parameter` type and marked by the two fields above, rather than introducing a fourth type. The reason is that the inner-loop optimizer (Modeller) has not yet been implemented, so no code path currently auto-tunes a `parameter`, and there is no need to isolate types just to prevent mis-optimization; once the Modeller exists, it only needs to skip any parameter where `evidence_type is not None`, with no need to preemptively expand the type set for an optimizer that does not exist yet. This is also why `evidence_type` was not merged with `type` (state/input/parameter, the variable's role in the dynamics) into a single compound string field such as `type: evidence-rr`: role and "the statistical effect-size type of the data source" are two orthogonal dimensions, and merging them would inflate the `type` enum from 3 values to 11 and bind two separate concerns into one field, degrading later role-based lookups, such as finding every parameter, from an equality match to a prefix match. An entry that declares `evidence_type` must have `type: parameter`, or the loader raises an error and rejects it.
 
-**`parameter` vs `evidence_type` 的判断准则：**
-- 文献给你一个直接可进方程的数（但来自数学拟合而非直接测量，如 Bergman 模型系数）→ 普通 `parameter`（不声明 `evidence_type`，交由 Modeller 内环优化校准）
-- 文献给你原始统计效应量（OR=1.65、HR=0.82、d=0.68、ke=0.198 h⁻¹）→ `parameter` + `evidence_type`（Loader 自动换算）
+Rule of thumb for `parameter` versus `evidence_type`:
+- The literature gives you a number that can go directly into an equation, but it comes from a mathematical fit rather than a direct measurement, such as a Bergman-model coefficient: use a plain `parameter` (no `evidence_type` declared, left to the Modeller's inner-loop optimization to calibrate).
+- The literature gives you a raw statistical effect size (OR=1.65, HR=0.82, d=0.68, ke=0.198 h⁻¹): use `parameter` plus `evidence_type` (the loader converts it automatically).
 
-**当前能力边界**：gui 暂无 `evidence_type` 字段的专属可视化/编辑表单，建模者需直接编辑 YAML；
-GUI 的 variables/equations 通用编辑器尚未实现，evidence 表单待该编辑器实现后一并补齐。
+Current capability boundary: the GUI has no dedicated visualization or edit form for the `evidence_type` field yet, so modelers need to edit the YAML directly; the GUI's general-purpose variables/equations editor has not been implemented yet, and the evidence form will be filled in once that editor exists.
 
-**自动接入 dynamics（`applies_to`，可选）**：换算出系数之后，把它接到某个状态变量的动力学
-方程上，默认仍由建模者手写。8 种子类型里 `ir`/`ard`/`hr`/`rr`/`or` 这 5 种的"接入方式"只有
-一种没有歧义的写法（都是"以换算后的系数为速率，累加进某个目标状态"），声明以下字段后
-Loader 会自动生成对应 dynamics：
+Automatic wiring into dynamics (`applies_to`, optional): once a coefficient has been converted, wiring it into some state variable's dynamics equation is still left to the modeler to write by hand by default. Of the 8 subtypes, `ir`/`ard`/`hr`/`rr`/`or` have exactly one unambiguous way to be wired in, namely "use the converted coefficient as a rate and accumulate it into some target state," so declaring the following fields makes the loader generate the corresponding dynamics automatically:
 
-| 字段 | 适用子类型 | 含义 |
+| Field | Applicable subtypes | Meaning |
 |------|----------|------|
-| `applies_to` | ir/ard/hr/rr/or | 目标状态变量名（必须已在 `variables:` 声明），触发自动生成 |
-| `step_unit` | ir/ard/hr/rr/or | 生成的 dynamics 所用的步长单位，必须是 `minute`/`hour`/`day`（与 `equations.step_unit` 同一约束） |
-| `rate_unit` | ir/ard 自身声明；hr/rr/or 从 `baseline_ref` 指向的 ir/ard 条目读取 | 速率的自然时间单位（`minute`/`hour`/`day`/`week`/`month`/`year` 之一），与 `step_unit` 的比值算成系数写进生成的表达式，不依赖 `Equation.step_unit` 表达年/周/月 |
-| `baseline_ref` | hr（已有）、rr/or（新增） | 必须指向同一文件内一个 `evidence_type: ir/ard` 的 `variables:` 条目；rr/or 的换算结果本身只是比例，需要这个基线才能生成"基线×比例"的速率 |
+| `applies_to` | ir/ard/hr/rr/or | The name of the target state variable (must already be declared in `variables:`); declaring this triggers automatic generation |
+| `step_unit` | ir/ard/hr/rr/or | The step-size unit used by the generated dynamics, which must be `minute`/`hour`/`day` (the same constraint as `equations.step_unit`) |
+| `rate_unit` | ir/ard declare it themselves; hr/rr/or read it from the ir/ard entry `baseline_ref` points to | The rate's natural time unit (one of `minute`/`hour`/`day`/`week`/`month`/`year`); its ratio to `step_unit` is computed into a coefficient written into the generated expression, independent of `Equation.step_unit` expressing year/week/month |
+| `baseline_ref` | hr (already existed), rr/or (newly added) | Must point to an `evidence_type: ir/ard` entry under `variables:` in the same file; an rr/or conversion result is only a ratio and needs this baseline to generate a "baseline times ratio" rate |
 
 ```yaml
 variables:
@@ -62,102 +45,90 @@ variables:
     evidence_type: ir
     value: 0.012
     unit: prob/year
-    rate_unit: year              # 速率的自然时间单位
-    applies_to: cvd_risk_baseline # 自动生成：cvd_risk_baseline += baseline_cvd_ir * (day/year) * step
+    rate_unit: year              # the rate's natural time unit
+    applies_to: cvd_risk_baseline # auto-generated: cvd_risk_baseline += baseline_cvd_ir * (day/year) * step
     step_unit: day
 
   smoking_cvd_rr:
     type: parameter
     evidence_type: rr
     value: 2.5
-    baseline_ref: baseline_cvd_ir  # rr 本身只是比例，需要基线才能生成速率
+    baseline_ref: baseline_cvd_ir  # rr itself is only a ratio and needs the baseline to generate a rate
     applies_to: cvd_risk_smoker
     step_unit: day
 ```
 
-**约束**（确保不引入隐式科学假设，做不到就报错而非静默忽略）：
-- `cohens_d`/`beta`/`pk` 声明 `applies_to`会直接报错——这 3 种的接入方式本身是建模判断
-  （过渡形式、回归结构、PK 模型结构不唯一），永远不支持自动生成，必须手写 dynamics。
-- 同一个 `applies_to` 目标被两条以上 evidence 同时声明会报错——多个风险因子怎么组合
-  （相乘=比例风险假设，还是相加=竞争风险模型）本身是有争议的流行病学方法论问题，引擎不
-  代为选择，请去掉 `applies_to` 手写 dynamics。
-- `applies_to` 只在声明了 `evidence_type` 的条目上有意义；未声明 `evidence_type` 却写了
-  `applies_to` 会报错，避免普通 parameter 误用这个字段。
-- 不声明 `applies_to` 时行为完全不受影响，继续手写 dynamics——这是纯增量字段。
+Constraints (to avoid introducing an implicit scientific assumption, these fail loudly rather than silently ignoring the problem):
+- Declaring `applies_to` on `cohens_d`/`beta`/`pk` raises an error directly, since how these three are wired in is itself a modeling judgment (the transitional form, the regression structure, and the PK model structure are not unique), so automatic generation is never supported for them and dynamics must always be written by hand.
+- The same `applies_to` target declared by two or more evidence entries at once raises an error, since how multiple risk factors combine, multiplicatively under a proportional-hazards assumption or additively under a competing-risks model, is itself a contested epidemiological methodology question that the engine will not choose on the modeler's behalf; remove `applies_to` and write the dynamics by hand instead.
+- `applies_to` is only meaningful on an entry that declares `evidence_type`; declaring `applies_to` without `evidence_type` raises an error, to prevent a plain parameter from misusing this field.
+- Not declaring `applies_to` leaves behavior completely unaffected, and dynamics continue to be written by hand as before; this is a purely additive field.
 
-设计推导见 ADR 0040「实施记录」（顶层 `evidence:` 节的原始设计）与 ADR 0137（并入 `variables:` 的后续决策）。
+See ADR 0040's "Implementation Record" (the original design of the top-level `evidence:` section) and ADR 0137 (the subsequent decision to merge it into `variables:`) for the design derivation.
 
-**`input` 变量的单位规范（事件量，唯一规则）：**
+Unit convention for `input` variables (a quantity of an event, the single rule):
 
-LM 引擎以 sustained 模式执行 input 变量（ADR 0127）：命中生效窗口的 step 写入 `value/N_steps`，窗口外自动为 0，累计贡献恒等于 `value`。`unit` 字段描述**窗口内交付的物理总量**，始终使用裸单位，不含时间分母。`input` 方程直接加减，**不乘 `step`**：
+The LM engine executes `input` variables in sustained mode (ADR 0127): a step that falls inside the effective window is written as `value/N_steps`, a step outside the window is automatically 0, and the accumulated contribution always equals `value`. The `unit` field describes the total physical quantity delivered within the window, always as a bare unit with no time denominator. An `input` equation adds or subtracts it directly, without multiplying by `step`:
 
-| 正确写法 | 禁止写法 | 原因 |
+| Correct | Prohibited | Reason |
 |---------|---------|------|
-| `mg`、`g`、`kcal`、`kg`、`MET-h`、`sessions` | ~~`mg/day`、`g/kg/day`、`kcal/day`、`kg/week`~~ | schedule 触发频率由 `days` 控制，`/day` 与 T3/T4 优化器不兼容 |
+| `mg`, `g`, `kcal`, `kg`, `MET-h`, `sessions` | ~~`mg/day`, `g/kg/day`, `kcal/day`, `kg/week`~~ | The schedule's trigger frequency is controlled by `days`, and `/day` is incompatible with the T3/T4 optimizer |
 
-文献给出的速率参考值（如"500 mg/day"、"2 mg/kg/day"）记录在 `reference` 或 `description` 字段，不进入 `unit`。真正的持续速率过程（如静脉输注速率）建模为 `parameter`（带 `1/day`、`1/min` 单位），配合 `× step` 在方程中积分；`input` 变量的方程不使用 `× step`。
+A rate reference value given by the literature, such as "500 mg/day" or "2 mg/kg/day," is recorded in the `reference` or `description` field, not in `unit`. A genuinely continuous rate process, such as an intravenous infusion rate, is modeled as a `parameter` (with a unit such as `1/day` or `1/min`) integrated in the equation together with `× step`; an `input` variable's equation does not use `× step`.
 
-> 示例：`aspirin_dose = 50 mg`（晨服，文献"100 mg/day"记入 `reference`，`unit` 只写 `mg`）；
-> `caloric_deficit = 500 kcal`（每日触发，不写 `kcal/day`）；
-> `weight_loss_weekly = 0.5 kg`（每周一触发，不写 `kg/week`）。
+> Examples: `aspirin_dose = 50 mg` (a morning dose, with the literature's "100 mg/day" recorded in `reference` and `unit` written simply as `mg`); `caloric_deficit = 500 kcal` (triggered daily, not written as `kcal/day`); `weight_loss_weekly = 0.5 kg` (triggered every Monday, not written as `kg/week`).
 
-**`evidence_type` 的 8 种取值**：`rr`（相对风险）、`or`（比值比，需 `baseline_prevalence`）、`hr`（风险比，需 `baseline_ref`）、`ard`（绝对风险差）、`cohens_d`（效应量，需 `population_sd`）、`ir`（发病率/死亡率）、`beta`（回归系数）、`pk`（PK/PD 参数）。
+The 8 values of `evidence_type`: `rr` (relative risk), `or` (odds ratio, needs `baseline_prevalence`), `hr` (hazard ratio, needs `baseline_ref`), `ard` (absolute risk difference), `cohens_d` (effect size, needs `population_sd`), `ir` (incidence/mortality rate), `beta` (regression coefficient), `pk` (PK/PD parameter).
 
-**换算方程的权威版本不在本文件**，在 `life-matters-reference-engine` 仓库 `docs/evidence/conversion.md`
-（含 `evidence_type`/`evidence_raw_value` 溯源字段说明和已知实现细节，如 `hr` 的 `baseline_ref`
-在基础换算路径上不校验目标类型）；`applies_to` 自动接入 dynamics 的校验顺序与生成表达式模板见同目录
-`applies_to.md`。本文件只维护"建模者要填哪些 YAML 字段"，方程随 Loader 实现变化，避免两处维护、
-两处漂移，发现两边不一致以 `conversion.md`/`applies_to.md`（对应实际 loader.py 代码）为准。
+The authoritative version of the conversion equations is not in this file; it is in the `life-matters-reference-engine` repository's `docs/evidence/conversion.md` (which covers the `evidence_type`/`evidence_raw_value` provenance fields and known implementation details, such as `hr`'s `baseline_ref` not validating the target type on the base conversion path). The validation order and generated-expression templates for `applies_to`'s automatic wiring into dynamics are in `applies_to.md` in the same directory. This file only maintains which YAML fields a modeler needs to fill in; the equations themselves change with the loader's implementation, and to avoid maintaining and drifting in two places, treat `conversion.md`/`applies_to.md` (matching the actual loader.py code) as authoritative whenever the two disagree.
 
 ---
 
-## 医学证据类型与变量映射
+## Medical Evidence Types and Variable Mapping
 
-声明了 `evidence_type` 的变量由 Loader 在加载阶段自动换算，Simulator 只见换算后的值（与声明时
-同名，无后缀）。8 种子类型的完整换算逻辑见 `life-matters-reference-engine` 仓库 `docs/evidence/conversion.md`，
-YAML 示例见下方 Schema，决策背景见 `decisions/0040`（顶层节设计）与 `decisions/0137`（并入 `variables:`）。
+A variable that declares `evidence_type` is converted automatically by the loader at load time, and the Simulator only ever sees the converted value, under the same name it was declared with, with no suffix. The complete conversion logic for the 8 subtypes is in the `life-matters-reference-engine` repository's `docs/evidence/conversion.md`; a YAML example is in the schema below, and the decision background is in `decisions/0040` (the top-level-section design) and `decisions/0137` (merging it into `variables:`).
 
-患病率（Prevalence）直接设为对应 `state` 变量的初始 `value`，不需要单独声明 `evidence_type`。
+Prevalence is set directly as the initial `value` of the corresponding `state` variable and does not need a separate `evidence_type` declaration.
 
 ---
 
-## 变量与方程数据规范
+## Variable and Equation Data Conventions
 
-所有 YAML 中的 `variables` 和 `equations` 条目须遵守：
+Every `variables` and `equations` entry across all YAML files must follow these rules:
 
-1. **强制 `description`**：简洁说明该变量/方程的物理或医学意义。
-2. **强制 `reference`**：所有数值（`value`）、范围（`bounds`）和动力学方程（`dynamics`）必须标注数据来源。格式不限，但须包含足够信息（DOI、PMID、简写引用或 URL）让读者在 30 秒内定位原始文献。暂无来源时填 `["TODO:SOURCE"]` 并在 `description` 中注明估算逻辑。
-3. **可选 `locator`**：与 `reference` 配对，标注该数值在文献内部的精确位置（页码、图、表、方程、章节），格式不限但应具体，例如 `"Table 1"`、`"Figure 3"`、`"eq.3"`、`"p.1172"`、`"§6.2"`。能写出具体位置时优先写 `locator`，而不是把位置信息散落在 `description` 文字里；尚未核实具体位置时填 `"TODO:LOCATE"`，不要臆造页码/图表号。GUI 在 reference 列展示时会自动拼接为 `reference (locator)`。
-4. **可选 `comments`**：记录多文献冲突时的选择理由或参数微调过程，不替代 `description` 和 `reference`。
+1. **`description` is required**: a concise statement of the variable's or equation's physical or medical meaning.
+2. **`reference` is required**: every value (`value`), range (`bounds`), and dynamics equation (`dynamics`) must be annotated with a data source. The format is not fixed, but it must carry enough information, a DOI, a PMID, a short citation, or a URL, for a reader to locate the original publication within 30 seconds. When no source is available yet, fill in `["TODO:SOURCE"]` and note the estimation logic in `description`.
+3. **`locator` is optional**: paired with `reference`, it points to the value's exact location within the publication (page number, figure, table, equation, section); the format is not fixed but should be specific, such as `"Table 1"`, `"Figure 3"`, `"eq.3"`, `"p.1172"`, or `"§6.2"`. When a specific location is known, prefer writing it into `locator` rather than scattering location information through the `description` text; when the specific location has not yet been verified, fill in `"TODO:LOCATE"` rather than inventing a page or figure number. The GUI concatenates the reference column automatically as `reference (locator)`.
+4. **`comments` is optional**: records the reasoning behind a choice made when publications conflict, or the process of a parameter's fine-tuning, and does not replace `description` or `reference`.
 
 ---
-## 时间与步长
+## Time and Step Size
 
-步长分为两个独立概念，分别在不同字段声明（ADR 0104、ADR 0105）：
+Step size splits into two independent concepts, each declared in its own field (ADR 0104, ADR 0105):
 
-### equation.step_unit（当 dynamics 使用 step 时必填）
+### equation.step_unit (Required When dynamics Uses step)
 
-**仅当方程的 `dynamics` 表达式中使用了 `step` 时，`step_unit` 才是必填字段**，用于声明该方程中 `step` 符号所代表的时间单位。不含 `step` 的 `dynamics:` 方程（如纯代数赋值）无需声明 `step_unit`。
+`step_unit` is required only when the equation's `dynamics` expression uses `step`, and it declares the time unit that the `step` symbol represents within that equation. A `dynamics:` equation that does not contain `step` (a pure algebraic assignment, for instance) does not need to declare `step_unit`.
 
 ```yaml
 equations:
   bp_dynamics:
     description: "..."
-    step_unit: day        # minute | hour | day（dynamics 使用 step 时必填）
+    step_unit: day        # minute | hour | day (required when dynamics uses step)
     dynamics:
       systolic_bp: "systolic_bp + (...) * step"
 
   performance_calc:
-    description: "静态计算，无 step，无需 step_unit"
+    description: "A static calculation, no step, no step_unit needed"
     dynamics:
       performance: p0 + fitness - fatigue
 ```
 
-`step_unit` 是方程的属性，反映系数标定时假设的时间分辨率。跨模块 import 时，每条方程携带自己的 `step_unit`，引擎据此正确换算 `step` 的数值。
+`step_unit` is a property of the equation, reflecting the time resolution assumed when its coefficients were calibrated. When importing across modules, each equation carries its own `step_unit`, and the engine converts the numeric value of `step` accordingly.
 
-### simulation.step_size（必填）
+### simulation.step_size (Required)
 
-仿真执行步长，独立于方程的 `step_unit`：
+The simulation's execution step size, independent of an equation's `step_unit`:
 
 ```yaml
 simulation:
@@ -166,114 +137,95 @@ simulation:
     unit: day             # minute | hour | day
 ```
 
-`optimization.step_size` 同格式，可选（缺省沿用 `simulation.step_size`）。
+`optimization.step_size` uses the same format and is optional, defaulting to `simulation.step_size` when omitted.
 
-### 方程内符号
+### Symbols Inside an Equation
 
-| 符号 | 含义 | 说明 |
+| Symbol | Meaning | Note |
 |------|------|------|
-| `step` | 当前方程的步长（单位 = `equation.step_unit`） | **唯一规范符号** |
-| `t` / `time` | 当前仿真时间（单位 = `equation.step_unit`） | |
-| ~~`step_size`~~ / ~~`dt`~~ | 同 `step` | **废弃**，禁止在新方程中使用；validator 检测到即报错 |
+| `step` | The current equation's step size (in units of `equation.step_unit`) | **The only standard symbol** |
+| `t` / `time` | The current simulation time (in units of `equation.step_unit`) | |
+| ~~`step_size`~~ / ~~`dt`~~ | Same as `step` | **Deprecated**, prohibited in new equations; the validator raises an error if it detects one |
 
-**`step` 的计算方式**：`step = simulation.step_size / equation.step_unit`（换算为相同时间单位后相除）。
+How `step` is computed: `step = simulation.step_size / equation.step_unit` (converted to the same time unit before dividing).
 
-| 示例 | `simulation.step_size` | `equation.step_unit` | 方程内 `step` 值 |
+| Example | `simulation.step_size` | `equation.step_unit` | The value of `step` inside the equation |
 |------|----------------------|---------------------|----------------|
-| 同单位 | 1 day | day | 1 |
-| 粗步长 × 细单位 | 1 day | hour | 24（每步积分 24 个小时单位） |
-| 细步长 × 粗单位 | 1 hour | day | 1/24（每步仅积分 1/24 天） |
+| Same unit | 1 day | day | 1 |
+| Coarse step size x fine unit | 1 day | hour | 24 (each step integrates 24 hour-units) |
+| Fine step size x coarse unit | 1 hour | day | 1/24 (each step integrates only 1/24 of a day) |
 
 ---
 
-## 方程步长规则
+## Equation Step-Size Rules
 
-**根据变量类型决定是否乘 `step`：**
+Whether to multiply by `step` is determined by the variable type:
 
-| 变量类型 | 方程类型 | 是否乘 step | 原因 |
+| Variable type | Equation type | Multiply by step? | Reason |
 |---------|---------|-----------|------|
-| `state` | 速率（连续动力学） | **必须乘** | 效果与时间成比例 |
-| `input` | 脉冲（pulse 驱动） | **不乘** | 一次性量，与步长无关 |
-| `parameter` | 乘数系数 | 不适用 | 本身是系数 |
+| `state` | A rate (continuous dynamics) | **Must multiply** | The effect is proportional to elapsed time |
+| `input` | A pulse (regimen-driven) | **Do not multiply** | A one-time quantity, independent of step size |
+| `parameter` | A multiplicative coefficient | Not applicable | It is itself a coefficient |
 
 ```yaml
-# ✅ 速率类：state 更新必须乘 step
+# Correct, rate-type: a state update must multiply by step
 dynamics:
   insight:   insight + 0.069 * cognitive_efficiency * step
   nutrition: max(0, nutrition - 0.010 * step)
 
-# ✅ 瞬时类：input 脉冲不乘 step
+# Correct, instantaneous-type: an input pulse does not multiply by step
 dynamics:
   stomach_carbs: stomach_carbs + carb_intake
 ```
 
-**这条规则最容易在"脉冲输入 + 衰减态"这个组合模式里被忘记**：文献给的连续 ODE 常见形式是
-`dA/dt = g·w(t) - k·A`，直接照抄成 Euler 更新会写成 `A: A + (g*w - k*A) * step`——语法上完全合法，
-`w`（脉冲 input）和 `k*A`（衰减项）被放进同一个括号一起乘了 `step`，是上面表格明确列为**禁止写法**
-的用法，但因为两项写在一起、跟教科书上的连续方程长得一模一样，很容易被直接照搬。
+This rule is most easily forgotten in the combined pattern of "pulse input plus a decaying state." The literature's continuous ODE for this is commonly written `dA/dt = g*w(t) - k*A`, and copying it directly into an Euler update produces `A: A + (g*w - k*A) * step`, which is syntactically valid but places `w` (the pulse input) and `k*A` (the decay term) inside the same parenthesis and multiplies both by `step`, exactly the usage the table above marks as prohibited; because the two terms sit together and look identical to the textbook's continuous equation, it is easy to copy this pattern without noticing.
 
-**为什么不能这样写，不只是"这套引擎的规定"**：`w(t)` 在文献原始语境里通常代表"每天一次的训练/给药事件"，
-数学上更准确的写法是一列离散冲量（Dirac delta 之和），不是真正连续可积的函数；对这类"脉冲强迫项"的
-ODE 做数值离散，标准做法本来就是把脉冲项当"瞬时跳变"直接加进状态，只有真正连续的衰减/恢复项才按
-`Δt` 折算——这是数值方法里处理 impulsive forcing 的通用做法，换成任何引擎/语言手写都是同一个结论，
-不是 LM format 自己的额外规定。判断标准很简单：这一项的数值是不是由 `regimens:` 单次投放决定的
-（`delivery: total` 或 `delivery: level` 都算），是的话就不乘 `step`，不管它是不是和另一个真正的衰减项
-写在同一行、同一个括号里。
+Why this cannot be written this way is not merely a rule specific to this engine: `w(t)` in the original literature context usually represents a once-daily training or dosing event, and the more mathematically accurate description is a series of discrete impulses (a sum of Dirac deltas), not a truly continuous integrable function. The standard way to numerically discretize an ODE with such an impulsive forcing term is to add the pulse term straight into the state as an instantaneous jump, and only apply the `Δt` scaling to a genuinely continuous decay or recovery term; this is the general numerical-methods treatment of impulsive forcing, and it holds regardless of the engine or language used, not an extra rule specific to LM format. The test is simple: if a term's value is determined by a single delivery from `regimens:` (either `delivery: total` or `delivery: level`), it does not get multiplied by `step`, whether or not it is written on the same line or inside the same parenthesis as another, genuinely decaying term.
 
-**已知曾经违反这条规则、后来修复的模型**（2026-08-12 全库排查发现，均已修复）：
+Models known to have once violated this rule, since fixed (found in a full-library sweep on 2026-08-12, all now fixed):
 
-| 文件 | 方程 | 症状 |
+| File | Equation | Symptom |
 |---|---|---|
-| `banister_validation.yaml` | `fitness_dynamics`/`fatigue_dynamics` | 比赛日 performance 随 step_size 漂移，6小时步长下顶到变量上界 |
-| `hypertension_gout_sim.yaml` | `thiazide_level_dynamics`/`allopurinol_level_dynamics` | 6小时步长下 uric_acid 顶到 bounds 上界 |
-| `diuretic_tradeoff_sim.yaml` | `thiazide_level_dynamics` | 同上 |
-| `postpartum_recovery_sim.yaml` | `caloric_intake_smoothing` | 同一模式，注释里写"复用已验证的模式"，但被复用的源头本身是错的 |
-| `sodium_lifestyle_bp_sim.yaml` | `net_sodium_balance_dynamics` | 同上 |
-| `masld_insulin_sim.yaml` | `liver_fat_dynamics` 里的 `dietary_glycemic_load` 项 | 同一模型内 `caloric_deficit`/`exercise_met_min` 两个平行 input 都写对了，只有这一项写错，三者 regimen 声明方式完全相同 |
+| `banister_validation.yaml` | `fitness_dynamics`/`fatigue_dynamics` | Race-day performance drifted with `step_size`, pinning against the variable's upper bound at a 6-hour step |
+| `hypertension_gout_sim.yaml` | `thiazide_level_dynamics`/`allopurinol_level_dynamics` | `uric_acid` pinned against its upper bound at a 6-hour step |
+| `diuretic_tradeoff_sim.yaml` | `thiazide_level_dynamics` | Same as above |
+| `postpartum_recovery_sim.yaml` | `caloric_intake_smoothing` | The same pattern, with a comment stating "reused an already-validated pattern," but the source being reused was itself wrong |
+| `sodium_lifestyle_bp_sim.yaml` | `net_sodium_balance_dynamics` | Same as above |
+| `masld_insulin_sim.yaml` | The `dietary_glycemic_load` term inside `liver_fat_dynamics` | Within the same model, the two parallel input variables `caloric_deficit`/`exercise_met_min` were both written correctly, and only this term was wrong, even though all three declare their regimen the same way |
 
-**当前没有自动检测**：validator 不会替你检查这条规则有没有被违反——原因和 ADR 0121 拒绝自动换算参数
-单位是同一条：判断一个 input 变量在某条方程里该不该乘 `step`，需要理解这条方程的物理结构，超出了
-"公式即数学表达式，引擎不做语义推断"的设计原则。写完含"脉冲+衰减态"模式的方程后，建议自己跑一次
-分步长网格自查（同一模型分别用 1h/6h/15min 等不同 `simulation.step_size` 跑，看终值是否收敛到同一个数），
-不要等到论文投稿前才发现。
+There is currently no automatic detection: the validator does not check whether this rule has been violated, for the same reason ADR 0121 declines to auto-convert parameter units. Whether an input variable should be multiplied by `step` in a given equation requires understanding that equation's physical structure, which is beyond the design principle that "a formula is a mathematical expression, and the engine does not perform semantic inference." After writing an equation with a "pulse plus decaying state" pattern, it is worth running a step-size grid check yourself, running the same model with several different `simulation.step_size` values such as 1h/6h/15min and checking whether the final value converges to the same number, rather than discovering the problem only right before a paper submission.
 
-### 跨 step_unit 的参数换算：线性除法 vs 开根（ADR 0121）
+### Cross-step_unit Parameter Conversion: Linear Division Versus a Root (ADR 0121)
 
-文献给的速率参数常以"天"为单位（如"半衰期 4-5 天"、"每年下降 1.5 mL/min"），但所在方程的 `step_unit` 可能是更细的 `hour`。**`step_unit` 机制只换算方程自身的 `step` 符号，不会对嵌入 dynamics 表达式里的字面参数值做单位换算**——这一步换算的责任在建模者，写错了引擎不会报错，只会悄悄把效果放大/缩小若干倍（典型是 day→hour 放大24倍）。
+A rate parameter from the literature is often given per day, such as "half-life 4 to 5 days" or "declines 1.5 mL/min per year," while the equation it sits in may have a finer `step_unit` such as `hour`. The `step_unit` mechanism only converts the equation's own `step` symbol; it does not convert the literal parameter values embedded in the dynamics expression. That conversion is the modeler's responsibility, and getting it wrong raises no error; it silently scales the effect up or down by some factor, typically a 24x amplification going from day to hour.
 
-换算前先判断该参数所在的动力学项属于哪一类，**两类换算方式不同**：
+Before converting, first determine which category the dynamics term the parameter sits in belongs to, since the two categories convert differently:
 
-| 类型 | 项的形式 | 换算方式 |
+| Category | Term form | Conversion method |
 |------|---------|---------|
-| **A：状态无关通量项** | `X: X + rate * f(其他变量) * step`（系数不依赖被更新的同一个状态变量） | **精确线性**：天速率 ÷ 24 = 时速率 |
-| **B：自指数衰减/恢复项** | `X: X - k * (X - target) * step`（系数乘以"状态自身与目标值的差"，target 可以是0） | **开根**：$k_{hour}=1-(1-k_{day})^{1/24}$，线性除以24只是 $k_{day}$ 较小时的近似（如 $k_{day}=0.15$ 时偏差约8%） |
+| **A: a state-independent flux term** | `X: X + rate * f(other variables) * step` (the coefficient does not depend on the same state variable being updated) | **Exact linear**: the daily rate divided by 24 gives the hourly rate |
+| **B: a self-exponential decay or recovery term** | `X: X - k * (X - target) * step` (the coefficient multiplies the difference between the state itself and a target value, where target can be 0) | **A root**: $k_{hour}=1-(1-k_{day})^{1/24}$; dividing linearly by 24 is only an approximation valid when $k_{day}$ is small (for example, at $k_{day}=0.15$ the deviation is about 8%) |
 
-类型 B 是一阶线性 ODE $dX/dt=-k(X-\text{target})$ 的 Euler 离散形式——24个 hour 步的复合效应是乘法性的（$(1-k_{hour})^{24}$），不是线性叠加，所以不能直接除以24。两种算法的计算成本完全相同（一次幂运算或一次除法，模型加载时算一次），**类型 B 必须用开根方程，不接受线性近似**。
+Category B is the Euler discretization of the first-order linear ODE $dX/dt=-k(X-\text{target})$; the compound effect of 24 hourly steps is multiplicative ($(1-k_{hour})^{24}$), not additive, so it cannot simply be divided by 24. The two computation methods cost exactly the same, a single exponentiation or a single division, computed once when the model loads, so category B must use the root equation and a linear approximation is not acceptable.
 
-**不要简单把整条方程的 `step_unit` 改掉来"修复"类型 B 的参数**——`step_unit` 是整条方程的属性，如果同一条方程里混有其他已经按当前 `step_unit` 正确标定的项（常见情况），改 `step_unit` 会把那些项也错误地稀释。正确做法是只修改该参数自身的 `value`（连同 `unit`、`description` 一起更新留痕），保持方程的 `step_unit` 不变。详见 ADR 0121。
+Do not "fix" a category B parameter by simply changing the whole equation's `step_unit`. `step_unit` is a property of the entire equation, and if the same equation mixes in other terms already correctly calibrated to the current `step_unit`, a common situation, changing `step_unit` incorrectly dilutes those terms as well. The correct approach is to change only that parameter's own `value` (updating `unit` and `description` together to leave a trace) while keeping the equation's `step_unit` unchanged. See ADR 0121 for details.
 
 ---
 
-## 方程执行顺序（priority）
+## Equation Execution Order (priority)
 
-每个 step 内，方程按 `priority` **降序**排序后依次执行（数值越大越先执行；未声明默认为 0）。
-排序是**全局一次性**的：按方程整体的 `priority` 排序，
-单条方程内部按 `condition` → `dynamics` 的固定顺序求值。
+Within each step, equations are sorted by `priority` in descending order and executed in that order (a larger number executes first; the default when undeclared is 0). The sort is global and one-time: equations are ordered by their overall `priority`, and within a single equation, evaluation follows the fixed order of `condition` then `dynamics`.
 
-**同 step 内顺序写入语义（非"快照"）**：每条方程算出的新值会立即写回模型变量
-（含 `bounds` 裁剪），随即对**本 step 内后续执行的方程**可见。
-即：`priority` 数值更大的方程先执行，其写回结果会被本 step 内 `priority` 数值更小的方程读到，
-而不是读到上一 step 的旧值。若方程 B 需要读取方程 A 本 step 的最新结果，
-应给 A 设置比 B 更大的 `priority`。
+Within-step ordering has write-through semantics, not a "snapshot": each equation's newly computed value is written back to the model's variables immediately (including `bounds` clipping), and becomes visible right away to any equation that still executes later within the same step. That is, an equation with a larger `priority` value executes first, and its written-back result is read by equations with a smaller `priority` value later in the same step, not the previous step's stale value. If equation B needs to read equation A's latest result from the same step, give A a larger `priority` than B.
 
 ```yaml
 equations:
-  feed_intake:          # 先把奶量加入胃，处理溢奶
+  feed_intake:          # Runs first: adds the feed volume to the stomach and handles overflow
     priority: 10
     dynamics:
       stomach_volume: "stomach_volume + intake - max(0, stomach_volume + intake - capacity)"
 
-  gastric_emptying:     # 后执行：读到 feed_intake 本 step 已更新的 stomach_volume
+  gastric_emptying:     # Runs later: reads the stomach_volume feed_intake already updated this step
     priority: 0
     dynamics:
       stomach_volume: "stomach_volume - emptying_rate * stomach_volume * step"
@@ -281,9 +233,9 @@ equations:
 
 ---
 
-## Euler 离散积分（永久决策）
+## Euler Discrete Integration (a Permanent Decision)
 
-**本框架永久采用统一 Euler 离散明文表达，直接写出下一时刻的值，不引入 RK4 等高阶积分器。**
+This framework permanently uses a uniform, explicit Euler discretization, writing out the next value directly, and does not introduce a higher-order integrator such as RK4.
 
 ```yaml
 dynamics:
@@ -292,6 +244,6 @@ dynamics:
   velocity:      velocity + (force - damping * velocity) * step
 ```
 
-理由：生理/社会模型参数不确定性 ±10–50%，Euler 截断误差远低于此；离散事件（进餐、用药）破坏高阶积分器精度优势；明文表达所见即所得。
+Reasoning: physiological and social model parameters carry ±10-50% uncertainty, far larger than Euler's truncation error; discrete events such as a meal or a dose already defeat a higher-order integrator's precision advantage; and an explicit form is what you see is what you get.
 
 ---

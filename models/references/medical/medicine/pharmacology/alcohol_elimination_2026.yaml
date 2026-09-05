@@ -9,30 +9,43 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: |
-      乙醇消除遵循零阶动力学：消除速率恒定，不随血药浓度变化，这与咖啡因等大多数药物的一阶消除形成方法论对比，一阶消除下速率正比于浓度。肝脏乙醇脱氢酶在中等血药浓度下即饱和，消除速率不再随浓度升高而加快。Widmark 提出的经典速率约0.015-0.018 g/dL/小时是法医毒理学和临床教学的标准数字。
+      Ethanol elimination follows zero-order kinetics: the elimination rate is constant and does not
+      change with blood concentration, a methodological contrast with the first-order elimination of
+      most drugs such as caffeine, where the rate is proportional to concentration. Hepatic alcohol
+      dehydrogenase is already saturated at a moderate blood concentration, so the elimination rate
+      no longer speeds up as concentration rises. Widmark's classic rate of about
+      0.015-0.018 g/dL/hour is a standard figure in forensic toxicology and clinical teaching.
     result: |
-      以常见法定驾驶限值参照点0.08 g/dL为起始血药浓度，按零阶消除速率0.015 g/dL/小时衰减，2小时后降至0.05 g/dL，4小时后降至0.02 g/dL，完全清除需约5.33小时，仿真结果与线性衰减而非指数衰减的解析计算逐位吻合。
+      Starting from a blood concentration of 0.08 g/dL, a common legal-driving-limit reference
+      point, decaying at the zero-order elimination rate of 0.015 g/dL/hour, it falls to 0.05 g/dL
+      after 2 hours and 0.02 g/dL after 4 hours, with complete clearance needing about 5.33 hours;
+      the simulation result matches the analytical calculation of a linear, not exponential, decay
+      exactly.
     limitations: |
-      0.015 g/dL/小时是健康成年人代表值，个体差异范围0.009-0.035 g/dL/小时，性别、体重、饮酒经验等因素会影响肝脏乙醇脱氢酶活性；未建模吸收相，真实饮酒后血药浓度需30-90分钟达峰，本文件从峰值时刻开始计算，只验证消除相。
+      0.015 g/dL/hour is a representative value for a healthy adult, with an individual range of
+      0.009-0.035 g/dL/hour; sex, body weight, and drinking experience all affect hepatic alcohol
+      dehydrogenase activity. The absorption phase is not modeled; a real blood concentration after
+      drinking takes 30-90 minutes to peak, and this file starts its calculation from the peak
+      moment, validating only the elimination phase.
   ratings:
-    importance: 0.25 - 法医毒理学/临床教学标准案例，通用参考组件
-    variable: 1.0 - Widmark零阶消除速率是毒理学教科书级共识数字，文献可直接追溯
-    equation: 1.0 - Widmark零阶消除方程是法医毒理学被广泛引用且独立复现的标准形式
-    simulation: 1.0 - 零阶线性衰减解析解与仿真结果逐位吻合，逐点验证通过
-    optimization: 0.0 - 本文件不含optimization，纯消除动力学验证，不涉及决策变量
-    confidence: 1.0 - 独立预测检验通过，仿真轨迹与解析理论值逐点吻合，与caffeine_pk_2026一阶动力学形成方法论对照
+    importance: 0.25 - A standard forensic-toxicology/clinical-teaching case, a general reference component
+    variable: 1.0 - Widmark's zero-order elimination rate is a textbook-level consensus figure in toxicology, directly traceable to the literature
+    equation: 1.0 - Widmark's zero-order elimination equation is a widely cited, independently reproduced standard form in forensic toxicology
+    simulation: 1.0 - The zero-order linear-decay analytical solution matches the simulation result exactly, passing point-by-point validation
+    optimization: 0.0 - This file contains no optimization, a pure elimination-kinetics validation with no decision variable
+    confidence: 1.0 - Passes independent predictive testing, with the simulation trajectory matching the analytical theoretical value point by point, forming a methodological contrast with caffeine_pk_2026's first-order kinetics
   tags: [pharmacokinetics, alcohol, zero-order-kinetics, validation, literature-benchmark]
 
 variables:
   blood_alcohol_conc:
-    description: 血液酒精浓度（g/dL），零阶消除（速率恒定，与浓度无关）
+    description: Blood alcohol concentration (g/dL), zero-order elimination (a constant rate, independent of concentration)
     value: 0.08
     unit: g/dL
     type: state
     bounds: [0, 0.5]
 
   elimination_rate:
-    description: 零阶消除速率（Widmark经典值，健康成年人代表值，个体范围0.009-0.035）
+    description: The zero-order elimination rate (Widmark's classic value, a representative healthy-adult figure, with an individual range of 0.009-0.035)
     value: 0.015
     unit: g/dL/hour
     type: parameter
@@ -40,7 +53,7 @@ variables:
 
 equations:
   zero_order_elimination:
-    description: "零阶消除：血药浓度线性下降，速率恒定，不随浓度变化（不同于一阶消除的指数衰减）"
+    description: "Zero-order elimination: blood concentration declines linearly at a constant rate, independent of concentration (unlike first-order elimination's exponential decay)"
     step_unit: hour
     condition: true
     priority: 5
@@ -57,7 +70,7 @@ simulation:
     - blood_alcohol_conc
   plans:
     - id: "peak_0.08"
-      label: "从0.08 g/dL峰值血药浓度开始的消除追踪"
+      label: "Tracking elimination starting from a peak concentration of 0.08 g/dL"
       regimens: []
 
 references:

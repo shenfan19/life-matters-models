@@ -2,9 +2,9 @@ category: social
 metadata:
   todo:
     - type: noref
-      issue: "缺少充分文献引用支持（从旧文件名后缀 _noref 迁移而来）"
-      evidence: "迁移自旧版 _noref 后缀标记，尚未核查 metadata.references 及各变量 reference 字段的具体缺失项。"
-      next: "核查并补充缺失的文献引用，或确认现有引用已足够后移除该 todo 项。"
+      issue: "Lacks sufficient literature citation support (migrated from the old filename's _noref suffix)"
+      evidence: "Migrated from the legacy _noref suffix marker; the specific gaps in metadata.references and each variable's reference field have not yet been checked."
+      next: "Check and supply the missing literature citations, or confirm the existing citations are sufficient and remove this todo item."
   name: ru1865_ru_raskolnikov
   lm_format_version: "1.0"
   authors:
@@ -12,18 +12,26 @@ metadata:
       email: shenfan@mail.sysu.edu.cn
   description:
     problem: >
-      拉斯柯尔尼科夫（陀思妥耶夫斯基《罪与罚》1866）谋杀放贷人后面临三重张力：掩盖罪行努力，即能降低被捕风险，但会加剧「道德发烧」，使精神症状恶化；精神救赎寻求，即与索尼娅的接触能减缓心理崩溃，但会增加暴露风险；以及社会退缩程度，即能减少被发现的概率，但会加速与现实脱节。波尔菲里的审讯和自身精神发烧构成双重压力，形成 90 天内从犯罪到坦白的心理崩溃轨迹。
+      After murdering the pawnbroker, Raskolnikov (Dostoevsky's Crime and Punishment, 1866) faces
+      a triple tension: effort spent concealing the crime lowers the risk of arrest, but worsens a
+      "moral fever" that intensifies his psychiatric symptoms; seeking spiritual redemption, contact
+      with Sonya can ease his psychological collapse, but raises the risk of exposure; and the
+      degree of social withdrawal can reduce the probability of being discovered, but accelerates his
+      disconnection from reality. Porfiry's interrogation and his own psychological fever form a dual
+      pressure, tracing a 90-day psychological-collapse trajectory from crime to confession.
     result: >
-      仿真预期显示 90 天内精神健康、被捕风险和救赎进度的日动态。当前为草案状态，参数待校准。
-    limitations: 草案，参数、目标和叙事细节待校准；文学设定，无客观历史数据。
+      The simulation is expected to show the daily dynamics of mental health, arrest risk, and
+      redemption progress across 90 days. This is currently a draft, with parameters still to be
+      calibrated.
+    limitations: A draft; parameters, objectives, and narrative details still need calibration; a literary setting with no objective historical data.
   ratings:
-    variable: 0.0 - 全部7个变量均标注TODO:SOURCE，纯文学设定无客观数据
-    equation: 0.0 - 5条方程均为纯叙事自建，reference标注TODO:SOURCE
-    simulation: 0.75 - 2026-09-04验证，--sim正常产出90天合理轨迹，未与独立数据逐点比对
-    optimization: 0.0 - redemption_potential与mental_health经方程追踪无对立驱动，spiritual_seeking同时有利两目标；2026-09-04验证--opt收敛至单一前沿点(100,100)，数值确认无权衡
-    importance: 0.5 - 《罪与罚》是心理犯罪小说的巅峰，但为文学设定，非框架依赖模块
-    innovation: 0.5 - 将文学叙事张力转化为可优化动力学系统，核心决策权衡结构沿用已知框架
-    confidence: 0.25 - 2026-09-04验证，--sim/--opt均正常跑通，但未与独立文献目标比较
+    variable: 0.0 - All 7 variables are marked TODO:SOURCE, a purely literary setting with no objective data
+    equation: 0.0 - All 5 equations are purely self-built for the narrative, with reference marked TODO:SOURCE
+    simulation: 0.75 - Verified on 2026-09-04, --sim produces a plausible 90-day trajectory normally, not yet compared point-by-point against independent data
+    optimization: 0.0 - redemption_potential and mental_health show no opposing drive when traced through the equations, with spiritual_seeking benefiting both objectives at once; verified on 2026-09-04 that --opt converges to a single front point (100,100), numerically confirming no tradeoff
+    importance: 0.5 - Crime and Punishment is the pinnacle of the psychological crime novel, but this is a literary setting, not a module the framework depends on
+    innovation: 0.5 - Converting literary narrative tension into an optimizable dynamical system, with the core decision-tradeoff structure carried over from a known framework
+    confidence: 0.25 - Verified on 2026-09-04, --sim/--opt both run normally, but not yet compared against an independent literature target
   tags:
     - poverty
     - crime
@@ -39,7 +47,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 掩盖罪行努力：主动消除痕迹、控制表现、避免暴露
+    description: Effort spent concealing the crime, actively erasing traces, controlling his behavior, and avoiding exposure
     reference: TODO:SOURCE
   spiritual_seeking:
     type: input
@@ -48,7 +56,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 精神救赎寻求：与索尼娅等人的真实交流，寻求道德出路
+    description: Seeking spiritual redemption, genuine contact with Sonya and others, seeking a moral way out
     reference: TODO:SOURCE
   social_withdrawal:
     type: input
@@ -57,7 +65,7 @@ variables:
     bounds:
       - 0
       - 1
-    description: 社会退缩程度：拒绝人际接触、独居程度（越高越安全，也越快崩溃）
+    description: The degree of social withdrawal, refusing human contact and living in isolation (safer, but collapses faster)
     reference: TODO:SOURCE
   mental_health:
     type: state
@@ -66,7 +74,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 精神状态：罪恶感·发烧·妄想·心理分裂的综合状态（高=稳定）
+    description: Mental state, a composite of guilt, fever, delusion, and psychological fragmentation (high=stable)
     reference: TODO:SOURCE
     io_role: output
   fever_level:
@@ -76,7 +84,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 发烧强度：心理创伤导致的生理发热（陀思妥耶夫斯基式症状）
+    description: Fever intensity, physiological fever induced by psychological trauma (a Dostoevskian symptom)
     reference: TODO:SOURCE
     io_role: output
   detection_risk:
@@ -86,7 +94,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 被侦探发现的风险：波费利等侦探逐渐收紧包围圈的程度
+    description: The risk of detection, how much investigators like Porfiry gradually tighten the net
     reference: TODO:SOURCE
     io_role: output
   redemption_potential:
@@ -96,7 +104,7 @@ variables:
     bounds:
       - 0
       - 100
-    description: 救赎可能性：走向自首和灵魂重建的内在能量
+    description: Redemption potential, the inner energy driving him toward confession and spiritual rebuilding
     reference: TODO:SOURCE
     io_role: output
   guilt_pressure:
@@ -106,34 +114,34 @@ variables:
     bounds:
       - 0
       - 100
-    description: 罪恶感压力：无法逃避的道德重量
+    description: Guilt pressure, an inescapable moral weight
     reference: TODO:SOURCE
     io_role: output
 equations:
   fever_dynamics:
     dynamics:
       fever_level: min(100, max(0, fever_level + ((guilt_pressure / 100) * 2.0) - (spiritual_seeking * 1.5)))
-    description: 发烧随罪恶压力增高，精神寻求可缓解
+    description: Fever rises with guilt pressure, and spiritual seeking can ease it
     reference: TODO:SOURCE
   mental_health_change:
     dynamics:
       mental_health: max(0, min(100, mental_health - ((fever_level / 100) * 2.5) - (concealment_effort * 1.2) - (social_withdrawal * 0.8) + (spiritual_seeking * 2.0)))
-    description: 精神状态受发烧·掩盖努力·孤立的消耗
+    description: Mental state is depleted by fever, concealment effort, and isolation
     reference: TODO:SOURCE
   detection_progression:
     dynamics:
       detection_risk: min(100, detection_risk + (1.5) - (concealment_effort * 0.8) + ((guilt_pressure / 100) * 1.0))
-    description: 侦探的追踪随时间推进，掩盖努力可短暂延缓
+    description: The investigation advances over time, and concealment effort can briefly delay it
     reference: TODO:SOURCE
   guilt_dynamics:
     dynamics:
       guilt_pressure: min(100, max(0, guilt_pressure + (1.0 + social_withdrawal * 0.5) - (spiritual_seeking * 2.5)))
-    description: 罪恶感随时间增长，只有精神寻求可真正减少
+    description: Guilt grows over time, and only spiritual seeking can genuinely reduce it
     reference: TODO:SOURCE
   redemption_growth:
     dynamics:
       redemption_potential: min(100, redemption_potential + (spiritual_seeking * 3.0 * (1 - concealment_effort * 0.5)))
-    description: 救赎可能性随精神寻求增长，需要接受痛苦（非掩盖）
+    description: Redemption potential grows with spiritual seeking, requiring him to accept suffering rather than conceal it
     reference: TODO:SOURCE
 simulation:
   step_size:
@@ -166,7 +174,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 掩盖罪行努力
+        label: Effort spent concealing the crime
         optimize:
           value:
             - 0
@@ -182,7 +190,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 精神救赎寻求
+        label: Seeking spiritual redemption
         optimize:
           value:
             - 0
@@ -198,7 +206,7 @@ optimization:
           - Fri
           - Sat
           - Sun
-        label: 社会退缩程度
+        label: The degree of social withdrawal
         optimize:
           value:
             - 0

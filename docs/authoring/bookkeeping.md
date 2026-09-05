@@ -1,57 +1,57 @@
-# 模型生命周期字段：todo / log / history / reviewed
+# Model Lifecycle Fields: todo / log / history / reviewed
 
-## 状态标记
+## Status Markers
 
-### `metadata.todo`（ADR 0120；文件名与发布状态无关）
+### `metadata.todo` (ADR 0120; the filename carries no publication status)
 
-模型文件是否"可发布"只看 `metadata.todo` 是否存在/非空，**与文件名无关**（旧约定用 `_HOLD` 文件名后缀镶嵌这一状态，已被 ADR 0120 废除——重命名会破坏其他文件 `imports:` 路径，曾导致 `Cannot load model` 故障）：
+Whether a model file is publishable depends solely on whether `metadata.todo` exists and is non-empty, independent of the filename. The old convention embedded this status in a `_HOLD` filename suffix, which ADR 0120 abolished, since renaming a file breaks other files' `imports:` paths and had caused `Cannot load model` failures.
 
 ```yaml
 metadata:
   todo:
     - type: nosim | noopt | noref | quality | other
-      issue: "一句话描述问题"
-      evidence: "诊断依据：具体数值/现象/复现方式，使下次处理不需要重新诊断"
-      next: "建议的下一步，或留给人工判断的选项；不替人工下结论"
+      issue: "One-sentence description of the problem"
+      evidence: "Diagnostic basis: specific values/observations/reproduction steps, so the next pass does not need to re-diagnose"
+      next: "A suggested next step, or an option left for human judgment; do not pre-decide on the human's behalf"
 ```
 
-- `type` 取值含义：`nosim`=sim 无法运行；`noopt`=sim 通过但 optimization 失败；`noref`=缺文献来源（`TODO:SOURCE`）；`quality`=sim/opt 均成功但结果有疑点（如 Pareto 前沿退化、可行域为空集）；`other`=其他。
-- `evidence` 是核心：把诊断过程中得到的具体数值/现象写下来，避免下次处理（无论 AI 或人工）重新运行诊断。
-- **无 `metadata.todo`（或为空）= 已确认通过、可发布**：`--sim` ✓、`--opt` ✓（或无 `optimization:` 块时自动跳过）、所有参数有文献来源、结果无疑点。
-- 所有 `todo` 项处理完毕后删除该字段，文件回到"干净"状态——**不需要重命名文件**。
+- `type` values: `nosim` means the sim cannot run; `noopt` means the sim succeeds but optimization fails; `noref` means a literature source is missing (`TODO:SOURCE`); `quality` means both sim and opt succeed but the result is questionable, such as a degenerate Pareto front or an empty feasible set; `other` covers everything else.
+- `evidence` is the core field. Write down the specific values or observations obtained during diagnosis so the next pass, whether by an AI or a human, does not need to rerun the diagnosis.
+- No `metadata.todo` (or an empty one) means confirmed and publishable: `--sim` passes, `--opt` passes (or is skipped automatically when there is no `optimization:` block), every parameter has a literature source, and the results raise no doubts.
+- Once every `todo` item has been resolved, delete the field and the file returns to a clean state, with no filename change required.
 
 ### reviewed: true
 
-可在 `metadata` 中加可选字段 `reviewed: true`，表示建模者已人工确认机制合理、参数量级正确。这不是发布门控。
+An optional field, `reviewed: true`, can be added under `metadata` to indicate that the modeler has manually confirmed the mechanism is sound and the parameter magnitudes are correct. This is not a publication gate.
 
 ---
 
-## 改进历史：`metadata.log`（ADR 0103）
+## Change History: `metadata.log` (ADR 0103)
 
-可选字段，记录模型的改动历史，弥补 git log 在跨文件批量 commit 下追溯单个模型修改脉络的不足：
+An optional field recording a model's change history, compensating for the difficulty of tracing a single model's edit history through git log when commits bundle multiple files:
 
 ```yaml
 metadata:
   log:
     "2026-06-14_10-30-00":
-      change: "一句话描述本次改了什么"
-      reason: "为什么这样改"
+      change: "One-sentence description of what changed"
+      reason: "Why it changed"
 ```
 
-- key 为 `YYYY-MM-DD_HH-mm-ss` 时间戳（本地时间）；字符串字典序即时间顺序，新条目追加在末尾，不修改/删除历史条目。
-- 每条只有 `change` + `reason` 两个字段：`change` 是什么靠 git diff 可查证，核心价值在 `reason`——补全 git diff 给不出的修改动机/背景。关联的 ADR、`metadata.todo` 项编号等直接写进 `reason` 文本，不单独建字段。
-- 与 `metadata.todo`（前瞻：待办）互补（回顾：已完成）；处理某个 `todo` 项后，可在 `log` 追加一条说明处理结果，再从 `todo` 中删除该项。
-- 仅对有语义影响的改动（参数/方程/约束/结构调整、文献依据更新）记录；格式化、拼写修正不必记录。
-- 可选字段，不是发布门控；现有模型不强制回填，从下次有意义的修改开始追加即可。
+- The key is a `YYYY-MM-DD_HH-mm-ss` timestamp in local time; lexicographic order of the string matches chronological order, new entries are appended at the end, and existing entries are never edited or deleted.
+- Each entry carries only two fields, `change` and `reason`. What changed can already be verified from a git diff, so the value lies in `reason`, which supplies the motivation or background a git diff cannot show. Any related ADR or `metadata.todo` item number is written directly into the `reason` text rather than given its own field.
+- `metadata.log` complements `metadata.todo`: one looks forward to pending work, the other looks back at completed work. After resolving a `todo` item, an entry describing the resolution can be appended to `log` before the item is removed from `todo`.
+- Only changes with semantic effect are recorded, such as adjustments to parameters, equations, or constraints, structural changes, or updates to literature backing; formatting or spelling fixes need not be recorded.
+- This is an optional field and not a publication gate; existing models are not required to backfill it, and new entries can simply start from the next meaningful change.
 
 ---
 
-## 调试历史版本管理：`history/` 目录（ADR 0141）
+## Debug History Versioning: the `history/` Directory (ADR 0141)
 
-反复调试同一个模型（多次调整 `optimization` 配置重跑、多次改写 `description` 以反映诊断结论）时，**旧版本的完整内容不进入主 YAML 文件**——不要把历次 rerun 的 `optimization.results`、被推翻的旧 `description` 表述、诊断过程本身累积保留在同一个文件里，这会让文件持续膨胀、新读者分不清哪部分是当前有效结论。这条与"改进历史：`metadata.log`"是两回事：`metadata.log` 只留一行"改了什么/为什么"的索引，本身很小，留在主文件里；`history/` 存的是被取代的完整文件内容，体量可能很大，不适合留在对外发布的文件里。
+When a model is debugged repeatedly, for instance re-running it after multiple `optimization` configuration changes, or rewriting `description` several times to reflect diagnostic conclusions, the full content of older versions does not stay in the main YAML file. Accumulating past reruns' `optimization.results`, superseded `description` wording, and the diagnostic process itself in the same file lets it grow without bound and leaves new readers unable to tell which part reflects the current, valid conclusion. This is a separate concern from `metadata.log`: `metadata.log` keeps only a one-line index of what changed and why, stays small, and lives in the main file, whereas `history/` stores the full content of superseded files, which can be large and is not suitable for a publicly released file.
 
-**做法**：调试出新版本前，先把当前文件原样复制一份到同目录下的 `history/` 子文件夹，文件名加日期戳前缀（`history/YYYY-MM-DD_原文件名.yaml`），再回到主文件里删除已被取代的内容，只保留反映当前状态的一份干净版本。`history/` 内容仅供作者本人日后复查调试脉络，不受《面向最终读者的交付物：不留过程痕迹》规则约束，可以如实保留调试细节、失败尝试、中间数值；整个 `history/` 目录通过仓库根 `.gitignore` 的 `**/history/` 规则排除，不随代码库发布，外部读者看到的永远只是主文件的最终版本。
+Approach: before debugging toward a new version, first copy the current file as-is into a `history/` subfolder in the same directory, with the filename prefixed by a date stamp (`history/YYYY-MM-DD_original-filename.yaml`), then return to the main file and delete the superseded content, keeping only a clean version that reflects the current state. The content under `history/` is for the author's own later review of the debugging trail; it is not bound by the "deliverables for the final reader carry no process trace" rule, so it may honestly retain debugging detail, failed attempts, and intermediate values. The entire `history/` directory is excluded from version control by the repository root `.gitignore` rule `**/history/` and is never published with the codebase, so external readers only ever see the final version of the main file.
 
-同样的处理方式适用于 `metadata.todo` 里已经处理完但记录了大段诊断叙述的条目：处理完毕后按现有规则从 `todo` 中删除，叙述本身如果还有查证价值，搬进 `history/` 而不是继续留在主文件的 `todo`/`results` 里"暂时保留"。
+The same treatment applies to a `metadata.todo` item that has been resolved but carries a long diagnostic narrative: once resolved, remove it from `todo` per the existing rule, and if the narrative still has reference value, move it into `history/` rather than leaving it "for now" in the main file's `todo` or `results`.
 
 ---

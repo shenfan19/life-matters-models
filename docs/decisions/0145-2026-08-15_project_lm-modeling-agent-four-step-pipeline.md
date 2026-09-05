@@ -1,57 +1,57 @@
-# 0145 — LM 建模协作 Agent 四步流水线与文档存放
+# 0145 - The LM Modeling Collaboration Agent Four-Step Pipeline and Document Placement
 
-**日期**：2026-08-15
-**状态**：✅ 已接受
+**Date**: 2026-08-15
+**Status**: Accepted
 
 ---
 
-## 背景
+## Background
 
-LM 建模工作此前依赖用户手动完成"找方向 → 起草 YAML → 诊断 → 提出并验证候选修改"这一整套流程，每次都要重新说明规范、重新解释诊断维度，协作指令没有沉淀下来。随着 Claude Code 的 subagent 机制可用，具备条件把这套协作流程固化为可复用、可移植的文档，供 AI 助手按标准化步骤执行，同时保留人工核实作为最终把关。
+LM modeling work used to depend on the user manually working through the whole sequence of finding a direction, drafting a YAML, diagnosing it, and proposing and validating candidate changes, re-explaining the specification and re-explaining the diagnostic dimensions every single time, with the collaboration instructions never accumulating into something reusable. Now that Claude Code's subagent mechanism is available, the conditions exist to fix this collaboration process into a reusable, portable set of documents that an AI assistant can execute through standardized steps, while keeping human verification as the final check.
 
-## 决策
+## Decision
 
-采纳四步流水线，完整指令文档存放在本仓库 `agents/` 目录：
+Adopt a four-step pipeline, with the complete instruction documents kept in this repository's `agents/` directory:
 
-- **Step 1** `lm-modeling-inspiration.md`：灵感发现。基于学科覆盖盘点表（`docs/model.md`）或用户给定方向做文献检索，产出候选建模方向清单，不创建任何文件。
-- **Step 2** `lm-modeling-design.md`：起草与结构性修改。把一个方向或结构性改动需求写成可运行的 model YAML 草稿，草稿一律落在 `models/temp/`，不碰正式模型文件。
-- **Step 3.1** `lm-modeling-diagnosis.md`：诊断。对一个 LM 模型做全面诊断——决策变量边界、可行域结构性冲突、仿真轨迹的生理边界违反、Pareto 前沿形态、引用缺口、自报的已知问题——产出统一诊断表。不要求模型必须有 `optimization:` 块，sim-only 模型同样可诊断；不具备编辑能力。
-- **Step 3.2** `lm-modeling-advisor.md`：研究与执行。基于诊断表研究文献依据、提出候选建模修改，实际编辑模型副本、跑 life-matters-reference-engine 验证并按结果迭代。绝不编辑正式模型文件，只编辑模型目录下的 `temp_probe/`、`temp_advisor/` 副本。
-- **Step 4** `lm-agent-report.md`：任务报告约定，不是独立触发的 agent，是前四份文档共同遵守的收尾规则——任一 agent 实际产出了会被后续引用/依赖的东西之后，按模板记录前因后果、任务、环境、过程、结果、可复现的期望、后续状态。
+- **Step 1** `lm-modeling-inspiration.md`: finding inspiration. Based on the discipline coverage inventory table (`docs/model.md`) or a direction given by the user, does literature research and produces a list of candidate modeling directions, creating no file.
+- **Step 2** `lm-modeling-design.md`: drafting and structural changes. Writes a direction or a structural-change requirement into a runnable model YAML draft; drafts always land in `models/temp/` and never touch a formal model file.
+- **Step 3.1** `lm-modeling-diagnosis.md`: diagnosis. Runs a comprehensive diagnosis of an LM model, decision-variable boundaries, structural conflicts in the feasible region, physiological-boundary violations in the simulation trajectory, the Pareto front's shape, citation gaps, self-reported known issues, and produces a unified diagnostic table. The model is not required to have an `optimization:` block; a sim-only model can be diagnosed too; this step has no editing capability.
+- **Step 3.2** `lm-modeling-advisor.md`: research and execution. Based on the diagnostic table, researches literature support and proposes candidate modeling changes, actually editing a model copy, running life-matters-reference-engine to validate, and iterating on the results. Never edits a formal model file, editing only the `temp_probe/` and `temp_advisor/` copies under the model's own directory.
+- **Step 4** `lm-agent-report.md`: the task-report convention. Not an independently triggered agent, but a wrap-up rule the first four documents all follow: once any agent has actually produced something that will be referenced or depended on later, it records the background, task, environment, process, result, reproducible expectation, and follow-on state per a template.
 
-Step 3.1 与 3.2 共同构成"调整"阶段，通常配套使用；Step 1 与 Step 2 各自独立。
+Step 3.1 and 3.2 together form the "adjustment" stage and are typically used together; Step 1 and Step 2 are each independent.
 
-### 文档存放位置：完整指令在 models 仓库，reference_engine 仓库只放触发入口
+### Document placement: complete instructions live in the models repository; the reference_engine repository holds only a trigger entry point
 
-完整指令统一维护在本仓库 `agents/*.md`，不绑定任何特定 AI 工具或框架——文档本身设计成可以整段读给任意支持长上下文指令的 AI 助手照做，不依赖 Claude Code 专有机制。
+The complete instructions are maintained uniformly in this repository's `agents/*.md`, not tied to any particular AI tool or framework; the documents are designed to be readable in full and followed by any AI assistant that supports long-context instructions, without depending on any Claude-Code-specific mechanism.
 
-`life-matters-reference-engine/.claude/agents/` 下放对应四份文档的薄封装 stub，每份只做一件事：指向本仓库 `agents/` 目录下的同名文档并读取执行；若姊妹仓库不存在则如实告知用户无法继续。该仓库 `.claude/` 目录整体被 `.gitignore` 排除，这些 stub 不进入版本库——真实内容的单一事实来源始终是本仓库的 `agents/` 目录，Claude Code 只是众多可能的执行环境之一。
+`life-matters-reference-engine/.claude/agents/` holds thin wrapper stubs for the corresponding four documents, each doing exactly one thing, pointing to the same-named document in this repository's `agents/` directory and reading and executing it; if the sibling repository does not exist, it honestly tells the user it cannot proceed. That repository's entire `.claude/` directory is excluded via `.gitignore`, so these stubs never enter version control; the single source of truth for the real content is always this repository's `agents/` directory, and Claude Code is just one of many possible execution environments.
 
-### 默认调用引擎验证，明确说明才退化为纯文本分析
+### Engine validation runs by default; a plain-text-only analysis requires explicit instruction
 
-Step 2/3.1/3.2 默认调用 life-matters-reference-engine 做验证（Step 2 是语法/可运行性验证，Step 3.1/3.2 是数值验证）。退化为纯文本分析（只读 YAML、逻辑推理、网络检索，不运行任何计算）需要用户在对话里明确说明；调用环境中若根本不存在 `life-matters-reference-engine` 仓库（两仓库须以兄弟目录形式存在），同样自动退化并说明原因。Step 1 不涉及引擎，只做检索。
+Steps 2/3.1/3.2 call life-matters-reference-engine for validation by default (Step 2 is syntax/runnability validation, Steps 3.1/3.2 are numeric validation). Falling back to plain-text analysis only, reading the YAML, reasoning, and web search, with no computation run, requires the user to state this explicitly in conversation; if the `life-matters-reference-engine` repository does not exist at all in the calling environment (the two repositories must exist as sibling directories), it likewise falls back automatically and states the reason. Step 1 does not touch the engine and only does research.
 
-### 临时文件约定
+### Temporary-file convention
 
-各文档在模型自己的目录下按需新建 `temp_probe/`、`temp_advisor/` 子目录存放临时副本；Step 2 的草稿统一放 `models/temp/`。`.gitignore` 新增 `**/temp_*/` 规则，任何深度、任何 `temp_` 前缀后缀的目录均被排除，避免探针/草稿副本污染正式模型文件或被误提交。
+Each document creates `temp_probe/` and `temp_advisor/` subdirectories as needed under a model's own directory to hold temporary copies; Step 2's drafts uniformly go into `models/temp/`. A new `**/temp_*/` rule is added to `.gitignore`, excluding any directory at any depth with a `temp_` prefix or suffix, to prevent probe or draft copies from polluting formal model files or being committed by mistake.
 
-### Step 4 报告存放于内部仓库
+### Step 4 reports are kept in the internal repository
 
-Step 4 产出的实际任务报告存 `life-matters-home/agent_reports/`，不进公开仓库。与 `models/test_validation/validation_report.md` 的先例一致：先在内部积累真实使用记录，等这套 agent 流程有了可信的使用轨迹，再决定摘取哪些片段对外公开；公开仓库目前没有任何文件引用该目录，不预先放置占位文件。
+The actual task reports Step 4 produces are kept in `life-matters-home/agent_reports/`, not in a public repository, consistent with the precedent of `models/test_validation/validation_report.md`: real usage records accumulate internally first, and once this agent process has a credible track record, a decision is made about which excerpts to make public; no public repository file currently references this directory, and no placeholder file is pre-created.
 
-## 影响范围
+## Scope of Impact
 
-- 新增 `agents/README.md`、`agents/lm-modeling-inspiration.md`、`agents/lm-modeling-design.md`、`agents/lm-modeling-diagnosis.md`、`agents/lm-modeling-advisor.md`、`agents/lm-agent-report.md`。
-- `.gitignore` 新增 `**/temp_*/` 规则。
-- `life-matters-reference-engine/.claude/agents/` 新增四份本地 stub（不进版本库）。
-- `life-matters-home/agent_reports/` 作为 Step 4 报告的内部存放目录，首份报告已回溯记录 2026-08-15 当天 ibs_diet/masld_insulin/bergman_glucose 三个模型的 Step 3.2 实际运行。
+- New files: `agents/README.md`, `agents/lm-modeling-inspiration.md`, `agents/lm-modeling-design.md`, `agents/lm-modeling-diagnosis.md`, `agents/lm-modeling-advisor.md`, `agents/lm-agent-report.md`.
+- A new `**/temp_*/` rule added to `.gitignore`.
+- Four local stubs added under `life-matters-reference-engine/.claude/agents/` (not entering version control).
+- `life-matters-home/agent_reports/` set up as Step 4's internal report directory, with the first report already recording, retroactively, the Step 3.2 runs actually carried out on 2026-08-15 for the three models ibs_diet/masld_insulin/bergman_glucose.
 
-## 结果
+## Result
 
-- 建模协作流程从"每次口头重新说明"变为四份可复用、可移植的标准化文档，权限边界（谁能创建文件、谁能编辑正式文件、谁只能诊断不能改）显式写入各自文档而非依赖临时约定。
-- 引擎验证默认开启，保证草稿/候选修改在交回用户前已过语法或数值检验，而不是停留在纯文本推理层面。
-- 正式模型文件的编辑权限保持收敛：四份文档中仅 Step 3.2 能编辑模型副本，且明确排除正式文件；最终是否采纳仍需人工核实。
+- The modeling collaboration process moved from "re-explained verbally every time" to four reusable, portable, standardized documents, with permission boundaries, who can create files, who can edit formal files, who can only diagnose and not change anything, written explicitly into each document rather than relying on an ad hoc convention.
+- Engine validation is on by default, ensuring a draft or candidate change has already passed a syntax or numeric check before being handed back to the user, rather than staying at the level of plain-text reasoning.
+- Editing permission on formal model files stays tightly scoped: of the four documents, only Step 3.2 can edit a model copy, and it explicitly excludes formal files; whether to actually adopt a change still requires human verification.
 
-## 未决
+## Open Questions
 
-- Step 4 报告是否需要以及何时摘取片段对外公开，本 ADR 不预先决定，留待后续视使用轨迹判断。
+- Whether, and when, excerpts of Step 4 reports need to be made public is not pre-decided by this ADR and is left for later judgment based on the usage track record.

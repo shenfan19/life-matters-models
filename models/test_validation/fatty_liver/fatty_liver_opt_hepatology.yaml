@@ -2,19 +2,19 @@ metadata:
   name: fatty_liver_opt_hepatology
   lm_format_version: "1.0"
   description:
-    problem: "肝病科单学科视角优化：仅最小化 12 周末肝脂肪百分比，不考虑疲劳与脱落风险，代表如果只听肝病科指南、不管运动医学诉求，单学科最优会推到什么程度。与运动医学单学科的 fatty_liver_opt_exercise.yaml、联合多学科的 fatty_liver_opt_joint.yaml 并列对比，才能体现联合优化揭示的权衡区间。完整物理机制与对比仿真见 imports 的 fatty_liver_sim。"
-    method: "机制与 fatty_liver_sim.yaml 相同，完整机制列表见该文件 description.method；本文件把优化目标收窄为单一学科视角，仅最小化肝脂肪百分比，决策变量与搜索空间与 fatty_liver_opt_exercise.yaml、fatty_liver_opt_joint.yaml 完全一致，便于三者并列比较。"
+    problem: "An optimization from hepatology's single-discipline perspective: minimizing only the liver fat percentage at week 12, with no fatigue or dropout risk considered, representing how far a single-discipline optimum would be pushed if only hepatology guidelines were heeded, ignoring sports medicine's concerns. Comparing this against sports medicine's single-discipline optimization, fatty_liver_opt_exercise.yaml, and the combined multi-discipline fatty_liver_opt_joint.yaml is what reveals the tradeoff range a joint optimization exposes. See the imported fatty_liver_sim for the complete physical mechanism and the comparison simulation."
+    method: "The mechanism matches fatty_liver_sim.yaml; see that file's description.method for the complete mechanism list. This file narrows the optimization objective to a single-discipline perspective, minimizing only the liver fat percentage, with the decision variables and search space kept identical to fatty_liver_opt_exercise.yaml and fatty_liver_opt_joint.yaml, so the three can be compared side by side."
   log:
     "2026-08-05_00-00-00":
-      change: "results 精简为 2026-07-11 的最终收敛结果，移除已确认冗余的 historical_stale_from_2026-07-10 子块；description 补充 method 字段"
-      reason: "落实 ADR 0141，主文件只保留当前有效结果，调试脉络转移至 history/2026-08-05_fatty_liver_opt_hepatology.yaml。"
+      change: "results streamlined to the final converged result from 2026-07-11, removing the confirmed-redundant historical_stale_from_2026-07-10 sub-block; description gains a method field"
+      reason: "Implements ADR 0141: the main file now keeps only the currently valid result, with the debugging trail moved to history/2026-08-05_fatty_liver_opt_hepatology.yaml."
 
 imports:
   - papers/lm_format/banister/banister_validation
   - ./fatty_liver_sim
 
 references:
-  - "见 ./fatty_liver_sim.yaml"
+  - "See ./fatty_liver_sim.yaml"
 
 optimization:
   method: nsga2
@@ -28,24 +28,24 @@ optimization:
     - variable: liver_fat_pct
       metric: final
       direction: minimize
-      description: "肝病科单学科目标：仅最小化12周末肝脂肪百分比，不权衡疲劳峰值"
+      description: "Hepatology's single-discipline objective: minimizing only the liver fat percentage at week 12, with no peak fatigue traded off"
 
-  # 与 fatty_liver_opt_joint.yaml 完全相同的决策变量结构，只换目标函数，
-  # 这样三个场景的搜索空间一致，结果才可比。
+  # The exact same decision-variable structure as fatty_liver_opt_joint.yaml, only the objective
+  # function differs, so all three scenarios share the same search space and their results are comparable.
   startpoint:
     regimens:
       - variable: training_load
         time_start: "07:00"
         time_end: "07:00"
         days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        label: "基础日常活动强度"
+        label: "Baseline daily activity intensity"
         optimize:
           value: [2.5, 5.0]
 
       - variable: training_load
         time_start: "07:00"
         time_end: "07:00"
-        label: "强化训练叠加量 × 频率 × 升级时机"
+        label: "Additional training-block volume x frequency x escalation timing"
         optimize:
           value: [2.0, 5.5]
           days_pool: [Mon, Tue, Wed, Thu, Fri, Sat]
@@ -64,7 +64,7 @@ optimization:
     seed: 19
 
   results:
-    status: "liver_fat_pct 是确定性输出，不受 optimization.mc 内层重采样参数影响；2026-07-11 与 2026-07-14 两次独立重跑均与下方结果逐位一致。"
+    status: "liver_fat_pct is a deterministic output, unaffected by optimization.mc's inner-loop resampling parameter; two independent reruns on 2026-07-11 and 2026-07-14 both matched the result below exactly."
     generated_at: "2026-07-11"
     method: nsga2
     population_size: 50
@@ -73,4 +73,4 @@ optimization:
     recommended:
       x: [4.9999999999999964, 5.499999999999999, 39.981310054165945, 0.000173871999573465]
       f: [2.8320000000000203]
-    note: "已用 fatty_liver_sim.yaml 的 --sim-only 交叉验证 hepatology_optimized plan 得 fatigue=51.612，与论文表6现有数字一致；单学科结果与 fatty_liver_opt_joint.yaml 前沿最激进端 f≈[2.83,54.1] 自洽。更早的重跑记录见 history/2026-08-05_fatty_liver_opt_hepatology.yaml。"
+    note: "Cross-validated with --sim-only in fatty_liver_sim.yaml, the hepatology_optimized plan gives fatigue=51.612, matching the paper's existing table 6 number; the single-discipline result is consistent with the most aggressive end of fatty_liver_opt_joint.yaml's front, f approximately [2.83,54.1]. See history/2026-08-05_fatty_liver_opt_hepatology.yaml for the earlier rerun record."
