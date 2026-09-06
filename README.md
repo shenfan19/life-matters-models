@@ -69,8 +69,6 @@ models/
   scenarios/      Composed scenarios (under development)
   test_fixtures/  Simulator functionality test cases
   test_validation/ Model validation reports and results
-  temp/           Unvalidated drafts (gitignored)
-output/           Batch-test output (gitignored)
 docs/
   LM_format_1.0.md   The complete format specification
   authoring/    A modeling-practice guide, indexed at authoring/README.md (methodology, writing conventions, ratings, regimens/optimizer, etc.)
@@ -79,15 +77,6 @@ docs/
 ```
 
 The specific content, validation status, and contribution conventions for each model directory are in its own README: [`models/references/README.md`](models/references/README.md), [`models/papers/README.md`](models/papers/README.md), [`models/scenarios/README.md`](models/scenarios/README.md).
-
----
-
-## Status markers
-
-Whether a model is "publishable" depends only on the `metadata.todo` field, independent of the filename:
-
-- **No `metadata.todo` (or empty) = confirmed passing, publishable**: sim OK, opt OK (or no `optimizer` block), all parameters have a literature source.
-- **A `metadata.todo` present** = there is a pending item; for details see the "Status markers" section of [docs/authoring/bookkeeping.md](docs/authoring/bookkeeping.md) (`type: nosim/noopt/noref/quality/other` plus diagnostic evidence).
 
 ---
 
