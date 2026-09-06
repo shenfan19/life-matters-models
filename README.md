@@ -2,10 +2,7 @@
 
 # Life Matters · Model Library
 
-LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference.
-
-> The content library of models for the Life Matters (LM) project, the foundation of the whole project: the LM format specification and models based on published literature are both published here.  
-> For the simulation and optimization engine, see → **[life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)** (the LM Reference Engine, a reference implementation of the LM format)
+LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference. This repository is the content library for the Life Matters project and the foundation of the whole project, publishing the LM format specification together with models based on published literature. Simulating and optimizing a model requires the companion [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine), whose online demo needs no installation and is the fastest way to try a model: [http://137.184.220.139](http://137.184.220.139).
 
 ---
 
