@@ -2,13 +2,6 @@
 
 # Life Matters · Model Library
 
-The name Life Matters carries four layers of meaning at once:
-
-- Life matters — life itself matters, and so do the things within it; they deserve to be taken seriously
-- life's matters — the various decisions within life and living are what this project models and optimizes
-- life-matter — following the naming pattern of dark matter and condensed matter, referring to modern life science's research findings about life's substance itself, the basis for the modeling
-- make life matter — using this research to help people live a more meaningful life
-
 LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference.
 
 > The content library of models for the Life Matters (LM) project, the foundation of the whole project: the LM format specification and models based on published literature are both published here.  
@@ -84,7 +77,7 @@ The specific content, validation status, and contribution conventions for each m
 
 **Read the format specification**: [docs/quickstart.md](docs/quickstart.md) → [docs/LM_format_1.0.md](docs/LM_format_1.0.md) → [docs/authoring/README.md](docs/authoring/README.md)
 
-**Run a model**: requires the accompanying LM Reference Engine, see [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine)
+**Run a model**: requires the accompanying LM Reference Engine, see [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine); that repository's README also links a live online demo, no local install needed.
 
 **Batch testing** (run from within the life-matters-reference-engine repository, see [cli.md](https://github.com/shenfan19/life-matters-reference-engine/blob/main/docs/cli.md) for detail):
 
@@ -109,6 +102,12 @@ python cli/batch.py --input-dir models/references
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## Citation
+
+Fan Shen. *Life Matters format: A YAML Specification for Behavioral Intervention Simulation and Optimization in Life Dynamics.* Manuscript submitted for publication. This section will be updated with an arXiv/DOI link once available.
 
 ---
 
