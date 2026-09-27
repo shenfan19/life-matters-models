@@ -7,7 +7,7 @@
 
 ## Background
 
-LM modeling work used to depend on the user manually working through the whole sequence of finding a direction, drafting a YAML, diagnosing it, and proposing and validating candidate changes, re-explaining the specification and re-explaining the diagnostic dimensions every single time, with the collaboration instructions never accumulating into something reusable. Now that AI coding assistant's subagent mechanism is available, the conditions exist to fix this collaboration process into a reusable, portable set of documents that an AI assistant can execute through standardized steps, while keeping human verification as the final check.
+LM modeling work used to depend on the user manually working through the whole sequence of finding a direction, drafting a YAML, diagnosing it, and proposing and validating candidate changes, re-explaining the specification and re-explaining the diagnostic dimensions every single time, with the collaboration instructions never accumulating into something reusable. Now that AI coding assistants support subagents, the conditions exist to fix this collaboration process into a reusable, portable set of documents that an AI assistant can execute through standardized steps, while keeping human verification as the final check.
 
 ## Decision
 
@@ -23,9 +23,9 @@ Step 3.1 and 3.2 together form the "adjustment" stage and are typically used tog
 
 ### Document placement: complete instructions live in the models repository; the reference_engine repository holds only a trigger entry point
 
-The complete instructions are maintained uniformly in this repository's `agents/*.md`, not tied to any particular AI tool or framework; the documents are designed to be readable in full and followed by any AI assistant that supports long-context instructions, without depending on any AI coding assistant-specific mechanism.
+The complete instructions are maintained uniformly in this repository's `agents/*.md`, not tied to any particular AI tool or framework; the documents are designed to be readable in full and followed by any AI assistant that supports long-context instructions, without depending on any tool-specific mechanism.
 
-`life-matters-reference-engine/local agents folder/` holds thin wrapper stubs for the corresponding four documents, each doing exactly one thing, pointing to the same-named document in this repository's `agents/` directory and reading and executing it; if the sibling repository does not exist, it honestly tells the user it cannot proceed. That repository's entire `.ai-local/` directory is excluded via `.gitignore`, so these stubs never enter version control; the single source of truth for the real content is always this repository's `agents/` directory, and AI coding assistant is just one of many possible execution environments.
+A local, untracked folder in `life-matters-reference-engine` holds thin wrapper stubs for the corresponding four documents, each doing exactly one thing, pointing to the same-named document in this repository's `agents/` directory and reading and executing it; if the sibling repository does not exist, it honestly tells the user it cannot proceed. That folder is excluded from version control, so these stubs never enter the repository; the single source of truth for the real content is always this repository's `agents/` directory, and any AI coding assistant is just one of many possible execution environments.
 
 ### Engine validation runs by default; a plain-text-only analysis requires explicit instruction
 
@@ -43,7 +43,7 @@ The actual task reports Step 4 produces are kept in `life-matters-home/agent_rep
 
 - New files: `agents/README.md`, `agents/lm-modeling-inspiration.md`, `agents/lm-modeling-design.md`, `agents/lm-modeling-diagnosis.md`, `agents/lm-modeling-advisor.md`, `agents/lm-agent-report.md`.
 - A new `**/temp_*/` rule added to `.gitignore`.
-- Four local stubs added under `life-matters-reference-engine/local agents folder/` (not entering version control).
+- Four local stubs added in an untracked folder of `life-matters-reference-engine`, outside version control.
 - `life-matters-home/agent_reports/` set up as Step 4's internal report directory, with the first report already recording, retroactively, the Step 3.2 runs actually carried out on 2026-08-15 for the three models ibs_diet/masld_insulin/bergman_glucose.
 
 ## Result

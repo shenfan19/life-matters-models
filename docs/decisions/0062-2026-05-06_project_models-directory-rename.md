@@ -74,5 +74,5 @@ ckd_protein_pareto_a4_p3.yaml    <- adjacent to the line above, making the share
 - ADR 0022's structure snapshot: `models/source/` becomes `models/references/`.
 - ADR 0057's structure snapshot and file-naming rule: updated to the new filenames.
 - ADR 0058: path examples supplemented with `references/`, `in_process/`.
-- AI_INSTRUCTIONS.md's code-structure description updated.
+- The AI assistant instructions' code-structure description updated.
 - No change needed to the backend `api_server.py` or the frontend `ModelBuilder.tsx` (recursive scanning, see ADR 0058).
