@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Matters</title>
+<meta name="description" content="Models of daily life grounded in published research, showing what each choice costs.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --text: #1f2421;
+    --muted: #5d6660;
+    --line: #dfe3dd;
+    --accent: #1b7a4b;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4f1e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151816;
+      --surface: #1d211f;
+      --text: #e8ece8;
+      --muted: #a3aca5;
+      --line: #2c322e;
+      --accent: #4cc089;
+      --accent-ink: #0d1a13;
+      --accent-soft: #1d2f26;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151816;
+    --surface: #1d211f;
+    --text: #e8ece8;
+    --muted: #a3aca5;
+    --line: #2c322e;
+    --accent: #4cc089;
+    --accent-ink: #0d1a13;
+    --accent-soft: #1d2f26;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { display: flex; align-items: center; gap: 18px; font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.02em; }
+  .hero h1 img { width: clamp(48px, 9vw, 72px); height: auto; }
+  .hero h2.tagline { font-size: clamp(1.25rem, 3vw, 1.6rem); line-height: 1.3; font-weight: 600; margin: 0 0 12px; }
+  .hero h2.tagline::before { display: none; }
+  .hero p.lead { font-size: 1.1rem; color: var(--muted); margin: 0 0 28px; max-width: 640px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-block; padding: 11px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 1px solid var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.secondary { color: var(--accent); background: transparent; }
+  .btn:hover { filter: brightness(1.08); }
+  section { padding: 36px 0; border-top: 1px solid var(--line); }
+  section h2 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 18px; letter-spacing: -0.01em; }
+  section h2::before { content: ""; display: inline-block; width: 6px; height: 1.1em; background: var(--accent); border-radius: 3px; margin-right: 12px; vertical-align: -0.15em; }
+  ul.points { padding-left: 1.2em; margin: 0; }
+  ul.points li { margin-bottom: 10px; }
+  figure { margin: 24px 0 0; width: 100%; }
+  figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  ol.steps { padding-left: 1.3em; margin: 0; }
+  ol.steps li { margin-bottom: 8px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; }
+  .card ul { margin: 0; padding-left: 1.2em; }
+  .card li { margin-bottom: 8px; }
+  .cite { font-size: 0.95rem; color: var(--muted); border-left: 3px solid var(--accent-soft); padding-left: 14px; margin: 14px 0 0; }
+  a { color: var(--accent); }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 0.9rem; }
+  footer p { margin: 0 0 10px; }
+  @media (max-width: 560px) {
+    .hero { padding: 40px 0 24px; }
+  }
+</style>
+</head>
+<body>
+
+
+<main id="top">
+  <div class="wrap">
+
+    <div class="hero">
+      <h1><img src="icon.svg" alt="">Life Matters</h1>
+      <h2 class="tagline">See what each choice costs.</h2>
+      <p class="lead">Life Matters turns published research into models of daily life that you can run, so the trade-offs between goals become visible before you choose.</p>
+      <div class="btns">
+        <a class="btn primary" href="https://ref-engine.lifematters.dev">Try the demo</a>
+        <a class="btn secondary" href="https://github.com/shenfan19/life-matters-models">Model library</a>
+        <a class="btn secondary" href="https://github.com/shenfan19/life-matters-reference-engine">Reference engine</a>
+      </div>
+    </div>
+
+    <section id="what">
+      <h2>What it does</h2>
+      <ul class="points">
+        <li>Turns the statistical findings of published studies into models written in plain YAML that anyone can read and run.</li>
+        <li>Places mechanisms that were validated separately in different papers into the same model, so they interact.</li>
+        <li>Searches for the best combinations of decisions. When goals conflict, it shows the trade-offs as a Pareto front and leaves the judgment to you.</li>
+      </ul>
+    </section>
+
+    <section id="how">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>Pick a model from the library. Each one states its problem, method, result and limitations.</li>
+        <li>Run a simulation and watch how the variables evolve over days, months or years.</li>
+        <li>Optimize the decisions and read the trade-off front.</li>
+      </ol>
+      <figure>
+        <img src="optimization.png" alt="The optimization view of the reference engine, showing a Pareto front of nine solutions for a chronic kidney disease model.">
+        <figcaption>The optimization view of the reference engine. Each point is a different way of balancing the goals.</figcaption>
+      </figure>
+    </section>
+
+    <section id="not">
+      <h2>What it is not</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Not a medical AI.</strong> It does not diagnose, prescribe or advise on treatment, and it does not replace a clinician.</li>
+          <li><strong>Not a digital twin of a body.</strong> It does not model any specific person or connect to personal health data.</li>
+          <li><strong>Not built on human medical data.</strong> Parameters come from summary results already published in papers.</li>
+          <li><strong>Not a single answer.</strong> When goals conflict it shows the trade-offs and leaves the judgment to the reader.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2>Author, contact and citation</h2>
+      <p><a href="https://shenfan19.github.io/">Fan Shen</a>, School of Systems Science and Engineering, Sun Yat-sen University.</p>
+      <p>Review coverage of the models is limited, and comments and criticism are welcome. Write to <a href="mailto:shenfan@mail.sysu.edu.cn">shenfan@mail.sysu.edu.cn</a> or <a href="mailto:shenfan19@gmail.com">shenfan19@gmail.com</a>.</p>
+      <p class="cite">Fan Shen. <em>Life Matters format: A YAML Specification for Behavioral Intervention Simulation and Optimization in Life Dynamics.</em> Manuscript submitted for publication.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Life Matters is a non-commercial, open-source research project. It is not affiliated with, endorsed by, or connected to any other organization, company or product that uses the same or a similar name.</p>
+    <p>Simulation results are model projections, not medical advice.</p>
+  </div>
+</footer>
+
+</body>
+</html>
