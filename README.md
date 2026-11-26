@@ -2,13 +2,19 @@
 
 # Life Matters · Model Library
 
-LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference. This repository is the content library for the Life Matters project and the foundation of the whole project, publishing the LM format specification together with models based on published literature. Simulating and optimizing a model requires the companion [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine), whose online demo needs no installation and is the fastest way to try a model: [http://137.184.220.139](http://137.184.220.139).
+[简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md)
+
+[Homepage](https://shenfan19.github.io/life-matters/) · [Project site](https://lifematters.dev/) · [Online demo](https://ref-engine.lifematters.dev) · [Reference engine](https://github.com/shenfan19/life-matters-reference-engine)
+
+LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference. This repository is the content library for the Life Matters project and the foundation of the whole project, publishing the LM format specification together with models based on published literature. Simulating and optimizing a model requires the companion [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine), whose online demo needs no installation and is the fastest way to try a model: [https://ref-engine.lifematters.dev](https://ref-engine.lifematters.dev).
 
 ---
 
 ## Disclaimer
 
 The historical and medical scenarios in this project are based on published academic literature and are intended solely for health-decision education. None of the simulated content represents a moral judgment of any historical figure; historical data has been simplified and does not constitute medical advice; simulation results are model projections, not a reconstruction of historical fact.
+
+Life Matters is a non-commercial, open-source research project. It is not affiliated with, endorsed by, or connected to any other organization, company or product that uses the same or a similar name.
 
 ---
 
@@ -32,6 +38,15 @@ Core capabilities:
 An LM file is made of four top-level mechanisms, read together as V.E.S.O.: `variables` (transferable numerical evidence), `equations` (wiring the evidence into dynamics that evolve over time), `simulation` (running out a trajectory), and `optimizer` (searching the decision space for tradeoffs). Four questions decide whether a candidate topic falls within this scope; see the Inclusion Test in the Scope section of [`docs/LM_format_1.0.md`](docs/LM_format_1.0.md).
 
 The models in this repository do not reproduce a single study's conclusion paper by paper; instead, they place mechanisms each independently validated by separate publications into the same model, letting mechanisms that would otherwise never have known of each other genuinely interact, revealing tradeoffs invisible within any single paper's own modeling scope. The methodology for deciding which mechanisms a model should include, and which it should exclude, is detailed in the opening section "LM's core methodology: coupling, not stacking" of [`docs/authoring/methodology.md`](docs/authoring/methodology.md).
+
+---
+
+## What Life Matters is not
+
+- **Not a medical AI.** It does not diagnose, prescribe or advise on treatment, and it does not replace a clinician.
+- **Not a digital twin of a body.** It does not model any specific person or connect to personal health data. A model describes the typical dynamics of a population under a given arrangement.
+- **Not built on human medical data.** Parameters come from summary results already published in papers. No patient records, genetic data or wearable data are used.
+- **Not a single answer.** When goals conflict it shows the trade-offs as a Pareto front and leaves the judgment to the reader.
 
 ---
 
