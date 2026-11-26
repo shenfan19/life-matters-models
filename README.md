@@ -4,9 +4,7 @@
 
 [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md)
 
-[Homepage](https://shenfan19.github.io/life-matters/) · [Project site](https://lifematters.dev/) · [Online demo](https://ref-engine.lifematters.dev) · [Reference engine](https://github.com/shenfan19/life-matters-reference-engine)
-
-LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference. This repository is the content library for the Life Matters project and the foundation of the whole project, publishing the LM format specification together with models based on published literature. Simulating and optimizing a model requires the companion [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine), whose online demo needs no installation and is the fastest way to try a model: [https://ref-engine.lifematters.dev](https://ref-engine.lifematters.dev).
+LM builds systems-science models grounded in modern life-science research findings, running multi-objective optimization over decisions in life and living; when optimization has no single optimal solution, the result is presented as a Pareto front, handing the full set of better possible combinations to the user for evaluation and reference. This repository is the content library for the [Life Matters project](https://lifematters.dev/) and the foundation of the whole project, publishing the LM format specification together with models based on published literature. Simulating and optimizing a model requires the companion [life-matters-reference-engine](https://github.com/shenfan19/life-matters-reference-engine).
 
 ---
 
